@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+cache/
+release/
+build/
+dist/
+*.spec
+.claude/
+skills-lock.json
+config.json
+*.log
+season_seed.json
+docs/img/demo/
+herramientas/salida/

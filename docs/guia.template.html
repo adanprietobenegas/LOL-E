@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía visual de LOL-E</title>
+<style>
+  :root { --bg:#f1f4f9; --card:#fff; --fg:#142033; --dim:#5b6b7f; --acc:#8a6a2f; --line:#dde3ec; --ok:#16a34a; --warn:#d97706; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#070d14; --card:#0e161f; --fg:#ece6d6; --dim:#8896a8; --acc:#c8aa6e; --line:#1f2c3b; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:18px/1.6 "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 18px 64px; }
+  h1 { font-size: 36px; margin: 0 0 4px; }
+  h2 { font-size: 24px; margin: 0 0 12px; display:flex; gap:12px; align-items:center; }
+  .sub { color: var(--dim); margin: 0 0 28px; }
+  section { background: var(--card); border:1px solid var(--line); border-radius: 16px; padding: 24px; margin: 20px 0; }
+  .num { background: var(--acc); color:var(--bg); width:36px; height:36px; border-radius:50%; display:inline-grid; place-items:center; font-weight:700; flex:none; }
+  img { max-width:100%; height:auto; border-radius:12px; border:1px solid var(--line); display:block; margin: 14px auto; }
+  .note { border-left: 5px solid var(--warn); padding: 10px 16px; background: rgba(217,119,6,.10); border-radius: 8px; margin: 14px 0; }
+  .ok { border-left-color: var(--ok); background: rgba(22,163,74,.10); }
+  li { margin: 6px 0; }
+  .chip { display:inline-block; padding:1px 10px; border-radius:8px; font-size:15px; font-weight:600; }
+  .g { background:rgba(22,163,74,.18); color:var(--ok);} .r { background:rgba(220,38,38,.16); color:#dc2626;} .b { background:rgba(37,99,235,.16); color:#2563eb;}
+</style>
+</head>
+<body>
+<main>
+  <h1>LOL-E</h1>
+  <p class="sub">Guía visual · versión {{VER}} · te ayuda a elegir campeón durante la selección</p>
+
+  <section>
+    <h2><span class="num">1</span> Instalar (menos de 1 minuto)</h2>
+    <ol>
+      <li>Si descargaste un <b>.zip</b>: clic derecho → <b>Extraer todo…</b> y abre la carpeta.</li>
+      <li>Haz doble clic en <b>1_Instalar-LOL-E-{{VER}}</b>.</li>
+      <li>Si Windows muestra la ventana azul <b>«Windows protegió su PC»</b>, es normal en programas nuevos sin firma de pago.
+          Pulsa <b>Más información</b> y después <b>Ejecutar de todas formas</b>.</li>
+      <li>Espera a que termine y pulsa <b>Finalizar</b>. Se abrirá el programa.</li>
+    </ol>
+    <div class="note ok"><b>No necesitas</b> instalar nada más, crear cuentas ni escribir tu contraseña.</div>
+  </section>
+
+  <section>
+    <h2><span class="num">2</span> Primer uso</h2>
+    <ol>
+      <li>Abre <b>League of Legends</b>.</li>
+      <li>Abre <b>LOL-E</b> (icono del escritorio). Arriba a la derecha debe poner <b>● Conectado a LoL</b> en verde.</li>
+      <li>Entra en una cola y juega como siempre. <b>No tienes que pulsar nada</b>: la ventana se activa sola al empezar la selección de campeón.</li>
+    </ol>
+    <img src="{{IMG_IDLE}}" alt="Pantalla de espera de LOL-E, con tu rango, tu racha y tu repertorio de la temporada" style="max-width:420px">
+    <p class="sub">Pantalla de espera: tu perfil (icono, nombre y nivel), tus rangos en Solo/Dúo y Flexible, tus últimas 5 partidas y una tarjeta con tres pestañas: <b>Rango y logros</b> (mejor rango, Retos y en qué porcentaje de los mejores de tu servidor estás, maestría, honor y racha), <b>Modos</b> y <b>Repertorio</b>. <b>Pulsa cualquier ficha</b> y se despliega su detalle con animación (por ejemplo, tus 5 categorías de Retos, tus PL para subir o tus campeones con más maestría).</p>
+  </section>
+
+  <section>
+    <h2><span class="num">3</span> Durante la selección de campeón</h2>
+    <img src="{{IMG_SELECT}}" alt="LOL-E durante la selección: turno, carrusel de recomendaciones y franja de previsualización" style="max-width:420px">
+    <ul>
+      <li><b>Tu turno:</b> dice si te toca <b>elegir</b> o <b>banear</b>. El anillo es la cuenta atrás y se pone rojo al final. Suena un aviso cuando empieza tu turno.</li>
+      <li><b>Recomendado para ti:</b> un <b>carrusel</b> de tarjetas. El número del anillo es la <b>afinidad</b> (0 a 100): cuanto más alta, mejor encaja contigo.
+          Cambia de tarjeta con las flechas <b>‹ ›</b>, con las teclas <b>← →</b> o pulsando un campeón de la <b>franja de abajo</b>.</li>
+      <li>Cada tarjeta tiene cuatro pestañas: <b>Resumen</b> (tu maestría y victorias), <b>Contra rival</b> (cómo te va contra tu rival de línea), <b>Sinergias</b> (cómo encaja con los campeones que ya han elegido tus compañeros) y <b>Meta y build</b> (victorias, uso y baneos en este parche, y consejos de construcción).</li>
+      <li><b>Filtros:</b> encima del carrusel puedes ordenar (afinidad, meta, sinergia, maestría), filtrar por clase y activar <b>Mi rol</b> (solo campeones de tu línea), <b>Mis campeones</b> y <b>Meta fuerte</b>.</li>
+      <li>¿Prefieres verlo todo a la vez? Cambia a <b>Lista</b> con el botón de arriba a la derecha de la sección.</li>
+      <li>Las etiquetas de colores explican el porqué:
+        <span class="chip g">verde = a favor</span>
+        <span class="chip r">rojo = en contra</span>
+        <span class="chip b">azul = dato</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="num">4</span> Tu equipo y el sonido</h2>
+    <img src="{{IMG_REP}}" alt="Repertorio: tabla de campeones y panel de detalle" style="max-width:420px">
+    <p class="sub"><b>Repertorio:</b> un titular con tu mejor y tu peor campeón, cuatro cifras y una tabla con todos tus campeones (de la temporada o de todos los modos), ordenable por partidas, porcentaje, maestría o reciente. El campeón elegido tiene su panel con tres pestañas: <i>Resumen</i> (KDA, daño, farmeo, líneas, objetos, rivales), <i>Partidas</i> y <i>Build</i> (con selector de línea).</p>
+    <img src="{{IMG_BUILD}}" alt="Pestaña Meta y build con runas, hechizos, objetos y habilidades" style="max-width:420px">
+    <p class="sub"><b>Meta y build:</b> además de los datos del parche, la <b>build más usada</b>: hechizos, runas (pasa el ratón para ver qué hace cada una), objetos de inicio, núcleo y 4.º a 6.º, y el orden de habilidades. Si tu rival de línea ya ha elegido, es la build de ese enfrentamiento.</p>
+    <img src="{{IMG_TEAM}}" alt="Tarjetas de tus compañeros con su rango, forma reciente y maestría" style="max-width:420px">
+    <p class="sub">Una ficha por compañero: su rango, sus últimos 10 resultados, su maestría con el campeón que ha elegido, qué suele jugar y si vais en dúo.</p>
+    <h2 style="font-size:20px">Sonido y volumen</h2>
+    <ul>
+      <li>En la parte de arriba tienes el <b>altavoz y un deslizador</b>: muévelo para subir o bajar el volumen del aviso (suena una muestra). Pulsa el altavoz para silenciar.</li>
+      <li>En <b>Ajustes → Sonido</b> eliges entre seis sonidos (Doble tono, Campana, Arpegio, Pulso, Cristal y Alerta) y puedes probarlos.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="num">5</span> Las pestañas «Enfrentamiento», «Historial» y «Datos»</h2>
+    <img src="{{IMG_MATCHUP}}" alt="Enfrentamiento: paso 1, elige a tu rival; paso 2, qué campeón le gana" style="max-width:420px">
+    <p class="sub"><b>Enfrentamiento</b> en dos pasos: <b>1 · Elige a tu rival</b> escribiendo su nombre (los datos se descargan al buscarlo) y la línea en la que juega; se indica dónde juega cada campeón de verdad (por ejemplo, «Ezreal: Tirador 94 %, Central 3 %»), también en líneas no habituales, y <i>Su build</i> enseña cómo juega él. <b>2 · Qué campeón le gana</b>: los tres mejores en grande y el resto en una tabla, con filtros y un botón <i>Build</i> en cada uno para ver sus runas, objetos y habilidades contra ese rival. «Partidas ≥ Todas» enseña también los de pocas partidas, con aviso de poca fiabilidad.</p>
+    <img src="{{IMG_HIST}}" alt="Historial: resumen, buscador, filtros y lista de partidas" style="max-width:420px">
+    <p class="sub"><b>Historial:</b> un <b>resumen</b> de lo que estás viendo (victorias, KDA, racha, campeones más jugados y reparto por modo), buscador y filtros, y la lista <b>agrupada por días</b>. Pulsa una partida para <b>desplegarla</b> (oro, daño y farmeo por minuto, visión y objetos). En Arena, el puesto.</p>
+    <div class="note">El cliente de LoL solo entrega las últimas ~20 partidas: LOL-E guarda cada una que ve, así que el historial <b>crece mientras lo usas</b>.</div>
+    <img src="{{IMG_DATOS}}" alt="Pesos y umbrales bloqueados con un candado" style="max-width:420px">
+    <p class="sub"><b>Datos:</b> de dónde sale cada dato y cómo se calcula la afinidad. Cada peso explica <b>qué pasa si lo subes y qué pasa si lo bajas</b>. Están <b>bloqueados por defecto</b> con un candado para no moverlos sin querer: pulsa <i>Desbloquear</i> y confirma si sabes lo que haces, y usa <i>Restablecer todo</i> para volver a los valores por defecto.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">6</span> Personalízalo (botón «Ajustes»)</h2>
+    <img src="{{IMG_SETTINGS}}" alt="Panel de ajustes pegado a la ventana, aquí con modo claro y color azul">
+    <p class="sub">Al pulsar «Ajustes», la ventana se ensancha y el panel queda <b>pegado a la derecha</b>: ves el resultado de cada cambio al instante en la parte izquierda. Aquí, con el modo claro y el color azul.</p>
+    <ul>
+      <li><b>Modo oscuro, claro o del sistema</b> y <b>6 colores</b> de acento.</li>
+      <li><b>Tamaño</b> de la interfaz y <b>modo compacto</b>.</li>
+      <li><b>Ventana por encima de las demás:</b> nunca, <i>solo en la selección</i> (por defecto, así Alt+Tab funciona como siempre) o siempre.</li>
+      <li><b>Animaciones</b> (se pueden apagar) y <b>pestaña inicial</b> al abrir.</li>
+      <li><b>Recomendaciones:</b> carrusel o lista, cuántas ver y el estilo (<i>Equilibrado</i>, <i>Cómodo</i> o <i>Adaptativo</i>).</li>
+      <li><b>Mantenimiento:</b> borrar la caché y restablecer los ajustes (tu historial no se toca).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="num">7</span> Si algo no va</h2>
+    <ul>
+      <li><b>Pone «Esperando al cliente»:</b> abre LoL primero y luego LOL-E.</li>
+      <li><b>No sale nada:</b> los consejos solo aparecen <b>durante</b> la selección de campeón.</li>
+      <li><b>ARAM, Arena o personalizadas:</b> solo muestran lo esencial (en ARAM, tu campeón y el banquillo). Todas las partidas quedan en el historial.</li>
+      <li><b>Recomendaciones raras al principio:</b> aprende de tus partidas; mejora cuanto más juegas.</li>
+      <li><b>Desinstalar:</b> Configuración de Windows → Aplicaciones → LOL-E → Desinstalar.</li>
+    </ul>
+    <div class="note">LOL-E solo <b>lee</b> la selección de campeón de tu cliente: no toca la partida ni pulsa nada por ti. No está respaldado por Riot Games; úsalo bajo tu responsabilidad.</div>
+  </section>
+</main>
+</body>
+</html>

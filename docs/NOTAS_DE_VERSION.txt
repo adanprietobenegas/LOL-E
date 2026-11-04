@@ -1,0 +1,352 @@
+=====================================================================
+  LOL-E  ·  NOTAS DE VERSIÓN
+=====================================================================
+
+CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
+  · Z (1.4.0 → 1.4.1): arreglos y retoques pequeños.
+  · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
+  · X (1.5.0 → 2.0.0): un cambio grande de la app.
+
+VERSIÓN 1.8.2   (4 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES
+  · ACTUALIZACIONES AUTOMÁTICAS ACTIVADAS: la app mira al abrirse si hay
+    una versión nueva publicada en GitHub (adanprietobenegas/LOL-E) y te
+    ofrece instalarla. El código del proyecto es público (licencia MIT).
+
+VERSIÓN 1.8.1   (4 de noviembre de 2026)
+---------------------------------------------------------------------
+
+CORRECCIONES
+  · BUILD CON BOTAS: la build recomendada separa las botas en su propia
+    fila (con la mejora «nivel 2 → nivel 3»). Antes, en el tirador, las
+    botas se mezclaban con el núcleo y parecía que faltaba un objeto.
+  · MISIONES DE LÍNEA: debajo de la build se explica la mejora propia de
+    la línea (tirador: botas en la ranura de misión; central: botas de
+    nivel 3 gratis; superior; jungla; apoyo). Fuentes secundarias de la
+    temporada 26: lo de la teletransportación en la superior NO está
+    confirmado y se indica así.
+
+RENDIMIENTO (medido con 201 partidas y la ventana a 1250 px)
+  · Historial: primera apertura 1.705 → 893 ms; filtrar 1.625 → 626 ms;
+    «20 más» 1.395 → 363 ms (cada partida pasó de ~70 a ~16 ms).
+  · Repertorio: ordenar 1.505 → 1.112 ms; cambiar de ámbito 1.029 → 690 ms.
+  · Iconos y objetos más ligeros en toda la app; cambiar de tema ya no
+    reconstruye el panel de ajustes por adelantado.
+
+VERSIÓN 1.8.0   (4 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES
+  · REPERTORIO REDISEÑADO: titular con tu mejor y tu peor campeón, cuatro
+    cifras, tabla con todos tus campeones (temporada o todos los modos)
+    ordenable, y panel de detalle con pestañas Resumen, Partidas y Build.
+    La build tiene su propia pestaña con selector de línea (antes no
+    cargaba). En ventanas estrechas el detalle va encima de la tabla.
+  · ENFRENTAMIENTOS CON POCAS PARTIDAS: «Partidas ≥» admite «Todas», 20 y
+    50, además de 100, 300, 1.000 y 3.000. Los de pocas partidas llevan el
+    aviso «Pocas partidas» con el intervalo real del porcentaje, y hay un
+    orden nuevo, «Más fiable», que tiene en cuenta esa incertidumbre.
+  · PICKS EN AUGE MÁS FIABLES: ahora se comparan tu servidor y siete
+    regiones líderes (Corea, Japón, Taiwán, Singapur, Vietnam,
+    Norteamérica, Oceanía) en vez de solo Corea. El criterio sale de una
+    prueba con 10 parches y 14 regiones: cuando 2 o más regiones líderes
+    suben a la vez, el uso en EUW acabó subiendo en cerca de 1 de cada 4
+    casos (el azar da menos de 1 de cada 100). Se explica en el Léeme.
+
+CORRECCIONES
+  · La pantalla principal se rehace al cambiar el tamaño de la ventana.
+
+VERSIÓN 1.7.0   (4 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES
+  · PICKS EN AUGE: en Enfrentamiento, al elegir línea se explica cómo va
+    ese campeón en ella (marginal, estable, en auge o subiendo en Corea,
+    con el tamaño de la muestra) y aparece «En auge en esa línea» con los
+    campeones cuyo uso sube. El asesor marca con «en auge» o «sube en
+    Corea» a los candidatos que lo estén. El criterio (cambio de uso
+    frente al parche anterior, tu servidor y Corea, mínimos de partidas)
+    sale de una prueba con datos reales de 6 parches; se explica en el
+    Léeme.
+  · REPERTORIO COMPLETO: al pulsar un campeón de tu repertorio se
+    despliega su ficha: estadísticas, líneas, objetos que más llevas,
+    contra quién te va mejor y peor y tus últimas partidas, con botones
+    para ver todas sus partidas en el Historial, verlo como rival o ver su
+    build.
+
+CORRECCIONES
+  · Los paneles que se despliegan con animación ya no recortan lo que se
+    añade dentro después.
+
+VERSIÓN 1.6.0   (4 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES
+  · BUILDS, OBJETOS Y RUNAS RECOMENDADAS: hechizos, runas (llave,
+    primarias, secundarias y fragmentos), objetos de inicio, núcleo y 4.º
+    a 6.º, y orden de habilidades, con iconos y descripción al pasar el
+    ratón. Se ven en la pestaña «Meta y build» del Asesor (contra tu
+    rival de línea si ya ha elegido) y en Enfrentamiento: botón «Build»
+    en cada campeón y «Su build» para ver cómo juega el rival.
+  · OTRAS LÍNEAS: ahora se sabe dónde se juega de verdad cada campeón
+    según el meta (por ejemplo, Ezreal: Tirador 94 %, Central 3 %,
+    Apoyo 2 %). El selector de línea lo muestra, propone la más jugada y
+    ofrece las líneas con datos cuando una no tiene. Si tu rango no tiene
+    datos suficientes se usan los de todos los rangos. El asesor ya no
+    descarta un campeón de «Mi rol» solo por no ser su línea habitual:
+    nuevo umbral editable en Datos («Línea alternativa: % de partidas»).
+    También se muestra cuántas veces has jugado contra ese rival.
+  · PANTALLA PRINCIPAL MÁS COMPACTA E INTERACTIVA: una sola tarjeta con
+    pestañas (Rango y logros, Modos, Repertorio). Las fichas se resaltan
+    al pasar el ratón con una previsualización y, al pulsarlas, despliegan
+    su detalle con animación: rangos y PL para subir, categorías de Retos,
+    maestría por campeón, honor, rachas, y por modo o campeón sus últimas
+    partidas, KDA y más. La tarjeta de espera ocupa ahora una sola línea.
+
+CORRECCIONES
+  · Los campeones con datos en pocas líneas (como Ezreal en Central) ya
+    dan resultados en Enfrentamiento en vez de un error.
+
+VERSIÓN 1.5.0   (4 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES
+  · RANGO Y LOGROS en la pantalla principal: mejor rango de la temporada,
+    temporada anterior, nivel de Retos y en qué porcentaje de los mejores
+    de tu servidor estás, tu mejor categoría de Retos, maestría total,
+    nivel de honor y tu racha actual. (La posición exacta en el ranking
+    del servidor no la da el cliente de LoL.)
+  · ENFRENTAMIENTO REHECHO, en dos pasos: 1) elige a tu rival con un
+    buscador en lista (recientes, ver todos, línea habitual del rival) y
+    2) mira qué campeón le gana: los 3 mejores destacados y el resto en
+    una tabla alineada. Los campeones nuevos con pocos datos ya funcionan.
+  · HISTORIAL REHECHO: resumen con estadísticas de lo que estás viendo
+    (victorias, KDA, duración, racha, últimas 20, campeones más jugados,
+    reparto por modo), lista agrupada por días con cabecera de columnas, y
+    cada partida se despliega con más detalle (oro, daño y farmeo por
+    minuto, visión, objetos con nombre).
+  · LA VENTANA YA NO SE QUEDA SIEMPRE ENCIMA: por defecto solo se pone por
+    encima mientras eliges campeón; el resto del tiempo funciona con
+    Alt+Tab y minimizar como cualquier otra. En Ajustes puedes elegir
+    Nunca, En la selección o Siempre.
+
+CORRECCIONES
+  · El aviso de op.gg ya no muestra un texto técnico largo en el pie.
+  · Se corrigió el rango máximo (se tomaba el de una sola cola).
+  · Textos que se cortaban en ventanas estrechas (fichas de rango y de
+    logros).
+
+VERSIÓN 1.4.3   (4 de noviembre de 2026)
+---------------------------------------------------------------------
+
+DOCUMENTACIÓN
+  · Guía visual, «Léeme» y capturas actualizadas a la versión actual: las
+    cuatro pestañas (Asesor, Enfrentamiento, Historial y Datos), los
+    pesos bloqueados con candado, los Ajustes nuevos, la pantalla
+    maximizada y el comportamiento en ARAM, Arena y personalizadas.
+  · No hay cambios en el programa respecto a la 1.4.2.
+
+VERSIÓN 1.4.2   (4 de noviembre de 2026)
+---------------------------------------------------------------------
+
+CORRECCIONES
+  · ARENA, ARAM Y PARTIDAS PERSONALIZADAS: la selección de campeón ya no
+    puede dejar la ventana sin actualizar si el cliente envía datos
+    incompletos (cada modo manda campos distintos). Se muestra información
+    sencilla y coherente, sin recomendaciones donde no tienen sentido.
+  · Las partidas personalizadas se reconocen como tales (antes se trataban
+    como la Grieta, con líneas que no existen). Las de ARAM conservan el
+    banquillo.
+  · Sin rivales conocidos (Arena, personalizadas) ya no aparece el bloque
+    «Equipo rival» vacío; y un banquillo de ARAM aún vacío dice
+    «Todavía no hay campeones para comparar» en vez de hablar de filtros.
+  · Un dato raro en un evento ya no detiene las actualizaciones de la
+    ventana: se avisa en el pie y sigue funcionando.
+
+VERSIÓN 1.4.1   (4 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES
+  · OBJETOS EN EL HISTORIAL: en pantallas anchas, cada partida muestra los
+    7 objetos que llevabas, con su icono. Al pasar el ratón sale su nombre,
+    coste y descripción corta, en español (datos oficiales de Data Dragon).
+
+CORRECCIONES
+  · TIPOS DE PARTIDA: Arena 3x6 se reconocía como «Otros». Ahora se
+    detecta por el modo que da el cliente, y las partidas personalizadas
+    tienen su propio tipo. «Modo rápido» pasa a ser un tipo aparte de las
+    Normales.
+  · En Arena se muestra el puesto (1º a 6º; del 1º al 3º cuenta como
+    victoria) y se ocultan la línea y el farmeo, que no existen en ese modo.
+
+VERSIÓN 1.4.0   (4 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES
+  · PESTAÑA «HISTORIAL»: todas tus partidas guardadas con buscador por
+    campeón y filtros por modo, resultado, línea y orden. Muestra
+    «Últimas 50 / 100 / 200 / 500 / Todas (hasta la fecha más antigua)» y
+    va cargando de 25 en 25. Cada partida: K/D/A, farmeo, daño, duración
+    y fecha. Importante: el cliente de LoL solo entrega las últimas ~20
+    partidas; LOL-E guarda cada una que ve, así que el historial crece
+    mientras lo usas.
+  · «ENFRENTAMIENTO» rediseñado: buscador de campeones por nombre con
+    precarga de los datos del rival, selector de línea y filtros (los que
+    tengo, los que he jugado, clase, orden, mínimo de partidas y solo con
+    ventaja). Los resultados se muestran en rejilla y se cargan por
+    tramos; la lista completa de campeones ya no se corta.
+  · «DATOS»: pesos y umbrales BLOQUEADOS por defecto, con un candado y un
+    aviso. Hay que desbloquearlos a propósito (con confirmación) para
+    editarlos, y «Restablecer todo» los devuelve a los valores por defecto.
+
+MEJORAS VISUALES
+  · En pantallas grandes el contenido se centra con un ancho máximo y la
+    información de cada fila queda junta, no en los extremos.
+  · El desglose de la afinidad queda centrado y sus barras se adaptan al
+    ancho de la ventana.
+  · Las pestañas Datos, Historial y Enfrentamiento se adaptan a ventanas
+    estrechas, medias y maximizadas.
+
+VERSIÓN 1.3.1   (4 de noviembre de 2026)
+---------------------------------------------------------------------
+
+CORRECCIONES
+  · Cambiar a tema claro (o de acento o de tamaño) con la ventana abierta
+    ya no deja colores mezclados: la interfaz se rehace entera.
+  · Con la ventana maximizada, la tarjeta del campeón recomendado ocupa
+    todo el ancho y ya no se recorta al abrir «Ajustes».
+  · Ya no queda un hueco vacío entre la tarjeta de turno y las
+    recomendaciones cuando termina la fase de bans.
+  · En ventanas estrechas, la cabecera de tu perfil muestra todos los
+    resultados recientes sin amontonarse.
+
+VERSIÓN 1.3.0   (4 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES
+  · VENTANA MAXIMIZADA: al abrir «Ajustes» con la ventana maximizada ya no
+    se encoge; el panel entra por la derecha y el contenido se estrecha.
+  · TARJETA DE TURNO rediseñada: icono de tu línea, fases (Planificación,
+    Bans, Picks, Final), punto que parpadea cuando te toca y cuenta atrás
+    en anillo.
+  · ANIMACIONES: transición al cambiar de pantalla, botones que se
+    iluminan suavemente, cifras que cuentan hasta su valor y barras que
+    crecen. Se pueden desactivar en Ajustes → Animaciones y transiciones.
+  · AJUSTES reorganizados: Apariencia, Al abrir (pestaña inicial), Qué
+    mostrar, Recomendaciones, Sonido, Datos, Actualizaciones,
+    Mantenimiento (borrar caché y restablecer ajustes) y Acerca de.
+  · PARCHE: ahora se muestra la numeración pública (26.22 en lugar de
+    16.22). Si el parche actual aún no tiene datos suficientes en la
+    fuente, se usan los del anterior y la aplicación lo indica; se
+    vuelve a comprobar cada 3 horas.
+
+VERSIÓN 1.2.0   (4 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES
+  · PESTAÑA «ENFRENTAMIENTO»: los mejores campeones contra un rival
+    concreto, sin tener en cuenta tu repertorio (datos de todos los
+    jugadores, Lolalytics). Se rellena sola con tu rival de línea o
+    eliges tú el rival y la línea; filtra por los que tienes o has
+    jugado.
+  · PESTAÑA «DATOS» (transparencia total):
+      - De dónde sale cada dato, qué da, para qué se usa, si está
+        activo y cuándo se actualizó; las fuentes opcionales se
+        pueden desactivar.
+      - Los pesos de la afinidad y los umbrales de las reglas son
+        modificables, y cada uno explica qué pasa si lo subes o lo bajas.
+      - Estilo nuevo «Personalizado» (tus propios pesos).
+      - Ejemplo en vivo con el desglose de puntos.
+  · DESGLOSE DE LA AFINIDAD en cada tarjeta: cuántos puntos suma cada
+    factor.
+  · SEGÚN EL TIPO DE PARTIDA: la Grieta mantiene todo; en ARAM compara tu
+    campeón con los del banquillo según tus resultados en ARAM y da
+    consejos de construcción; en otros modos avisa de que no hay
+    recomendaciones. Sin sinergias, bans ni jugadores donde no tienen
+    sentido.
+  · HISTORIAL CON COMPAÑEROS: en la ficha de cada aliado, cuántas
+    partidas habéis jugado juntos y cómo os ha ido.
+  · ENLACES: «Builds de especialistas (OneTricks)» y «Lolalytics» abren
+    la web en tu navegador (LOL-E no lee nada de ellas).
+  · ACTUALIZACIONES AUTOMÁTICAS: LOL-E puede avisar de versiones nuevas
+    y actualizarse con un botón, verificando la huella del instalador.
+    Necesita que quien reparte el programa publique el archivo de
+    versión y configure su dirección.
+  · Gramática: «1 partida» en singular.
+
+LIMITACIONES CONOCIDAS (NUEVAS)
+  · Los nombres de los rivales no se ven en partidas clasificatorias
+    hasta que empieza la partida, por eso no hay ficha del rival de
+    línea: solo de tus compañeros.
+  · OneTricks bloquea el acceso automático, así que solo se enlaza.
+  · La pestaña «Enfrentamiento» depende de la tabla pública de
+    Lolalytics: si cambian su web, mostrará un aviso.
+
+VERSIÓN 1.1.0   (4 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES
+  · PERFIL COMPLETO: tu icono, nombre, nivel, rango en Solo/Dúo y en
+    Flexible con su emblema, y resumen de tus modos de juego (Solo/Dúo,
+    Flexible, Normales, ARAM, Arena…) con porcentaje y últimos
+    resultados.
+  · TU EQUIPO: una ficha por compañero con su rango, sus últimos 10
+    resultados, su maestría con el campeón elegido, qué suele jugar y
+    su racha. Marca a tu dúo o a tu grupo.
+  · SINERGIAS: nueva pestaña con cómo encaja cada recomendación con los
+    campeones ya elegidos por tu equipo (dúo de línea, frontal y
+    carry, control y asesino, daño complementario…) y tu historial
+    jugando con cada pareja.
+  · META DEL PARCHE: victorias, uso y baneos de cada campeón en tu línea
+    y en tu rango (Lolalytics). Cuenta en la afinidad y se puede
+    desactivar.
+  · TU ROL, DE VERDAD: ya no se recomiendan campeones que no son de la
+    línea que te ha tocado (por ejemplo, un soporte jugando de
+    superior), salvo que ya los hayas jugado ahí.
+  · FILTROS: ordenar por afinidad, meta, sinergia o maestría; filtrar
+    por clase; «Mi rol», «Mis campeones» y «Meta fuerte».
+  · Cuatro pestañas por tarjeta: Resumen, Contra rival, Sinergias y
+    Meta y build.
+  · MUCHO MÁS FLUIDA: abrir los ajustes ya no deforma la ventana, y
+    cambiar de pestaña, de tarjeta o de tamaño es mucho más rápido.
+    La ventana se divide en secciones independientes: cuando llega un
+    dato nuevo solo se actualiza su parte y no toda la pantalla.
+  · Animaciones: fundido al cambiar de tarjeta, barras que crecen,
+    cuenta atrás en anillo y panel de ajustes que se desliza.
+  · Tamaño de la ventana adaptado a la altura de tu pantalla (probado
+    simulando la escala de Windows al 125 % y al 150 %).
+  · Se usa tu rango real también en el meta (Platino+, Esmeralda+…).
+
+LIMITACIONES CONOCIDAS
+  · Solo para Windows 10/11 (64 bits). Solo en español.
+  · El instalador no tiene firma digital, por eso Windows muestra un
+    aviso la primera vez (consulta 0_LEEME_PRIMERO.txt).
+  · Las recomendaciones salen de TU historial: con una cuenta nueva o
+    con pocas partidas serán menos precisas al principio.
+  · El meta es de la línea y del rango elegidos, no del enfrentamiento
+    concreto: los enfrentamientos salen de tu historial y de op.gg.
+  · Los consejos de «Construcción» son orientativos y no sustituyen a
+    la build recomendada del parche.
+  · Algunos jugadores tienen el perfil oculto: de ellos no se ven datos.
+  · Las estadísticas de op.gg y el meta de Lolalytics dependen de esas
+    webs. Si cambian, esa parte puede dejar de funcionar (el resto del
+    programa sigue funcionando).
+  · Optimizado para la Grieta del Invocador (partidas con roles).
+
+PRÓXIMAMENTE (ideas)
+  · Actualizaciones automáticas del programa.
+  · Builds y runas reales por parche.
+  · Más idiomas.
+
+VERSIÓN 1.0.0   (3 de noviembre de 2026)  ·  Primera versión pública
+---------------------------------------------------------------------
+  · Recomendaciones en carrusel o lista con tarjeta principal y anillo
+    de afinidad, ban sugerido y aviso de turno con volumen y seis
+    sonidos.
+  · Ajustes en la misma ventana, tema oscuro/claro/sistema, seis
+    colores de acento y modo compacto.
+  · Se configura solo desde el cliente de LoL. Instalador de un paso.
+
+=====================================================================

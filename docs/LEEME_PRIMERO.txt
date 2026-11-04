@@ -1,0 +1,504 @@
+=====================================================================
+  LOL-E  ·  Tu asesor para la selección de campeón
+  Versión 1.8.2
+=====================================================================
+
+¿QUÉ ES?
+--------
+LOL-E es un programa para Windows que te ayuda a elegir campeón en
+League of Legends. Cuando entras en la selección de campeón, abre una
+ventana que te dice:
+
+  · Qué campeones te conviene elegir, según lo que mejor juegas, tu
+    rol, lo que necesita tu equipo y cómo está el meta del parche.
+  · Qué sinergias tienes con los campeones que ya han elegido tus
+    compañeros.
+  · Quiénes son tus compañeros: su rango, su forma reciente y cómo
+    les va con el campeón que han elegido.
+  · A quién conviene banear: los rivales contra los que más pierdes.
+  · Qué campeones van mejor contra un rival concreto, sin importar
+    cuáles tengas tú.
+  · De dónde sale cada dato y cómo se calcula todo, con los pesos y
+    umbrales a la vista y modificables.
+  · Cuándo es tu turno de banear o de elegir, con cuenta atrás y un
+    aviso sonoro para que no se te pase.
+  · Tu historial de partidas, con buscador y filtros, para consultarlo
+    cuando quieras (también sin estar en partida).
+
+No necesitas crear ninguna cuenta ni escribir tu usuario ni tu
+contraseña. El programa lo averigua solo leyendo tu cliente de LoL.
+
+
+¿QUÉ NECESITAS?
+---------------
+  1. Un ordenador con Windows 10 u 11 (64 bits).
+  2. League of Legends instalado.
+  3. Conexión a internet.
+
+NO necesitas instalar nada más (ni Python ni otros programas): todo
+viene dentro del instalador.
+
+
+CÓMO INSTALARLO (menos de 1 minuto)
+-----------------------------------
+  1. Si has descargado un archivo .zip, haz clic con el botón derecho
+     y elige «Extraer todo…». Después abre la carpeta que se crea.
+
+  2. Haz doble clic en:   1_Instalar-LOL-E-1.8.2
+
+  3. Windows puede mostrar una ventana azul que dice «Windows protegió
+     su PC». ES NORMAL en programas nuevos de particulares, que no
+     tienen la firma digital de pago. Para continuar:
+         a) Pulsa donde dice «Más información».
+         b) Pulsa el botón «Ejecutar de todas formas».
+
+  4. El instalador trabaja solo. Cuando acabe, pulsa «Finalizar».
+     Se abrirá LOL-E y tendrás un icono en el escritorio y en el
+     menú Inicio.
+
+Si no aparece «Más información», o el aviso sale siempre: haz clic
+con el botón derecho sobre el archivo .zip descargado, elige
+«Propiedades», marca la casilla «Desbloquear» (abajo del todo) y
+pulsa «Aceptar». Después extrae el zip.
+
+Si tu antivirus protesta, es una falsa alarma habitual en programas
+nuevos. Puedes comprobar el archivo en la web virustotal.com.
+
+Si aparece el error «El sistema no puede encontrar la ruta
+especificada», el instalador está dentro de carpetas demasiado
+anidadas. Cópialo al Escritorio y ábrelo desde allí.
+
+Si ya tenías una versión anterior, instala la nueva encima: se
+conservan tus datos y ajustes.
+
+
+CÓMO SE USA
+-----------
+  1. Abre League of Legends como siempre.
+  2. Abre LOL-E (icono del escritorio). Arriba a la derecha debe
+     poner «Conectado a LoL» en verde.
+  3. Entra en una cola y juega como siempre.
+  4. Cuando empiece la selección de campeón, LOL-E se activa solo y
+     te muestra los consejos. No tienes que pulsar nada.
+  5. Al terminar la selección vuelve a la pantalla de espera.
+
+Deja LOL-E abierto. Por defecto la ventana se pone por encima de las
+demás SOLO mientras eliges campeón; el resto del tiempo se comporta
+como cualquier otra ventana (Alt+Tab, minimizar…). Puedes cambiarlo en
+Ajustes: Nunca, En la selección o Siempre.
+
+El aviso sonoro de tu turno se controla con el altavoz y el
+deslizador de la parte de arriba: mueve el deslizador para subir o
+bajar el volumen (suena una muestra) y pulsa el altavoz para silenciar.
+En Ajustes > Sonido puedes elegir entre seis sonidos y probarlos.
+
+
+PANTALLA DE ESPERA
+------------------
+Arriba, tu perfil (icono, nombre, nivel, tus últimas 5 partidas) y tus
+rangos de Solo/Dúo y Flexible. Debajo, una sola tarjeta con TRES
+PESTAÑAS para tener toda la información agrupada:
+
+  Rango y logros   Fichas con lo que tu cliente sabe de ti: mejor rango
+                   de la temporada, temporada anterior, nivel de Retos y
+                   en qué porcentaje de los mejores de tu servidor estás
+                   («Entre el 3,4 % mejor»), tu mejor categoría de Retos,
+                   maestría total, nivel de honor y racha actual.
+                     · Pasa el ratón por una ficha: se resalta y sale una
+                       previsualización.
+                     · PULSA una ficha: se despliega con animación su
+                       detalle: tus rangos y los PL que te faltan para
+                       subir, las 5 categorías de Retos con su barra,
+                       tus campeones con más maestría, tu honor o tus
+                       últimas 20 partidas. Pulsa otra vez para cerrarla.
+                     · La posición exacta en el ranking de tu servidor
+                       (el «top» de EUW) no la da el cliente; el
+                       porcentaje de los Retos sí es de tu servidor.
+  Modos            Tus modos (Solo/Dúo, Flexible, ARAM, Arena…) con su
+                   porcentaje y resultados recientes. PULSA un modo para
+                   ver sus últimas partidas, KDA, duración media y los
+                   campeones que más juegas en él.
+  Repertorio       Una pantalla de trabajo para tus campeones:
+                     · Un titular con el hallazgo («Tu mejor campeón es
+                       Anivia: 73 % en 11 partidas. Con Taliyah pierdes
+                       más de lo que ganas») y cuatro cifras.
+                     · Una tabla con TODOS tus campeones de la
+                       temporada (Grieta) o de todos los modos (ARAM,
+                       Arena…), ordenable por más jugados, mejor
+                       porcentaje, maestría o reciente: partidas,
+                       victorias con su barra, KDA, maestría y tus últimos
+                       resultados.
+                     · Al lado (encima en ventanas estrechas), el campeón
+                       elegido, con su arte y tres pestañas:
+                         Resumen   KDA, daño y farmeo por minuto,
+                                   duración, líneas jugadas, objetos que
+                                   más llevas y contra quién te va mejor
+                                   y peor; botones para verlo como rival
+                                   o ver todas sus partidas.
+                         Partidas  Sus últimas partidas guardadas.
+                         Build     La build más usada (runas, hechizos,
+                                   objetos, habilidades) con un selector
+                                   de línea: se elige la que más has
+                                   jugado con él, o la más jugada en el
+                                   meta.
+
+DURANTE LA SELECCIÓN DE CAMPEÓN
+-------------------------------
+  Arriba        Resumen de tu rango y tus últimas 5 partidas. Si
+                llevas 3 derrotas seguidas, avisa.
+
+  Tu turno      Dice si te toca «elegir» o «banear». El anillo de la
+                derecha es la cuenta atrás: se pone rojo cuando
+                quedan pocos segundos.
+
+  Banea a quien Rivales contra los que más has perdido jugando tu
+  te gana       rol. Solo aparece cuando te toca banear.
+
+  Recomendado   Los mejores campeones para ti ahora mismo, en un
+  para ti       CARRUSEL de tarjetas. El número del anillo es la
+                «afinidad» (de 0 a 100): cuanto más alta, mejor encaja
+                contigo. Se calcula con lo que dominas, tu rol, lo que
+                necesita tu equipo, las sinergias y el meta.
+
+                Cambia de tarjeta con las flechas ‹ › de los lados,
+                con las teclas ← y →, o pulsando cualquier campeón de
+                la franja de abajo (cada uno muestra su afinidad).
+
+                Cada tarjeta tiene cuatro pestañas (en «Meta y build»
+                verás además la BUILD MÁS USADA: runas, hechizos, objetos
+                y orden de habilidades; si tu rival de línea ya ha
+                elegido, es la build de ese enfrentamiento):
+                  Resumen         tu maestría, tus victorias con él y
+                                  el motivo de la recomendación.
+                  Contra rival    cómo te va con ese campeón contra el
+                                  rival de tu línea y contra los demás
+                                  rivales ya elegidos.
+                  Sinergias       cómo encaja con cada compañero que ya
+                                  ha elegido (y tu historial jugando
+                                  juntos, si lo hay).
+                  Meta y build    victorias, uso y baneos del campeón en
+                                  tu línea en este parche, y consejos
+                                  de construcción según la composición
+                                  rival (orientativos).
+
+                Si prefieres verlas todas a la vez, cambia a «Lista»
+                con el botón de arriba a la derecha de la sección.
+
+                Las etiquetas de colores explican el porqué:
+                  verde = a favor (por ejemplo «2/3 victorias» o
+                          «te falta un tanque»: tu equipo no tiene
+                          ninguno y este campeón sí)
+                  rojo  = en contra (pocas victorias, meta débil, o
+                          fuera de tu rol)
+                  azul  = dato informativo (tu maestría con él)
+
+  Filtros       Encima del carrusel puedes ordenar por afinidad, meta,
+                sinergia o maestría; filtrar por clase (tanque,
+                luchador, asesino, mago, tirador, soporte); y activar:
+                  Mi rol          oculta los campeones que no son de
+                                  tu línea (activado por defecto).
+                  Mis campeones   solo los que ya has jugado.
+                  Meta fuerte     solo los que ganan más del 50 % en
+                                  este parche.
+
+  Tu equipo     Una ficha por compañero: su campeón, su nombre, su
+                rol, su rango, sus últimos 10 resultados, cuántas
+                partidas habéis jugado juntos y cómo os ha ido, cuánta
+                maestría tiene con el campeón que ha elegido (o si es
+                su primera vez), qué suele jugar y si viene en racha
+                buena o mala. Si vais en dúo o en grupo, lo marca
+                («Dúo contigo»).
+
+  Equipo rival  Los campeones ya elegidos por los rivales y si hacen
+                daño físico o mágico.
+
+  Baneados      Los campeones prohibidos en esta partida.
+
+
+LAS CUATRO PESTAÑAS DE ARRIBA
+-----------------------------
+  Asesor          La pantalla de siempre: tu perfil y, durante la
+                  selección, las recomendaciones.
+
+  Enfrentamiento  Qué campeón le gana a tu rival, SIN mirar tu
+                  repertorio: son datos de todos los jugadores
+                  (Lolalytics). Se hace en dos pasos:
+                    1 · Elige a tu rival: escribe unas letras de su
+                        nombre y elígelo de la lista (también hay
+                        «Recientes» y «Ver todos»). Los datos del rival
+                        se descargan al buscarlo. En una selección de
+                        campeón se rellena solo con tu rival de línea.
+                        Debajo eliges la línea en la que juega. Se
+                        propone la más jugada según el meta, y se dice
+                        dónde juega cada campeón («Ezreal: Tirador 94 %,
+                        Central 3 %, Apoyo 2 %»), incluidas las líneas
+                        que no son las habituales.
+                        «EN AUGE EN ESA LÍNEA» enseña los campeones cuyo
+                        uso sube frente al parche anterior (en tu
+                        servidor o en Corea): lo que puede llegar al
+                        meta. Pasa el ratón para ver la explicación y
+                        púlsalo para elegirlo como rival.
+                        «Su build» enseña cómo juega el propio rival en
+                        esa línea (runas, hechizos, objetos). También
+                        sale cuántas veces has jugado contra él.
+                    2 · Qué campeón le gana: los 3 mejores en grande y
+                        el resto en una tabla (victorias, ventaja sobre
+                        su media, partidas y si lo has jugado o lo
+                        tienes). Pulsa «Build» en cualquiera para ver su
+                        build recomendada contra ese rival. Filtros: los
+                        que tengo, los que he jugado, clase, orden
+                        (mejor porcentaje, MÁS FIABLE, más partidas,
+                        mayor ventaja), «Partidas ≥» y «solo los que
+                        ganan más del 50 %».
+                        «Partidas ≥» admite «Todas»: así se ven también
+                        los enfrentamientos con pocas partidas (20, 38…).
+                        Llevan el aviso «Pocas partidas» y, al pasar el
+                        ratón, el intervalo real del porcentaje (con 38
+                        partidas, un 60 % puede ser entre el 44 % y el
+                        74 %). El orden «Más fiable» tiene en cuenta
+                        esa incertidumbre.
+                  Si tu rango no tiene datos suficientes se usan los de
+                  todos los rangos (la pantalla lo indica). Si una línea
+                  no tiene datos en ninguna fuente (por ejemplo, Ezreal
+                  en jungla), se explica y se ofrecen las líneas que sí
+                  los tienen; la build del rival sí suele estar.
+
+  Historial       Todas tus partidas guardadas.
+                    · RESUMEN de lo que estás viendo: partidas,
+                      victorias, KDA medio, duración media, racha, tus
+                      últimas 20 en puntos, tus campeones más jugados y
+                      el reparto por modo. Se recalcula con los filtros.
+                    · BUSCAR Y FILTRAR: por campeón, modo (Solo/Dúo,
+                      Flexible, Normales, Modo rápido, ARAM, Arena,
+                      Clash, Personalizada), resultado, línea y orden;
+                      y «últimas 50, 100, 200, 500 o todas».
+                    · LISTA agrupada por días (Hoy, Ayer, lun 2 nov…)
+                      con cabecera de columnas: K/D/A, farmeo, daño,
+                      duración y fecha, objetos y resultado. Se carga
+                      de 20 en 20. PULSA UNA PARTIDA para desplegarla:
+                      nivel, oro, daño y farmeo por minuto, visión y los
+                      nombres de los objetos.
+                    · En Arena se muestra el PUESTO (1º a 6º; del 1º al
+                      3º cuenta como victoria).
+                    · IMPORTANTE: el cliente de LoL solo entrega las
+                      últimas ~20 partidas. LOL-E guarda cada partida que
+                      ve, así que el historial crece mientras lo usas.
+                      No puede recuperar partidas anteriores a su uso.
+
+  Datos           Total transparencia:
+                    · De dónde sale la información: cada fuente, qué
+                      da, para qué se usa, si está activa y cuándo se
+                      actualizó. Las opcionales se pueden desactivar.
+                    · Cómo se calcula la afinidad: cada factor con su
+                      peso. Cada uno explica QUÉ PASA SI LO SUBES Y QUÉ
+                      PASA SI LO BAJAS. Al mover uno, el estilo pasa a
+                      «Personalizado» y las recomendaciones cambian al
+                      instante.
+                    · Umbrales y reglas: por ejemplo, cuántas partidas
+                      hacen falta para sugerir un ban, o qué porcentaje
+                      de partidas en una línea hace que un campeón cuente
+                      como «de esa línea» aunque no sea la habitual.
+                    · Un ejemplo en vivo con el desglose de puntos.
+                    · Glosario.
+                  Los pesos y umbrales están BLOQUEADOS por defecto (con
+                  un candado) para no cambiarlos sin querer al hacer
+                  scroll. Si sabes lo que haces, pulsa «Desbloquear» y
+                  confirma. «Restablecer todo» los devuelve a los
+                  valores por defecto en cualquier momento. Al volver a
+                  abrir LOL-E, vuelven a estar bloqueados.
+                  En cada tarjeta, la pestaña «Resumen» también
+                  enseña el desglose de puntos de ese campeón.
+
+
+PANTALLAS GRANDES Y VENTANAS PEQUEÑAS
+-------------------------------------
+La ventana se adapta a cualquier tamaño, desde estrecha hasta
+maximizada. En pantallas grandes el contenido se centra con un ancho
+máximo para que la información de cada fila quede junta. Al abrir
+«Ajustes» con la ventana maximizada, ésta no cambia de tamaño: el
+contenido se estrecha y el panel entra por la derecha.
+
+
+SEGÚN EL TIPO DE PARTIDA
+------------------------
+LOL-E detecta el modo y muestra solo lo que tiene sentido. El programa
+está pensado para la Grieta; los demás modos son complementarios y
+muestran información sencilla:
+  · Grieta del Invocador (normales y clasificatorias): todo lo anterior.
+  · ARAM (incluido Caos y las personalizadas de ARAM): no hay roles ni
+    bans, así que compara tu campeón y los del banquillo según tus
+    resultados y tu maestría, y da consejos de construcción. No muestra
+    sinergias, bans ni datos de jugadores.
+  · Arena, partidas personalizadas y otros modos: muestran el estado de
+    la selección y avisan de que no hay recomendaciones. Nunca deberían
+    dar error aunque el cliente envíe datos incompletos.
+  · Todos los modos aparecen en tu historial (Arena con su puesto).
+
+
+CÓMO SE DETECTA UN PICK EN AUGE
+-------------------------------
+Se compara el uso de cada campeón en cada línea (porcentaje de las
+partidas de esa línea, Esmeralda o superior, datos de Lolalytics) en el
+parche actual y en el anterior, en tu servidor y en otras regiones. Las
+reglas salen de una prueba con datos reales de 10 parches seguidos (8
+transiciones) y 14 regiones, mirando si el uso acababa subiendo en EUW:
+  · Lo que importa es el CAMBIO, no el nivel. Que un campeón se juegue más
+    en Corea que en EUW casi siempre es una diferencia permanente de
+    gustos y no avisa de nada (~1 % de acierto).
+  · Que su uso SUBA (1,6 veces o más; con 60 partidas y 0,5 % de uso como
+    mínimo) en las «regiones líderes» sí adelanta a EUW:
+        1 región líder sube        ->  ~1 de cada 10 casos
+        2 o más regiones a la vez  ->  ~1 de cada 4 (27 casos)
+        3 o más                    ->  ~4 de cada 10 (10 casos)
+        una con subida de x2,5     ->  ~1 de cada 4 (34 casos)
+    El azar da menos de 1 de cada 100. La ventaja suele ser de 1 a 2
+    parches. La muestra de la prueba es pequeña: es una pista, no una
+    garantía.
+  · Regiones líderes: Corea, Japón, Taiwán, Singapur, Vietnam,
+    Norteamérica y Oceanía. Europa del Este, Turquía, Brasil y
+    Latinoamérica no aportaron nada, y China no está en las fuentes
+    públicas. Los cambios en NA, Japón y Corea son los que mejor se
+    correlacionan con los de EUW. La tasa de victorias tampoco mejoró el
+    acierto, así que no se usa.
+  · Un parche recién salido tiene pocas partidas: la pantalla indica el
+    tamaño de la muestra y avisa de que los datos aún cambiarán. Un pick
+    con 0,03 % de uso (por ejemplo, Ezreal en jungla) se describe como
+    «marginal»: puede ser una prueba aislada, no una tendencia.
+
+
+ACTUALIZACIONES
+---------------
+Si quien te ha pasado el programa ha configurado una dirección de
+actualizaciones, LOL-E la comprueba al abrir y te avisa con un botón
+«Actualizar a X». Nada se instala sin que pulses el botón: se descarga
+el instalador, se comprueba su huella de seguridad (si no coincide, se
+descarta) y LOL-E se cierra para actualizarse; tus datos se conservan.
+Puedes comprobarlo a mano en Ajustes > Actualizaciones.
+
+
+AJUSTES (botón «Ajustes», arriba a la derecha)
+----------------------------------------------
+Se abre un panel pegado a la ventana: ésta se ensancha y puedes
+ver el resultado de cada cambio al instante, a la izquierda (si la
+ventana está maximizada no cambia de tamaño). Los cambios se guardan
+solos. Se cierra con «Cerrar» o con la tecla Esc.
+
+  Apariencia       Tema oscuro, claro o el de tu Windows; seis colores
+                   de acento; tamaño de la interfaz; animaciones y
+                   transiciones (se pueden desactivar); mantener la
+                   ventana por encima de las demás (nunca, solo en la
+                   selección o siempre); modo compacto (solo tu turno y
+                   las mejores opciones). Cambiar tema, acento
+                   o tamaño rehace la ventana y tarda un par de segundos.
+  Al abrir         Pestaña con la que arranca: la última usada, Asesor,
+                   Enfrentamiento, Historial o Datos.
+  Qué mostrar      Equipos y campeones baneados.
+  Recomendaciones  Forma de verlas (carrusel o lista), cuántas ver y
+                   el estilo: «Equilibrado», «Cómodo» (tus campeones de
+                   siempre) o «Adaptativo» (lo que necesita tu equipo).
+                   Los pesos y umbrales finos están en la pestaña Datos.
+  Sonido           Activar o no el aviso, elegir el sonido (Doble tono,
+                   Campana, Arpegio, Pulso, Cristal o Alerta), volumen
+                   y botón para probarlo.
+  Datos            Actualizar op.gg y el meta ahora, abrir la carpeta
+                   de datos y borrar la caché (imágenes y enfrentamientos
+                   descargados; no toca tu historial). Activar o
+                   desactivar las fuentes se hace en la pestaña Datos.
+  Actualizaciones  Buscar al abrir, dirección del archivo de versión y
+                   botón para buscar ahora.
+  Mantenimiento    Restablecer todos los ajustes (no borra tu historial).
+  Acerca de        Versión y aviso legal.
+
+
+PREGUNTAS FRECUENTES
+--------------------
+No me aparece nada.
+   Comprueba que LoL está abierto y que arriba pone «Conectado a LoL».
+   Si pone «Esperando al cliente», cierra LOL-E y ábrelo de nuevo con
+   LoL ya abierto. Los consejos solo salen DURANTE la selección de
+   campeón.
+
+Las primeras veces las recomendaciones son raras.
+   El programa aprende de TUS partidas. Una cuenta con pocas partidas
+   tiene menos datos. Mejora sola cuanto más juegas.
+
+Me recomienda campeones que no son de mi línea.
+   Con «Mi rol» activado (por defecto) solo ve campeones de la línea
+   que te ha tocado, salvo que ya los hayas jugado ahí. Si lo has
+   desactivado, vuelve a activarlo encima del carrusel.
+
+No salen los datos de mis compañeros.
+   Hay jugadores que tienen el perfil oculto, o el cliente tarda unos
+   segundos en darlos. Si pone «Perfil oculto» o «Cargando…», es eso.
+
+¿Funciona en ARAM, Arena o partidas personalizadas?
+   Está pensado para la Grieta del Invocador. En ARAM compara tu campeón
+   con el banquillo; en Arena y personalizadas solo muestra el estado
+   de la selección. Todas las partidas, de cualquier modo, quedan en tu
+   historial.
+
+¿Por qué mi historial no llega más atrás?
+   El cliente de LoL solo entrega las últimas ~20 partidas. LOL-E guarda
+   cada una que ve, así que el historial empieza el día que empiezas a
+   usarlo y crece solo. Los sitios web que enseñan muchas partidas usan
+   la API oficial de Riot con una clave de producción, que este programa
+   no usa.
+
+No puedo mover los pesos de la pestaña Datos.
+   Están bloqueados a propósito (candado). Pulsa «Desbloquear» y
+   confirma. «Restablecer todo» los deja como vienen de fábrica.
+
+¿Me pueden sancionar por usarlo?
+   LOL-E solo LEE la pantalla de selección de tu cliente. No toca la
+   partida, no pulsa nada por ti y no muestra información oculta. Riot
+   tolera este tipo de herramientas, pero no las respalda oficialmente
+   y sus normas pueden cambiar. Úsalo bajo tu responsabilidad.
+
+¿Qué datos usa y adónde se envían?
+   · Tus datos y los de tus compañeros (rango, últimas partidas,
+     maestría) los lee de TU cliente, que ya los muestra; se quedan
+     en tu ordenador y no se envían a nadie.
+   · Descarga datos públicos: lista de campeones, iconos e imágenes
+     (Riot y CommunityDragon), posiciones de campeones (Meraki
+     Analytics), el meta del parche (Lolalytics: una petición por
+     línea al día, sin datos tuyos) y tus estadísticas públicas de
+     temporada (op.gg). Para esto último se consulta tu nombre de
+     invocador, igual que si buscaras tu perfil en la web.
+   · Los enfrentamientos y las builds se descargan de Lolalytics solo
+     cuando buscas o eliges un rival, o abres «Meta y build» (una página
+     por campeón y línea, guardada un día).
+   · Las runas y los hechizos (nombre e icono) vienen de Data Dragon.
+   · Los objetos (nombre, coste e icono) vienen de Data Dragon (Riot).
+   · Los botones «Builds de especialistas (OneTricks)» y «Lolalytics»
+     solo abren la web en tu navegador: LOL-E no lee nada de ellas.
+   · Puedes desactivar op.gg, el meta y los enfrentamientos en la pestaña
+     «Datos».
+   · No hay cuenta, ni anuncios, ni envío de datos a nadie más.
+
+¿Dónde se guardan mis datos y ajustes?
+   En  C:\Users\TU_USUARIO\AppData\Local\LOL-E
+   (botón «Abrir la carpeta de datos» en Ajustes). Tu historial está en
+   cache\history.json: no lo borres si quieres conservarlo.
+
+¿Cómo lo desinstalo?
+   Configuración de Windows > Aplicaciones > LOL-E > Desinstalar.
+   Te preguntará si también quieres borrar tus datos.
+
+Ha salido un error o algo no va bien.
+   Mira si existe el archivo  cache\error.log  en la carpeta de datos
+   y guárdalo por si hay que revisarlo.
+
+
+AVISO LEGAL
+-----------
+LOL-E no está respaldado por Riot Games y no refleja los puntos de
+vista ni las opiniones de Riot Games ni de nadie que participe
+oficialmente en la producción o gestión de las propiedades de Riot
+Games. Riot Games y todas las marcas asociadas son marcas comerciales
+o marcas registradas de Riot Games, Inc. League of Legends® es una
+marca registrada de Riot Games, Inc.
+
+Tipografía «Chakra Petch» © Cadson Demak, licencia SIL Open Font
+License 1.1.
+
+=====================================================================
