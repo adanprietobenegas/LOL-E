@@ -4,10 +4,18 @@ Asesor de selección de campeón para League of Legends (Windows). Lee el client
 
 > Proyecto personal, no afiliado a Riot Games. No usa la API oficial de Riot: lee el cliente local y datos públicos (Data Dragon, Meraki, Lolalytics, op.gg).
 
-## Descargar (Windows)
+## Descargar e instalar (Windows 10/11)
 
-Ve a [Releases](https://github.com/adanprietobenegas/LOL-E/releases/latest) y descarga el .zip; dentro están las instrucciones. La app se actualiza sola al abrirla si hay una versión nueva.
+**[⬇ Descargar la última versión](https://github.com/adanprietobenegas/LOL-E/releases/latest)**
 
+1. En la página de *Releases*, baja a **Assets** y descarga **`LOL-E-x.y.z.zip`** (lleva el instalador y las instrucciones). Si prefieres ir directo, descarga **`Instalar-LOL-E-x.y.z.exe`**.
+2. Descomprime el `.zip` (clic derecho → *Extraer todo*) y haz doble clic en **`1_Instalar-LOL-E-x.y.z`**.
+3. Si Windows muestra «SmartScreen» (el instalador no está firmado), pulsa **Más información → Ejecutar de todos modos**.
+4. Abre **LOL-E** desde el menú Inicio, deja abierto el cliente de League of Legends y entra en una selección de campeón.
+
+No hace falta tener Python ni nada más. Se actualiza solo: al abrirse avisa si hay una versión nueva. Para desinstalar: *Configuración → Aplicaciones*. Más detalle en `docs/LEEME_PRIMERO.txt` (también va dentro del `.zip`).
+
+> Los archivos `latest.json` que ves en los Releases los usa la app para detectar actualizaciones; no tienes que descargarlos.
 ## Qué hay aquí
 
 | Carpeta / archivo | Contenido |
@@ -21,7 +29,9 @@ Ve a [Releases](https://github.com/adanprietobenegas/LOL-E/releases/latest) y de
 | `docs/` | Léeme, notas de versión, guía visual, estado y pendientes, capturas |
 | `herramientas/` | Scripts de demo y pruebas de modos de juego |
 
-## Ejecutarlo desde el código
+## Para desarrolladores: ejecutarlo desde el código
+
+Lo normal es usar el instalador. Esto es solo si quieres tocar el código.
 
 Requiere Python 3.12.
 
