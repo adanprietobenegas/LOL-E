@@ -468,7 +468,9 @@ class GUI:
         self.game_view = GameView(k, self.body, self)
 
     def make_ctx(self):
-        self.ctx["width"] = max(self.body.winfo_width(), 400)
+        # el ancho se da en unidades lógicas (el de diseño): con la escala de Windows o el tamaño de interfaz al 125 %, 150 %…, los
+        # píxeles reales son más y todo lo que se mide contra este ancho (umbrales, textos, imágenes, lienzos) se desajustaba
+        self.ctx["width"] = max(self.body.winfo_width() / self.kit.scale_px(), 400)
         return self.ctx
 
     def show_view(self, name):

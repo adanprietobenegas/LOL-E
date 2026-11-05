@@ -7,6 +7,23 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.11.2   (6 de noviembre de 2026)
+---------------------------------------------------------------------
+
+CORRECCIONES
+  · LAS BURBUJAS DEL HISTORIAL cuadran con su retrato: antes el aro era una
+    línea dibujada encima y el retrato se salía por fuera del círculo. Ahora
+    el aro es una corona exterior, después va un hueco de 1 px y dentro el
+    retrato, recortado con un círculo exacto; se dibuja ×4 y se reduce, así
+    el borde queda suave. La burbuja «+N» usa el mismo dibujo, y si solo
+    queda una partida oculta se enseña en vez de «+1».
+  · ESCALA DE WINDOWS Y TAMAÑO DE INTERFAZ: con la pantalla al 125 %, al 150
+    % o la interfaz al 115 %, el ancho que usaban las pantallas para decidir
+    su diseño se medía en píxeles reales y no en unidades de diseño, así que
+    cabeceras, tablas, gráficos e imágenes se pasaban de ancho y quedaban
+    cortados por la derecha. Ahora todo se mide en unidades de diseño.
+    Comprobado a 90 %, 100 % y 115 % con ventanas de 560 a 1.280 px.
+
 VERSIÓN 1.11.1   (6 de noviembre de 2026)
 ---------------------------------------------------------------------
 

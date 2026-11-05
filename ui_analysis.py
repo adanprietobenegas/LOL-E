@@ -53,6 +53,10 @@ class AnalysisView:
         self.hosts, self.folds, self.cur = {}, {}, None   # cuerpo y cabecera de cada sección plegable, y los datos con que se pintó
 
     # ------------------------------------------------------------ utilidades
+    def avail(self):
+        """Ancho útil para lienzos, en unidades lógicas: el ancho de la ventana está en píxeles reales y los lienzos se escalan después."""
+        return max(300, min(self.gv.width - 90, 1100))
+
     def hx(self, c):
         return self.ui.hexm(PAL[c]) if isinstance(c, str) and c in PAL else self.ui.hexm(c)
 
@@ -245,7 +249,7 @@ class AnalysisView:
         ui.seg(host, names, gv.chart, gv.set_chart, height=28).pack(fill="x", pady=(0, 6))
         self.hover = ui.lbl(host, "Pasa el ratón por el gráfico para ver cada minuto.", 9, "dim", anchor="w")
         self.hover.pack(anchor="w", pady=(0, 2))
-        W = min(gv.width - 90, 1100)
+        W = self.avail()
         if gv.chart == "Recorrido":
             self.path(host, a, min(W, 460))
         else:
@@ -395,7 +399,7 @@ class AnalysisView:
         cols = [c for c in (5, 10, 15, 20) if c in cp] + ["final"]
         sx = ui.scale_px()
         S = lambda v: int(v * sx)
-        W = min(self.gv.width - 90, 1100)
+        W = self.avail()
         lab_w, row_h = 92, 44
         H = 30 + row_h * 4 + 6
         cv = tk.Canvas(host, width=S(W), height=S(H), bg=ui.bg(host), highlightthickness=0, bd=0)
@@ -433,7 +437,7 @@ class AnalysisView:
         ui.seg(top, SORTS, self.sort, self.set_sort, height=26).pack(side="left", fill="x", expand=True)
         sx = ui.scale_px()
         S = lambda v: int(v * sx)
-        W = min(self.gv.width - 90, 1100)
+        W = self.avail()
         wide = W >= 780
         groups = [(None, "LOS 10 JUGADORES")] if self.together else [(a["team"], "TU EQUIPO"), (300 - a["team"], "EQUIPO RIVAL")]
         for team, title in groups:
@@ -610,7 +614,7 @@ class AnalysisView:
             return
         cat = self.FILTERS[self.mfilter]
         ui.seg(host, list(self.FILTERS), self.mfilter, self.set_mfilter, height=26, width=min(440, gv.width - 120)).pack(anchor="w", pady=(0, 8))
-        W = min(gv.width - 90, 1100)
+        W = self.avail()
         self.timeline(host, a, ev, W, cat)
         shown = [e for e in ev if cat is None or e["cat"] == cat]
         for i, (name_, lo, hi) in enumerate(self.PHASES):

@@ -444,6 +444,8 @@ class HistoryView:
         text_w = 34 + max(len(f"{n} partidas  ·  {wins}V {losses}D  ·  {pct} %"), len(d)) * 6.2   # lo que ocupa el texto de la izquierda
         room = int((W - 20 - text_w) // step) - 1                    # sitio para burbujas, dejando una de reserva para el «+N»
         show = items[:max(1, min(room, 10))]
+        if n - len(show) == 1 and len(show) < 10:  # una sola oculta: mejor enseñarla que una burbuja «+1»
+            show = items[:len(show) + 1]
         hidden = n - len(show)
         x = W - 14 - size
         for g in show:  # de la más reciente (a la derecha) hacia atrás
@@ -454,7 +456,9 @@ class HistoryView:
             ui.canvas_tip(cv, it, f"{ui.champs.get(g['c'], {}).get('name', '?')} · {'Remake' if g.get('rm') else 'Victoria' if g['w'] else 'Derrota'} · {fecha(g['t'])}")
             x -= step
         if hidden > 0:
-            cv.create_oval(S(x), S(16), S(x + size), S(16 + size), outline=dim, width=2)
+            ph = ui.bubble(None, size, dim, 2, fill=ui.hexm(PAL["card"]))   # mismo dibujo y borde suave que las demás
+            cv.create_image(S(x), S(16), image=ph, anchor="nw")
+            cv.image = getattr(cv, "image", []) + [ph]
             cv.create_text(S(x + size / 2), S(16 + size / 2), text=f"+{hidden}", fill=fg, font=ui.tkf(9, True, False))
         cv.bind("<Button-1>", lambda e, s=st: self.toggle_day(s))
 

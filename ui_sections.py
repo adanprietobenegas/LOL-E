@@ -1059,7 +1059,7 @@ class Recs(Section):
         try:
             if self.dyn is None or not self.dyn.winfo_exists():
                 return
-            dw = self.dyn.winfo_width()
+            dw = self.dyn.winfo_width() / self.ui.scale_px()
             if dw < 120:
                 return
             if self.carousel_alive():

@@ -636,26 +636,35 @@ class Kit:
         except Exception:
             pass
 
-    def bubble(self, cid, size, ring, width=3):
-        """Retrato redondo del campeón con un aro de color (verde/rojo/gris): PhotoImage al tamaño real, guardado en memoria."""
-        key = ("bubble", cid, size, ring)
+    def bubble(self, cid, size, ring, width=2, fill=None):
+        """Retrato redondo con un aro de color (verde/rojo/gris): el aro es una corona exterior, después va un hueco de 1 px y dentro
+        el retrato, recortado con un círculo exacto. Se dibuja ×4 y se reduce, así el borde queda suave. PhotoImage al tamaño real."""
+        key = ("bubble", cid, size, ring, width, fill)
         ph = self.photos.get(key)
         if ph is not None:
             return ph
         c = self.champs.get(cid)
         path = os.path.join(CACHE, "icons", f"{c['icon']}.png") if c and c.get("icon") else ""
-        px = max(8, int(round(size * self.scale_px())))
-        S = px * 4
+        px = max(10, int(round(size * self.scale_px())))
+        K = 4
+        S = px * K
+        T = max(K * 2, int(round(width * self.scale_px())) * K)        # grosor del aro
+        G = K                                                         # hueco entre el aro y el retrato
         out = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-        if path and os.path.exists(path):
-            try:
-                im = Image.open(path).convert("RGBA").crop((8, 8, 112, 112)).resize((S, S), Image.LANCZOS)
-                mask = Image.new("L", (S, S), 0)
-                ImageDraw.Draw(mask).ellipse((0, 0, S - 1, S - 1), fill=255)
-                out.paste(im, (0, 0), mask)
-            except Exception:
-                pass
-        ImageDraw.Draw(out).ellipse((width * 2, width * 2, S - 1 - width * 2, S - 1 - width * 2), outline=ring, width=width * 4)
+        d = ImageDraw.Draw(out)
+        d.ellipse((0, 0, S - 1, S - 1), fill=ring)                    # corona: círculo exterior del color del aro…
+        d.ellipse((T, T, S - 1 - T, S - 1 - T), fill=(0, 0, 0, 0))    # …vaciado por dentro (el hueco queda transparente)
+        inner = S - 2 * (T + G)
+        if inner > 4:
+            face = Image.new("RGBA", (inner, inner), fill or (60, 70, 85, 255))
+            if path and os.path.exists(path) and not fill:
+                try:
+                    face = Image.open(path).convert("RGBA").crop((8, 8, 112, 112)).resize((inner, inner), Image.LANCZOS)
+                except Exception:
+                    pass
+            mask = Image.new("L", (inner, inner), 0)
+            ImageDraw.Draw(mask).ellipse((0, 0, inner - 1, inner - 1), fill=255)
+            out.paste(face, (T + G, T + G), mask)
         ph = ImageTk.PhotoImage(out.resize((px, px), Image.LANCZOS))
         self.photos[key] = ph
         return ph
