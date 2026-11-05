@@ -1,6 +1,6 @@
 # LOL-E · Estado del proyecto y pendientes
 
-Actualizado el 4/11/2026. Versión instalada en tu PC: **1.9.0**.
+Actualizado el 5/11/2026. Versión instalada en tu PC: **1.9.0** (en GitHub está publicada la 1.8.2; la 1.9.0 está sin subir por decisión tuya).
 
 ## Qué es
 App de Windows (Python + CustomTkinter) que lee el cliente de League of Legends (LCU) y te asesora en la selección de campeón. Cuatro pestañas: **Asesor**, **Enfrentamiento**, **Historial** y **Datos**. Se reparte en un instalador (Inno Setup) dentro de un `.zip` con instrucciones.
@@ -45,8 +45,8 @@ Cambiar de pestaña: ~110–280 ms (la primera vez que se abre Enfrentamiento, ~
 - Iconos de la app: solo tipografía «LOL-E».
 
 ## Pendientes (por orden de utilidad)
-1. **GitHub** (lo dejaste para recordarlo tú): crear el repo y versionar. Antes de subir hay que **excluir o anonimizar** `config.json`, `season_seed.json` y la carpeta `cache/` (llevan tu perfil, nombre y partidas) y las carpetas `release/`, `assets/icon_options`. Falta un `README` con las capturas de `docs/img/demo` y un `.gitignore`.
-2. **Actualizaciones automáticas**: para que lleguen a tus colegas hay que publicar `release/latest.json` junto con `release/Instalar-LOL-E-<versión>.exe` en un alojamiento con dirección fija (por ejemplo, las «Releases» de GitHub) y poner esa dirección en el programa. Mientras tanto, se reparte el `.zip` a mano. Nada se ha publicado.
+1. **Publicar la 1.9.0**: el repo es público (https://github.com/adanprietobenegas/LOL-E, cuenta adanprietobenegas) y la 1.8.2 está en Releases. Para publicar: `python build_release.py`, `git add -A; git commit; git push` y `gh release create vX.Y.Z` con el `.exe`, el `.zip` y `latest.json`. El código vive en `Documents\LOL-E`. No se suben `cache/`, `release/`, `docs/img/demo/`, `config.json` ni `season_seed.json` (llevan tu nombre de LoL); las capturas de `docs/img` van con el nombre redactado.
+2. **Actualizaciones automáticas**: activas desde la 1.8.2 (leen `releases/latest/download/latest.json`). Quien tenga la 1.8.0 o 1.8.1 debe instalar la 1.8.2 o posterior a mano una vez. El flujo completo (descargar, verificar, instalar) no se ha visto actualizar de verdad: se verá al publicar la 1.9.0.
 3. **Probar en partida real**: una selección de campeón con compañeros, y un ARAM, un Arena y una personalizada, y revisar el historial y el «Error.log» de `%LOCALAPPDATA%\LOL-E\cache`.
 4. **Aviso de Windows (SmartScreen)**: sin firma de código sale «Windows protegió su PC». Firmar cuesta dinero; de momento está explicado en el Léeme.
 5. **op.gg**: el aviso del pie ya es corto; si sigue fallando (se vio «op.gg no disponible» con la 1.4.3) hay que revisar cache\\error.log: probablemente op.gg bloquea la petición. Es secundario (solo afina estadísticas de temporada).
@@ -60,9 +60,10 @@ Cambiar de pestaña: ~110–280 ms (la primera vez que se abre Enfrentamiento, ~
 
 ## Cómo construir y probar (para mañana)
 - Python: `%LOCALAPPDATA%\Programs\Python\Python312\python.exe`. Inno Setup 6 en `%LOCALAPPDATA%\Programs\Inno Setup 6`.
+- Carpeta de trabajo: `C:\Users\adank\Documents\LOL-E` (git). Para compilar hace falta `cache/` con `champions.json`, `meraki.json` e `icons/` (datos públicos; no están en el repo).
 - Construir: `python build_release.py` (genera `release/LOL-E-<versión>.zip`, `Instalar-LOL-E-<versión>.exe` y `latest.json`). Trabaja en `%TEMP%\lolb` por el límite de 260 caracteres de Windows.
 - Versión: constante `APP_VERSION` en `lol_advisor.py`.
-- Probar sin jugar: `herramientas/demo_live.py` abre la app con una partida simulada y se maneja escribiendo órdenes en un archivo (ver la cabecera del script). `herramientas/test_modes.py` prueba sesiones raras (Arena, personalizada, ARAM vacío). Ambos usan `shots2.py` (necesita el cliente de LoL abierto) y rutas de la carpeta temporal de la sesión: hay que ajustarlas a las del proyecto.
+- Probar sin jugar: `herramientas/demo_live.py` abre la app con una partida simulada y se maneja escribiendo órdenes en un archivo (ver la cabecera del script). `herramientas/test_modes.py` prueba sesiones raras (Arena, personalizada, ARAM vacío). Ambos usan `shots2.py` (necesita el cliente de LoL abierto) y escriben en `herramientas/salida/` (ignorada por git).
 - Regla: **no editar archivos UTF-8 con los cmdlets de PowerShell** (corrompen los acentos); usar Python o el editor.
 
 ## Mapa del código
@@ -75,5 +76,7 @@ Cambiar de pestaña: ~110–280 ms (la primera vez que se abre Enfrentamiento, ~
 | `ui_views.py` | Enfrentamiento y Datos |
 | `ui_history.py`, `history.py` | Historial (vista y archivo local) |
 | `ui_kit.py` | Colores, componentes, iconos, animaciones |
+| `ui_pool.py`, `ui_build.py` | Repertorio y panel de build |
+| `builds.py`, `runes.py`, `trends.py` | Builds y runas (Lolalytics), picks en auge |
 | `meta.py`, `matchups.py`, `players.py`, `synergy.py`, `items.py`, `params.py`, `sounds.py`, `updater.py` | Fuentes de datos y utilidades |
 | `build_release.py`, `docs/` | Empaquetado y documentación |

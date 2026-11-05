@@ -26,6 +26,12 @@ NOVEDADES
     pasa a «Contra él: 1V 0D» o «Lo has jugado: 5 · 60 %».
 
 ROBUSTEZ Y UTILIDADES
+  · SIN VENTANA AZUL: con el cliente de LoL cerrado, LOL-E lo buscaba cada
+    3 segundos lanzando PowerShell, y Windows enseñaba una ventana azul que
+    parpadeaba («cargando…» sin fin), lo que parecía un virus. Ahora esa
+    búsqueda es invisible, solo se intenta cada 20 segundos y lo normal
+    (leer el archivo «lockfile» de LoL, en las unidades C a G) no usa
+    PowerShell. Lo mismo para la descarga de op.gg.
   · TU HISTORIAL, A SALVO: se guarda con escritura segura (archivo
     temporal y cambio al terminar) y una copia diaria; si el archivo se
     daña, se recupera solo de la copia. Antes un corte durante el guardado

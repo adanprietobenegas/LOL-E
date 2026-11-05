@@ -181,9 +181,23 @@ def load_champions():
 
 
 # ---------- Cliente (LCU) ----------
+def quiet():
+    """Opciones para lanzar PowerShell sin que Windows enseñe una ventana azul (parpadeaba cada pocos segundos sin el cliente abierto)."""
+    if os.name != "nt":
+        return {}
+    si = subprocess.STARTUPINFO()
+    si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    si.wShowWindow = 0  # SW_HIDE
+    return {"creationflags": 0x08000000, "startupinfo": si, "stdin": subprocess.DEVNULL}  # CREATE_NO_WINDOW
+
+
+_PS_NEXT = 0.0  # el plan B (PowerShell) es lento: no se repite más de una vez cada 20 s
+
+
 def find_client(conf):
+    global _PS_NEXT
     paths = [os.path.join(conf["lol_path"], "lockfile")] if conf["lol_path"] else []
-    paths += [r"C:\Riot Games\League of Legends\lockfile", r"D:\Riot Games\League of Legends\lockfile"]
+    paths += [rf"{d}:\Riot Games\League of Legends\lockfile" for d in "CDEFG"]
     for p in paths:
         if os.path.exists(p):
             try:
@@ -191,11 +205,14 @@ def find_client(conf):
                 return int(port), pw
             except Exception:
                 pass
-    try:  # plan B: leer los argumentos del proceso
+    if time.time() < _PS_NEXT:
+        return None
+    _PS_NEXT = time.time() + 20
+    try:  # plan B: leer los argumentos del proceso (por si LoL está instalado en otra carpeta)
         cmd = subprocess.check_output(
-            ["powershell", "-NoProfile", "-Command",
+            ["powershell", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command",
              "(Get-CimInstance Win32_Process -Filter \"name='LeagueClientUx.exe'\").CommandLine"],
-            text=True, timeout=10)
+            text=True, timeout=10, **quiet())
         port = re.search(r"--app-port=(\d+)", cmd)
         pw = re.search(r"--remoting-auth-token=([\w-]+)", cmd)
         if port and pw:
@@ -281,7 +298,8 @@ def fetch_opgg(conf):
     os.makedirs(CACHE, exist_ok=True)
     ps = ("Invoke-WebRequest -UseBasicParsing -TimeoutSec 40 -Headers @{'User-Agent'='Mozilla/5.0';"
           f"'Accept-Language'='en'}} -Uri '{url}' -OutFile '{out}'").replace("}}", "}")
-    subprocess.run(["powershell", "-NoProfile", "-Command", ps], check=True, timeout=90, capture_output=True)
+    subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", ps], check=True, timeout=90,
+                   capture_output=True, **{k: v for k, v in quiet().items() if k != "stdin"})
     with open(out, encoding="utf-8", errors="replace") as f:
         return f.read()
 

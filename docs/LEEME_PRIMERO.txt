@@ -436,6 +436,11 @@ ATAJOS Y EXTRAS
 
 PREGUNTAS FRECUENTES
 --------------------
+Sale una ventana azul que parpadea.
+   Era la 1.8 y anteriores: buscaban el cliente de LoL con PowerShell a la
+   vista. Desde la 1.9 no se ve nada. Es normal que LOL-E use PowerShell
+   por dentro, pero siempre oculto; no instala nada ni toca tus archivos.
+
 No me aparece nada.
    Comprueba que LoL está abierto y que arriba pone «Conectado a LoL».
    Si pone «Esperando al cliente», cierra LOL-E y ábrelo de nuevo con
