@@ -89,3 +89,20 @@ PENDIENTE (anotado el 6 de noviembre de 2026)
     visión, lista de objetos en texto, id de partida). Rediseñarlo con lo que
     de verdad ayude. También: tarjeta borrosa al 125-150 %, doble reescalado
     de retratos y escala única de tamaños de retrato (auditoría de imágenes).
+
+REVISIÓN DEL DETALLE DESPLEGADO DEL HISTORIAL (ui_history.py, método detail, ~línea 615)
+  Qué muestra hoy: una línea de texto con nivel, oro, daño/min, CS/min y visión;
+  los iconos de objetos; los mismos objetos en texto ("Objetos: ..."); y
+  "Partida del ... · número ...". Problemas:
+  · El texto de objetos repite los iconos (ya tienen tooltip): quitarlo.
+  · La fecha repite la de la cabecera del día y el número de partida solo sirve
+    para depurar: moverlos a un tooltip o quitarlos.
+  · Todo va en una frase corrida: sin jerarquía ni comparación. Ideas: tarjetas
+    pequeñas con valor y referencia ("CS/min 7,9 · tu media 6,8"), mini barra de
+    daño frente al equipo y botón "Ver análisis" que lleve a Partida > Análisis
+    con esa partida (ya existe el análisis completo, el detalle debería ser
+    solo un resumen que enlace a él).
+  · Nivel y oro aportan poco por sí solos; priorizar lo que cambia decisiones
+    (diferencia de oro a los 15 min, muertes antes del 15, objetivos).
+  · Hay que decidir qué ve cada modo (Arena, ARAM, Normales/Clasificatoria).
+  Estado: solo revisado, sin cambios hechos.
