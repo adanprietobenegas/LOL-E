@@ -7,6 +7,44 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.10.0   (6 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES: UNA INTERFAZ MÁS CLARA
+  Tres revisores independientes (arquitectura de información, diseño
+  visual y uso bajo presión/accesibilidad) miraron capturas de todas las
+  pantallas y coincidieron en lo principal; esto es lo que se aplicó.
+  · SECCIONES PLEGABLES con resumen en la cabecera («Tu equipo · 4
+    aliados · físico 3 / mágico 1»): recuerdan si estaban abiertas y se
+    construyen al abrirlas, con una animación breve (se respeta el
+    interruptor de animaciones). Se usan en:
+      Selección: «Tu equipo» y «Baneos» plegados; «Equipo rival»
+      abierto. La fila de rango y racha ya no sale en la selección (ahí no
+      ayuda a decidir) y ganas espacio para las recomendaciones.
+      Historial: «Buscar y filtrar» plegado, con los filtros activos
+      resumidos en la cabecera.
+      Datos: cuatro secciones plegadas («7 de 7 fuentes activas», «estilo:
+      Equilibrado»…), en vez de una pared de texto.
+      Análisis: Consejos, Momentos, Evolución, Comparación y Equipos.
+  · MOMENTOS CLAVE REHECHOS: línea de tiempo horizontal con las fases
+    (inicio, medio, final), iconos por tipo (asesinato ●, asistencia ○,
+    muerte ▼, dragón ◆, Barón ⬢, Heraldo ◇, larvas □, torre, inhibidor),
+    verde si es tuyo y rojo si es del rival, con aro dorado cuando
+    participaste; debajo, una lista por fase (plegable) con el retrato del
+    campeón implicado. Filtros: Todo, Mis K/D/A, Objetivos, Torres. Los
+    iconos aparecen de izquierda a derecha en menos de medio segundo.
+  · MARCADOR ORDENABLE: pulsa una columna (K/D/A, daño, oro, súbditos,
+    visión) o usa los botones de arriba; la barra pasa a mostrar esa
+    métrica. «Por equipos» o «Los 10 juntos» (una franja marca el equipo).
+  · Análisis: los consejos van primero; si una partida ya no tiene línea
+    de tiempo, salta sola a la siguiente que sí la tenga.
+  · ATAJOS: Ctrl+1…5 siguen el orden de las pestañas (antes se saltaban
+    «Partida»).
+  · LEGIBILIDAD: la pestaña o botón activo lleva texto oscuro sobre el
+    acento (antes casi no se leía), y en el tema claro el verde y el ámbar
+    se oscurecieron para llegar a un contraste de lectura correcto.
+  · Las habilidades suben justo debajo de las runas en cada build.
+
 VERSIÓN 1.9.2   (5 de noviembre de 2026)
 ---------------------------------------------------------------------
 

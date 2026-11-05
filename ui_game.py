@@ -44,6 +44,7 @@ class GameView:
         self.data = {}          # id de partida -> análisis | "cargando" | "no"
         self.vs = {}            # (rival, línea) -> filas | "cargando" | ("error", texto)
         self.games, self.width, self.host = [], 520, None
+        self.auto_try = 0
         self.opp, self.all_moments = {}, False   # rival elegido por partida; lista de momentos completa o resumida
         self.an = AnalysisView(ui, gui, self)
 
@@ -76,6 +77,11 @@ class GameView:
     def on_data(self, gid, data):
         """Llega el análisis de una partida desde el hilo que lee el cliente."""
         self.data[gid] = data if data else "no"
+        if not data and gid == self.gid and self.auto_try < 4:  # esa partida ya no tiene línea de tiempo: se prueba con la siguiente
+            ids = [g["id"] for g in self.games]
+            if gid in ids and ids.index(gid) + 1 < len(ids):
+                self.auto_try += 1
+                self.gid = ids[ids.index(gid) + 1]
         if self.gui.view == "game":
             self.refresh(self.gui.make_ctx(), True)
 
@@ -192,6 +198,7 @@ class GameView:
         self.an.render(self.host, ctx)
 
     def pick_game(self, gid):
+        self.auto_try = 99  # si el usuario elige a mano, no se salta a otra partida
         self.gid = gid
         self.sig = None
         self.refresh(self.gui.make_ctx())

@@ -55,7 +55,7 @@ class GUI:
             pass
         self.root.bind("<Escape>", lambda e: self.close_dock())
         self.root.report_callback_exception = lambda t, v, tb: core.log_exc("Error en la ventana", (t, v, tb))
-        for i, nm in enumerate(("Asesor", "Enfrentamiento", "Historial", "Datos"), 1):  # Ctrl+1…4 cambian de pestaña
+        for i, nm in enumerate(("Asesor", "Partida", "Enfrentamiento", "Historial", "Datos"), 1):  # Ctrl+1…5 cambian de pestaña (en el orden de arriba)
             self.root.bind(f"<Control-Key-{i}>", lambda e, n=nm: self.set_page(n))
         self.root.bind("<Left>", lambda e: self.key_go(-1))
         self.root.bind("<Right>", lambda e: self.key_go(1))
@@ -455,13 +455,13 @@ class GUI:
         k = self.kit
         self.idle_view, self.select_view = k.frame(self.body), k.frame(self.body)
         self.idle_secs = [ProfileCard(k, self.idle_view), WaitCard(k, self.idle_view), SummaryCard(k, self.idle_view)]
-        strip = ProfileStrip(k, self.select_view)      # se empaquetan en el orden en que se crean
+        # (la fila de rango y racha ya no se muestra en la selección: ahí no ayuda a decidir)
         self.turn = TurnCard(k, self.select_view)
         mypick = MyPick(k, self.select_view)
         ideas = BanIdeas(k, self.select_view)
         self.recs = Recs(k, self.select_view)
         self.lobby = Lobby(k, self.select_view)
-        self.select_secs = [strip, self.turn, mypick, ideas, self.recs, self.lobby, Enemies(k, self.select_view), BansRow(k, self.select_view)]
+        self.select_secs = [self.turn, mypick, ideas, self.recs, self.lobby, Enemies(k, self.select_view), BansRow(k, self.select_view)]
         self.matchup_view = MatchupView(k, self.body, self)
         self.history_view = HistoryView(k, self.body, self)
         self.data_view = DataView(k, self.body, self)

@@ -783,7 +783,11 @@ class DataView:
 
     def sources_card(self):
         ui = self.ui
-        c = ui.card(self.col, "De dónde sale la información")
+        act = sum(1 for src in params.SOURCES if self.status_of(src[0])[0])
+        ui.fold(self.col, "De dónde sale la información", self.sources_fill, f"{act} de {len(params.SOURCES)} fuentes activas", "dat_src", False)
+
+    def sources_fill(self, c):
+        ui = self.ui
         ui.lbl(c, "Todo lo personal se lee de tu cliente y se queda en tu ordenador. Las fuentes de internet son públicas y solo se "
                   "descargan datos generales o tu perfil público de op.gg.", 10, "dim", anchor="w", justify="left", wraplength=self.wl).pack(
             anchor="w", pady=(0, 8))
@@ -883,7 +887,10 @@ class DataView:
     # ---- formula ----
     def formula_card(self, ctx):
         ui = self.ui
-        c = ui.card(self.col, "Cómo se calcula la afinidad")
+        ui.fold(self.col, "Cómo se calcula la afinidad", lambda c: self.formula_fill(c, ctx), "estilo: " + core.PRESET_INFO[ui.conf["preset"]][0], "dat_formula", False)
+
+    def formula_fill(self, c, ctx):
+        ui = self.ui
         self.lock_strip(c)
         ui.lbl(c, "Cada recomendación suma puntos de varios factores. Cada factor se multiplica por su peso; la afinidad (0 a 100) es la suma "
                   "dividida por un máximo realista. Mueve un peso y verás al instante cómo cambia el orden.", 10, "dim", anchor="w",
@@ -970,7 +977,10 @@ class DataView:
     # ---- umbrales ----
     def params_card(self):
         ui = self.ui
-        c = ui.card(self.col, "Umbrales y reglas")
+        ui.fold(self.col, "Umbrales y reglas", self.params_fill, "números avanzados (con candado)", "dat_params", False)
+
+    def params_fill(self, c):
+        ui = self.ui
         self.lock_strip(c)
         ui.lbl(c, "Números que deciden cuándo una regla se activa. Cada uno explica qué cambia si lo mueves.", 10, "dim", anchor="w",
                justify="left", wraplength=self.wl).pack(anchor="w")
@@ -990,7 +1000,10 @@ class DataView:
 
     def glossary_card(self):
         ui = self.ui
-        c = ui.card(self.col, "Glosario")
+        ui.fold(self.col, "Glosario", self.glossary_fill, "qué significa cada término", "dat_gloss", False)
+
+    def glossary_fill(self, c):
+        ui = self.ui
         for term, text in (
                 ("Afinidad", "Número de 0 a 100: cuánto encaja un campeón contigo ahora mismo. No es una probabilidad de ganar."),
                 ("Maestría", "Puntos de maestría de tu cuenta con ese campeón (el cliente de LoL)."),

@@ -371,6 +371,10 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None):
     if kn:
         txt = f"{kn}" + (f" ({tree})" if tree else "") + (f"  +  {(rd.get('trees') or {}).get(sec_tree)}" if sec_tree else "")
         ui.lbl(b, txt, 10, "dim", anchor="w", wraplength=max(200, width - 140), justify="left").pack(anchor="w", pady=(3, 0))
+    if d.get("skills"):
+        b = _row(ui, parent, "Habilidades")
+        ui.lbl(b, "  ›  ".join(SKILLS[s] for s in d["skills"]), 12, ui.acc, True, True).pack(side="left")
+        ui.lbl(b, "   prioridad para subirlas (la R siempre que puedas)", 9, "dim").pack(side="left")
     # objetos: las botas van aparte (en la Grieta tienen su propia mejora y, en tirador, su propia ranura)
     it = d.get("items") or {}
     boots = [i for k in ("core", "i4", "i5", "i6") for i in (it.get(k) or []) if is_boots(ui, i)]
@@ -405,10 +409,6 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None):
                 if n:
                     ui.lbl(b, "o", 10, "dim").pack(side="left", padx=2)
                 _item(ui, b, i)
-    if d.get("skills"):
-        b = _row(ui, parent, "Habilidades")
-        ui.lbl(b, "  ›  ".join(SKILLS[s] for s in d["skills"]), 12, ui.acc, True, True).pack(side="left")
-        ui.lbl(b, "   prioridad para subirlas (la R siempre que puedas)", 9, "dim").pack(side="left")
     notes = []
     quest = ROLE_QUEST.get(lane)
     if quest:

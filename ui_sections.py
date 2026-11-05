@@ -1493,7 +1493,12 @@ class Lobby(Section):
         ui, r, pl = self.ui, ctx["r"], ctx["players"]
         if not ui.conf["show_teams"] or not r["ally_cells"]:
             return
-        c = ui.card(self.box, "Tu equipo")
+        st0 = r["ally_stats"]
+        summ = f"{len(r['ally_cells'])} aliados" + (f" · físico {st0['ad']} / mágico {st0['ap']} · control {st0['cc']:.1f}/3" if st0 and st0["ad"] + st0["ap"] else "")
+        ui.fold(self.box, "Tu equipo", lambda c: self.fill(c, ctx), summ, "sel_team", False)
+
+    def fill(self, c, ctx):
+        ui, r, pl = self.ui, ctx["r"], ctx["players"]
         party = set(r["party"])
         if r["mode"]["kind"] != "sr":  # sin roles ni perfiles: solo los campeones que lleva el equipo
             row = ui.frame(c)
@@ -1578,7 +1583,12 @@ class Enemies(Section):
             return
         if r["mode"]["kind"] != "sr" and not r["enemies"]:  # Arena, personalizadas, ARAM: sin rivales conocidos no hay nada que enseñar
             return
-        c = ui.card(self.box, "Equipo rival")
+        st0 = r["enemy_stats"]
+        summ = f"{len(r['enemies'])} de 5 elegidos" + (f" · físico {st0['ad']} / mágico {st0['ap']}" if st0 and st0["ad"] + st0["ap"] else "")
+        ui.fold(self.box, "Equipo rival", lambda c: self.fill(c, ctx), summ, "sel_enemy", True)
+
+    def fill(self, c, ctx):
+        ui, r = self.ui, ctx["r"]
         row = ui.frame(c)
         row.pack(fill="x")
         icons = ui.frame(row)
@@ -1606,7 +1616,10 @@ class BansRow(Section):
         ui, r = self.ui, ctx["r"]
         if ui.conf["compact"] or not ui.conf["show_bans"] or not r["bans"]:
             return
-        c = ui.card(self.box, "Campeones baneados")
+        ui.fold(self.box, "Campeones baneados", lambda c: self.fill(c, ctx), f"{len(r['bans'])} baneados", "sel_bans", False)
+
+    def fill(self, c, ctx):
+        ui, r = self.ui, ctx["r"]
         row = ui.frame(c)
         row.pack(anchor="w")
         for cid in r["bans"]:

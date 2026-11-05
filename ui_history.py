@@ -60,7 +60,7 @@ class HistoryView:
         self.all, self.loaded = [], False
         self.limit, self.q, self.mode, self.res, self.line, self.sort = None, "", "Todos", "Todas", "Todas", "Más recientes"
         self.shown, self._t, self.width, self.level = STEP, None, 520, 0
-        self.list_host = self.summary_host = self.entry = None
+        self.list_host = self.summary_host = self.entry = self.filter_fold = None
         self.open = set()
 
     # ---- datos ----
@@ -98,8 +98,19 @@ class HistoryView:
         self.sum_card = ui.card(self.box, "Resumen")
         self.summary_host = ui.frame(self.sum_card)
         self.summary_host.pack(fill="x")
-        c = ui.card(self.box, "Buscar y filtrar")
         desde = fecha(self.all[-1]["t"], False) if n else ""
+        self.filter_fold = ui.fold(self.box, "Buscar y filtrar", lambda c: self.filters(c, n, wl, desde), self.filter_summary(), "hist_filters", False)
+        self.list_card = ui.card(self.box)
+        self.list_host = ui.frame(self.list_card)
+        self.list_host.pack(fill="x")
+
+    def filter_summary(self):
+        act = [x for x in (self.mode if self.mode != "Todos" else "", self.res if self.res != "Todas" else "", self.line if self.line != "Todas" else "",
+                           f"«{self.q}»" if self.q else "") if x]
+        return (" · ".join(act) if act else "sin filtros") + f" · {len(self.all)} partidas"
+
+    def filters(self, c, n, wl, desde):
+        ui = self.ui
         ui.lbl(c, (f"{n} partidas guardadas desde el {desde}. " if n else "Todavía no hay partidas guardadas. ") +
                "El cliente de LoL solo entrega las últimas ~20, así que LOL-E guarda cada partida que ve: el historial crece mientras lo usas.",
                10, "dim", anchor="w", justify="left", wraplength=wl).pack(anchor="w", pady=(0, 8))
@@ -132,9 +143,6 @@ class HistoryView:
         small_btn(ui, bar, "Quitar filtros", self.clear_filters, 110).pack(side="left")
         small_btn(ui, bar, "Actualizar", self.update_now, 90).pack(side="right")
         small_btn(ui, bar, "Exportar CSV", self.export_csv, 110).pack(side="right", padx=(0, 6))
-        self.list_card = ui.card(self.box)
-        self.list_host = ui.frame(self.list_card)
-        self.list_host.pack(fill="x")
 
     def export_csv(self):
         """Guarda las partidas que ves (con los filtros puestos) en Documentos, listas para abrir con Excel."""
@@ -210,6 +218,10 @@ class HistoryView:
         if self.list_host is None or not self.list_host.winfo_exists():
             return
         games = self.filtered()
+        try:
+            self.filter_fold.set_summary(self.filter_summary())
+        except Exception:
+            pass
         self.render_summary(games)
         self.render_list(games)
 

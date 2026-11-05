@@ -13,9 +13,9 @@ from lol_advisor import CACHE, name, why_kind
 # colores como (modo claro, modo oscuro): CustomTkinter elige solo según el tema activo
 PAL = {
     "bg": ("#eef1f5", "#070d14"), "card": ("#ffffff", "#0e161f"), "card2": ("#e9edf3", "#141e2a"),
-    "border": ("#d5dce6", "#1f2c3b"), "fg": ("#142033", "#ece6d6"), "dim": ("#66758a", "#8896a8"),
-    "good": ("#16a34a", "#3ddc84"), "bad": ("#dc2626", "#ff5a5f"), "info": ("#2563eb", "#58a6ff"),
-    "warn": ("#d97706", "#ff9f43"), "chip": ("#e2e8f0", "#1a2634"),
+    "border": ("#d5dce6", "#1f2c3b"), "fg": ("#142033", "#ece6d6"), "dim": ("#5b6b80", "#8896a8"),
+    "good": ("#15803d", "#3ddc84"), "bad": ("#dc2626", "#ff5a5f"), "info": ("#2563eb", "#58a6ff"),
+    "warn": ("#b45309", "#ff9f43"), "chip": ("#e2e8f0", "#1a2634"),
 }
 ACCENTS = {"Dorado": ("#8a6a2f", "#c8aa6e"), "Azul": ("#2563eb", "#58a6ff"), "Verde": ("#15803d", "#3ddc84"),
            "Morado": ("#7c3aed", "#a78bfa"), "Rojo": ("#dc2626", "#ff6b6b"), "Cian": ("#0e7490", "#22d3ee")}
@@ -257,8 +257,76 @@ class Kit:
         b = ctk.CTkSegmentedButton(parent, values=values, command=command, font=self.font(11), selected_color=self.acc,
                                    selected_hover_color=self.acc, unselected_color=PAL["card2"],
                                    unselected_hover_color=PAL["border"], text_color=PAL["fg"], fg_color=PAL["card2"], **kw)
+        def paint():
+            cur = b.get()
+            for k, btn in getattr(b, "_buttons_dict", {}).items():
+                try:
+                    btn.configure(text_color=ON_FILL if k == cur else PAL["fg"])
+                except Exception:
+                    pass
+        orig_set = b.set
+
+        def set_(v):
+            orig_set(v)
+            paint()
+        b.set = set_
+
+        def wrapped(v):
+            paint()
+            command(v)
+        b.configure(command=wrapped)
         b.set(current)
         return b
+
+    def fold(self, parent, title, build, summary="", key=None, open_=False):
+        """Sección plegable: cabecera con flecha, título y un resumen a la derecha. El cuerpo se construye al abrirla por primera vez
+        (con una animación breve) y se recuerda si estaba abierta. Devuelve el contenedor; `box.set_summary(texto)` cambia el resumen."""
+        folds = self.conf.setdefault("folds", {})
+        state = {"open": folds.get(key, open_) if key else open_, "outer": None}
+        bgp = self.bg(parent)
+        card, fg, dim = self.hexm(PAL["card2"]), self.hexm(PAL["fg"]), self.hexm(PAL["dim"])
+        hover = self.hexm(PAL["border"])
+        box = tk.Frame(parent, bg=bgp)
+        box.pack(fill="x", pady=(0, 6), padx=6)
+        head = tk.Frame(box, bg=card, cursor="hand2")
+        head.pack(fill="x")
+        arrow = tk.Label(head, text="▾" if state["open"] else "▸", bg=card, fg=dim, font=self.tkf(12, False, False), width=2)
+        arrow.pack(side="left", padx=(10, 2), pady=7)
+        ttl = tk.Label(head, text=title, bg=card, fg=fg, font=self.tkf(11, True, False), anchor="w")
+        ttl.pack(side="left")
+        sm = tk.Label(head, text=summary, bg=card, fg=dim, font=self.tkf(9, False, False), anchor="e")
+        sm.pack(side="right", padx=12)
+
+        def paint_open():
+            if state["open"]:
+                if state["outer"] is None:
+                    state["outer"] = self.reveal(box, build)
+                    state["outer"].pack_configure(padx=12, pady=(8, 6))
+                else:
+                    state["outer"].pack(fill="x", padx=12, pady=(8, 6))
+            elif state["outer"] is not None:
+                state["outer"].pack_forget()
+            arrow.configure(text="▾" if state["open"] else "▸")
+
+        def toggle(_e=None):
+            state["open"] = not state["open"]
+            if key:
+                folds[key] = state["open"]
+                core.save_conf(self.conf)
+            paint_open()
+
+        def tint(on):
+            c = hover if on else card
+            for w in (head, arrow, ttl, sm):
+                w.configure(bg=c)
+        for w in (head, arrow, ttl, sm):
+            w.bind("<Button-1>", toggle)
+            w.bind("<Enter>", lambda e: tint(True))
+            w.bind("<Leave>", lambda e: tint(False))
+        box.set_summary = lambda t: sm.configure(text=t)
+        if state["open"]:
+            paint_open()
+        return box
 
     def menu(self, parent, values, current, command, width=130):
         m = ctk.CTkOptionMenu(parent, values=values, command=command, width=width, height=28, font=self.font(11),

@@ -39,10 +39,17 @@ def mix(c1, c2, t):
     return "#" + "".join(f"{int(x + (y - x) * t):02x}" for x, y in zip(a, b))
 
 
+SORTS = ["Línea", "KDA", "Daño", "Oro", "Súbditos", "Visión"]
+
+
 class AnalysisView:
     def __init__(self, ui, gui, gv):
         self.ui, self.gui, self.gv = ui, gui, gv
         self.hover = None
+        self.sort = "Línea"   # orden del marcador de equipos
+        self.together = False  # marcador: por equipos o los 10 juntos
+        self.mfilter = "Todo"  # filtro de los momentos clave
+        self.nosec = False
 
     # ------------------------------------------------------------ utilidades
     def hx(self, c):
@@ -76,8 +83,15 @@ class AnalysisView:
             ui.lbl(host, "Leyendo la línea de tiempo de la partida…", 11, "dim").pack(anchor="w", pady=6)
             return
         if a == "no":
-            ui.lbl(host, "El cliente ya no guarda la línea de tiempo de esta partida (solo conserva las más recientes) o LoL está cerrado. "
-                         "Prueba con una más reciente.", 11, "dim", anchor="w", justify="left", wraplength=max(260, gv.width - 110)).pack(anchor="w", pady=6)
+            ui.lbl(host, "El cliente ya no guarda la línea de tiempo de esta partida (solo conserva las más recientes) o LoL está cerrado.",
+                   11, "dim", anchor="w", justify="left", wraplength=max(260, gv.width - 110)).pack(anchor="w", pady=(6, 4))
+            have = [g for g in gv.games if isinstance(gv.data.get(g["id"]), dict)]
+            if have:
+                from ui_views import small_btn
+                small_btn(ui, host, "Ir a la última partida con análisis", lambda: gv.pick_game(have[0]["id"]), 240).pack(anchor="w", pady=4)
+            else:
+                ui.lbl(host, "Se analizan solas las partidas que acaban con LOL-E abierto; también puedes abrir una reciente desde el menú de arriba.",
+                       10, "dim", anchor="w", justify="left", wraplength=max(260, gv.width - 110)).pack(anchor="w")
             return
         self.body(host, a)
 
@@ -86,16 +100,27 @@ class AnalysisView:
         opp = gv.opp.get(gv.gid) or analysis.default_opp(a)
         if opp is None or analysis.player(a, opp) is None:
             opp = (analysis.enemies(a) or [{"pid": None}])[0]["pid"]
+        self.nosec = True
         self.header(host, a, opp)
         self.kpis(host, a, opp)
-        self.charts(host, a, opp)
+        adv = analysis.advice(a, opp, ui.champs)
+        ev = self.events(a)
+        nb, ng = sum(1 for x in adv if x["tone"] == "bad"), sum(1 for x in adv if x["tone"] == "good")
+        ui.fold(host, "Consejos de esta partida", lambda p: self.advice(p, a, opp, adv),
+                f"{nb} a mejorar · {ng} bien" if adv else "sin nada destacable", "an_advice", True)
+        mine = sum(1 for e in ev if e["cat"] == "kd")
+        ui.fold(host, "Momentos clave", lambda p: self.moments(p, a, ev), f"{len(ev)} eventos · {mine} tuyos", "an_moments", True)
+        ui.fold(host, "Evolución de la partida", lambda p: self.charts(p, a, opp), gv.chart, "an_charts", True)
         if opp is not None:
-            self.table(host, a, opp)
-        self.scoreboard(host, a, opp)
-        self.advice(host, a, opp)
-        self.moments(host, a)
+            o = analysis.player(a, opp)
+            g10 = analysis.at(a, analysis.diff(a, "gold_s", a["me"], opp), 10)
+            ui.fold(host, f"Tú frente a {self.cname(o['champ'])}", lambda p: self.table(p, a, opp),
+                    f"oro a minuto 10: {sg(g10)}" if g10 is not None else "", "an_table", False)
+        ui.fold(host, "Los dos equipos", lambda p: self.scoreboard(p, a, opp), f"orden: {self.sort.lower()}", "an_teams", False)
 
     def section(self, host, title, sub=None):
+        if self.nosec:
+            return
         ui = self.ui
         row = ui.frame(host)
         row.pack(fill="x", pady=(18, 6))
@@ -142,6 +167,16 @@ class AnalysisView:
         ui.lbl(sel, "Comparar con", 10, "dim").pack(side="left", padx=(0, 8))
         ui.menu(sel, list(labels), cur, lambda v: self.set_opp(labels[v]), 240).pack(side="left")
         ui.lbl(sel, "  La línea de cada jugador se deduce de su Smite y de dónde estuvo en los minutos 3 a 9.", 9, "dim").pack(side="left")
+
+    def set_together(self, v):
+        self.together = v == "Los 10 juntos"
+        self.gv.sig = None
+        self.gv.refresh(self.gui.make_ctx())
+
+    def set_sort(self, v):
+        self.sort = v
+        self.gv.sig = None
+        self.gv.refresh(self.gui.make_ctx())
 
     def set_opp(self, pid):
         self.gv.opp[self.gv.gid] = pid
@@ -364,14 +399,22 @@ class AnalysisView:
     # ------------------------------------------------------------ marcador de los dos equipos
     def scoreboard(self, host, a, opp):
         ui = self.ui
-        self.section(host, "LOS DOS EQUIPOS", "daño a campeones, oro, súbditos y visión")
+        self.section(host, "LOS DOS EQUIPOS", "pulsa una columna para ordenar, como en el marcador del juego")
+        top = ui.frame(host)
+        top.pack(fill="x", pady=(0, 6))
+        ui.seg(top, ["Por equipos", "Los 10 juntos"], "Los 10 juntos" if self.together else "Por equipos", self.set_together, height=26, width=240).pack(side="left", padx=(0, 10))
+        ui.seg(top, SORTS, self.sort, self.set_sort, height=26).pack(side="left", fill="x", expand=True)
         sx = ui.scale_px()
         S = lambda v: int(v * sx)
         W = min(self.gv.width - 90, 1100)
         wide = W >= 780
-        for team, title in ((a["team"], "TU EQUIPO"), (300 - a["team"], "EQUIPO RIVAL")):
-            ps = sorted([p for p in a["players"].values() if p["team"] == team], key=lambda p: ORDER.index(p["role"]) if p["role"] in ORDER else 9)
-            tmax = max((p["dmg"] for p in a["players"].values()), default=1) or 1
+        groups = [(None, "LOS 10 JUGADORES")] if self.together else [(a["team"], "TU EQUIPO"), (300 - a["team"], "EQUIPO RIVAL")]
+        for team, title in groups:
+            keyf = {"Línea": lambda p: ORDER.index(p["role"]) if p["role"] in ORDER else 9, "KDA": lambda p: -(p["k"] + p["a"]) / max(1, p["d"]),
+                    "Daño": lambda p: -p["dmg"], "Oro": lambda p: -p["gold"], "Súbditos": lambda p: -p["cs"], "Visión": lambda p: -p["vision"]}[self.sort]
+            ps = sorted([p for p in a["players"].values() if team is None or p["team"] == team], key=keyf)
+            metric = {"Oro": ("gold", "Oro"), "Súbditos": ("cs", "Súb."), "Visión": ("vision", "Vis.")}.get(self.sort, ("dmg", "Daño"))
+            tmax = max((p[metric[0]] for p in a["players"].values()), default=1) or 1
             row_h, head = 36, 24
             H = head + row_h * len(ps) + 6
             cv = tk.Canvas(host, width=S(W), height=S(H), bg=ui.bg(host), highlightthickness=0, bd=0)
@@ -387,11 +430,18 @@ class AnalysisView:
             gap = max(48, (span_end - x_gold - 40) / 3)
             x_cs, x_vis = x_gold + gap, x_gold + 2 * gap
             cv.create_text(S(12), S(13), text=title, fill=dim, font=ui.tkf(9, True, False), anchor="w")
-            for x, t in ((x_kda, "K / D / A"), (x_dmg, "Daño"), (x_gold, "Oro"), (x_cs, "Súb."), (x_vis, "Vis.")):
-                cv.create_text(S(x), S(13), text=t, fill=dim, font=f9, anchor="w")
+            for x, t, key in ((x_kda, "K / D / A", "KDA"), (x_dmg, metric[1] if self.sort not in ("Oro", "Súbditos", "Visión") else "Daño", "Daño"),
+                              (x_gold, "Oro", "Oro"), (x_cs, "Súb.", "Súbditos"), (x_vis, "Vis.", "Visión")):
+                on = self.sort == key
+                it = cv.create_text(S(x), S(13), text=t + (" ▾" if on else ""), fill=acc if on else dim, font=ui.tkf(9, on, False), anchor="w", tags=("h_" + key,))
+                cv.tag_bind("h_" + key, "<Button-1>", lambda e, k=key: self.set_sort(k))
+                cv.tag_bind("h_" + key, "<Enter>", lambda e, c=cv: c.configure(cursor="hand2"))
+                cv.tag_bind("h_" + key, "<Leave>", lambda e, c=cv: c.configure(cursor=""))
             for i, p in enumerate(ps):
                 y = head + row_h * i
                 mine, rival = p["pid"] == a["me"], p["pid"] == opp
+                if self.together:  # una franja marca el equipo de cada uno
+                    cv.create_rectangle(S(5), S(y + 3), S(8), S(y + row_h - 3), fill=acc if p["team"] == a["team"] else self.hx("bad"), outline="")
                 if mine or rival:
                     ui.rrect(cv, S(4), S(y + 1), S(W - 4), S(y + row_h - 1), S(8), fill=mix(self.hx("card2"), acc if mine else self.hx("bad"), 0.18), outline="")
                 ph = ui.champ_photo(p["champ"], 26)
@@ -402,8 +452,8 @@ class AnalysisView:
                 cv.create_text(S(46), S(y + 25), text=ROLE_ES.get(p["role"], ""), fill=dim, font=f9, anchor="w")
                 cv.create_text(S(x_kda), S(y + row_h / 2), text=f"{p['k']} / {p['d']} / {p['a']}", fill=fg, font=f11, anchor="w")
                 cv.create_rectangle(S(x_dmg), S(y + 12), S(x_dmg + bw), S(y + 18), fill=self.hx("card"), outline="")
-                cv.create_rectangle(S(x_dmg), S(y + 12), S(x_dmg + max(2, bw * p["dmg"] / tmax)), S(y + 18), fill=acc if p["team"] == a["team"] else self.hx("bad"), outline="")
-                cv.create_text(S(x_dmg), S(y + 28), text=n(p["dmg"]), fill=dim, font=f9, anchor="w")
+                cv.create_rectangle(S(x_dmg), S(y + 12), S(x_dmg + max(2, bw * p[metric[0]] / tmax)), S(y + 18), fill=acc if p["team"] == a["team"] else self.hx("bad"), outline="")
+                cv.create_text(S(x_dmg), S(y + 28), text=n(p[metric[0]]), fill=dim, font=f9, anchor="w")
                 cv.create_text(S(x_gold), S(y + row_h / 2), text=n(p["gold"]), fill=fg, font=f11, anchor="w")
                 cv.create_text(S(x_cs), S(y + row_h / 2), text=str(p["cs"]), fill=fg, font=f11, anchor="w")
                 cv.create_text(S(x_vis), S(y + row_h / 2), text=str(p["vision"]), fill=fg, font=f11, anchor="w")
@@ -420,10 +470,9 @@ class AnalysisView:
                             cv.create_rectangle(S(x_items + q * 25), S(y + 7), S(x_items + q * 25 + 22), S(y + 29), fill=self.hx("card"), outline="")
 
     # ------------------------------------------------------------ consejos
-    def advice(self, host, a, opp):
+    def advice(self, host, a, opp, items=None):
         ui = self.ui
-        items = analysis.advice(a, opp, ui.champs)
-        self.section(host, "CONSEJOS DE ESTA PARTIDA", "ordenados por importancia · cada uno enseña el dato en que se basa")
+        items = items if items is not None else analysis.advice(a, opp, ui.champs)
         if not items:
             ui.lbl(host, "No hay nada destacable que decir de esta partida.", 11, "dim").pack(anchor="w")
             return
@@ -449,40 +498,178 @@ class AnalysisView:
                      "(comunicación, decisiones, composición).", 9, "dim", anchor="w", justify="left", wraplength=max(260, self.gv.width - 110)).pack(anchor="w", pady=(8, 0))
 
     # ------------------------------------------------------------ momentos clave
-    def moments(self, host, a):
-        ui, gv = self.ui, self.gv
+    PHASES = [("Inicio", 0, 14), ("Medio", 14, 25), ("Final", 25, 999)]
+    FILTERS = {"Todo": None, "Mis K/D/A": "kd", "Objetivos": "obj", "Torres": "tower"}
+
+    def events(self, a):
+        """Lista de eventos para pintar: {t, kind, mine, cat, champs, text, part}."""
         m = analysis.me(a)
+        T = a["team"]
+        pl = lambda pid: analysis.player(a, pid)
+        who = lambda pid: self.cname(pl(pid)["champ"]) if pl(pid) else "una torre o los súbditos"
+        champ_of = lambda pid: [pl(pid)["champ"]] if pl(pid) else []
         ev = []
-        who = lambda pid: self.cname((analysis.player(a, pid) or {}).get("champ")) if analysis.player(a, pid) else "una torre o los súbditos"
-        first = a["kills"][0] if a["kills"] else None
-        if first:
-            ev.append((first["t"], "dim", f"Primera sangre: {who(first['killer'])} mató a {who(first['victim'])}"))
-        for k in a["kills"]:
+        for idx, k in enumerate(a["kills"]):
             if k["victim"] == m["pid"]:
-                ev.append((k["t"], "bad", f"Moriste ante {who(k['killer'])}"))
+                ev.append(dict(t=k["t"], kind="death", mine=False, cat="kd", champs=champ_of(k["killer"]), text=f"Te mató {who(k['killer'])}", part=True))
             elif k["killer"] == m["pid"]:
-                ev.append((k["t"], "good", f"Mataste a {who(k['victim'])}"))
+                ev.append(dict(t=k["t"], kind="kill", mine=True, cat="kd", champs=champ_of(k["victim"]), text=f"Mataste a {who(k['victim'])}", part=True))
             elif m["pid"] in k["assists"]:
-                ev.append((k["t"], "good", f"Asistencia en la muerte de {who(k['victim'])}"))
+                ev.append(dict(t=k["t"], kind="assist", mine=True, cat="kd", champs=champ_of(k["victim"]), text=f"Asististe en la muerte de {who(k['victim'])}", part=True))
+            elif idx == 0:
+                ev.append(dict(t=k["t"], kind="first", mine=None, cat="kd", champs=champ_of(k["killer"]), text=f"Primera sangre: {who(k['killer'])} mató a {who(k['victim'])}", part=False))
         for ob in a["objectives"]:
-            mine = ob["team"] == a["team"]
-            part = " (participaste)" if mine and (ob["killer"] == m["pid"] or m["pid"] in ob["assists"]) else ""
-            ev.append((ob["t"], "good" if mine else "bad", f"{ob['what'].capitalize()} {'de tu equipo' if mine else 'del rival'}{part}"))
-        ft = {}
+            mine = ob["team"] == T
+            kind = {"DRAGON": "dragon", "BARON_NASHOR": "baron", "RIFTHERALD": "herald", "HORDE": "grubs", "ATAKHAN": "baron"}.get(ob.get("type"), "dragon")
+            part = mine and (ob["killer"] == m["pid"] or m["pid"] in ob["assists"])
+            ev.append(dict(t=ob["t"], kind=kind, mine=mine, cat="obj", champs=champ_of(ob["killer"]),
+                           text=f"{ob['what'].capitalize()} {'de tu equipo' if mine else 'del rival'}" + (" (participaste)" if part else ""), part=part))
+        lanes = {"TOP_LANE": "superior", "MID_LANE": "central", "BOT_LANE": "inferior"}
         for t in a["towers"]:
-            if t["kind"] == "TOWER_BUILDING" and t["owner"] not in ft:
-                ft[t["owner"]] = t["t"]
-        for owner, t in ft.items():
-            ev.append((t, "good" if owner != a["team"] else "bad", "Primera torre " + ("derribada por tu equipo" if owner != a["team"] else "caída de tu equipo")))
-        ev.sort()
-        self.section(host, "MOMENTOS CLAVE", f"{len(ev)} eventos")
-        shown = ev if gv.all_moments else ev[:12]
-        for t, tone, text in shown:
-            row = ui.frame(host)
-            row.pack(fill="x", pady=1)
-            ui.lbl(row, f"{int(t)}'", 10, "dim", True, width=34, anchor="w").pack(side="left")
-            ui.lbl(row, "●", 9, tone if tone in ("good", "bad") else "dim").pack(side="left", padx=(0, 8))
-            ui.lbl(row, text, 10, "fg", anchor="w").pack(side="left")
-        if len(ev) > 12:
-            from ui_views import small_btn
-            small_btn(ui, host, "Ver menos" if gv.all_moments else f"Ver los {len(ev)}", gv.toggle_moments, 130).pack(anchor="w", pady=(6, 0))
+            mine = t["owner"] != T  # lo derriba tu equipo si el edificio era del rival
+            inhib = t["kind"] == "INHIBITOR_BUILDING"
+            lane = lanes.get(t.get("lane"), "")
+            what = "Inhibidor" if inhib else "Torre"
+            ev.append(dict(t=t["t"], kind="inhib" if inhib else "tower", mine=mine, cat="tower", champs=champ_of(t["killer"]),
+                           text=(f"{what} {lane} derribada por tu equipo" if mine else f"{what} {lane} de tu equipo caída").replace("  ", " "), part=False))
+        ev.sort(key=lambda e: e["t"])
+        return ev
+
+    def color_of(self, e):
+        if e["kind"] == "first":
+            return self.hx("dim")
+        if e["kind"] == "death":
+            return self.hx("bad")
+        return self.hx("good") if e["mine"] else self.hx("bad")
+
+    def icon(self, cv, x, y, kind, col, r, ring=None):
+        """Iconos sencillos dibujados con formas: asesinato ●, asistencia ○, muerte ▼, dragón ◆, Barón ⬢, Heraldo ◇, larvas □, torre ▮, inhibidor ⬡."""
+        o = {"fill": col, "outline": ""}
+        if ring:
+            cv.create_oval(x - r - 3, y - r - 3, x + r + 3, y + r + 3, outline=ring, width=2)
+        if kind in ("kill",):
+            cv.create_oval(x - r, y - r, x + r, y + r, **o)
+        elif kind in ("assist", "first"):
+            cv.create_oval(x - r, y - r, x + r, y + r, outline=col, width=2)
+        elif kind == "death":
+            cv.create_polygon(x - r, y - r * 0.7, x + r, y - r * 0.7, x, y + r, **o)
+        elif kind == "dragon":
+            cv.create_polygon(x, y - r - 1, x + r + 1, y, x, y + r + 1, x - r - 1, y, **o)
+        elif kind == "herald":
+            cv.create_polygon(x, y - r - 1, x + r + 1, y, x, y + r + 1, x - r - 1, y, fill="", outline=col, width=2)
+        elif kind == "baron":
+            k = r + 1
+            cv.create_polygon(x - k * 0.5, y - k, x + k * 0.5, y - k, x + k, y, x + k * 0.5, y + k, x - k * 0.5, y + k, x - k, y, **o)
+        elif kind == "inhib":
+            k = r + 1
+            cv.create_polygon(x - k * 0.5, y - k, x + k * 0.5, y - k, x + k, y, x + k * 0.5, y + k, x - k * 0.5, y + k, x - k, y, fill="", outline=col, width=2)
+        elif kind == "grubs":
+            cv.create_rectangle(x - r + 1, y - r + 1, x + r - 1, y + r - 1, outline=col, width=2)
+        else:  # torre
+            cv.create_rectangle(x - r + 1, y - r, x + r - 1, y + r, **o)
+            cv.create_rectangle(x - r + 3, y - r - 2, x - r + 5, y - r, **o)
+            cv.create_rectangle(x + r - 5, y - r - 2, x + r - 3, y - r, **o)
+
+    def set_mfilter(self, v):
+        self.mfilter = v
+        self.gv.sig = None
+        self.gv.refresh(self.gui.make_ctx())
+
+    def moments(self, host, a, ev):
+        ui, gv = self.ui, self.gv
+        if not ev:
+            ui.lbl(host, "No hay eventos registrados en esta partida.", 11, "dim").pack(anchor="w")
+            return
+        cat = self.FILTERS[self.mfilter]
+        ui.seg(host, list(self.FILTERS), self.mfilter, self.set_mfilter, height=26, width=min(440, gv.width - 120)).pack(anchor="w", pady=(0, 8))
+        W = min(gv.width - 90, 1100)
+        self.timeline(host, a, ev, W, cat)
+        shown = [e for e in ev if cat is None or e["cat"] == cat]
+        for i, (name_, lo, hi) in enumerate(self.PHASES):
+            part = [e for e in shown if lo <= e["t"] < hi]
+            if not part:
+                continue
+            span = f"{lo}–{hi}'" if hi < 999 else f"{lo}' en adelante"
+            ui.fold(host, f"{name_} · {span}", lambda p, part=part: self.rows(p, a, part, W), f"{len(part)} eventos", f"an_ph{i}", i == 0)
+
+    def timeline(self, host, a, ev, W, cat):
+        """Línea de tiempo horizontal: arriba objetivos y torres, abajo tus muertes, asesinatos y asistencias."""
+        ui = self.ui
+        sx = ui.scale_px()
+        S = lambda v: int(v * sx)
+        H, ml, mr = 92, 12, 12
+        dur = max(a["minutes"][-1] if a["minutes"] else 1, 1)
+        px = lambda t: ml + t / dur * (W - ml - mr)
+        cv = tk.Canvas(host, width=S(W), height=S(H), bg=ui.bg(host), highlightthickness=0, bd=0)
+        cv.pack(anchor="w", pady=(0, 8))
+        card, dim = self.hx("card2"), self.hx("dim")
+        for i, (name_, lo, hi) in enumerate(self.PHASES):
+            x0, x1 = px(lo), px(min(hi, dur))
+            if x1 <= x0:
+                continue
+            cv.create_rectangle(S(x0), S(0), S(x1), S(H - 18), fill=mix(card, self.hx("fg"), 0.05 if i % 2 else 0.0), outline="")
+            cv.create_text(S(x0 + 8), S(10), text=name_.upper(), fill=dim, font=ui.tkf(8, True, False), anchor="w")
+        cv.create_line(S(ml), S(H - 18), S(W - mr), S(H - 18), fill=self.hx("border"))
+        for t in range(0, int(dur) + 1, 5):
+            cv.create_text(S(px(t)), S(H - 8), text=f"{t}'", fill=dim, font=ui.tkf(8, False, False))
+        ring = self.hx(ui.acc)
+        order = list(ev)
+        state = {"i": 0}
+
+        def draw(e):
+            y = S(34) if e["cat"] in ("obj", "tower") else S(64)
+            col = self.color_of(e)
+            if cat is not None and e["cat"] != cat:
+                col = mix(card, col, 0.22)
+            self.icon(cv, S(px(e["t"])), y, e["kind"], col, S(5), ring if (e["part"] and e["cat"] == "obj" and (cat is None or e["cat"] == cat)) else None)
+            hot = cv.create_rectangle(S(px(e["t"]) - 7), y - S(9), S(px(e["t"]) + 7), y + S(9), outline="", fill="")
+            ui.canvas_tip(cv, hot, f"{int(e['t'])}' · {e['text']}")
+
+        def step():
+            if not cv.winfo_exists():
+                return
+            n = max(1, len(order) // 22)  # unos 22 pasos: la animación dura menos de medio segundo
+            for _ in range(n):
+                if state["i"] < len(order):
+                    draw(order[state["i"]])
+                    state["i"] += 1
+            if state["i"] < len(order):
+                cv.after(16, step)
+        if ui.anim_on():
+            step()
+        else:
+            for e in order:
+                draw(e)
+
+    def rows(self, host, a, part, W):
+        """Filas de una fase en un solo lienzo: minuto, icono, campeón implicado y texto; resalta la fila bajo el ratón."""
+        ui = self.ui
+        sx = ui.scale_px()
+        S = lambda v: int(v * sx)
+        RH = 30
+        H = RH * len(part) + 4
+        cv = tk.Canvas(host, width=S(W), height=S(H), bg=ui.bg(host), highlightthickness=0, bd=0)
+        cv.pack(anchor="w", pady=(2, 4))
+        card, fg, dim, acc = self.hx("card2"), self.hx("fg"), self.hx("dim"), self.hx(ui.acc)
+        hl = cv.create_rectangle(0, 0, 0, 0, fill=mix(card, fg, 0.10), outline="")
+        fb, f10 = ui.tkf(10, True, False), ui.tkf(10, False, False)
+        for i, e in enumerate(part):
+            y = i * RH + 2
+            cv.create_line(S(8), S(y + RH), S(W - 8), S(y + RH), fill=self.hx("border"))
+            cv.create_text(S(14), S(y + RH / 2), text=f"{int(e['t'])}'", fill=dim, font=fb, anchor="w")
+            self.icon(cv, S(64), S(y + RH / 2), e["kind"], self.color_of(e), S(5), acc if e["part"] and e["cat"] == "obj" else None)
+            x = 92
+            for cid in e["champs"][:1]:
+                ph = ui.champ_photo(cid, 22)
+                if ph is not None:
+                    cv.create_image(S(x), S(y + 4), image=ph, anchor="nw")
+                    cv.image = getattr(cv, "image", []) + [ph]
+                    x += 30
+            cv.create_text(S(x), S(y + RH / 2), text=ui.fit(e["text"], f10, S(W - x - 20)), fill=fg, font=f10, anchor="w")
+
+        def move(ev):
+            i = int(ev.y / sx // RH)
+            if 0 <= i < len(part):
+                cv.coords(hl, 0, S(i * RH + 2), S(W), S(i * RH + 2 + RH))
+        cv.bind("<Motion>", move)
+        cv.bind("<Leave>", lambda e: cv.coords(hl, 0, 0, 0, 0))
