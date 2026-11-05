@@ -1,6 +1,6 @@
 =====================================================================
   LOL-E  ·  Tu asesor para la selección de campeón
-  Versión 1.9.1
+  Versión 1.9.2
 =====================================================================
 
 ¿QUÉ ES?
@@ -44,7 +44,7 @@ CÓMO INSTALARLO (menos de 1 minuto)
   1. Si has descargado un archivo .zip, haz clic con el botón derecho
      y elige «Extraer todo…». Después abre la carpeta que se crea.
 
-  2. Haz doble clic en:   1_Instalar-LOL-E-1.9.1
+  2. Haz doble clic en:   1_Instalar-LOL-E-1.9.2
 
   3. Windows puede mostrar una ventana azul que dice «Windows protegió
      su PC». ES NORMAL en programas nuevos de particulares, que no
@@ -449,11 +449,16 @@ LA PESTAÑA «PARTIDA»
              pestaña, y al empezar la siguiente selección vuelve al
              Asesor.
   Análisis   Al terminar una partida (o eligiéndola en la lista), mira
-             la línea de tiempo del propio cliente: ventaja de oro de tu
-             equipo, oro y experiencia frente a tu rival de línea,
-             súbditos, tus muertes y los objetivos minuto a minuto, tu
-             RECORRIDO por el mapa, y consejos que explican en qué dato
-             se basan. El cliente solo conserva las partidas recientes.
+             la línea de tiempo del propio cliente: cabecera contigo y
+             tu rival directo (se puede cambiar), cifras clave, gráficos
+             de oro del equipo, oro y experiencia frente al rival,
+             súbditos y tu RECORRIDO por el mapa, una tabla «tú frente a
+             X» en los minutos 5, 10, 15 y 20, el marcador de los dos
+             equipos con sus objetos, consejos según tu línea (cada uno
+             con el dato en que se basa), y los momentos clave. La línea
+             de cada jugador se deduce de su Smite y de dónde estuvo en
+             los minutos 3 a 9, porque el cliente las etiqueta mal. El
+             cliente solo conserva las partidas más recientes.
   No incluye: recorridos de jungla recomendados (ninguna fuente
   abierta fiable) ni datos en directo durante la partida.
 

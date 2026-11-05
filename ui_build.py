@@ -294,7 +294,7 @@ def situations(ui, parent, d, champs, ens, width):
         info = ui.items.get(i)
         if i not in pool and info and not info.get("into") and info["g"] >= 1000 and "Boots" not in info["t"] and "Consumable" not in info["t"]:
             pool.append(i)
-    ui.lbl(parent, "SEGÚN LA SITUACIÓN", 10, "dim", True, anchor="w").pack(anchor="w", pady=(0, 2))
+    ui.lbl(parent, "SEGÚN LA SITUACIÓN", 10, "dim", True, anchor="w").pack(anchor="w", pady=(16, 2))
     if ens:
         ui.lbl(parent, f"Equipo rival ahora: {ens['ad']} de daño físico, {ens['ap']} de mágico, {ens['tanks']} tanques, control {ens['cc']:.1f}/3.",
                9, "dim", anchor="w").pack(anchor="w", pady=(0, 6))

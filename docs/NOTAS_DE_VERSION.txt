@@ -7,6 +7,41 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.9.2   (5 de noviembre de 2026)
+---------------------------------------------------------------------
+
+CORRECCIONES
+  · EL ANÁLISIS COMPARABA CON EL RIVAL EQUIVOCADO: en tu partida de Zyra
+    jungla decía «contra Kled» cuando tu rival era Diana. El cliente de
+    LoL etiqueta mal las líneas (marcaba como «jungla» a los dos de
+    superior). Ahora la línea de cada jugador se deduce de lo que hizo:
+    el jungla lleva Smite y farmea más monstruos; el resto se reparte por
+    dónde estuvo entre los minutos 3 y 9. Comprobado con tus dos partidas
+    reales (10 de 10 jugadores en su línea). Además puedes elegir con
+    quién compararte en un desplegable.
+
+NOVEDADES (pestaña Partida → Análisis, rehecha)
+  · Cabecera con tú y tu rival (iconos, línea, resultado y duración).
+  · Cifras clave: K/D/A y participación, oro, súbditos, daño y visión,
+    cada una comparada con tu rival o tu equipo.
+  · Gráficos con áreas verde/roja (ventaja/desventaja), puntos en los
+    minutos 5, 10, 15 y 20, marcadores de tus muertes, asesinatos y
+    objetivos con su explicación al pasar el ratón, y valores de los dos
+    jugadores en cada minuto.
+  · Tabla «Tú frente a X»: diferencia de oro, experiencia, súbditos y
+    nivel en los minutos 5, 10, 15, 20 y al final.
+  · Marcador de los dos equipos: línea, K/D/A, daño, oro, súbditos,
+    visión y objetos; tú y tu rival resaltados.
+  · Consejos más precisos y según tu línea (jungla: farmeo de jungla y
+    presencia en objetivos; apoyo: visión; las demás: farmeo y daño),
+    ordenados por importancia, con el dato en que se basan y una línea
+    «Lo que más pesó». Nuevo: «Muertes que costaron objetivos» (muertes
+    seguidas de un objetivo o una torre del rival en menos de 45 s).
+  · Momentos clave: primera sangre, tus muertes y asesinatos, objetivos
+    y primeras torres, minuto a minuto.
+  · Recorrido por el mapa con un punto por minuto (azul al inicio,
+    dorado al final) y bases marcadas.
+
 VERSIÓN 1.9.1   (5 de noviembre de 2026)
 ---------------------------------------------------------------------
 
