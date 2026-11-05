@@ -53,6 +53,9 @@ class GUI:
         except Exception:
             pass
         self.root.bind("<Escape>", lambda e: self.close_dock())
+        self.root.report_callback_exception = lambda t, v, tb: core.log_exc("Error en la ventana", (t, v, tb))
+        for i, nm in enumerate(("Asesor", "Enfrentamiento", "Historial", "Datos"), 1):  # Ctrl+1…4 cambian de pestaña
+            self.root.bind(f"<Control-Key-{i}>", lambda e, n=nm: self.set_page(n))
         self.root.bind("<Left>", lambda e: self.key_go(-1))
         self.root.bind("<Right>", lambda e: self.key_go(1))
         self.root.bind("<Configure>", self.on_resize)
@@ -850,6 +853,9 @@ class GUI:
         button("Buscar actualizaciones ahora", lambda: (self.set("update_url", entry.get().strip(), redraw=False), self.check_updates(True)))
 
         section("Mantenimiento")
+        button("Copiar informe de diagnóstico", self.copy_diagnostics)
+        note("Para pedir ayuda: copia versión, sistema, estado de los datos y últimos errores (sin tu nombre ni tus partidas) y pégalo en el mensaje.")
+        button("Abrir el registro de errores", lambda: self.open_log())
         button("Restablecer todos los ajustes", self.reset_settings)
         note("No borra tu historial ni tus datos; LOL-E se cierra para aplicarlo.")
 
@@ -858,6 +864,21 @@ class GUI:
                    "ni de nadie que participe oficialmente en League of Legends. Solo lee la selección de campeón "
                    "de tu cliente; nunca interviene en la partida.", 10, "dim", wraplength=300, justify="left").pack(
             anchor="w", padx=14, pady=(0, 10))
+
+    def copy_diagnostics(self):
+        extra = [f"Interfaz: escala {self.conf['scale']}, tema {self.conf['theme']}, ventana {self.root.winfo_width()}x{self.root.winfo_height()}, "
+                 f"Windows {self.win_scale():.2f}x"]
+        txt = core.diagnostics(extra)
+        self.root.clipboard_clear()
+        self.root.clipboard_append(txt)
+        self.status("Informe copiado: pégalo donde pidas ayuda.")
+
+    def open_log(self):
+        p = os.path.join(CACHE, "error.log")
+        if os.path.exists(p):
+            os.startfile(p)
+        else:
+            self.status("No hay errores registrados.")
 
     def clear_cache(self):
         if not messagebox.askyesno(APP_NAME, "Se borrarán las imágenes descargadas (arte, emblemas, iconos de invocador), los "

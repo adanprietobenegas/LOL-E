@@ -1,5 +1,5 @@
 """Pestaña «Historial»: resumen con estadísticas, buscador, filtros y la lista de partidas por días (cada una se despliega)."""
-import datetime, os, tkinter as tk, unicodedata
+import datetime, os, subprocess, time, tkinter as tk, unicodedata
 from collections import Counter
 
 import customtkinter as ctk
@@ -131,9 +131,32 @@ class HistoryView:
         bar.pack(fill="x", pady=(8, 0))
         small_btn(ui, bar, "Quitar filtros", self.clear_filters, 110).pack(side="left")
         small_btn(ui, bar, "Actualizar", self.update_now, 90).pack(side="right")
+        small_btn(ui, bar, "Exportar CSV", self.export_csv, 110).pack(side="right", padx=(0, 6))
         self.list_card = ui.card(self.box)
         self.list_host = ui.frame(self.list_card)
         self.list_host.pack(fill="x")
+
+    def export_csv(self):
+        """Guarda las partidas que ves (con los filtros puestos) en Documentos, listas para abrir con Excel."""
+        import csv
+        games = self.filtered()
+        folder = os.path.join(os.path.expanduser("~"), "Documents")
+        path = os.path.join(folder if os.path.isdir(folder) else os.path.expanduser("~"), "LOL-E_historial.csv")
+        champs = self.ui.champs
+        try:
+            with open(path, "w", encoding="utf-8-sig", newline="") as f:
+                w = csv.writer(f, delimiter=";")
+                w.writerow(["Fecha", "Modo", "Campeón", "Línea", "Resultado", "Muertes", "Asesinatos", "Asistencias", "Farmeo",
+                            "Daño", "Duración (s)", "Nivel", "Puesto (Arena)"])
+                for e in games:
+                    w.writerow([time.strftime("%Y-%m-%d %H:%M", time.localtime(e["t"] / 1000)), mode_of(e),
+                                champs.get(e["c"], {}).get("name", e["c"]), ROLES_ES.get(e["r"], ""),
+                                "Remake" if e.get("rm") else "Victoria" if e["w"] else "Derrota",
+                                e.get("de"), e.get("k"), e.get("a"), e.get("cs"), e.get("dm"), e.get("d"), e.get("lv"), e.get("pl")])
+            self.gui.status(f"Exportadas {len(games)} partidas a {path}")
+            subprocess.Popen(["explorer", "/select,", path])
+        except Exception as ex:
+            self.gui.status(f"No se pudo exportar: {ex}")
 
     def update_now(self):
         self.gui.cmds.put("history")

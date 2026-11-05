@@ -114,9 +114,12 @@ def read_json(path, default):
 
 
 def write_json(path, data):
-    os.makedirs(CACHE, exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
+    """Escribe en un archivo temporal y lo cambia de sitio al terminar: un corte de luz no deja el archivo a medias."""
+    os.makedirs(os.path.dirname(path) or CACHE, exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(data, f)
+    os.replace(tmp, path)
 
 
 def norm_role(r):
@@ -966,6 +969,7 @@ def run(conf, champs, ui):
             ui.status("No encuentro el cliente de LoL. Reintentando…")
             time.sleep(3)
         except Exception as e:  # un fallo puntual no debe tumbar el programa
+            log_exc("Bucle principal")
             ui.status(f"Aviso: {type(e).__name__}: {e}")
             time.sleep(2)
 
@@ -1054,13 +1058,110 @@ class ConsoleUI:
             print(f" {paint(i, 'y', 'B')} {paint(f'{name(cid, ch):<13}', 'B')} {cbar(sc / best, 14, 'y' if i == 1 else 'b')} {sc:5.1f}  {tags}")
 
 
+_LOGGED = {}
+
+
 def log_error(text):
+    """Añade una línea al registro de errores (cache/error.log). Se recorta solo cuando pasa de ~400 KB."""
     try:
         os.makedirs(CACHE, exist_ok=True)
-        with open(os.path.join(CACHE, "error.log"), "a", encoding="utf-8") as f:
+        path = os.path.join(CACHE, "error.log")
+        if os.path.exists(path) and os.path.getsize(path) > 400_000:
+            with open(path, encoding="utf-8", errors="replace") as f:
+                tail = f.read()[-100_000:]
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(tail)
+        with open(path, "a", encoding="utf-8") as f:
             f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')}  {text}\n")
     except Exception:
         pass
+
+
+def log_exc(where, exc_info=None):
+    """Registra una excepción con su traza; el mismo fallo no se repite más de una vez por minuto."""
+    import traceback
+    try:
+        t, v, tb = exc_info or sys.exc_info()
+        body = "".join(traceback.format_exception(t, v, tb, limit=8)).strip()
+        key = f"{where}|{type(v).__name__}|{v}"
+        if time.time() - _LOGGED.get(key, 0) < 60:
+            return
+        _LOGGED[key] = time.time()
+        log_error(f"{where}\n{body}")
+    except Exception:
+        pass
+
+
+def install_error_hooks():
+    """Cualquier error no controlado (en la ventana o en un hilo) queda en el registro en vez de perderse."""
+    sys.excepthook = lambda t, v, tb: log_exc("Error no controlado", (t, v, tb))
+    try:
+        threading.excepthook = lambda a: log_exc(f"Error en un hilo ({getattr(a.thread, 'name', '?')})", (a.exc_type, a.exc_value, a.exc_traceback))
+    except Exception:
+        pass
+
+
+_MUTEX = None
+
+
+def single_instance():
+    """Solo una copia de LOL-E a la vez: si ya hay una abierta, se trae al frente y esta se cierra."""
+    global _MUTEX
+    try:
+        import ctypes
+        k32, u32 = ctypes.windll.kernel32, ctypes.windll.user32
+        _MUTEX = k32.CreateMutexW(None, False, "Local\\LOL-E-instancia-unica")
+        if k32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
+            hwnd = u32.FindWindowW(None, APP_NAME)
+            if hwnd:
+                u32.ShowWindow(hwnd, 9)  # SW_RESTORE
+                u32.SetForegroundWindow(hwnd)
+            return False
+    except Exception:
+        pass
+    return True
+
+
+def prune_cache(days=21):
+    """Borra de la caché lo que lleva semanas sin usarse (builds y enfrentamientos de parches viejos)."""
+    limit = time.time() - days * 86400
+    for sub in ("builds", "matchups"):
+        d = os.path.join(CACHE, sub)
+        try:
+            for f in os.listdir(d):
+                p = os.path.join(d, f)
+                if os.path.isfile(p) and os.path.getmtime(p) < limit:
+                    os.remove(p)
+        except OSError:
+            pass
+
+
+def diagnostics(extra=None):
+    """Informe corto para pedir ayuda: versión, sistema, estado de los datos y últimos errores. Sin nombres ni partidas."""
+    import platform
+    home = os.path.expanduser("~")
+    md = META.get("data") or {}
+    try:
+        n_games = len(history.load_all(os.path.join(CACHE, "history.json"), os.path.join(CACHE, "games.json")))
+    except Exception:
+        n_games = "?"
+    try:
+        size = sum(os.path.getsize(os.path.join(r, f)) for r, _, fs in os.walk(CACHE) for f in fs) / 1e6
+    except Exception:
+        size = 0
+    lines = [f"{APP_NAME} {APP_VERSION} ({'instalada' if FROZEN else 'desde el código'})",
+             f"Windows: {platform.platform()}  ·  Python {platform.python_version()}",
+             f"Datos: parche de datos {DD_VERSION or '?'}, meta {md.get('patch', 'sin cargar')} ({md.get('tier', '-')}), "
+             f"{n_games} partidas guardadas, caché {size:.1f} MB"]
+    if extra:
+        lines += extra
+    try:
+        with open(os.path.join(CACHE, "error.log"), encoding="utf-8", errors="replace") as f:
+            tail = f.read().splitlines()[-25:]
+        lines += ["", "Últimos errores:"] + [x.replace(home, "~") for x in tail]
+    except OSError:
+        lines += ["", "Sin errores registrados."]
+    return "\n".join(lines)
 
 
 def fatal(text):
@@ -1099,8 +1200,12 @@ def seed_cache():
 
 def main():
     sys.modules.setdefault("lol_advisor", sys.modules[__name__])  # si se lanza como script, que gui.py comparta este modulo
+    if "--consola" not in sys.argv and not single_instance():
+        return
+    install_error_hooks()
     migrate_data()
     seed_cache()
+    threading.Thread(target=prune_cache, daemon=True).start()
     try:
         sys.stdout.reconfigure(errors="replace")
     except Exception:

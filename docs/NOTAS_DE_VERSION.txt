@@ -25,6 +25,23 @@ NOVEDADES
     qué campeones tuyos las jugaste. En la lista, el aviso de cada campeón
     pasa a «Contra él: 1V 0D» o «Lo has jugado: 5 · 60 %».
 
+ROBUSTEZ Y UTILIDADES
+  · TU HISTORIAL, A SALVO: se guarda con escritura segura (archivo
+    temporal y cambio al terminar) y una copia diaria; si el archivo se
+    daña, se recupera solo de la copia. Antes un corte durante el guardado
+    podía dejarlo vacío.
+  · UNA SOLA COPIA: abrir LOL-E dos veces trae la ventana ya abierta al
+    frente en vez de lanzar dos programas leyendo el cliente a la vez.
+  · REGISTRO DE ERRORES COMPLETO: los fallos de la ventana, de los hilos y
+    del bucle principal quedan en cache\error.log con su traza (sin
+    repetirse cada segundo, y recortado al pasar de 400 KB).
+  · AJUSTES > «Copiar informe de diagnóstico»: versión, sistema, estado de
+    los datos y últimos errores en el portapapeles, para pedir ayuda sin
+    describir nada a mano. No incluye tu nombre ni tus partidas.
+  · HISTORIAL > «Exportar CSV»: las partidas filtradas, listas para Excel.
+  · ATAJOS: Ctrl+1 a Ctrl+4 cambian de pestaña.
+  · La caché borra sola lo que lleva más de 3 semanas sin usarse.
+
 CORRECCIONES
   · SALTOS Y BLOQUEOS DURANTE LA SELECCIÓN: cada gesto de los demás en la
     selección repintaba toda la ventana, a veces varias veces seguidas, y

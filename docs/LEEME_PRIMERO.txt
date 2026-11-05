@@ -154,6 +154,11 @@ DURANTE LA SELECCIÓN DE CAMPEÓN
   Banea a quien Rivales contra los que más has perdido jugando tu
   te gana       rol. Solo aparece cuando te toca banear.
 
+  Tu campeón    En cuanto marcas o bloqueas un campeón aparece aquí su
+  elegido       build (hechizos, runas, objetos, botas y habilidades) en
+                tu línea y contra tu rival directo, esté o no entre las
+                recomendaciones.
+
   Recomendado   Los mejores campeones para ti ahora mismo, en un
   para ti       CARRUSEL de tarjetas. El número del anillo es la
                 «afinidad» (de 0 a 100): cuanto más alta, mejor encaja
@@ -406,8 +411,27 @@ solos. Se cierra con «Cerrar» o con la tecla Esc.
                    desactivar las fuentes se hace en la pestaña Datos.
   Actualizaciones  Buscar al abrir, dirección del archivo de versión y
                    botón para buscar ahora.
-  Mantenimiento    Restablecer todos los ajustes (no borra tu historial).
+  Mantenimiento    «Copiar informe de diagnóstico» (versión, sistema,
+                   estado de los datos y últimos errores, sin tu nombre
+                   ni tus partidas: pégalo al pedir ayuda), abrir el
+                   registro de errores y restablecer todos los ajustes
+                   (no borra tu historial).
   Acerca de        Versión y aviso legal.
+
+
+ATAJOS Y EXTRAS
+---------------
+  Ctrl+1 … Ctrl+4   Cambian entre Asesor, Enfrentamiento, Historial y Datos.
+  ← y →             Cambian de tarjeta en el carrusel.
+  Esc               Cierra los Ajustes.
+  Historial         «Exportar CSV» guarda en Documentos las partidas que
+                    estás viendo (con los filtros puestos) para abrirlas
+                    con Excel.
+  Una sola copia    Si abres LOL-E con otra copia ya abierta, trae la
+                    abierta al frente en vez de abrir dos.
+  Tu historial      Se guarda con escritura segura y una copia diaria
+                    (history.json.bak) que se usa sola si el archivo se
+                    daña.
 
 
 PREGUNTAS FRECUENTES

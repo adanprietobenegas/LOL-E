@@ -4,15 +4,20 @@ El cliente de LoL solo entrega las últimas ~20 partidas. LOL-E guarda cada part
 (con campeón, resultado, K/D/A, farmeo, duración, modo…) para que el historial crezca mientras lo usas.
 Las partidas guardadas por versiones anteriores (`games.json`) se incluyen, aunque sin K/D/A.
 """
-import json, os
+import json, os, shutil, time
 
 
 def _read(path, default):
-    try:
-        with open(path, encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return default
+    """Lee un JSON; si está dañado, usa la copia de seguridad (.bak) para no perder el historial."""
+    for p in (path, path + ".bak"):
+        try:
+            with open(p, encoding="utf-8") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            continue
+        except Exception:
+            continue
+    return default
 
 
 def from_game(g):
@@ -40,8 +45,16 @@ def save(path, games):
             changed = True
     if changed:
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
             json.dump(data, f)
+        bak = path + ".bak"
+        try:  # una copia por día como máximo: si el archivo se dañara, el historial se recupera de aquí
+            if os.path.exists(path) and (not os.path.exists(bak) or time.time() - os.path.getmtime(bak) > 86400):
+                shutil.copy2(path, bak)
+        except OSError:
+            pass
+        os.replace(tmp, path)
 
 
 def load_all(history_path, legacy_path):
