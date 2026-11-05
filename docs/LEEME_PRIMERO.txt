@@ -1,6 +1,6 @@
 =====================================================================
   LOL-E  ·  Tu asesor para la selección de campeón
-  Versión 1.9.0
+  Versión 1.9.1
 =====================================================================
 
 ¿QUÉ ES?
@@ -44,7 +44,7 @@ CÓMO INSTALARLO (menos de 1 minuto)
   1. Si has descargado un archivo .zip, haz clic con el botón derecho
      y elige «Extraer todo…». Después abre la carpeta que se crea.
 
-  2. Haz doble clic en:   1_Instalar-LOL-E-1.9.0
+  2. Haz doble clic en:   1_Instalar-LOL-E-1.9.1
 
   3. Windows puede mostrar una ventana azul que dice «Windows protegió
      su PC». ES NORMAL en programas nuevos de particulares, que no
@@ -441,7 +441,8 @@ LA PESTAÑA «PARTIDA»
              contra tu rival; botones «Más usada / Variantes /
              Situaciones» para ver otras builds completas, las opciones
              de cada objeto con su porcentaje, una segunda opinión de
-             op.gg y objetos sueltos según la situación), tu enfrentamiento (% de victorias de tu
+             op.gg y objetos sueltos según la situación; si la ventana es
+             ancha se ven todas a la vez en columnas), tu enfrentamiento (% de victorias de tu
              campeón contra ese rival, y los que le ganan mejor) y
              consejos según la composición rival. Se queda disponible
              durante la partida: al empezar, LOL-E te lleva solo a esta

@@ -807,7 +807,7 @@ class MyPick(Section):
         txt.pack(side="left")
         ui.lbl(txt, "TU CAMPEÓN ELEGIDO" if r.get("mine_locked") else "LO ESTÁS ELIGIENDO", 10, "dim", True).pack(anchor="w")
         ui.lbl(txt, name(cid, ui.champs), 18, "fg", True, True).pack(anchor="w")
-        build_panel(ui, c, cid, lane, r["lane_opp"] or None, min(ctx["width"] - 120, 720), r.get("enemy_stats")).pack(fill="x")
+        build_panel(ui, c, cid, lane, r["lane_opp"] or None, ctx["width"] - 110, r.get("enemy_stats")).pack(fill="x")
 
 
 class BanIdeas(Section):

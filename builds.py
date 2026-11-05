@@ -95,7 +95,7 @@ def parse(html):
     i0, i1 = h.find("Combined Sets"), h.find("Click Items Below to Filter")
     if 0 <= i0 < i1:
         out["palette"] = list(dict.fromkeys(int(x) for x in re.findall(r"item64/(\d+)", h[i0:i1])))[:40]
-    out["v"] = 2
+    out["v"] = 3
     return out if out["runes"].get("keystone") and out["items"].get("core") else None
 
 
@@ -108,7 +108,7 @@ def load(cache_dir, champ, lane, enemy=None, force=False):
     path = _path(cache_dir, champ, lane, enemy)
     try:
         saved = json.load(open(path, encoding="utf-8"))
-        if not force and time.time() - saved["ts"] < TTL and saved["data"].get("v") == 2:
+        if not force and time.time() - saved["ts"] < TTL and saved["data"].get("v") == 3:
             return saved["data"]
     except Exception:
         pass

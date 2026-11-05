@@ -54,14 +54,33 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None):
             ui.lbl(content, st[1], 10, "dim", anchor="w", justify="left", wraplength=max(200, width - 40)).pack(anchor="w", pady=4)
         else:
             d = st[1]
-            if d.get("stats") or d.get("palette"):
+            rich = bool(d.get("stats") or d.get("palette"))
+            cols = 3 if width >= 1500 else 2 if width >= 960 else 1
+            if rich and cols > 1:
+                # cabe en el ancho: se ven todas las vistas a la vez, en columnas
+                grid = ui.frame(content)
+                grid.pack(fill="x")
+                cw = int((width - 28 * (cols - 1)) / cols)
+                slots = []
+                for k in range(cols):
+                    s_ = ui.frame(grid)
+                    s_.grid(row=0, column=k, sticky="nw", padx=(0 if k == 0 else 14, 0))
+                    grid.columnconfigure(k, weight=1, uniform="bp")
+                    slots.append(s_)
+                render(ui, slots[0], d, champs, cid, enemy, cw, lane)
+                if d.get("stats"):
+                    variants(ui, slots[1], d, champs, cid, cw, lane, again)
+                situations(ui, slots[2] if cols == 3 else slots[0], d, champs, ens, cw)
+                return
+            width1 = min(width, 720)
+            if rich:
                 ui.seg(content, VIEWS, state["view"], setv, height=26).pack(fill="x", pady=(0, 8))
             if state["view"] == "Variantes" and d.get("stats"):
-                variants(ui, content, d, champs, cid, width, lane, again)
+                variants(ui, content, d, champs, cid, width1, lane, again)
             elif state["view"] == "Situaciones":
-                situations(ui, content, d, champs, ens, width)
+                situations(ui, content, d, champs, ens, width1)
             else:
-                render(ui, content, d, champs, cid, enemy, width, lane)
+                render(ui, content, d, champs, cid, enemy, width1, lane)
     paint()
     return box
 

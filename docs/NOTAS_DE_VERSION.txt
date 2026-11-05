@@ -7,6 +7,21 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.9.1   (5 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES
+  · LAS BUILDS SE VEN TODAS A LA VEZ SI CABEN: con la ventana ancha (la
+    pestaña «Partida» o el Asesor a pantalla grande) se muestran en
+    columnas «Más usada», «Variantes» (con la segunda opinión de op.gg) y
+    «Situaciones». Si no caben, se elige la vista con los botones de
+    arriba, como antes.
+
+CORRECCIONES
+  · Las builds «contra un rival» guardadas antes de la regla de 100
+    partidas se vuelven a descargar (si no, seguían saliendo cifras de
+    26 partidas).
+
 VERSIÓN 1.9.0   (5 de noviembre de 2026)
 ---------------------------------------------------------------------
 
