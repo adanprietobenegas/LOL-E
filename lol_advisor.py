@@ -14,7 +14,7 @@ import synergy
 import trends
 from sounds import SOUNDS, synth_wav, play_alert, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.11.2"
+APP_NAME, APP_VERSION = "LOL-E", "1.12.0"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -45,6 +45,7 @@ DEFAULT_CONF = {
     "volume": 0.7,           # 0 a 1
     "preset": "equilibrado",
     "folds": {},             # qué secciones plegables están abiertas
+    "win_geo": "",           # tamaño y posición de la ventana la última vez (para abrirla en el mismo monitor)
     "rec_view": "carrusel",  # carrusel | lista | listas
     "list_n": 20,            # cuántos campeones por lista en la vista «Listas»
     "meta_enabled": True,    # meta del parche (Lolalytics)

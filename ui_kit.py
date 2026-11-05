@@ -26,6 +26,19 @@ ROLES_ES = {"TOP": "Superior", "JUNGLE": "Jungla", "MIDDLE": "Central", "BOTTOM"
 TIER_COLORS = {"IRON": "#9a9a9a", "BRONZE": "#c0804a", "SILVER": "#b4c2d0", "GOLD": "#e8bd4e", "PLATINUM": "#4fc0b0",
                "EMERALD": "#3ddc84", "DIAMOND": "#6a9bff", "MASTER": "#c06bff", "GRANDMASTER": "#ff6b6b", "CHALLENGER": "#ffd86b"}
 ON_FILL = ("#ffffff", "#07101a")
+REC_VIEWS = {"carrusel": "Carrusel", "lista": "Lista", "listas": "Por categorías"}   # valor guardado -> texto del botón
+
+
+def trim(im):
+    """Recorta el marco oscuro del icono de campeón de forma simétrica y proporcional (los iconos miden 128 px, no 120)."""
+    w, h = im.size
+    m = round(w * 0.04)
+    return im.crop((m, m, w - m, h - m))
+
+
+def ctl(x):
+    """Control del equipo en palabras: «2,2 de 3» (coma decimal, sin barra)."""
+    return f"{x:.1f}".replace(".", ",") + " de 3"
 DISPLAY, BODY = "Chakra Petch", "Segoe UI"
 
 
@@ -294,7 +307,7 @@ class Kit:
         arrow.pack(side="left", padx=(10, 2), pady=7)
         ttl = tk.Label(head, text=title, bg=card, fg=fg, font=self.tkf(11, True, False), anchor="w")
         ttl.pack(side="left")
-        sm = tk.Label(head, text=summary, bg=card, fg=dim, font=self.tkf(9, False, False), anchor="e")
+        sm = tk.Label(head, text=summary, bg=card, fg=dim, font=self.tkf(10, False, False), anchor="e")
         sm.pack(side="right", padx=12)
         act = None
         if action:  # botón de texto en la cabecera (por ejemplo «Restablecer»): se ve aunque la sección esté plegada
@@ -503,7 +516,7 @@ class Kit:
             return None
         try:
             S = size * 2
-            im = Image.open(path).convert("RGBA").crop((6, 6, 114, 114)).resize((S, S), Image.LANCZOS)
+            im = trim(Image.open(path).convert("RGBA")).resize((S, S), Image.LANCZOS)
             mask = Image.new("L", (S, S), 0)
             ImageDraw.Draw(mask).rounded_rectangle((0, 0, S - 1, S - 1), radius=int(S * .22), fill=255)
             out = Image.new("RGBA", (S, S), (0, 0, 0, 0))
@@ -659,7 +672,7 @@ class Kit:
             face = Image.new("RGBA", (inner, inner), fill or (60, 70, 85, 255))
             if path and os.path.exists(path) and not fill:
                 try:
-                    face = Image.open(path).convert("RGBA").crop((8, 8, 112, 112)).resize((inner, inner), Image.LANCZOS)
+                    face = trim(Image.open(path).convert("RGBA")).resize((inner, inner), Image.LANCZOS)
                 except Exception:
                     pass
             mask = Image.new("L", (inner, inner), 0)

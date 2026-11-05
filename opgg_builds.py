@@ -1,4 +1,4 @@
-"""Builds de op.gg como segunda opinión: objetos iniciales, botas, builds de núcleo y orden de habilidades.
+"""Builds de op.gg como segunda opinión: objetos iniciales, botas, builds de objetos principales y orden de habilidades.
 
 Cada web calcula con su muestra y sus filtros de rango, así que las builds no siempre coinciden con las de Lolalytics: mostrar las dos
 ayuda a ver en qué hay acuerdo. La página se descarga con PowerShell (oculto) porque Python rechaza a veces la cadena de certificados

@@ -10,7 +10,7 @@ import lol_advisor as core
 from ui_history import fecha
 from ui_kit import PAL
 
-CHARTS = ["Oro del equipo", "Oro vs rival", "Experiencia", "Súbditos", "Recorrido"]
+CHARTS = ["Oro del equipo", "Oro vs rival", "Experiencia", "Súbditos", "Ruta en el mapa"]
 ORDER = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "SUPPORT"]
 ROLE_ES = analysis.ROLE_ES
 
@@ -167,7 +167,7 @@ class AnalysisView:
         row.pack(fill="x", padx=16, pady=12)
         left = ui.frame(row)
         left.pack(side="left")
-        ui.champ(left, m["champ"], 54, False, self.hx(ui.acc)).pack(side="left", padx=(0, 10))
+        ui.champ(left, m["champ"], 56, False, self.hx(ui.acc)).pack(side="left", padx=(0, 10))
         t = ui.frame(left)
         t.pack(side="left")
         ui.lbl(t, "TÚ", 9, "dim", True).pack(anchor="w")
@@ -187,7 +187,7 @@ class AnalysisView:
         ui.lbl(t2, "COMPARADO CON", 9, "dim", True, anchor="e").pack(anchor="e")
         ui.lbl(t2, self.cname(o["champ"]), 17, "fg", True, True, anchor="e").pack(anchor="e")
         ui.lbl(t2, ROLE_ES.get(o["role"], "?") + (" · rival directo" if opp == analysis.default_opp(a) else ""), 10, "dim", anchor="e").pack(anchor="e")
-        ui.champ(right, o["champ"], 54, False, self.hx("bad")).pack(side="left")
+        ui.champ(right, o["champ"], 56, False, self.hx("bad")).pack(side="left")
         # el rival se puede cambiar: por si la línea no se deduce bien o quieres compararte con otro
         labels = {f"{self.cname(p['champ'])} · {ROLE_ES.get(p['role'], '?')}": p["pid"] for p in sorted(analysis.enemies(a), key=lambda p: ORDER.index(p["role"]) if p["role"] in ORDER else 9)}
         cur = next(k for k, v in labels.items() if v == opp)
@@ -242,7 +242,7 @@ class AnalysisView:
     def charts(self, host, a, opp):
         ui, gv = self.ui, self.gv
         o = analysis.player(a, opp) if opp is not None else None
-        names = [c for c in CHARTS if opp is not None or c in ("Oro del equipo", "Recorrido")]
+        names = [c for c in CHARTS if opp is not None or c in ("Oro del equipo", "Ruta en el mapa")]
         if gv.chart not in names:
             gv.chart = names[0]
         self.section(host, "EVOLUCIÓN DE LA PARTIDA")
@@ -250,7 +250,7 @@ class AnalysisView:
         self.hover = ui.lbl(host, "Pasa el ratón por el gráfico para ver cada minuto.", 9, "dim", anchor="w")
         self.hover.pack(anchor="w", pady=(0, 2))
         W = self.avail()
-        if gv.chart == "Recorrido":
+        if gv.chart == "Ruta en el mapa":
             self.path(host, a, min(W, 460))
         else:
             self.chart(host, a, opp, gv.chart, W)
@@ -258,8 +258,8 @@ class AnalysisView:
                   "Oro vs rival": f"Tu oro menos el de {self.cname(o['champ']) if o else 'tu rival'}.",
                   "Experiencia": f"Tu experiencia menos la de {self.cname(o['champ']) if o else 'tu rival'}.",
                   "Súbditos": f"Súbditos y monstruos: tú (color) y {self.cname(o['champ']) if o else 'tu rival'} (gris).",
-                  "Recorrido": "Tu posición al inicio de cada minuto; la cifra marca los minutos 0, 5, 10… Las bases están en las esquinas."}[gv.chart]
-        extra = "   ▲ tus muertes   ● tus asesinatos   ◆ objetivos épicos (verde: tuyos, rojo: rivales)" if gv.chart != "Recorrido" else ""
+                  "Ruta en el mapa": "Tu posición al inicio de cada minuto; la cifra marca los minutos 0, 5, 10… Las bases están en las esquinas."}[gv.chart]
+        extra = "   ▲ tus muertes   ● tus asesinatos   ◆ objetivos épicos (verde: tuyos, rojo: rivales)" if gv.chart != "Ruta en el mapa" else ""
         ui.lbl(host, legend + extra, 9, "dim", anchor="w", justify="left", wraplength=max(260, gv.width - 110)).pack(anchor="w", pady=(2, 0))
 
     def chart(self, host, a, opp, which, W):
@@ -450,6 +450,7 @@ class AnalysisView:
             H = head + row_h * len(ps) + 6
             cv = tk.Canvas(host, width=S(W), height=S(H), bg=ui.bg(host), highlightthickness=0, bd=0)
             cv.pack(anchor="w", pady=(0, 8))
+            cv.image = []
             ui.rrect(cv, 0, 0, S(W) - 1, S(H) - 1, S(10), fill=self.hx("card2"), outline="")
             fb, f9, f11 = ui.tkf(11, True, False), ui.tkf(9, False, False), ui.tkf(11, False, False)
             dim, fg, acc = self.hx("dim"), self.hx("fg"), self.hx(ui.acc)
@@ -478,7 +479,7 @@ class AnalysisView:
                 ph = ui.champ_photo(p["champ"], 26)
                 if ph is not None:
                     cv.create_image(S(12), S(y + 5), image=ph, anchor="nw")
-                    cv.image = getattr(cv, "image", []) + [ph]
+                    cv.image.append(ph)
                 cv.create_text(S(46), S(y + 11), text=ui.fit(self.cname(p["champ"]), fb, S(130)), fill=fg, font=fb, anchor="w")
                 cv.create_text(S(46), S(y + 25), text=ROLE_ES.get(p["role"], ""), fill=dim, font=f9, anchor="w")
                 cv.create_text(S(x_kda), S(y + row_h / 2), text=f"{p['k']} / {p['d']} / {p['a']}", fill=fg, font=f11, anchor="w")
@@ -511,8 +512,11 @@ class AnalysisView:
         good = [x["title"] for x in items if x["tone"] == "good"][:2]
         key = bad if (bad and not a["win"]) or (bad and not good) else good or bad
         if key:
-            ui.lbl(host, ("Lo que más pesó: " if key is bad else "Lo mejor: ") + " · ".join(key), 11, "bad" if key is bad else "good", True, anchor="w",
-                   justify="left", wraplength=max(260, self.gv.width - 110)).pack(anchor="w", pady=(0, 6))
+            line = ui.frame(host)
+            line.pack(anchor="w", pady=(0, 6))
+            ui.lbl(line, "Lo que más pesó:  " if key is bad else "Lo mejor:  ", 11, "dim", True).pack(side="left")
+            ui.lbl(line, " · ".join(key), 11, "bad" if key is bad else "good", True, anchor="w", justify="left",
+                   wraplength=max(240, self.gv.width - 260)).pack(side="left")
         for it in items[:9]:
             color = {"good": "good", "bad": "bad"}.get(it["tone"], "info")
             card = tk.Frame(host, bg=self.hx("card2"))
@@ -616,6 +620,8 @@ class AnalysisView:
         ui.seg(host, list(self.FILTERS), self.mfilter, self.set_mfilter, height=26, width=min(440, gv.width - 120)).pack(anchor="w", pady=(0, 8))
         W = self.avail()
         self.timeline(host, a, ev, W, cat)
+        ui.lbl(host, "● asesinato   ○ asistencia   ▼ muerte   ◆ dragón   ⬢ Barón   ◇ Heraldo   □ larvas   ▮ torre   ·   verde: tuyo o de tu equipo, rojo: rival, "
+                     "aro dorado: participaste", 9, "dim", anchor="w", justify="left", wraplength=max(260, gv.width - 110)).pack(anchor="w", pady=(0, 8))
         shown = [e for e in ev if cat is None or e["cat"] == cat]
         for i, (name_, lo, hi) in enumerate(self.PHASES):
             part = [e for e in shown if lo <= e["t"] < hi]
@@ -682,6 +688,7 @@ class AnalysisView:
         H = RH * len(part) + 4
         cv = tk.Canvas(host, width=S(W), height=S(H), bg=ui.bg(host), highlightthickness=0, bd=0)
         cv.pack(anchor="w", pady=(2, 4))
+        cv.image = []
         card, fg, dim, acc = self.hx("card2"), self.hx("fg"), self.hx("dim"), self.hx(ui.acc)
         hl = cv.create_rectangle(0, 0, 0, 0, fill=mix(card, fg, 0.10), outline="")
         fb, f10 = ui.tkf(10, True, False), ui.tkf(10, False, False)
@@ -695,7 +702,7 @@ class AnalysisView:
                 ph = ui.champ_photo(cid, 22)
                 if ph is not None:
                     cv.create_image(S(x), S(y + 4), image=ph, anchor="nw")
-                    cv.image = getattr(cv, "image", []) + [ph]
+                    cv.image.append(ph)
                     x += 30
             cv.create_text(S(x), S(y + RH / 2), text=ui.fit(e["text"], f10, S(W - x - 20)), fill=fg, font=f10, anchor="w")
 

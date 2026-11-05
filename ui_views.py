@@ -152,7 +152,7 @@ class MatchupView:
         self.f_show = ui.seg(r, SHOWS, self.filt["show"], lambda v: self.set_filt("show", v), height=28)
         self.f_show.pack(fill="x", pady=(0, 6))
         self.f_menus = {}
-        groups = [(("Clase", list(CLASSES), "clase", 110), ("Orden", ORDERS, "order", 150), ("Partidas ≥", list(MIN_GAMES), "min", 90))]
+        groups = [(("Clase", list(CLASSES), "clase", 110), ("Orden", ORDERS, "order", 150), ("Mín. partidas", list(MIN_GAMES), "min", 90))]
         if self.level == 0:
             groups = [(g,) for pair in groups for g in pair]
         for pair in groups:
@@ -478,8 +478,8 @@ class MatchupView:
         if self.enemy:
             small_btn(ui, inner, "Quitar", self.clear_enemy, 64).pack(side="right")
         if lane:
-            small_btn(ui, inner, "Su build" if not self.rival_open else "Ocultar su build",
-                      lambda: self.toggle_rival(enemy, lane), 110).pack(side="right", padx=(0, 6))
+            small_btn(ui, inner, f"Ver build de {ui.champs[enemy]['name']}" if not self.rival_open else "Ocultar build",
+                      lambda: self.toggle_rival(enemy, lane), 170).pack(side="right", padx=(0, 6))
         self.paint_rival(enemy, lane)
 
     def paint_rising(self, lane):

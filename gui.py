@@ -14,7 +14,7 @@ import updater
 from lol_advisor import APP_NAME, APP_VERSION, CACHE, DATA_DIR, PRESET_INFO, read_json, save_conf
 from ui_history import HistoryView
 from ui_views import DataView, MatchupView
-from ui_kit import ACCENTS, DISPLAY, Kit, PAL, THEMES, res
+from ui_kit import REC_VIEWS, ACCENTS, DISPLAY, Kit, PAL, THEMES, res
 from ui_game import GameView
 from ui_sections import (SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
                          WaitCard)
@@ -130,11 +130,50 @@ class GUI:
         except Exception:
             return 1.0
 
+    def virtual_screen(self):
+        """(x, y, ancho, alto) del escritorio completo, con todos los monitores (el secundario puede tener coordenadas negativas)."""
+        try:
+            import ctypes
+            u = ctypes.windll.user32
+            return u.GetSystemMetrics(76), u.GetSystemMetrics(77), u.GetSystemMetrics(78), u.GetSystemMetrics(79)
+        except Exception:
+            return 0, 0, self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+
+    def saved_geometry(self):
+        """Tamaño y posición de la última vez (o de la variable LOLE_GEOMETRY de las pruebas), solo si caen dentro de algún monitor."""
+        import re
+        geo = os.environ.get("LOLE_GEOMETRY") or self.conf.get("win_geo") or ""
+        nums = re.findall(r"-?\d+", geo)
+        if len(nums) != 4:
+            return None
+        w, h, x, y = (int(n) for n in nums)
+        vx, vy, vw, vh = self.virtual_screen()
+        if w < 400 or h < 400 or not (vx - 50 < x + 150 < vx + vw) or not (vy - 10 < y + 40 < vy + vh - 60):
+            return None
+        return w, h, x, y
+
     def initial_geometry(self):
+        saved = self.saved_geometry()
+        if saved:
+            w, h, x, y = saved
+            tk.Wm.geometry(self.root, f"{w}x{h}+{x}+{y}")
+            return
         s = self.win_scale()
         sh = self.root.winfo_screenheight()
         w, h = int(560 * s), min(int(900 * s), sh - int(100 * s))
         tk.Wm.geometry(self.root, f"{w}x{h}+{int(30 * s)}+{int(10 * s)}")
+
+    def save_geometry(self):
+        """Guarda dónde está la ventana para abrirla en el mismo sitio (no se guarda si es normal que esté maximizada o durante las pruebas)."""
+        self._gs = None
+        if os.environ.get("LOLE_GEOMETRY"):
+            return
+        try:
+            if self.root.state() == "normal":
+                self.conf["win_geo"] = self.root.geometry()
+                save_conf(self.conf)
+        except Exception:
+            pass
 
     def ensure_normal(self):
         """Si Windows dejó la ventana maximizada sin que lo pidas, la devolvemos a su tamaño."""
@@ -596,6 +635,9 @@ class GUI:
     def on_resize(self, e):
         if e.widget is self.root and not self.docking:
             self.layout_main(e.width)
+            if getattr(self, "_gs", None):
+                self.root.after_cancel(self._gs)
+            self._gs = self.root.after(1500, self.save_geometry)  # al dejar de moverla o cambiarle el tamaño
         if e.widget is self.root and not self.docking and abs(e.width - self.last_w) > 24:
             self.last_w = e.width
             if self._rs:
@@ -620,7 +662,7 @@ class GUI:
 
     def update_footer(self):
         meta = read_json(core.opgg_path(self.conf), {})
-        age = f"op.gg · actualizado hace {(time.time() - meta['ts']) / 3600:.0f} h" if meta.get("ts") else "op.gg · sin datos aún"
+        age = f"op.gg · actualizado hace {(time.time() - meta['ts']) / 3600:.0f} h" if meta.get("ts") else "op.gg: sin datos todavía"
         self.footer.configure(text=f"{self.status_text}     {age}" if self.status_text else age)
 
     def vol_icon(self):
@@ -841,7 +883,7 @@ class GUI:
                               hover_color=PAL["card2"], text_color=PAL["fg"], command=self.close_dock)
         close.pack(side="right")
         k.smooth_btn(close, PAL["card2"], PAL["border"])
-        k.clbl(d, "Los cambios se aplican al instante y se guardan solos.", 10, "dim", anchor="w", wraplength=300,
+        k.clbl(d, "Los cambios se aplican al instante y se guardan solos.", 10, "dim", anchor="w", wraplength=self.note_w(),
                justify="left").pack(anchor="w", padx=22, pady=(2, 0))
         sc = ctk.CTkScrollableFrame(d, fg_color="transparent")
         sc.pack(fill="both", expand=True, padx=8, pady=(4, 10))
@@ -850,7 +892,7 @@ class GUI:
             k.clbl(sc, text.upper(), 10, "dim", True).pack(anchor="w", padx=12, pady=(18, 4))
 
         def note(text):
-            k.clbl(sc, text, 10, "dim", wraplength=300, justify="left", anchor="w").pack(anchor="w", padx=14, pady=(0, 4))
+            k.clbl(sc, text, 10, "dim", wraplength=self.note_w(), justify="left", anchor="w").pack(anchor="w", padx=14, pady=(0, 4))
 
         def label(text):
             k.clbl(sc, text, 11, "dim").pack(anchor="w", padx=12, pady=(8, 0))
@@ -905,12 +947,13 @@ class GUI:
 
         section("Recomendaciones")
         label("Forma de verlas")
-        seg(["Carrusel", "Lista", "Listas"], conf["rec_view"].capitalize(), lambda v: self.set("rec_view", v.lower()))
+        seg(list(REC_VIEWS.values()), REC_VIEWS.get(conf["rec_view"], "Carrusel"),
+            lambda v: self.set("rec_view", next((k for k, t in REC_VIEWS.items() if t == v), v.lower())))
         label("Cuántas mostrar")
         seg(["3", "4", "5", "6", "8"], str(conf["top_n"]), lambda v: self.set("top_n", int(v)))
         names = {v[0]: key for key, v in PRESET_INFO.items()}
         label("Estilo")
-        desc = k.clbl(sc, PRESET_INFO[conf["preset"]][1], 11, "dim", wraplength=300, justify="left")
+        desc = k.clbl(sc, PRESET_INFO[conf["preset"]][1], 11, "dim", wraplength=self.note_w(), justify="left")
 
         def pick(v):
             key = names[v]
@@ -961,8 +1004,17 @@ class GUI:
         section("Acerca de")
         k.clbl(sc, f"{APP_NAME} {APP_VERSION}\nNo está respaldado por Riot Games ni refleja las opiniones de Riot Games "
                    "ni de nadie que participe oficialmente en League of Legends. Solo lee la selección de campeón "
-                   "de tu cliente; nunca interviene en la partida.", 10, "dim", wraplength=300, justify="left").pack(
+                   "de tu cliente; nunca interviene en la partida.", 10, "dim", wraplength=self.note_w(), justify="left").pack(
             anchor="w", padx=14, pady=(0, 10))
+
+    def note_w(self):
+        """Ancho para las notas del panel de ajustes: el del panel menos sus márgenes (antes era fijo y cortaba textos)."""
+        try:
+            if self.dock_dw <= 0:
+                return 300
+            return max(220, int(self.dock_dw / self.kit.scale_px()) - 70)
+        except Exception:
+            return 300
 
     def copy_diagnostics(self):
         extra = [f"Interfaz: escala {self.conf['scale']}, tema {self.conf['theme']}, ventana {self.root.winfo_width()}x{self.root.winfo_height()}, "

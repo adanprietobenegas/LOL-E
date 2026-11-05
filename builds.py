@@ -9,7 +9,7 @@ import json, os, re, threading, time, urllib.request
 import matchups
 
 TTL = 24 * 3600
-MIN_VS = 100  # partidas mínimas del núcleo para fiarse de la build «contra un rival»
+MIN_VS = 100  # partidas mínimas de los objetos principales para fiarse de la build «contra un rival»
 UA = matchups.UA
 _state = {}   # clave -> ("loading",) | ("ok", datos) | ("error", texto)
 _lock = threading.Lock()

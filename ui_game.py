@@ -20,7 +20,7 @@ from ui_kit import PAL, ROLES_ES
 from ui_views import small_btn
 
 TABS = ["Plan", "Análisis"]
-CHARTS = ["Oro del equipo", "Oro vs rival", "Experiencia", "Súbditos", "Recorrido"]
+CHARTS = ["Oro del equipo", "Oro vs rival", "Experiencia", "Súbditos", "Ruta en el mapa"]
 STATE = {"select": "En selección", "game": "Partida en curso", "done": "Última partida"}
 LANE_OF = {"TOP": "top", "JUNGLE": "jungle", "MIDDLE": "middle", "BOTTOM": "bottom", "SUPPORT": "support"}
 
@@ -173,7 +173,7 @@ class GameView:
         als = core.comp_stats(plan.get("allies") or [], champs)
         tips = list(core.build_tips(champs[plan["cid"]], ens, als))
         if role == "JUNGLE":
-            tips.append(("Recorrido", "Ninguna fuente pública fiable da recorridos de jungla por campeón. Al acabar la partida, en «Análisis → Recorrido» "
+            tips.append(("Ruta en el mapa", "Ninguna fuente pública fiable da recorridos de jungla por campeón. Al acabar la partida, en «Análisis → Ruta en el mapa» "
                                       "ves por dónde fuiste tú, minuto a minuto, para compararlo con lo que querías hacer."))
         if not tips:
             return

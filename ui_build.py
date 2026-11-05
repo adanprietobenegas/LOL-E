@@ -7,7 +7,7 @@ import builds
 import opgg_builds
 import lol_advisor as core
 import runes as runemod
-from ui_kit import PAL
+from ui_kit import PAL, ctl
 
 SKILLS = {"q": "Q", "w": "W", "e": "E", "r": "R"}
 
@@ -164,7 +164,7 @@ def _chain(ui, parent, ids, notes=None):
 
 def other_source(ui, parent, d, champs, cid, width, lane, again):
     """Builds de op.gg junto a las de Lolalytics: cada web calcula con su muestra, y ver las dos enseña en qué hay acuerdo."""
-    ui.lbl(parent, "SEGUNDA OPINIÓN · OP.GG", 10, "dim", True, anchor="w").pack(anchor="w", pady=(14, 4))
+    ui.lbl(parent, "SEGÚN OP.GG", 10, "dim", True, anchor="w").pack(anchor="w", pady=(14, 4))
     key = opgg_builds.request(core.CACHE, champs[cid], lane)
     st = opgg_builds.peek(key)
     if st[0] == "loading":
@@ -178,7 +178,7 @@ def other_source(ui, parent, d, champs, cid, width, lane, again):
     txt = lambda r: f"{r['pr']:.1f} % de uso".replace(".", ",") + f" · {r['wr']:.1f} % victorias".replace(".", ",") + f" · {r['games']:,}".replace(",", ".") + " partidas"
     mine = set((d.get("items") or {}).get("core") or [])
     for n, r in enumerate(o["core"][:3], 1):
-        row = _row(ui, parent, f"Núcleo {n}")
+        row = _row(ui, parent, f"Principal {n}")
         line = ui.frame(row)
         line.pack(anchor="w")
         _chain(ui, line, r["items"])
@@ -186,7 +186,7 @@ def other_source(ui, parent, d, champs, cid, width, lane, again):
     top = set(o["core"][0]["items"])
     same = len(top & mine)
     nboots = sum(1 for i in mine if is_boots(ui, i))
-    ui.lbl(parent, f"Su núcleo más usado comparte {same} de {len(top)} objetos con el de Lolalytics" + ("." if same < len(top) else ": coinciden."),
+    ui.lbl(parent, f"Sus objetos principales más usados comparten {same} de {len(top)} con los de Lolalytics" + ("." if same < len(top) else ": coinciden."),
            9, "good" if same == len(top) else "dim", anchor="w").pack(anchor="w", pady=(2, 4))
     if o.get("boots"):
         b = _row(ui, parent, "Botas")
@@ -248,14 +248,14 @@ def variants(ui, parent, d, champs, cid, width, lane=None, again=None):
                9, "dim", anchor="w").pack(anchor="w")
     if len(shown) == 1:
         ui.lbl(parent, "La build más jugada es también la de mayor porcentaje de victorias.", 9, "dim", anchor="w").pack(anchor="w")
-    ui.lbl(parent, "OPCIONES EN CADA HUECO", 10, "dim", True, anchor="w").pack(anchor="w", pady=(12, 4))
+    ui.lbl(parent, "ALTERNATIVAS POR OBJETO", 10, "dim", True, anchor="w").pack(anchor="w", pady=(12, 4))
     if st.get("start"):
         b0 = _row(ui, parent, "Inicio")
         for i in it.get("start") or []:
             _item(ui, b0, i)
         ui.lbl(b0, "  " + pct_txt(st["start"]), 9, "dim").pack(side="left")
     if st.get("core"):
-        b0 = _row(ui, parent, "Núcleo")
+        b0 = _row(ui, parent, "Principales")
         _chain(ui, b0, core)
         ui.lbl(b0, "  " + pct_txt(st["core"]), 9, "dim").pack(side="left")
     for k, label in (("i4", "4.º objeto"), ("i5", "5.º objeto"), ("i6", "6.º objeto")):
@@ -295,7 +295,7 @@ def situations(ui, parent, d, champs, ens, width):
             pool.append(i)
     ui.lbl(parent, "SEGÚN LA SITUACIÓN", 10, "dim", True, anchor="w").pack(anchor="w", pady=(16, 2))
     if ens:
-        ui.lbl(parent, f"Equipo rival ahora: {ens['ad']} de daño físico, {ens['ap']} de mágico, {ens['tanks']} tanques, control {ens['cc']:.1f}/3.",
+        ui.lbl(parent, f"Equipo rival ahora: {ens['ad']} de daño físico, {ens['ap']} de mágico, {ens['tanks']} tanques, control {ctl(ens['cc'])}.",
                9, "dim", anchor="w").pack(anchor="w", pady=(0, 6))
     n = 0
     for title, what, test, now in SITUATIONS:
@@ -310,7 +310,7 @@ def situations(ui, parent, d, champs, ens, width):
         ui.lbl(head, title, 12, "fg", True, anchor="w").pack(side="left")
         ui.lbl(head, f"  ·  {what}", 10, "dim").pack(side="left")
         if now(ens):
-            ui.chip(head, "aplica ahora", "good").pack(side="left", padx=(8, 0))
+            ui.chip(head, "recomendado ahora", "good").pack(side="left", padx=(8, 0))
         line = ui.frame(row)
         line.pack(anchor="w", pady=(3, 0))
         for i in found:
@@ -395,12 +395,12 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None):
         ui.lbl(b, "  nivel 2 → nivel 3", 9, "dim").pack(side="left")
     core = [i for i in (it.get("core") or []) if not is_boots(ui, i)]
     if core:
-        b = _row(ui, parent, "Núcleo")
+        b = _row(ui, parent, "Principales")
         for n, i in enumerate(core):
             if n:
                 ui.lbl(b, "›", 13, "dim").pack(side="left")
             _item(ui, b, i)
-    for k, label in (("i4", "Siguiente"), ("i5", "Después"), ("i6", "Al final")):
+    for k, label in (("i4", "4.º objeto"), ("i5", "5.º objeto"), ("i6", "6.º objeto")):
         opts = [i for i in (it.get(k) or []) if not is_boots(ui, i)]
         if opts:
             b = _row(ui, parent, label)

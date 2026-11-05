@@ -16,7 +16,7 @@ from ui_build import build_panel
 from ui_pool import PoolPanel
 from lol_advisor import name
 import matchups
-from ui_kit import PAL, TIER_COLORS, ROLES_ES, PHASES, ON_FILL, col, hexc, partidas, pct_es
+from ui_kit import PAL, TIER_COLORS, ROLES_ES, PHASES, ON_FILL, REC_VIEWS, ctl, col, hexc, partidas, pct_es
 from ui_history import fecha as history_fecha_full, mode_of
 from ui_views import breakdown_rows, mini_bar, open_url, small_btn
 
@@ -869,8 +869,8 @@ class Recs(Section):
         head.pack(fill="x", pady=(0, 8))
         ui.lbl(head, "CAMBIO DE CAMPEÓN (BANQUILLO)" if self.kind() == "aram" else "RECOMENDADO PARA TI", 10, "dim", True).pack(side="left")
         if not compact:
-            ui.seg(head, ["Carrusel", "Lista", "Listas"], ui.conf["rec_view"].capitalize(),
-                   self.set_view, width=230, height=26).pack(side="right")
+            ui.seg(head, list(REC_VIEWS.values()), REC_VIEWS.get(ui.conf["rec_view"], "Carrusel"),
+                   self.set_view, width=280, height=26).pack(side="right")
             if self.kind() == "sr":
                 self.filter_bar(c)
         self.dyn = ui.frame(c)
@@ -903,7 +903,7 @@ class Recs(Section):
         r2.pack(fill="x", pady=(8, 0))
         for text, key in (("Mi rol", "mi_rol"), ("Mis campeones", "mios"), ("Meta fuerte", "meta")):
             self.toggle(r2, text, key)
-        small_btn(ui, r2, "Restablecer", self.reset_filters, 96).pack(side="right")
+        small_btn(ui, r2, "Restablecer filtros", self.reset_filters, 140).pack(side="right")
 
     def toggle(self, parent, text, key):
         ui = self.ui
@@ -963,7 +963,7 @@ class Recs(Section):
 
     # ---- navegación ----
     def set_view(self, v):
-        self.ui.conf["rec_view"] = v.lower()
+        self.ui.conf["rec_view"] = next((k for k, t in REC_VIEWS.items() if t == v), v.lower())
         core.save_conf(self.ui.conf)
         self.render()
 
@@ -1012,7 +1012,7 @@ class Recs(Section):
             return
         if not self.vis:
             ui.lbl(self.dyn, "Ningún campeón cumple los filtros.", 11, "dim").pack(anchor="w", pady=(4, 6))
-            ctk.CTkButton(self.dyn, text="Quitar filtros", height=28, font=ui.font(11), fg_color=PAL["card2"], text_color=PAL["fg"],
+            ctk.CTkButton(self.dyn, text="Restablecer filtros", height=28, font=ui.font(11), fg_color=PAL["card2"], text_color=PAL["fg"],
                           hover_color=PAL["border"], command=self.reset_filters).pack(anchor="w")
             return
         self.sel = min(self.sel, len(self.vis) - 1)
@@ -1491,7 +1491,7 @@ class Lobby(Section):
         if not ui.conf["show_teams"] or not r["ally_cells"]:
             return
         st0 = r["ally_stats"]
-        summ = f"{len(r['ally_cells'])} aliados" + (f" · físico {st0['ad']} / mágico {st0['ap']} · control {st0['cc']:.1f}/3" if st0 and st0["ad"] + st0["ap"] else "")
+        summ = f"{len(r['ally_cells'])} aliados" + (f" · físico {st0['ad']} / mágico {st0['ap']} · control {ctl(st0['cc'])}" if st0 and st0["ad"] + st0["ap"] else "")
         ui.fold(self.box, "Tu equipo", lambda c: self.fill(c, ctx), summ, "sel_team", False)
 
     def fill(self, c, ctx):
@@ -1513,7 +1513,7 @@ class Lobby(Section):
         if st and st["ad"] + st["ap"]:
             tot = st["ad"] + st["ap"]
             ui.bar(c, [(st["ad"] / tot, "warn"), (st["ap"] / tot, "info")], 7).pack(fill="x", pady=(8, 4))
-            ui.lbl(c, f"Daño físico {st['ad']} · mágico {st['ap']}   ·   Tanques {st['tanks']}   ·   Control {st['cc']:.1f}/3", 10,
+            ui.lbl(c, f"Daño físico {st['ad']} · mágico {st['ap']}   ·   Tanques {st['tanks']}   ·   Control {ctl(st['cc'])}", 10,
                    "dim", anchor="w").pack(anchor="w")
 
     def row(self, parent, a, p, in_party, party_n, loaded, mates=None):
@@ -1600,7 +1600,7 @@ class Enemies(Section):
             if tot:
                 ui.bar(info, [(st["ad"] / tot, "warn"), (st["ap"] / tot, "info")], 7).pack(fill="x", pady=(4, 4))
             ui.lbl(info, f"Daño físico {st['ad']}  ·  mágico {st['ap']}", 10, "dim", anchor="w").pack(anchor="w")
-            ui.lbl(info, f"Tanques {st['tanks']}  ·  control {st['cc']:.1f}/3", 10, "dim", anchor="w").pack(anchor="w")
+            ui.lbl(info, f"Tanques {st['tanks']}  ·  control {ctl(st['cc'])}", 10, "dim", anchor="w").pack(anchor="w")
             if st["tip"]:
                 ui.lbl(info, st["tip"], 10, "warn", True, anchor="w", wraplength=230, justify="left").pack(anchor="w", pady=(2, 0))
 

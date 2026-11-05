@@ -7,6 +7,28 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.12.0   (6 de noviembre de 2026)
+---------------------------------------------------------------------
+
+CORRECCIONES
+  · LOS RETRATOS DE CAMPEÓN ya no salen descentrados. Los iconos miden
+    128 px y se recortaban como si midieran 120, así que se cortaba la
+    barbilla y el lado derecho. Ahora el recorte es simétrico y
+    proporcional (también en las burbujas del historial).
+  · El marcador de Análisis y la lista de momentos ya no pueden quedarse
+    a medias si falta algún retrato.
+  · La cabecera de Análisis usa el mismo tamaño de retrato que la de Plan.
+
+CAMBIOS
+  · "Núcleo" pasa a llamarse "Principales" (los objetos principales de la
+    build). Los huecos de después son "4.º / 5.º / 6.º objeto".
+  · La ventana recuerda dónde estaba y se abre en el mismo monitor.
+  · Un solo nombre para limpiar filtros: "Restablecer filtros".
+  · Nombres más claros: "Ver build de (rival)", "Mín. partidas", "Ruta en
+    el mapa", "Según op.gg", "Alternativas por objeto", "Por categorías".
+  · El control del equipo se escribe "2,2 de 3". Leyenda de iconos bajo la
+    línea de momentos. Notas de Ajustes adaptadas al ancho del panel.
+
 VERSIÓN 1.11.2   (6 de noviembre de 2026)
 ---------------------------------------------------------------------
 
@@ -186,7 +208,7 @@ NOVEDADES
       Variantes: la build completa más jugada y la de mayor % de victorias
       (si difieren), el coste total en oro, y las opciones de cada hueco
       (4.º, 5.º, 6.º objeto) con su % de victorias y partidas. Debajo,
-      una SEGUNDA OPINIÓN de op.gg: sus 3 núcleos más usados, botas,
+      una SEGUNDA OPINIÓN de op.gg: sus 3 combinaciones de objetos principales más usadas, botas,
       objetos iniciales y orden de habilidades, con una línea que dice
       cuántos objetos comparte con Lolalytics. Antes cada web daba una
       build distinta (se vio con Graves) y solo se veía una.
@@ -285,7 +307,7 @@ VERSIÓN 1.8.1   (4 de noviembre de 2026)
 CORRECCIONES
   · BUILD CON BOTAS: la build recomendada separa las botas en su propia
     fila (con la mejora «nivel 2 → nivel 3»). Antes, en el tirador, las
-    botas se mezclaban con el núcleo y parecía que faltaba un objeto.
+    botas se mezclaban con los objetos principales y parecía que faltaba un objeto.
   · MISIONES DE LÍNEA: debajo de la build se explica la mejora propia de
     la línea (tirador: botas en la ranura de misión; central: botas de
     nivel 3 gratis; superior; jungla; apoyo). Fuentes secundarias de la
@@ -349,7 +371,7 @@ VERSIÓN 1.6.0   (4 de noviembre de 2026)
 
 NOVEDADES
   · BUILDS, OBJETOS Y RUNAS RECOMENDADAS: hechizos, runas (llave,
-    primarias, secundarias y fragmentos), objetos de inicio, núcleo y 4.º
+    primarias, secundarias y fragmentos), objetos de inicio, objetos principales y 4.º
     a 6.º, y orden de habilidades, con iconos y descripción al pasar el
     ratón. Se ven en la pestaña «Meta y build» del Asesor (contra tu
     rival de línea si ya ha elegido) y en Enfrentamiento: botón «Build»

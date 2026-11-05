@@ -100,7 +100,7 @@ class HistoryView:
         self.summary_host.pack(fill="x")
         desde = fecha(self.all[-1]["t"], False) if n else ""
         self.filter_fold = ui.fold(self.box, "Buscar y filtrar", lambda c: self.filters(c, n, wl, desde), self.filter_summary(), "hist_filters", False,
-                                   action=("Restablecer", self.clear_filters))
+                                   action=("Restablecer filtros", self.clear_filters))
         self.filter_fold.show_action(self.filters_active())
         self.list_card = ui.card(self.box)
         self.list_host = ui.frame(self.list_card)
@@ -145,7 +145,7 @@ class HistoryView:
                     side="left", padx=(0, 14 if not narrow else 8))
         bar = ui.frame(c)
         bar.pack(fill="x", pady=(8, 0))
-        small_btn(ui, bar, "Quitar filtros", self.clear_filters, 110).pack(side="left")
+        small_btn(ui, bar, "Restablecer filtros", self.clear_filters, 140).pack(side="left")
         small_btn(ui, bar, "Actualizar", self.update_now, 90).pack(side="right")
         small_btn(ui, bar, "Exportar CSV", self.export_csv, 110).pack(side="right", padx=(0, 6))
 
