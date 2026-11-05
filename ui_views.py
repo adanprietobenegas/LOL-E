@@ -434,7 +434,21 @@ class MatchupView:
         opp = ((self.gui.ctx.get("info") or {}).get("opp") or {})
         mine = opp.get(enemy) or opp.get(str(enemy))
         if mine and mine[0]:
-            ui.lbl(mid, f"Has jugado {partidas(mine[0])} contra {ui.champs[enemy]['name']}: {mine[1]} derrotas.", 10, ui.acc, anchor="w").pack(anchor="w")
+            g, lost = mine[0], mine[1]
+            wins = max(0, g - lost)
+            wr = round(wins / g * 100)
+            row = ui.frame(mid)
+            row.pack(anchor="w")
+            ui.lbl(row, f"Tus partidas contra {ui.champs[enemy]['name']}: {g}  ·  ", 10, "dim", anchor="w").pack(side="left")
+            ui.lbl(row, f"{wins}V {lost}D  ({wr} %)", 10, "good" if wins * 2 >= g else "bad", True, anchor="w").pack(side="left")
+            vs = ((self.gui.ctx.get("info") or {}).get("vs_enemy") or {})
+            det = vs.get(enemy) or vs.get(str(enemy)) or []
+            if det:
+                txt = "  ·  ".join(f"{ui.champs[c]['name']} {w}V {gg - w}D" for c, gg, w in det[:3] if c in ui.champs)
+                if txt:
+                    ui.lbl(mid, "Con " + txt, 9, "dim", anchor="w").pack(anchor="w")
+            if g < 5:
+                ui.lbl(mid, "Pocas partidas: tómalo como una pista, no como una regla.", 9, "dim", anchor="w").pack(anchor="w")
         if self.enemy:
             small_btn(ui, inner, "Quitar", self.clear_enemy, 64).pack(side="right")
         if lane:
@@ -521,11 +535,20 @@ class MatchupView:
                           "Se muestra porque hay datos, pero no te fíes tanto como de uno con muchas partidas.")
 
     def tag_of(self, r, g, owned):
-        return (f"Lo has jugado: {partidas(g)}", "info") if g else (("No lo tienes", "warn") if owned and r["cid"] not in owned
-                                                                    else ("No lo has jugado", "dim"))
+        info = getattr(self, "_info", None) or {}
+        enemy = getattr(self, "_enemy", None)
+        if enemy:  # tu resultado con este campeón contra este rival, si lo hay
+            for o, gg, ww in (info.get("champ_vs") or {}).get(r["cid"], []) or (info.get("champ_vs") or {}).get(str(r["cid"]), []):
+                if o == enemy and gg:
+                    return f"Contra él: {ww}V {gg - ww}D", ("good" if ww * 2 >= gg else "bad")
+        if g:
+            w = ((info.get("stats") or {}).get(r["cid"]) or (info.get("stats") or {}).get(str(r["cid"])) or [0, 0])[1]
+            return f"Lo has jugado: {partidas(g)} · {round(w / g * 100)} %", "info"
+        return ("No lo tienes", "warn") if owned and r["cid"] not in owned else ("No lo has jugado", "dim")
 
     def render(self, ctx, enemy, lane, rows):
         ui = self.ui
+        self._info, self._enemy = ctx.get("info") or {}, enemy
         rows, owned = self.filtered(rows, ctx)
         wl = min(self.width - 90, 800)
         if not rows:

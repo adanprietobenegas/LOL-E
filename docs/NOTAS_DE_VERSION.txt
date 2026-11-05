@@ -19,6 +19,12 @@ NOVEDADES
     Mientras dudas dice «Lo estás eligiendo»; al bloquearlo, «Tu campeón
     elegido».
 
+  · TUS PARTIDAS CONTRA UN RIVAL, CON PORCENTAJE: en Enfrentamiento, la
+    ficha del rival decía solo «has jugado 2 partidas: 1 derrota». Ahora
+    muestra victorias, derrotas y porcentaje (con aviso si son pocas) y con
+    qué campeones tuyos las jugaste. En la lista, el aviso de cada campeón
+    pasa a «Contra él: 1V 0D» o «Lo has jugado: 5 · 60 %».
+
 CORRECCIONES
   · SALTOS Y BLOQUEOS DURANTE LA SELECCIÓN: cada gesto de los demás en la
     selección repintaba toda la ventana, a veces varias veces seguidas, y

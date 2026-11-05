@@ -831,13 +831,21 @@ def champ_vs(P):
     return {c: sorted(v, key=lambda x: -x[1])[:8] for c, v in out.items()}
 
 
+def vs_enemy(P):
+    """Con qué campeones tuyos has jugado contra cada rival: {rival: [(tu campeón, partidas, victorias)]}."""
+    out = {}
+    for (c, o), (g, w) in P["matchups"].items():
+        out.setdefault(o, []).append((c, g, w))
+    return {o: sorted(v, key=lambda x: -x[1])[:5] for o, v in out.items()}
+
+
 def player_info(P):
     pool = sorted(((cid, g, w) for cid, (g, w) in P["season"].items() if g >= 5), key=lambda x: -x[1])[:6]
     modes = [{"name": n, "games": P["modes"][n][0], "wins": P["modes"][n][1], "last": P["modes"][n][2][-10:]}
              for n in MODE_ORDER if P["modes"].get(n)]
     return {"rank": P["rank"], "record": P["record"], "form": P["form"], "games": P["games"], "pool": pool,
             "profile": P["profile"], "modes": modes, "owned": sorted(P["owned"]),
-            "opp": {k: list(v) for k, v in P["opp"].items()}, "champ_vs": champ_vs(P), "mastery_top": sorted(P["mastery"].items(), key=lambda x: -x[1])[:8], "mastery_all": dict(P["mastery"]), "season": {k: list(v) for k, v in P["season"].items()}, "stats": {k: list(v) for k, v in P["stats"].items()}}
+            "opp": {k: list(v) for k, v in P["opp"].items()}, "champ_vs": champ_vs(P), "vs_enemy": vs_enemy(P), "mastery_top": sorted(P["mastery"].items(), key=lambda x: -x[1])[:8], "mastery_all": dict(P["mastery"]), "season": {k: list(v) for k, v in P["season"].items()}, "stats": {k: list(v) for k, v in P["stats"].items()}}
 
 
 # ---------- Motor: lee el cliente y avisa a la pantalla (ventana o consola) ----------
