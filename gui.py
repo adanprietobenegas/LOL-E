@@ -15,7 +15,7 @@ from lol_advisor import APP_NAME, APP_VERSION, CACHE, DATA_DIR, PRESET_INFO, rea
 from ui_history import HistoryView
 from ui_views import DataView, MatchupView
 from ui_kit import ACCENTS, DISPLAY, Kit, PAL, THEMES, res
-from ui_sections import (SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard,
+from ui_sections import (SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
                          WaitCard)
 
 DOCK_W = 360
@@ -141,17 +141,33 @@ class GUI:
     def poll(self):
         if not self.running:
             return
+        evs = []
         try:
             while True:
-                ev = self.q.get_nowait()
-                kind = ev[0]
-                try:
-                    self.handle_event(ev, kind)
-                except Exception as e:  # un dato raro no debe dejar la ventana sin actualizarse
-                    self.status(f"Aviso: {type(e).__name__}: {e}")
+                evs.append(self.q.get_nowait())
         except queue.Empty:
             pass
+        for ev in evs:
+            kind = ev[0]
+            if kind == "show":
+                self.pending_show = ev  # de varios cambios seguidos solo cuenta el último
+                continue
+            if kind == "idle":
+                self.pending_show = None
+            try:
+                self.handle_event(ev, kind)
+            except Exception as e:  # un dato raro no debe dejar la ventana sin actualizarse
+                self.status(f"Aviso: {type(e).__name__}: {e}")
+        if self.pending_show is not None and time.time() - self.last_show_t >= 0.6:  # como mucho ~1,5 repintados por segundo
+            ev, self.pending_show = self.pending_show, None
+            self.last_show_t = time.time()
+            try:
+                self.handle_event(ev, "show")
+            except Exception as e:
+                self.status(f"Aviso: {type(e).__name__}: {e}")
         self.root.after(150, self.poll)
+
+    pending_show, last_show_t, last_turn = None, 0.0, None
 
     def handle_event(self, ev, kind):
         if True:
@@ -168,7 +184,9 @@ class GUI:
                                 self.root.deiconify()  # empieza la selección: la ventana vuelve para que la veas
                         except Exception:
                             pass
-                    self.kit.anim = True
+                    turn = r.get("turn")
+                    self.kit.anim = first or turn != self.last_turn  # solo se anima al empezar o al cambiar tu turno: no en cada gesto de otros
+                    self.last_turn = turn
                     self.apply_page()
                     self.kit.anim = False
                 elif kind == "idle":
@@ -376,10 +394,11 @@ class GUI:
         self.idle_secs = [ProfileCard(k, self.idle_view), WaitCard(k, self.idle_view), SummaryCard(k, self.idle_view)]
         strip = ProfileStrip(k, self.select_view)      # se empaquetan en el orden en que se crean
         self.turn = TurnCard(k, self.select_view)
+        mypick = MyPick(k, self.select_view)
         ideas = BanIdeas(k, self.select_view)
         self.recs = Recs(k, self.select_view)
         self.lobby = Lobby(k, self.select_view)
-        self.select_secs = [strip, self.turn, ideas, self.recs, self.lobby, Enemies(k, self.select_view), BansRow(k, self.select_view)]
+        self.select_secs = [strip, self.turn, mypick, ideas, self.recs, self.lobby, Enemies(k, self.select_view), BansRow(k, self.select_view)]
         self.matchup_view = MatchupView(k, self.body, self)
         self.history_view = HistoryView(k, self.body, self)
         self.data_view = DataView(k, self.body, self)

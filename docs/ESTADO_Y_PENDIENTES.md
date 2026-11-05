@@ -1,13 +1,13 @@
 # LOL-E · Estado del proyecto y pendientes
 
-Actualizado el 4/11/2026. Versión instalada en tu PC: **1.8.2**.
+Actualizado el 4/11/2026. Versión instalada en tu PC: **1.9.0**.
 
 ## Qué es
 App de Windows (Python + CustomTkinter) que lee el cliente de League of Legends (LCU) y te asesora en la selección de campeón. Cuatro pestañas: **Asesor**, **Enfrentamiento**, **Historial** y **Datos**. Se reparte en un instalador (Inno Setup) dentro de un `.zip` con instrucciones.
 
 ## Numeración de versiones (X.Y.Z)
 - **Z** (1.4.2 → 1.4.3): arreglos y retoques pequeños.
-- **Y** (1.7.0 → 1.8.0; la 1.8.2 fue de arreglos y rendimiento): función nueva que se nota al usar la app.
+- **Y** (1.7.0 → 1.8.0; la 1.9.0 fue de arreglos y rendimiento): función nueva que se nota al usar la app.
 - **X** (→ 2.0.0): cambio grande.
 
 ## Cómo está ahora

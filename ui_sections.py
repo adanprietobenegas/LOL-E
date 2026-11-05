@@ -745,6 +745,31 @@ class TurnCard(Section):
         self.timer_lbl.image = img
 
 
+class MyPick(Section):
+    """El campeón que has marcado o bloqueado: su build y runas aparecen solos, estuviera o no entre las recomendaciones."""
+    LANES = {"TOP": "top", "JUNGLE": "jungle", "MIDDLE": "middle", "BOTTOM": "bottom", "SUPPORT": "support"}
+
+    def key(self, ctx):
+        r = ctx["r"]
+        return (r.get("mine"), r.get("mine_locked"), r["role"], r["lane_opp"], r["mode"]["kind"])
+
+    def build(self, ctx):
+        ui, r = self.ui, ctx["r"]
+        cid, lane = r.get("mine"), self.LANES.get(r["role"])
+        if r["mode"]["kind"] != "sr" or not cid or cid not in ui.champs or not lane:
+            self.box.configure(height=1)
+            return
+        c = ui.card(self.box)
+        head = ui.frame(c)
+        head.pack(fill="x", pady=(0, 8))
+        ui.champ(head, cid, 44, False).pack(side="left", padx=(0, 12))
+        txt = ui.frame(head)
+        txt.pack(side="left")
+        ui.lbl(txt, "TU CAMPEÓN ELEGIDO" if r.get("mine_locked") else "LO ESTÁS ELIGIENDO", 10, "dim", True).pack(anchor="w")
+        ui.lbl(txt, name(cid, ui.champs), 18, "fg", True, True).pack(anchor="w")
+        build_panel(ui, c, cid, lane, r["lane_opp"] or None, min(ctx["width"] - 120, 720)).pack(fill="x")
+
+
 class BanIdeas(Section):
     def key(self, ctx):
         r = ctx["r"]
@@ -794,6 +819,7 @@ class Recs(Section):
         ui = self.ui
         self.r, self.width = ctx["r"], ctx["width"]
         compact = ui.conf["compact"]
+        self.keep_cid = self.vis[self.sel]["cid"] if self.vis and 0 < self.sel < len(self.vis) else None
         if self.kind() == "other":
             self.dyn = None
             c = ui.card(self.box, "Recomendado para ti")
@@ -922,6 +948,11 @@ class Recs(Section):
             return
         fast = self.carousel_alive() and not ui.conf["compact"] and ui.conf["rec_view"] == "carrusel"
         self.vis = self.visible()
+        keep, self.keep_cid = getattr(self, "keep_cid", None), None
+        if keep is not None:  # la lista cambió de orden: sigues viendo el mismo campeón, no el que ocupa ahora esa posición
+            ids = [c["cid"] for c in self.vis]
+            if keep in ids:
+                self.sel = ids.index(keep)
         if fast and self.vis:
             self.refilter(fade)  # el esqueleto (flechas, pestañas) se conserva: solo cambian franja y páginas
             return

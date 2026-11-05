@@ -7,6 +7,27 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.9.0   (5 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES
+  · TU CAMPEÓN ELEGIDO, CON SU BUILD: en cuanto marcas o bloqueas un
+    campeón en la selección, justo debajo de «Te toca elegir» aparece su
+    build más usada (hechizos, runas, objetos, botas y habilidades) en tu
+    línea y contra tu rival directo. Antes solo salía la build de los
+    campeones recomendados, y si elegías otro había que buscarlo a mano.
+    Mientras dudas dice «Lo estás eligiendo»; al bloquearlo, «Tu campeón
+    elegido».
+
+CORRECCIONES
+  · SALTOS Y BLOQUEOS DURANTE LA SELECCIÓN: cada gesto de los demás en la
+    selección repintaba toda la ventana, a veces varias veces seguidas, y
+    en ordenadores lentos podía llegar a congelarla («no responde»). Ahora
+    los cambios seguidos se juntan en uno (como mucho ~1,5 repintados por
+    segundo) y las animaciones solo salen al empezar o al cambiar tu turno.
+  · El carrusel de recomendaciones ya no salta a otra tarjeta cuando la
+    lista cambia de orden: sigues viendo el campeón que mirabas.
+
 VERSIÓN 1.8.2   (4 de noviembre de 2026)
 ---------------------------------------------------------------------
 

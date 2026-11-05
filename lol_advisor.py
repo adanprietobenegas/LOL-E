@@ -13,7 +13,7 @@ import synergy
 import trends
 from sounds import SOUNDS, synth_wav, play_alert, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.8.2"
+APP_NAME, APP_VERSION = "LOL-E", "1.9.0"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -661,12 +661,25 @@ def sanitize_session(s):
     return s
 
 
+def my_champion(session):
+    """(campeón, confirmado): el que has marcado o bloqueado. Su build se muestra aunque no esté entre las recomendaciones."""
+    me_cell = session.get("localPlayerCellId")
+    for grp in session.get("actions") or []:
+        for a in grp or []:
+            if a.get("type") == "pick" and a.get("actorCellId") == me_cell and a.get("championId"):
+                return a["championId"], bool(a.get("completed"))
+    me = next((p for p in session.get("myTeam") or [] if p.get("cellId") == me_cell), {})
+    cid = me.get("championId") or 0
+    return (cid, True) if cid else (me.get("championPickIntent") or 0, False)
+
+
 def _result(session, champs, P, conf, mode, role, allies, enemies, lane_opp, bans, taken, cands, ens, als):
     w = conf["weights"]
     top = [(c["score"], c["cid"], c["why"]) for c in cands if not c["off_role"]][: conf["top_n"]]
     md = META["data"] if (conf.get("meta_enabled", True) and mode["kind"] == "sr") else None
     me_cell = session["localPlayerCellId"]
-    return {"role": role, "allies": allies, "enemies": enemies, "bans": bans, "cands": cands, "top": top, "mode": mode,
+    mine, locked = my_champion(session)
+    return {"mine": mine, "mine_locked": locked, "role": role, "allies": allies, "enemies": enemies, "bans": bans, "cands": cands, "top": top, "mode": mode,
             "lane_opp": lane_opp, "ban_ideas": ban_suggestions(champs, P, taken, conf["ban_n"], conf) if mode["kind"] == "sr" else [],
             "turn": my_turn(session), "ally_stats": als, "enemy_stats": ens,
             "pct_scale": 0.8 * (w["mastery"] + w["winrate"]) if mode["kind"] == "aram" else 0.6 * sum(w.values()),
