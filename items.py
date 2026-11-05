@@ -9,7 +9,7 @@ def load(cache_dir, version):
     path = os.path.join(cache_dir, "items.json")
     try:
         saved = json.load(open(path, encoding="utf-8"))
-        if saved.get("version") == version and saved.get("items") and saved.get("schema") == 2:
+        if saved.get("version") == version and saved.get("items") and saved.get("schema") == 3:
             return {int(k): v for k, v in saved["items"].items()}
     except Exception:
         pass
@@ -18,10 +18,27 @@ def load(cache_dir, version):
         data = json.loads(r.read().decode("utf8"))["data"]
     items = {int(k): {"n": v.get("name", ""), "g": (v.get("gold") or {}).get("total", 0), "d": v.get("plaintext", ""),
                       "i": (v.get("image") or {}).get("full", f"{k}.png"), "t": v.get("tags") or [], "into": [int(x) for x in v.get("into", [])],
-                      "depth": v.get("depth")} for k, v in data.items()}
+                      "depth": v.get("depth"), "x": _effects(v.get("description", ""))} for k, v in data.items()}
     os.makedirs(cache_dir, exist_ok=True)
-    json.dump({"version": version, "schema": 2, "items": items}, open(path, "w", encoding="utf-8"))
+    json.dump({"version": version, "schema": 3, "items": items}, open(path, "w", encoding="utf-8"))
     return items
+
+
+def _effects(desc):
+    """Efectos útiles para elegir objetos según la situación, sacados de la descripción oficial: antiheal, tenacidad, vidamax…"""
+    d = desc.lower()
+    out = []
+    if "heridas graves" in d:
+        out.append("antiheal")
+    if "tenacidad" in d:
+        out.append("tenacidad")
+    if "penetración de armadura" in d or "penetración de armadura".replace("ó", "o") in d:
+        out.append("penarm")
+    if "penetración mágica" in d:
+        out.append("penmag")
+    if "vida máxima" in d and "daño" in d and "objetivo" in d:
+        out.append("vidamax")
+    return out
 
 
 def icon_url(version, iid):

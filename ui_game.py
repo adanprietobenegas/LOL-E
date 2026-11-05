@@ -107,7 +107,8 @@ class GameView:
         ui.lbl(txt, sub or "sin línea asignada", 10, "dim").pack(anchor="w")
         if lane:
             self.ui.lbl(self.host, "", 4, "dim").pack()
-            build_panel(ui, host, cid, lane, opp or None, min(self.width - 120, 720)).pack(fill="x")
+            build_panel(ui, host, cid, lane, opp or None, min(self.width - 120, 720),
+                        core.comp_stats(plan.get("enemies") or [], ui.champs, True)).pack(fill="x")
         self.matchup_block(plan, lane)
         self.tips_block(plan, role)
 

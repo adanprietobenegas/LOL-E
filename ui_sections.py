@@ -394,12 +394,12 @@ class SummaryCard(Section):
             p = ex["peak"]
             tiles.append(("peak", "Mejor rango de la temporada", f"{p['tier']} {p['div']}".strip(), "tu punto más alto este año",
                           TIER_COLORS.get(p["key"], "fg"), "Pulsa para ver tus rangos y cuánto te falta para subir"))
-            self.details["peak"] = self.d_rank
+            self.details["peak"] = self.d_peak
         if ex.get("prev"):
             p = ex["prev"]
             tiles.append(("prev", "Temporada anterior", f"{p['tier']} {p['div']}".strip(), "rango con el que acabaste",
                           TIER_COLORS.get(p["key"], "fg"), "Pulsa para ver tus rangos"))
-            self.details["prev"] = self.d_rank
+            self.details["prev"] = self.d_prev
         lad = (self.ctx["info"] or {}).get("ladder")
         if lad:  # tu puesto entre todos los jugadores clasificados de tu servidor (op.gg)
             reg = (self.ui.conf.get("opgg_region") or "").upper()
@@ -430,7 +430,7 @@ class SummaryCard(Section):
         self.slot = ui.frame(parent)
         self.slot.pack(fill="x")
         ui.lbl(parent, "Datos de tu cliente de LoL. Pulsa cualquier ficha para ver el detalle. La posición exacta en el ranking de tu servidor "
-                       "no la da el cliente; el porcentaje de los retos sí es de tu servidor.", 9, "dim", anchor="w",
+                       "no la da el cliente; el puesto general es de op.gg.", 9, "dim", anchor="w",
                wraplength=min(self.ctx["width"] - 90, 760), justify="left").pack(anchor="w", pady=(6, 0))
 
     def next_rank(self, rk):
@@ -445,7 +445,56 @@ class SummaryCard(Section):
         nk = order[i]
         return f"{TIERS_ES[nk]} IV" if nk not in ("MASTER", "GRANDMASTER", "CHALLENGER") else TIERS_ES[nk]
 
-    def d_rank(self, parent):
+    DIV_VAL = {"IV": 0, "III": 1, "II": 2, "I": 3}
+
+    def rank_val(self, rk):
+        """Número para comparar rangos: hierro IV = 0, y +1 por cada división. Los rangos altos (sin divisiones) cuentan como la división I."""
+        order = list(TIERS_ES)
+        if not rk or rk.get("key") not in order:
+            return None
+        return order.index(rk["key"]) * 4 + self.DIV_VAL.get(rk.get("div"), 3)
+
+    def d_compare(self, parent, rk, title, verb_up, verb_down, verb_same):
+        """Compara un rango de referencia (tu pico o tu final de temporada) con el que tienes ahora."""
+        ui = self.ui
+        pr = self.pr
+        cur = pr.get("solo") or pr.get("flex")
+        row = ui.frame(parent)
+        row.pack(fill="x", pady=4)
+        ui.lbl(row, title.upper(), 9, "dim", True, width=110, anchor="w").pack(side="left")
+        em = ui.emblem(rk["key"], 34)
+        if em:
+            ctk.CTkLabel(row, image=em, text="").pack(side="left", padx=(0, 8))
+        ui.lbl(row, f"{rk['tier']} {rk['div']}".strip(), 13, TIER_COLORS.get(rk["key"], "fg"), True, anchor="w").pack(side="left")
+        if cur:
+            row2 = ui.frame(parent)
+            row2.pack(fill="x", pady=4)
+            ui.lbl(row2, "AHORA", 9, "dim", True, width=110, anchor="w").pack(side="left")
+            em2 = ui.emblem(cur["key"], 34)
+            if em2:
+                ctk.CTkLabel(row2, image=em2, text="").pack(side="left", padx=(0, 8))
+            ui.lbl(row2, f"{cur['tier']} {cur['div']}".strip() + f"  ·  {cur['lp']} PL", 13, TIER_COLORS.get(cur["key"], "fg"), True, anchor="w").pack(side="left")
+            a, b = self.rank_val(cur), self.rank_val(rk)
+            if a is not None and b is not None:
+                d = a - b
+                msg = (f"{verb_same}" if d == 0 else f"{verb_up}: {d} división{'es' if d > 1 else ''} por encima" if d > 0
+                       else f"{verb_down}: te faltan {-d} división{'es' if -d > 1 else ''} para igualarlo")
+                ui.lbl(parent, msg, 11, "good" if d >= 0 else "warn", True, anchor="w").pack(anchor="w", pady=(6, 0))
+
+    def d_peak(self, parent):
+        rk = (self.ex or {}).get("peak")
+        if rk:
+            self.d_compare(parent, rk, "Tu pico", "Estás por encima de tu pico", "Aún por debajo de tu pico", "Estás justo en tu pico")
+        self.d_rank(parent, lines=False)
+
+    def d_prev(self, parent):
+        rk = (self.ex or {}).get("prev")
+        if rk:
+            self.d_compare(parent, rk, "Fin de la anterior", "Has subido respecto a la temporada pasada", "Has bajado respecto a la temporada pasada",
+                           "Igual que al acabar la temporada pasada")
+        self.d_rank(parent, lines=False)
+
+    def d_rank(self, parent, lines=True):
         ui = self.ui
         pr, ex = self.pr, self.ex
         for title, rk in (("Solo / Dúo", pr.get("solo")), ("Flexible", pr.get("flex"))):
@@ -467,13 +516,13 @@ class SummaryCard(Section):
                 ui.lbl(box, f"Te faltan {max(0, 100 - rk['lp'])} PL para {nxt}", 10, "dim", anchor="w").pack(anchor="w")
             else:
                 ui.lbl(box, f"{rk['w']}V {rk['l']}D · {round(rk['wr'] * 100)} %", 10, "dim", anchor="w").pack(anchor="w")
-        lines = []
-        if ex.get("peak"):
-            lines.append(f"Tu mejor rango de esta temporada: {ex['peak']['tier']} {ex['peak']['div']}".strip())
-        if ex.get("prev"):
-            lines.append(f"Acabaste la temporada anterior en {ex['prev']['tier']} {ex['prev']['div']}".strip())
-        if lines:
-            ui.lbl(parent, "  ·  ".join(lines), 10, "dim", anchor="w", wraplength=min(self.ctx["width"] - 130, 700), justify="left").pack(anchor="w", pady=(6, 0))
+        info = []
+        if lines and ex.get("peak"):
+            info.append(f"Tu mejor rango de esta temporada: {ex['peak']['tier']} {ex['peak']['div']}".strip())
+        if lines and ex.get("prev"):
+            info.append(f"Acabaste la temporada anterior en {ex['prev']['tier']} {ex['prev']['div']}".strip())
+        if info:
+            ui.lbl(parent, "  ·  ".join(info), 10, "dim", anchor="w", wraplength=min(self.ctx["width"] - 130, 700), justify="left").pack(anchor="w", pady=(6, 0))
 
     def d_challenges(self, parent):
         ui = self.ui
@@ -758,7 +807,7 @@ class MyPick(Section):
         txt.pack(side="left")
         ui.lbl(txt, "TU CAMPEÓN ELEGIDO" if r.get("mine_locked") else "LO ESTÁS ELIGIENDO", 10, "dim", True).pack(anchor="w")
         ui.lbl(txt, name(cid, ui.champs), 18, "fg", True, True).pack(anchor="w")
-        build_panel(ui, c, cid, lane, r["lane_opp"] or None, min(ctx["width"] - 120, 720)).pack(fill="x")
+        build_panel(ui, c, cid, lane, r["lane_opp"] or None, min(ctx["width"] - 120, 720), r.get("enemy_stats")).pack(fill="x")
 
 
 class BanIdeas(Section):
@@ -1411,7 +1460,7 @@ class Recs(Section):
                    "dim", anchor="w", wraplength=400, justify="left").pack(anchor="w", pady=(0, 8))
         lane = {"TOP": "top", "JUNGLE": "jungle", "MIDDLE": "middle", "BOTTOM": "bottom", "SUPPORT": "support"}.get(self.r.get("role"))
         if self.kind() == "sr" and lane:
-            build_panel(ui, body, c["cid"], lane, self.r.get("lane_opp") or None, min(self.width - 120, 720)).pack(fill="x", pady=(2, 8))
+            build_panel(ui, body, c["cid"], lane, self.r.get("lane_opp") or None, min(self.width - 120, 720), self.r.get("enemy_stats")).pack(fill="x", pady=(2, 8))
         ui.lbl(body, "CONSEJOS SEGÚN LA COMPOSICIÓN", 10, "dim", True).pack(anchor="w", pady=(2, 2))
         for title, text in c["build"]:
             row = ui.frame(body)

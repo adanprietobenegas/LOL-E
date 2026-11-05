@@ -438,7 +438,10 @@ solos. Se cierra con «Cerrar» o con la tecla Esc.
 LA PESTAÑA «PARTIDA»
 --------------------
   Plan       Tu campeón elegido: su build, runas y habilidades (también
-             contra tu rival), tu enfrentamiento (% de victorias de tu
+             contra tu rival; botones «Más usada / Variantes /
+             Situaciones» para ver otras builds completas, las opciones
+             de cada objeto con su porcentaje, una segunda opinión de
+             op.gg y objetos sueltos según la situación), tu enfrentamiento (% de victorias de tu
              campeón contra ese rival, y los que le ganan mejor) y
              consejos según la composición rival. Se queda disponible
              durante la partida: al empezar, LOL-E te lleva solo a esta

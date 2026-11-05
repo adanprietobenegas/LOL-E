@@ -61,7 +61,7 @@ Cambiar de pestaña: ~110–280 ms (la primera vez que se abre Enfrentamiento, ~
 
 ## Cómo construir y probar (para mañana)
 - Python: `%LOCALAPPDATA%\Programs\Python\Python312\python.exe`. Inno Setup 6 en `%LOCALAPPDATA%\Programs\Inno Setup 6`.
-- Carpeta de trabajo: `C:\Users\adank\Documents\LOL-E` (git). Para compilar hace falta `cache/` con `champions.json`, `meraki.json` e `icons/` (datos públicos; no están en el repo).
+- Carpeta de trabajo: `%USERPROFILE%\Documents\LOL-E` (git). Para compilar hace falta `cache/` con `champions.json`, `meraki.json` e `icons/` (datos públicos; no están en el repo).
 - Construir: `python build_release.py` (genera `release/LOL-E-<versión>.zip`, `Instalar-LOL-E-<versión>.exe` y `latest.json`). Trabaja en `%TEMP%\lolb` por el límite de 260 caracteres de Windows.
 - Versión: constante `APP_VERSION` en `lol_advisor.py`.
 - Probar sin jugar: `herramientas/demo_live.py` abre la app con una partida simulada y se maneja escribiendo órdenes en un archivo (ver la cabecera del script). `herramientas/test_modes.py` prueba sesiones raras (Arena, personalizada, ARAM vacío). Ambos usan `shots2.py` (necesita el cliente de LoL abierto) y escriben en `herramientas/salida/` (ignorada por git).

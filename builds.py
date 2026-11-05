@@ -9,6 +9,7 @@ import json, os, re, threading, time, urllib.request
 import matchups
 
 TTL = 24 * 3600
+MIN_VS = 100  # partidas mínimas del núcleo para fiarse de la build «contra un rival»
 UA = matchups.UA
 _state = {}   # clave -> ("loading",) | ("ok", datos) | ("error", texto)
 _lock = threading.Lock()
@@ -71,12 +72,30 @@ def parse(html):
         pos.append(p)
     pos.append(pos[-1] + 4000)
     names = ["start", "core", "i4", "i5", "i6"]
+    stats = {}
     for n, a, b in zip(names, pos, pos[1:]):
         ids = []
         for x in re.findall(r"item64/(\d+)", h[a:b]):
             if int(x) not in ids:
                 ids.append(int(x))
         out["items"][n] = ids
+        seg = re.sub(r"<img[^>]*item64/(\d+)[^>]*>", r"[I\1]", h[a:b])
+        txt = re.sub(r"\|+", "|", re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "|", seg)))
+        if n in ("i4", "i5", "i6"):  # cada opción trae su porcentaje de victorias y sus partidas
+            opts = [{"id": int(i), "wr": float(w), "games": int(g.replace(",", ""))}
+                    for i, w, g in re.findall(r"\[I(\d+)\](?:\|Loading\.\.\.)?\|(\d{1,2}(?:\.\d+)?)%\|([\d,]+)", txt)]
+            if opts:
+                stats[n] = opts
+        else:
+            m = re.search(r"(\d{1,2}(?:\.\d+)?)%(?: Win Rate)?\|\s*([\d,]+)(?: Games)?", txt)
+            if m:
+                stats[n] = {"wr": float(m.group(1)), "games": int(m.group(2).replace(",", ""))}
+    out["stats"] = stats
+    # objetos que más se compran con este campeón (la paleta de la página): sirven de cantera para las situaciones
+    i0, i1 = h.find("Combined Sets"), h.find("Click Items Below to Filter")
+    if 0 <= i0 < i1:
+        out["palette"] = list(dict.fromkeys(int(x) for x in re.findall(r"item64/(\d+)", h[i0:i1])))[:40]
+    out["v"] = 2
     return out if out["runes"].get("keystone") and out["items"].get("core") else None
 
 
@@ -89,7 +108,7 @@ def load(cache_dir, champ, lane, enemy=None, force=False):
     path = _path(cache_dir, champ, lane, enemy)
     try:
         saved = json.load(open(path, encoding="utf-8"))
-        if not force and time.time() - saved["ts"] < TTL:
+        if not force and time.time() - saved["ts"] < TTL and saved["data"].get("v") == 2:
             return saved["data"]
     except Exception:
         pass
@@ -99,6 +118,8 @@ def load(cache_dir, champ, lane, enemy=None, force=False):
             req = urllib.request.Request(url(champ, lane, enemy, tier), headers=UA)
             with urllib.request.urlopen(req, timeout=40) as r:
                 data = parse(r.read().decode("utf8", "replace"))
+            if data and enemy and ((data.get("stats") or {}).get("core") or {}).get("games", 10 ** 6) < MIN_VS:
+                data = None  # muy pocas partidas contra ese rival: es mejor la build general que una cifra sin respaldo
             if data:
                 data["tier"] = tier or "default"
                 data["vs"] = bool(enemy)

@@ -320,7 +320,7 @@ class Kit:
             w.configure(cursor="hand2")
         except Exception:
             pass
-        w.bind("<Button-1>", lambda e: cb(), add="+")
+        w.bind("<Button-1>", lambda e=None: cb(), add="+")
         for ch in w.winfo_children():
             self.clickable(ch, cb)
 

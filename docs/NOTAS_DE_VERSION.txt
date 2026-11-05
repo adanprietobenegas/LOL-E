@@ -20,6 +20,25 @@ NOVEDADES
       frente a tu rival minuto a minuto, tus muertes, objetivos, tu
       recorrido por el mapa y consejos con el dato que los justifica.
       Sale de la línea de tiempo que guarda el cliente de LoL (sin claves).
+  · MÁS OPCIONES DE BUILD (en todas las builds: Asesor, Partida, Repertorio):
+      Tres vistas: «Más usada» (la de siempre), «Variantes» y «Situaciones».
+      Variantes: la build completa más jugada y la de mayor % de victorias
+      (si difieren), el coste total en oro, y las opciones de cada hueco
+      (4.º, 5.º, 6.º objeto) con su % de victorias y partidas. Debajo,
+      una SEGUNDA OPINIÓN de op.gg: sus 3 núcleos más usados, botas,
+      objetos iniciales y orden de habilidades, con una línea que dice
+      cuántos objetos comparte con Lolalytics. Antes cada web daba una
+      build distinta (se vio con Graves) y solo se veía una.
+      Situaciones: objetos sueltos para cada caso (mucho daño físico o
+      mágico rival, curación rival, mucho control, tanques, ir por delante
+      o por detrás), elegidos entre los que más se compran con ese
+      campeón; marca «aplica ahora» según el equipo rival real.
+      LeagueOfGraphs no se consulta: bloquea las lecturas automáticas.
+  · La build «contra un rival» ya no se fía de menos de 100 partidas del
+    enfrentamiento: usa la general de la línea y lo avisa.
+  · LAS FICHAS «MEJOR RANGO» Y «TEMPORADA ANTERIOR» mostraban el mismo
+    detalle (tus rangos actuales). Ahora cada una compara su rango con el
+    de ahora («te faltan 2 divisiones para igualar tu pico»).
   · VISTA «LISTAS» en las recomendaciones: 12 a 40 campeones por lista y
     varios criterios (afinidad, meta, % de victorias contra tu rival,
     ventaja contra tu rival, tus campeones), con filtros de clase y
