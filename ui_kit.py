@@ -266,8 +266,8 @@ class Kit:
                     pass
         orig_set = b.set
 
-        def set_(v):
-            orig_set(v)
+        def set_(v, *args, **kw):  # CustomTkinter lo llama con from_button_callback=True al pulsar un botón
+            orig_set(v, *args, **kw)
             paint()
         b.set = set_
 

@@ -7,6 +7,17 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.10.1   (6 de noviembre de 2026)
+---------------------------------------------------------------------
+
+CORRECCIONES
+  · LAS PESTAÑAS Y LOS BOTONES SEGMENTADOS NO RESPONDÍAN en la 1.10.0
+    (no se podía volver al Asesor desde Partida, ni cambiar filtros): al
+    darles texto oscuro cuando están activos se rompió la llamada que
+    hace CustomTkinter al pulsarlos. Arreglado, y ahora las pruebas
+    pulsan los botones de verdad en vez de cambiar de pestaña por código.
+    Si instalaste la 1.10.0, actualiza.
+
 VERSIÓN 1.10.0   (6 de noviembre de 2026)
 ---------------------------------------------------------------------
 
