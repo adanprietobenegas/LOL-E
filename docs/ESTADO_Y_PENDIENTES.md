@@ -1,13 +1,13 @@
 # LOL-E · Estado del proyecto y pendientes
 
-Actualizado el 5/11/2026. Versión instalada en tu PC: **1.11.0** (en GitHub está publicada la 1.8.2; la 1.11.0 está sin subir por decisión tuya).
+Actualizado el 5/11/2026. Versión instalada en tu PC: **1.11.1** (en GitHub está publicada la 1.8.2; la 1.11.1 está sin subir por decisión tuya).
 
 ## Qué es
 App de Windows (Python + CustomTkinter) que lee el cliente de League of Legends (LCU) y te asesora en la selección de campeón. Cuatro pestañas: **Asesor**, **Enfrentamiento**, **Historial** y **Datos**. Se reparte en un instalador (Inno Setup) dentro de un `.zip` con instrucciones.
 
 ## Numeración de versiones (X.Y.Z)
 - **Z** (1.4.2 → 1.4.3): arreglos y retoques pequeños.
-- **Y** (1.7.0 → 1.8.0; la 1.11.0 fue de arreglos y rendimiento): función nueva que se nota al usar la app.
+- **Y** (1.7.0 → 1.8.0; la 1.11.1 fue de arreglos y rendimiento): función nueva que se nota al usar la app.
 - **X** (→ 2.0.0): cambio grande.
 
 ## Cómo está ahora
@@ -45,8 +45,8 @@ Cambiar de pestaña: ~110–280 ms (la primera vez que se abre Enfrentamiento, ~
 - Iconos de la app: solo tipografía «LOL-E».
 
 ## Pendientes (por orden de utilidad)
-1. **Publicar la 1.11.0**: el repo es público (https://github.com/adanprietobenegas/LOL-E, cuenta adanprietobenegas) y la 1.8.2 está en Releases. Para publicar: `python build_release.py`, `git add -A; git commit; git push` y `gh release create vX.Y.Z` con el `.exe`, el `.zip` y `latest.json`. El código vive en `Documents\LOL-E`. No se suben `cache/`, `release/`, `docs/img/demo/`, `config.json` ni `season_seed.json` (llevan tu nombre de LoL); las capturas de `docs/img` van con el nombre redactado.
-2. **Actualizaciones automáticas**: activas desde la 1.8.2 (leen `releases/latest/download/latest.json`). Quien tenga la 1.8.0 o 1.8.1 debe instalar la 1.8.2 o posterior a mano una vez. El flujo completo (descargar, verificar, instalar) no se ha visto actualizar de verdad: se verá al publicar la 1.11.0.
+1. **Publicar la 1.11.1**: el repo es público (https://github.com/adanprietobenegas/LOL-E, cuenta adanprietobenegas) y la 1.8.2 está en Releases. Para publicar: `python build_release.py`, `git add -A; git commit; git push` y `gh release create vX.Y.Z` con el `.exe`, el `.zip` y `latest.json`. El código vive en `Documents\LOL-E`. No se suben `cache/`, `release/`, `docs/img/demo/`, `config.json` ni `season_seed.json` (llevan tu nombre de LoL); las capturas de `docs/img` van con el nombre redactado.
+2. **Actualizaciones automáticas**: activas desde la 1.8.2 (leen `releases/latest/download/latest.json`). Quien tenga la 1.8.0 o 1.8.1 debe instalar la 1.8.2 o posterior a mano una vez. El flujo completo (descargar, verificar, instalar) no se ha visto actualizar de verdad: se verá al publicar la 1.11.1.
 3. **Probar en partida real**: una selección de campeón con compañeros, y un ARAM, un Arena y una personalizada, y revisar el historial y el «Error.log» de `%LOCALAPPDATA%\LOL-E\cache`.
 4. **Aviso de Windows (SmartScreen)**: sin firma de código sale «Windows protegió su PC». Firmar cuesta dinero; de momento está explicado en el Léeme.
 5. **op.gg**: el aviso del pie ya es corto; si sigue fallando (se vio «op.gg no disponible» con la 1.4.3) hay que revisar cache\\error.log: probablemente op.gg bloquea la petición. Es secundario (solo afina estadísticas de temporada).

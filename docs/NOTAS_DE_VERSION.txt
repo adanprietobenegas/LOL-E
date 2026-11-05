@@ -7,6 +7,17 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.11.1   (6 de noviembre de 2026)
+---------------------------------------------------------------------
+
+CORRECCIONES
+  · PROPORCIONES DE LAS CABECERAS DE DÍA del Historial: el resumen
+    quedaba pegado a la barra de balance y las burbujas se solapaban en
+    ventanas estrechas. Ahora la cabecera es más alta, el texto respira,
+    las burbujas son algo más pequeñas, van separadas y se reparten el
+    sitio que dejan el texto y una burbuja «+N» de reserva. Comprobado a
+    560, 900 y 1.280 px de ancho.
+
 VERSIÓN 1.11.0   (6 de noviembre de 2026)
 ---------------------------------------------------------------------
 

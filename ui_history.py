@@ -421,7 +421,7 @@ class HistoryView:
         ui.clear(st["head"])
         sx = ui.scale_px()
         S = lambda v: int(v * sx)
-        W, H = self.row_width(), 52
+        W, H = self.row_width(), 60
         cv = tk.Canvas(st["head"], width=S(W), height=S(H), bg=ui.bg(st["head"]), highlightthickness=0, bd=0, cursor="hand2")
         cv.pack(anchor="w")
         ui.rrect(cv, 0, 0, S(W) - 1, S(H) - 1, S(10), fill=ui.hexm(PAL["card2"]), outline="")
@@ -432,29 +432,30 @@ class HistoryView:
         pct = round(wins / played * 100)
         good, bad, dim, fg = ui.hexm(PAL["good"]), ui.hexm(PAL["bad"]), ui.hexm(PAL["dim"]), ui.hexm(PAL["fg"])
         cv.create_text(S(14), S(20), text="▾" if st["open"] else "▸", fill=dim, font=ui.tkf(12, False, False), anchor="w")
-        cv.create_text(S(34), S(18), text=d.upper(), fill=fg, font=ui.tkf(11, True, False), anchor="w")
-        cv.create_text(S(34), S(36), text=f"{n} partida{'s' if n != 1 else ''}  ·  {wins}V {losses}D  ·  {pct} %", fill=good if pct >= 50 else bad,
+        cv.create_text(S(34), S(19), text=d.upper(), fill=fg, font=ui.tkf(11, True, False), anchor="w")
+        cv.create_text(S(34), S(37), text=f"{n} partida{'s' if n != 1 else ''}  ·  {wins}V {losses}D  ·  {pct} %", fill=good if pct >= 50 else bad,
                        font=ui.tkf(9, True, False), anchor="w")
         # barra de balance: la parte verde es la proporción de victorias
-        bx0, bx1, by = S(14), S(W - 14), S(H - 5)
+        bx0, bx1, by = S(14), S(W - 14), S(H - 9)
         cv.create_rectangle(bx0, by, bx1, by + S(3), fill=bad, outline="")
         cv.create_rectangle(bx0, by, bx0 + int((bx1 - bx0) * wins / played), by + S(3), fill=good, outline="")
         # burbujas: las más recientes del día; si hay más de las que caben, una burbuja «+N» abre la lista
-        size, step = 30, 24
-        room = int((W - 250) // step)
-        show = items[:max(1, min(room, 12))]
+        size, step = 28, 31                      # burbujas separadas por un hueco de 3 px
+        text_w = 34 + max(len(f"{n} partidas  ·  {wins}V {losses}D  ·  {pct} %"), len(d)) * 6.2   # lo que ocupa el texto de la izquierda
+        room = int((W - 20 - text_w) // step) - 1                    # sitio para burbujas, dejando una de reserva para el «+N»
+        show = items[:max(1, min(room, 10))]
         hidden = n - len(show)
         x = W - 14 - size
         for g in show:  # de la más reciente (a la derecha) hacia atrás
             ring = good if g["w"] and not g.get("rm") else bad if not g.get("rm") else dim
-            ph = ui.bubble(g["c"], size, ring)
-            it = cv.create_image(S(x), S(11), image=ph, anchor="nw")
+            ph = ui.bubble(g["c"], size, ring, 2)
+            it = cv.create_image(S(x), S(16), image=ph, anchor="nw")
             cv.image = getattr(cv, "image", []) + [ph]
             ui.canvas_tip(cv, it, f"{ui.champs.get(g['c'], {}).get('name', '?')} · {'Remake' if g.get('rm') else 'Victoria' if g['w'] else 'Derrota'} · {fecha(g['t'])}")
             x -= step
         if hidden > 0:
-            cv.create_oval(S(x), S(11), S(x + size), S(11 + size), outline=dim, width=2)
-            cv.create_text(S(x + size / 2), S(11 + size / 2), text=f"+{hidden}", fill=fg, font=ui.tkf(9, True, False))
+            cv.create_oval(S(x), S(16), S(x + size), S(16 + size), outline=dim, width=2)
+            cv.create_text(S(x + size / 2), S(16 + size / 2), text=f"+{hidden}", fill=fg, font=ui.tkf(9, True, False))
         cv.bind("<Button-1>", lambda e, s=st: self.toggle_day(s))
 
     def toggle_day(self, st, to=None):
