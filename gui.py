@@ -15,6 +15,7 @@ from lol_advisor import APP_NAME, APP_VERSION, CACHE, DATA_DIR, PRESET_INFO, rea
 from ui_history import HistoryView
 from ui_views import DataView, MatchupView
 from ui_kit import ACCENTS, DISPLAY, Kit, PAL, THEMES, res
+from ui_game import GameView
 from ui_sections import (SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
                          WaitCard)
 
@@ -69,6 +70,10 @@ class GUI:
         self.refresh_current()
         threading.Thread(target=self._prefetch, daemon=True).start()
         threading.Thread(target=self._load_items, daemon=True).start()
+        plan = read_json(os.path.join(CACHE, "last_plan.json"), None)
+        if plan and plan.get("cid") in champs:
+            plan["state"], plan["locked"] = "done", True
+            self.ctx["plan"] = plan
         self.root.after(200, self.poll)
         self.root.after(500, self.tick)
         self.root.after(1500, self.ensure_normal)
@@ -171,6 +176,48 @@ class GUI:
         self.root.after(150, self.poll)
 
     pending_show, last_show_t, last_turn = None, 0.0, None
+    auto_game = False
+
+    def analysis(self, gid, data):
+        self.q.put(("analysis", gid, data))
+
+    def phase(self, flow):
+        self.q.put(("phase", flow))
+
+    def update_plan(self, r):
+        """Guarda el campeón que has marcado o bloqueado y su contexto: la pestaña «Partida» lo enseña después."""
+        if not r.get("mine") or r["mode"]["kind"] != "sr" or r["mine"] not in self.champs:
+            return
+        plan = {"cid": r["mine"], "role": r.get("role") or "", "opp": r.get("lane_opp") or 0, "enemies": list(r["enemies"]),
+                "allies": list(r["allies"]), "locked": bool(r.get("mine_locked")), "state": "select"}
+        if plan != {**(self.ctx.get("plan") or {}), "state": "select"}:
+            self.ctx["plan"] = plan
+            try:
+                core.write_json(os.path.join(CACHE, "last_plan.json"), plan)
+            except Exception:
+                pass
+        elif (self.ctx.get("plan") or {}).get("state") != "select":
+            self.ctx["plan"] = plan
+
+    def on_phase(self, flow):
+        plan = self.ctx.get("plan")
+        self.ctx["phase"] = flow
+        if not plan:
+            return
+        if flow in ("InProgress", "GameStart", "Reconnect"):
+            if plan["state"] != "game":
+                plan["state"] = "game"
+                if self.page == "asesor":  # empieza la partida: la ventana enseña tu plan en vez de volver al inicio
+                    self.auto_game = True
+                    self.page = "partida"
+                    self.tab_seg.set("Partida")
+                    self.apply_page()
+                elif self.view == "game":
+                    self.game_view.refresh(self.make_ctx(), True)
+        elif flow in ("PreEndOfGame", "EndOfGame", "WaitingForStats", "Lobby", "None", None) and plan["state"] == "game":
+            plan["state"] = "done"
+            if self.view == "game":
+                self.game_view.refresh(self.make_ctx(), True)
 
     def handle_event(self, ev, kind):
         if True:
@@ -180,6 +227,11 @@ class GUI:
                     self.ctx.update(session=session, r=r, got=got)
                     first = self.advisor != "select"
                     self.advisor = "select"
+                    self.update_plan(r)
+                    if first and self.auto_game and self.page == "partida":  # nueva selección: se vuelve al Asesor
+                        self.auto_game = False
+                        self.page = "asesor"
+                        self.tab_seg.set("Asesor")
                     self.apply_window()
                     if first and self.conf.get("topmost_mode", "seleccion") != "nunca":
                         try:
@@ -215,6 +267,14 @@ class GUI:
                     self.kit.epoch += 1  # llegaron imágenes: lo que las usa se repinta una vez
                     self.refresh_current()
                 elif kind == "splash" and self.view == "select":
+                    self.recs.render()
+                elif kind == "analysis":
+                    self.game_view.on_data(ev[1], ev[2])
+                elif kind == "game_data":
+                    self.game_view.on_vs()
+                elif kind == "phase":
+                    self.on_phase(ev[1])
+                elif kind == "recs_data" and self.view == "select":
                     self.recs.render()
                 elif kind == "matchup" and self.view == "matchup":
                     self.matchup_view.update(self.make_ctx())
@@ -381,7 +441,7 @@ class GUI:
         self.add_volume_slider(vol, 70).pack(side="left")
         self.update_btn = ctk.CTkButton(bar, text="", height=28, corner_radius=14, font=k.font(11, True), fg_color=k.acc,
                                         text_color=PAL["bg"], hover_color=k.acc, command=self.confirm_update)
-        tabs = {"asesor": "Asesor", "enfrentamiento": "Enfrentamiento", "historial": "Historial", "datos": "Datos"}
+        tabs = {"asesor": "Asesor", "partida": "Partida", "enfrentamiento": "Enfrentamiento", "historial": "Historial", "datos": "Datos"}
         self.tab_names = tabs
         self.tab_seg = k.seg(self.main, list(tabs.values()), tabs.get(self.page, "Asesor"), self.set_page)
         self.tab_seg.pack(fill="x", padx=18, pady=(8, 0))
@@ -405,6 +465,7 @@ class GUI:
         self.matchup_view = MatchupView(k, self.body, self)
         self.history_view = HistoryView(k, self.body, self)
         self.data_view = DataView(k, self.body, self)
+        self.game_view = GameView(k, self.body, self)
 
     def make_ctx(self):
         self.ctx["width"] = max(self.body.winfo_width(), 400)
@@ -413,10 +474,10 @@ class GUI:
     def show_view(self, name):
         if self.view == name:
             return
-        for v in (self.idle_view, self.select_view, self.matchup_view.box, self.history_view.box, self.data_view.box):
+        for v in (self.idle_view, self.select_view, self.matchup_view.box, self.history_view.box, self.data_view.box, self.game_view.box):
             v.pack_forget()
         {"idle": self.idle_view, "select": self.select_view, "matchup": self.matchup_view.box,
-         "history": self.history_view.box, "data": self.data_view.box}[name].pack(fill="x")
+         "history": self.history_view.box, "data": self.data_view.box, "game": self.game_view.box}[name].pack(fill="x")
         self.view = name
         try:
             self.body._parent_canvas.yview_moveto(0)
@@ -424,7 +485,7 @@ class GUI:
             pass
 
     def effective_view(self):
-        return {"enfrentamiento": "matchup", "historial": "history", "datos": "data"}.get(self.page, self.advisor)
+        return {"enfrentamiento": "matchup", "historial": "history", "datos": "data", "partida": "game"}.get(self.page, self.advisor)
 
     def apply_page(self):
         prev = self.view
@@ -469,13 +530,49 @@ class GUI:
             self.history_view.refresh(ctx, force)
         elif self.view == "data":
             self.data_view.refresh(ctx, force)
+        elif self.view == "game":
+            self.game_view.refresh(ctx, force)
         elif self.view == "select" and ctx["r"]:
-            for s in self.select_secs:
-                s.refresh(ctx, force)
+            self.refresh_select(ctx, force)
         elif self.view == "idle":
             for s in self.idle_secs:
                 s.refresh(ctx, force)
         self.update_footer()
+
+    def refresh_select(self, ctx, force=False):
+        """Repinta la selección sección a sección, dejando respirar a la ventana entre una y otra: con LoL en marcha el ordenador va
+        justo y hacerlo todo de golpe bloqueaba la ventana ~1,5 s. Si llega un cambio nuevo a mitad, se abandona el anterior."""
+        self._sel_tok = getattr(self, "_sel_tok", 0) + 1
+        tok = self._sel_tok
+        cv = self.body._parent_canvas
+        try:  # el desplazamiento se conserva en píxeles: al añadirse tarjetas arriba, lo que mirabas no se va de sitio
+            total = max(1, (cv.bbox("all") or (0, 0, 0, 1))[3])
+            off = cv.yview()[0] * total
+        except Exception:
+            off = 0
+        secs = list(self.select_secs)
+        anim = self.kit.anim
+
+        def step(i=0):
+            if tok != self._sel_tok or not self.running:
+                return
+            self.kit.anim = anim
+            if i < len(secs):
+                try:
+                    secs[i].refresh(ctx, force)
+                except Exception:
+                    core.log_exc(f"Sección {type(secs[i]).__name__}")
+                self.kit.anim = False
+                self.root.after(1, lambda: step(i + 1))
+                return
+            self.kit.anim = False
+            try:
+                self.root.update_idletasks()
+                new_total = max(1, (cv.bbox("all") or (0, 0, 0, 1))[3])
+                cv.yview_moveto(min(1.0, off / new_total))
+            except Exception:
+                pass
+        step()
 
     def key_go(self, d):
         if self.view == "select" and self.conf["rec_view"] == "carrusel" and not self.conf["compact"]:
@@ -510,7 +607,7 @@ class GUI:
         if self.view == "select" and self.ctx["r"]:
             self.kit.anim = False
             self.recs.resized(self.make_ctx()["width"])
-        elif self.view in ("matchup", "history", "data", "idle"):
+        elif self.view in ("matchup", "history", "data", "idle", "game"):
             self.refresh_current()
 
     # ---------- enlace, pie y volumen ----------
@@ -806,7 +903,7 @@ class GUI:
 
         section("Recomendaciones")
         label("Forma de verlas")
-        seg(["Carrusel", "Lista"], "Carrusel" if conf["rec_view"] == "carrusel" else "Lista", lambda v: self.set("rec_view", v.lower()))
+        seg(["Carrusel", "Lista", "Listas"], conf["rec_view"].capitalize(), lambda v: self.set("rec_view", v.lower()))
         label("Cuántas mostrar")
         seg(["3", "4", "5", "6", "8"], str(conf["top_n"]), lambda v: self.set("top_n", int(v)))
         names = {v[0]: key for key, v in PRESET_INFO.items()}

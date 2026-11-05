@@ -51,7 +51,8 @@ Cambiar de pestaña: ~110–280 ms (la primera vez que se abre Enfrentamiento, ~
 4. **Aviso de Windows (SmartScreen)**: sin firma de código sale «Windows protegió su PC». Firmar cuesta dinero; de momento está explicado en el Léeme.
 5. **op.gg**: el aviso del pie ya es corto; si sigue fallando (se vio «op.gg no disponible» con la 1.4.3) hay que revisar cache\\error.log: probablemente op.gg bloquea la petición. Es secundario (solo afina estadísticas de temporada).
 6. **Parche 26.22**: Lolalytics aún no tiene muestra suficiente; se usan los datos del 26.21 y la app lo indica (reintenta cada 3 h). Sin acción.
-7. Ideas aparcadas: sinergias de dúo más finas, tendencia del rival de línea, builds por objetos usando el historial.
+7. Pendiente de pedir/decidir: tops por campeón (Fiora 68.º de EUW): no hay fuente fiable; recorridos de jungla recomendados: no hay fuente abierta; datos en directo durante la partida (Live Client API en el puerto 2999) sin implementar.
+8. Ideas aparcadas: sinergias de dúo más finas, tendencia del rival de línea, builds por objetos usando el historial.
 
 ## Riesgos conocidos
 - La API del cliente de LoL (LCU) **no está soportada oficialmente** para terceros: Riot puede cambiarla sin aviso.

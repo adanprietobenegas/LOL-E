@@ -3,7 +3,7 @@
 Cada sección calcula una clave con los datos que usa; si la clave no cambia, no se toca. Así, cuando llega
 un dato nuevo (un aliado que elige, un jugador que carga…) solo se repinta su parte y no toda la pantalla.
 """
-import json, os, tkinter as tk
+import json, os, threading, time, tkinter as tk
 from collections import Counter
 
 import customtkinter as ctk
@@ -226,7 +226,7 @@ class AchievementsCard(Section):
         if not tiles:
             return
         c = ui.card(self.box, "Rango y logros")
-        cols = 2 if ctx["width"] < 600 else 3 if ctx["width"] < 960 else 4
+        cols = 2 if ctx["width"] < 740 else 3 if ctx["width"] < 1040 else 4
         self.tile_wl = max(100, min(220, (ctx["width"] - 110) // cols - 34))  # el texto se ajusta al ancho de cada ficha
         grid = ui.frame(c)
         grid.pack(fill="x")
@@ -400,26 +400,17 @@ class SummaryCard(Section):
             tiles.append(("prev", "Temporada anterior", f"{p['tier']} {p['div']}".strip(), "rango con el que acabaste",
                           TIER_COLORS.get(p["key"], "fg"), "Pulsa para ver tus rangos"))
             self.details["prev"] = self.d_rank
-        ch = ex.get("challenges")
-        if ch:
-            lv = TIERS_ES.get(ch["level"], ch["level"].title())
-            sub = (f"Entre el {es(ch['pct'])} % mejor · " if ch.get("pct") is not None else "") + f"{miles(ch['points'])} puntos"
-            tiles.append(("ch", "Retos", lv, sub, TIER_COLORS.get(ch["level"], "fg"), "Pulsa para ver tus 5 categorías de Retos"))
-            self.details["ch"] = self.d_challenges
-            cats = [c for c in ch.get("cats", []) if c.get("pct") is not None]
-            if cats:
-                b = min(cats, key=lambda c: c["pct"])
-                tiles.append(("cat", "Tu mejor categoría de retos", self.CATS.get(b["cat"], b["cat"].title()),
-                              f"{TIERS_ES.get(b['level'], b['level'].title())} · entre el {es(b['pct'])} % mejor",
-                              TIER_COLORS.get(b["level"], "fg"), "Pulsa para ver todas las categorías"))
-                self.details["cat"] = self.d_challenges
+        lad = (self.ctx["info"] or {}).get("ladder")
+        if lad:  # tu puesto entre todos los jugadores clasificados de tu servidor (op.gg)
+            reg = (self.ui.conf.get("opgg_region") or "").upper()
+            tiles.append(("ladder", f"Tu puesto en {reg}" if reg else "Tu puesto", f"Top {es(lad['top'])} %",
+                          f"puesto {miles(lad['rank'])} de la clasificación de tu servidor", "info",
+                          "Posición entre los jugadores con partidas clasificatorias (op.gg)"))
+            self.details["ladder"] = self.d_rank
         if ex.get("mastery_score"):
             tiles.append(("mast", "Maestría total", miles(ex["mastery_score"]), "suma de los niveles de tus campeones", "fg",
                           "Pulsa para ver tus campeones con más maestría"))
             self.details["mast"] = self.d_mastery
-        if ex.get("honor") is not None:
-            tiles.append(("honor", "Nivel de honor", str(ex["honor"]), "cómo te valoran tus compañeros", "fg", "Pulsa para ver tu nivel de honor"))
-            self.details["honor"] = self.d_honor
         if st:
             txt = (f"{st['cur']} victoria{'s' if st['cur'] != 1 else ''}" if st["cur_win"] else f"{st['cur']} derrota{'s' if st['cur'] != 1 else ''}")
             tiles.append(("streak", "Racha actual", txt, f"Mejor racha de victorias guardada: {st['best']}", "good" if st["cur_win"] else "bad",
@@ -656,7 +647,7 @@ class ProfileStrip(Section):
 
     def key(self, ctx):
         r = ctx["r"]
-        return (json.dumps(r["profile"], sort_keys=True, default=str), tuple(r["form"]), ctx["width"] < 560)
+        return (json.dumps(r["profile"], sort_keys=True, default=str), tuple(r["form"]), ctx["width"] // 100)
 
     def build(self, ctx):
         ui, r = self.ui, ctx["r"]
@@ -664,16 +655,16 @@ class ProfileStrip(Section):
         c = ui.card(self.box, pad=4)
         row = ui.frame(c)
         row.pack(fill="x")
+        right = ui.frame(row)  # se coloca primero: si falta sitio, se recorta lo de la izquierda y los resultados siempre se ven
+        right.pack(side="right")
         img = ui.profile_icon(pr["icon"], 30) if pr.get("icon") else None
         if img:
             ctk.CTkLabel(row, image=img, text="").pack(side="left", padx=(0, 10))
         solo = pr.get("solo")
         ui.lbl(row, r["rank"] or "Sin clasificar", 15, TIER_COLORS.get(solo["key"], "fg") if solo else "dim", True, True).pack(side="left")
-        if r["record"]:
+        if r["record"] and ctx["width"] >= 600:
             ui.lbl(row, f"   {r['record']}", 11, "dim").pack(side="left")
-        right = ui.frame(row)
-        right.pack(side="right")
-        if r["form"][-3:] == [False] * 3 and ctx["width"] >= 560:  # en ventanas estrechas solo caben los resultados
+        if r["form"][-3:] == [False] * 3 and ctx["width"] >= 820:  # el aviso solo cabe en ventanas anchas
             ui.lbl(right, "Cuidado con el tilt  ", 10, "warn", True).pack(side="left")
         for w in r["form"]:
             ctk.CTkLabel(right, text="V" if w else "D", width=22, height=20, corner_radius=6, font=ui.font(10, True, True),
@@ -808,6 +799,7 @@ class Recs(Section):
         self.hero_lab, self.info_host, self.pages, self.cur_page, self.cells = None, None, {}, None, []
         self.menu_order = self.menu_class = None
         self.toggles = {}
+        self.list_tab, self.info = "Afinidad", {}
 
     def key(self, ctx):
         r, cf = ctx["r"], self.ui.conf
@@ -817,7 +809,7 @@ class Recs(Section):
 
     def build(self, ctx):
         ui = self.ui
-        self.r, self.width = ctx["r"], ctx["width"]
+        self.r, self.width, self.info = ctx["r"], ctx["width"], ctx.get("info") or {}
         compact = ui.conf["compact"]
         self.keep_cid = self.vis[self.sel]["cid"] if self.vis and 0 < self.sel < len(self.vis) else None
         if self.kind() == "other":
@@ -831,8 +823,8 @@ class Recs(Section):
         head.pack(fill="x", pady=(0, 8))
         ui.lbl(head, "CAMBIO DE CAMPEÓN (BANQUILLO)" if self.kind() == "aram" else "RECOMENDADO PARA TI", 10, "dim", True).pack(side="left")
         if not compact:
-            ui.seg(head, ["Carrusel", "Lista"], "Carrusel" if ui.conf["rec_view"] == "carrusel" else "Lista",
-                   self.set_view, width=150, height=26).pack(side="right")
+            ui.seg(head, ["Carrusel", "Lista", "Listas"], ui.conf["rec_view"].capitalize(),
+                   self.set_view, width=230, height=26).pack(side="right")
             if self.kind() == "sr":
                 self.filter_bar(c)
         self.dyn = ui.frame(c)
@@ -892,10 +884,9 @@ class Recs(Section):
         self.sel = 0
         self.render()
 
-    def visible(self):
+    def pool(self):
+        """Candidatos que pasan los filtros de arriba (sin ordenar ni recortar)."""
         ui, f = self.ui, self.ui.conf["filters"]
-        if self.kind() != "sr":
-            return sorted(self.r["cands"], key=lambda c: -c["score"])[: 3 if ui.conf["compact"] else ui.conf["top_n"]]
         out = []
         for c in self.r["cands"]:
             if f["mi_rol"] and c["off_role"] and self.r["role"]:
@@ -908,6 +899,13 @@ class Recs(Section):
             if tag and tag not in c["tags"]:
                 continue
             out.append(c)
+        return out
+
+    def visible(self):
+        ui, f = self.ui, self.ui.conf["filters"]
+        if self.kind() != "sr":
+            return sorted(self.r["cands"], key=lambda c: -c["score"])[: 3 if ui.conf["compact"] else ui.conf["top_n"]]
+        out = self.pool()
         order = {"Afinidad": lambda c: -c["score"], "Meta": lambda c: -(c["meta"]["wr"] if c["meta"] else 0),
                  "Sinergia": lambda c: -c["syn"]["score"], "Maestría": lambda c: -c["mastery"]}[f["orden"]]
         out.sort(key=order)
@@ -958,7 +956,11 @@ class Recs(Section):
             return
         for w in self.dyn.winfo_children():
             w.destroy()
-        self.pages, self.cur_page, self.hero_lab, self.cells = {}, None, None, []
+        self.pages, self.cur_page, self.hero_lab, self.cells, self.list_hero = {}, None, None, [], None
+        if ui.conf["rec_view"] == "listas" and not ui.conf["compact"] and self.kind() == "sr":
+            self.lists_view()
+            return
+        ui.root.after(90, self.fit_hero)
         if not self.vis and not self.r["cands"]:  # nada que comparar todavía (por ejemplo, un banquillo de ARAM aún vacío)
             ui.lbl(self.dyn, "Todavía no hay campeones para comparar. Aparecerán cuando el cliente los muestre.", 11, "dim").pack(anchor="w", pady=(4, 6))
             return
@@ -1006,6 +1008,31 @@ class Recs(Section):
         self.sel = 0
         self.render()
 
+    def fit_hero(self):
+        """El ancho de la imagen grande se ajusta al sitio que de verdad tiene (en una partida real se veía recortada a los lados)."""
+        try:
+            if self.dyn is None or not self.dyn.winfo_exists():
+                return
+            dw = self.dyn.winfo_width()
+            if dw < 120:
+                return
+            if self.carousel_alive():
+                want = max(260, dw - 2 * (38 + 6) - 6)
+                if abs(want - self.hero_w) > 6:
+                    self.hero_w, self.hero = want, None
+                    self.show_card(False)
+            elif getattr(self, "list_hero", None):
+                lab, cand, pct, w = self.list_hero
+                want = max(260, dw - 6)
+                if abs(want - w) > 6 and lab.winfo_exists():
+                    pil = self.ui.hero_pil(cand["cid"], "Mejor opción para ti", pct, want)
+                    im = ctk.CTkImage(light_image=pil, dark_image=pil, size=(want, 150))
+                    lab.configure(image=im)
+                    lab.image = im
+                    self.list_hero = (lab, cand, pct, want)
+        except Exception:
+            core.log_exc("Ajuste de la imagen principal")
+
     def list_view(self):
         ui, compact = self.ui, self.ui.conf["compact"]
         for i, c in enumerate(self.vis, 1):
@@ -1014,6 +1041,7 @@ class Recs(Section):
                 w = max(340, min(2400, self.width - 52))
                 lab = self.hero_label(self.dyn, c, pct, w, "Mejor opción para ti")
                 lab.pack(pady=(0, 6))
+                self.list_hero = (lab, c, pct, w)
                 if not compact:
                     ui.chips(self.dyn, c["why"] or ["encaja con tu rol"], 4)
                 continue
@@ -1033,6 +1061,135 @@ class Recs(Section):
             ui.lbl(right, "afinidad", 9, "dim").pack(anchor="e")
             if not compact:
                 ui.clickable(row, lambda i=i: (self.set_view("carrusel"), self.pick(i - 1)))
+
+    # ---- vista «Listas»: muchos campeones de un vistazo, con varios criterios ----
+    LISTS = ["Afinidad", "Meta", "Contra tu rival", "Ventaja vs rival", "Mis campeones"]
+    COUNTERS = {}  # (rival, línea) -> filas | "cargando" | ("error", texto, momento)
+
+    def counters(self):
+        """Mejores campeones contra tu rival de línea (Lolalytics), descargados en segundo plano."""
+        opp, lane = self.r["lane_opp"], matchups.LANES.get(self.r["role"])
+        if not opp or not lane:
+            return None
+        key = (opp, lane)
+        st = Recs.COUNTERS.get(key)
+        if isinstance(st, tuple) and time.time() - st[2] > 90:  # un fallo se reintenta al cabo de un rato
+            st = None
+        if st is None:
+            Recs.COUNTERS[key] = "cargando"
+            ui = self.ui
+
+            def go():
+                try:
+                    rows = matchups.best_against(ui.champs, opp, lane, core.CACHE, min_games=50)
+                except Exception as e:
+                    rows = ("error", str(e), time.time())
+                Recs.COUNTERS[key] = rows
+                ui.notify("recs_data")
+            threading.Thread(target=go, daemon=True).start()
+            return "cargando"
+        return st
+
+    def list_items(self, which):
+        """[(campeón, valor grande, color, texto pequeño)] y una explicación, según la lista elegida."""
+        ui, f = self.ui, self.ui.conf["filters"]
+        tag = CLASES.get(f["clase"])
+        owned = set(self.info.get("owned") or [])
+        only_mine = f.get("solo_mios", False)
+        opp = self.r["lane_opp"]
+        oname = name(opp, ui.champs) if opp else ""
+        if which == "Afinidad":
+            rows = sorted(self.pool(), key=lambda c: -c["score"])
+            return [(c["cid"], str(self.pct(c)), ui.acc, (c["why"] or ["encaja con tu rol"])[0]) for c in rows], \
+                "Cuánto encaja cada campeón contigo ahora mismo (0 a 100): tu historial, tu rol, tu equipo, sinergias y meta."
+        if which == "Meta":
+            rows = sorted((c for c in self.pool() if c["meta"]), key=lambda c: -c["meta"]["wr"])
+            return [(c["cid"], f"{c['meta']['wr']:.1f} %".replace(".", ","), "good" if c["meta"]["wr"] >= 50 else "bad",
+                     f"{c['meta']['games']:,} partidas".replace(",", ".")) for c in rows], \
+                "Porcentaje de victorias de cada campeón en tu línea este parche (Lolalytics), sin tener en cuenta a tu rival."
+        if which == "Mis campeones":
+            rows = sorted((c for c in self.pool() if c["games"]), key=lambda c: (-(c["wins"] + 1) / (c["games"] + 2), -c["games"]))
+            return [(c["cid"], f"{c['wins']}/{c['games']}", "good" if c["wins"] * 2 >= c["games"] else "bad",
+                     f"maestría {c['mastery'] // 1000}k" if c["mastery"] >= 1000 else "") for c in rows], \
+                "Los que ya has jugado en esta línea, de más a menos victorias (con suavizado: 1 de 1 no cuenta como 100 %)."
+        st = self.counters()
+        if st is None:
+            return None, "Tu rival de línea todavía no ha elegido campeón: esta lista aparece en cuanto lo haga."
+        if st == "cargando":
+            return None, f"Cargando los mejores campeones contra {oname}…"
+        if isinstance(st, tuple):
+            return None, f"No hay datos de enfrentamientos contra {oname}: {st[1]}"
+        rows = [x for x in st if (not tag or tag in ui.champs[x["cid"]]["tags"]) and (not only_mine or not owned or x["cid"] in owned)]
+        if which == "Contra tu rival":
+            return [(x["cid"], f"{x['wr']:.1f} %".replace(".", ","), "good" if x["wr"] >= 50 else "bad",
+                     f"{x['games']:,} partidas".replace(",", ".")) for x in rows], \
+                f"Porcentaje de victorias de cada campeón contra {oname} en tu línea (Lolalytics, todos los jugadores, no solo tú)."
+        rows = sorted(rows, key=lambda x: -x["delta"])
+        return [(x["cid"], f"{'+' if x['delta'] >= 0 else '−'}{abs(x['delta']):.1f}".replace(".", ","), "good" if x["delta"] >= 0 else "bad",
+                 f"{x['wr']:.1f} % · {x['games']:,} partidas".replace(",", ".").replace(".", ",", 1)) for x in rows], \
+            f"Puntos de victoria que gana cada campeón contra {oname} respecto a su media (Lolalytics). Mide ventaja del enfrentamiento; " \
+            "las fuentes públicas no dan la diferencia de oro."
+
+    def lists_view(self):
+        ui, f, tk_ = self.ui, self.ui.conf["filters"], tk
+        names = [n for n in self.LISTS if n in ("Afinidad", "Meta", "Mis campeones") or self.r["lane_opp"]]
+        if self.r["lane_opp"]:
+            names = ["Afinidad", "Meta", "Contra tu rival", "Ventaja vs rival", "Mis campeones"]
+        if self.list_tab not in names:
+            self.list_tab = names[0]
+        ui.seg(self.dyn, names, self.list_tab, self.set_list_tab, height=28).pack(fill="x", pady=(0, 8))
+        bar = ui.frame(self.dyn)
+        bar.pack(fill="x", pady=(0, 6))
+        ui.lbl(bar, "Mostrar", 10, "dim").pack(side="left", padx=(0, 6))
+        n = ui.conf.get("list_n", 20)
+        ui.seg(bar, ["12", "20", "30", "40"], str(n), self.set_list_n, width=190, height=26).pack(side="left")
+        if self.list_tab in ("Contra tu rival", "Ventaja vs rival") and (self.info.get("owned") or []):
+            on = f.get("solo_mios", False)
+            b = ctk.CTkButton(bar, text="Solo los que tengo", height=26, width=10, corner_radius=13, font=ui.font(11), border_width=1,
+                              border_color=PAL["border"], fg_color=ui.acc if on else PAL["card2"], text_color=ON_FILL if on else PAL["fg"],
+                              hover_color=PAL["border"], command=self.flip_owned)
+            b.pack(side="left", padx=(10, 0))
+        items, why = self.list_items(self.list_tab)
+        ui.lbl(self.dyn, why, 9, "dim", anchor="w", justify="left", wraplength=max(260, self.width - 110)).pack(anchor="w", pady=(0, 8))
+        if not items:
+            if items is not None:
+                ui.lbl(self.dyn, "Ningún campeón cumple los filtros de arriba.", 11, "dim").pack(anchor="w", pady=4)
+            return
+        items = items[:n]
+        cols = 1 if self.width < 620 else 2 if self.width < 980 else 3
+        grid = tk_.Frame(self.dyn, bg=ui.bg(self.dyn))
+        grid.pack(fill="x")
+        for k in range(cols):
+            grid.columnconfigure(k, weight=1, uniform="ls")
+        card, fg, dim = ui.hexm(PAL["card2"]), ui.hexm(PAL["fg"]), ui.hexm(PAL["dim"])
+        fb, f9, f14 = ui.tkf(12, True, False), ui.tkf(9, False, False), ui.tkf(14, True, True)
+        for i, (cid, val, color, sub) in enumerate(items):
+            cell = tk_.Frame(grid, bg=card)
+            cell.grid(row=i // cols, column=i % cols, sticky="ew", padx=3, pady=3)
+            ph = ui.champ_photo(cid, 34)
+            ic = tk_.Label(cell, image=ph, bd=0, bg=card) if ph is not None else tk_.Frame(cell, width=34, height=34, bg=ui.hexm(PAL["card"]))
+            ic.image = ph
+            ic.pack(side="left", padx=(8, 8), pady=6)
+            mid = tk_.Frame(cell, bg=card)
+            mid.pack(side="left", fill="x", expand=True)
+            tk_.Label(mid, text=f"{i + 1}.  {name(cid, ui.champs)}", font=fb, fg=fg, bg=card, anchor="w").pack(anchor="w")
+            tk_.Label(mid, text=sub, font=f9, fg=dim, bg=card, anchor="w").pack(anchor="w")
+            tk_.Label(cell, text=val, font=f14, fg=ui.hexm(PAL[color]) if isinstance(color, str) and color in PAL else ui.hexm(color), bg=card).pack(side="right", padx=10)
+
+    def set_list_tab(self, v):
+        self.list_tab = v
+        self.render()
+
+    def set_list_n(self, v):
+        self.ui.conf["list_n"] = int(v)
+        core.save_conf(self.ui.conf)
+        self.render()
+
+    def flip_owned(self):
+        f = self.ui.conf["filters"]
+        f["solo_mios"] = not f.get("solo_mios", False)
+        core.save_conf(self.ui.conf)
+        self.render()
 
     def hero_label(self, parent, cand, pct, w, eyebrow):
         pil = self.ui.hero_pil(cand["cid"], eyebrow, pct, w)
@@ -1298,6 +1455,9 @@ class Lobby(Section):
             for a in r["ally_cells"]:
                 p = pl.get(a["puuid"]) if a["puuid"] else None
                 self.row(c, a, p, a["puuid"] in party, len(party), bool(pl) or not a["puuid"], r["mates"].get(a["puuid"]))
+            if r["ally_cells"] and not any(a["puuid"] for a in r["ally_cells"]):
+                ui.lbl(c, "En esta cola Riot oculta los nombres hasta que empieza la partida, así que no hay rango ni historial de tus aliados. "
+                          "Se muestran su línea y su campeón.", 10, "dim", anchor="w", justify="left", wraplength=max(260, ctx["width"] - 110)).pack(anchor="w", pady=(2, 6))
         st = r["ally_stats"]
         if st and st["ad"] + st["ap"]:
             tot = st["ad"] + st["ap"]
@@ -1316,7 +1476,7 @@ class Lobby(Section):
         mid.pack(side="left", fill="x", expand=True, padx=12)
         head = ui.frame(mid)
         head.pack(fill="x")
-        nm = (p or {}).get("name") or ("Perfil oculto" if not a["puuid"] else "Cargando…")
+        nm = (p or {}).get("name") or ("Nombre oculto" if not a["puuid"] else "Cargando…")
         ui.lbl(head, nm, 13, "fg", True).pack(side="left")
         if ROLES_ES.get(a["role"]):
             ui.chip(head, ROLES_ES[a["role"]], "dim").pack(side="left", padx=(8, 0))

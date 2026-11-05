@@ -11,6 +11,21 @@ VERSIÓN 1.9.0   (5 de noviembre de 2026)
 ---------------------------------------------------------------------
 
 NOVEDADES
+  · PESTAÑA «PARTIDA» (nueva):
+      Plan: tu campeón elegido con su build, runas, habilidades y
+      consejos, también contra tu rival (% de victorias del
+      enfrentamiento y quién le gana mejor). Dura toda la partida: al
+      empezar, LOL-E te lleva a esta pestaña en vez de volver al inicio.
+      Análisis: al acabar, oro del equipo, oro/experiencia/súbditos
+      frente a tu rival minuto a minuto, tus muertes, objetivos, tu
+      recorrido por el mapa y consejos con el dato que los justifica.
+      Sale de la línea de tiempo que guarda el cliente de LoL (sin claves).
+  · VISTA «LISTAS» en las recomendaciones: 12 a 40 campeones por lista y
+    varios criterios (afinidad, meta, % de victorias contra tu rival,
+    ventaja contra tu rival, tus campeones), con filtros de clase y
+    «solo los que tengo». Sustituye a mirar de uno en uno.
+  · «RANGO Y LOGROS»: fuera los Retos y el honor; entra tu puesto en la
+    clasificación de tu servidor (op.gg).
   · TU CAMPEÓN ELEGIDO, CON SU BUILD: en cuanto marcas o bloqueas un
     campeón en la selección, justo debajo de «Te toca elegir» aparece su
     build más usada (hechizos, runas, objetos, botas y habilidades) en tu
@@ -47,6 +62,25 @@ ROBUSTEZ Y UTILIDADES
   · HISTORIAL > «Exportar CSV»: las partidas filtradas, listas para Excel.
   · ATAJOS: Ctrl+1 a Ctrl+4 cambian de pestaña.
   · La caché borra sola lo que lleva más de 3 semanas sin usarse.
+
+CORRECCIONES (de una selección y partida reales, 5 de noviembre)
+  · LOL-E NO TOCA NADA CON LA PARTIDA EN MARCHA: al empezar la partida
+    releía todo tu historial justo durante la pantalla de carga. Ahora
+    espera a que acabe (o a que vuelvas al lobby) y entonces actualiza.
+  · LA IMAGEN GRANDE DE LA RECOMENDACIÓN se veía recortada por los lados
+    (nombre cortado, anillo de afinidad a medias). Ahora se ajusta al
+    ancho que realmente tiene.
+  · LA BARRA DE RANGO de la selección tapaba los últimos resultados en
+    ventanas medianas: los resultados siempre se ven y el aviso de tilt
+    solo sale si cabe.
+  · LAS FICHAS DE «RANGO Y LOGROS» cortaban los títulos en ventanas de
+    ~700 px: ahora usan 2 columnas hasta 740 px.
+  · AL BLOQUEAR CAMPEÓN, la ventana se quedaba ~1,7 s sin responder. La
+    selección se repinta ahora por partes, dejando respirar a la ventana,
+    y se conserva el punto donde estabas leyendo al aparecer tarjetas nuevas.
+  · NOMBRES OCULTOS: en las colas donde Riot oculta los nombres de tus
+    aliados, la tarjeta del equipo lo explica en vez de repetir «Perfil
+    oculto» sin más.
 
 CORRECCIONES
   · SALTOS Y BLOQUEOS DURANTE LA SELECCIÓN: cada gesto de los demás en la

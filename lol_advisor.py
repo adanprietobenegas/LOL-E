@@ -3,6 +3,7 @@ import base64, json, os, queue, re, shutil, ssl, subprocess, sys, threading, tim
 import urllib.parse, urllib.request, urllib.error
 from concurrent.futures import ThreadPoolExecutor
 
+import analysis
 import history
 import matchups
 import meta as metamod
@@ -43,7 +44,8 @@ DEFAULT_CONF = {
     "sound": "Doble tono",
     "volume": 0.7,           # 0 a 1
     "preset": "equilibrado",
-    "rec_view": "carrusel",  # carrusel | lista
+    "rec_view": "carrusel",  # carrusel | lista | listas
+    "list_n": 20,            # cuántos campeones por lista en la vista «Listas»
     "meta_enabled": True,    # meta del parche (Lolalytics)
     "matchups_enabled": True,  # enfrentamientos globales (Lolalytics)
     "custom_weights": {},    # pesos propios (estilo «personalizado»)
@@ -285,7 +287,7 @@ def load_season(champs, conf=None):
     saved = read_json(opgg_path(conf), None) if conf and conf.get("opgg_name") else None
     if saved:
         return {"champs": {int(k): v for k, v in saved["champs"].items()},
-                "matchups": {tuple(map(int, k.split(":"))): v for k, v in saved["matchups"].items()}}
+                "matchups": {tuple(map(int, k.split(":"))): v for k, v in saved["matchups"].items()}, "ladder": saved.get("ladder")}
     return {"champs": load_season_seed(champs), "matchups": {}}
 
 
@@ -302,6 +304,14 @@ def fetch_opgg(conf):
                    capture_output=True, **{k: v for k, v in quiet().items() if k != "stdin"})
     with open(out, encoding="utf-8", errors="replace") as f:
         return f.read()
+
+
+def parse_ladder(html):
+    """Puesto en la clasificación clasificatoria de tu servidor: {rank, top} (op.gg: «Ladder Rank 1,136,003 (30.9% of top)»)."""
+    m = re.search(r'Ladder Rank <span[^>]*>([\d,]+)</span> \(([\d.]+)% of top\)', html)
+    if not m:
+        return None
+    return {"rank": int(m.group(1).replace(",", "")), "top": float(m.group(2))}
 
 
 def parse_opgg(html):
@@ -354,7 +364,7 @@ def maybe_update_opgg(conf, champs, P, force=False):
         c, m = parse_opgg(html)
         if len(c) < 5:
             raise ValueError("la pagina no trajo datos (perfil no encontrado o web cambiada)")
-        write_json(path, {"ts": time.time(), "games": P["games"], "champs": c, "matchups": m})
+        write_json(path, {"ts": time.time(), "games": P["games"], "champs": c, "matchups": m, "ladder": parse_ladder(html)})
         OPGG_MSG = f"op.gg actualizado: {len(c)} campeones y {len(m)} enfrentamientos"
         return load_season(champs, conf)
     except Exception as e:
@@ -389,7 +399,7 @@ def ally_champs(me, detail):
 def load_player_data(lcu, season=None):
     """Maestría, historial, enfrentamientos, parejas de campeones, modos y perfil. Todo desde el cliente, sin claves."""
     P = {"mastery": {}, "stats": {}, "rstats": {}, "matchups": {}, "opp": {}, "pairs": {}, "modes": {}, "mates": {}, "aram": {}, "owned": set(),
-         "season": (season or {}).get("champs", {}), "form": [], "games": 0, "rank": "", "record": "", "profile": {}}
+         "season": (season or {}).get("champs", {}), "ladder": (season or {}).get("ladder"), "form": [], "games": 0, "rank": "", "record": "", "profile": {}}
     try:
         for m in lcu.get("/lol-champion-mastery/v1/local-player/champion-mastery") or []:
             P["mastery"][m["championId"]] = m["championPoints"]
@@ -865,7 +875,7 @@ def player_info(P):
     modes = [{"name": n, "games": P["modes"][n][0], "wins": P["modes"][n][1], "last": P["modes"][n][2][-10:]}
              for n in MODE_ORDER if P["modes"].get(n)]
     return {"rank": P["rank"], "record": P["record"], "form": P["form"], "games": P["games"], "pool": pool,
-            "profile": P["profile"], "modes": modes, "owned": sorted(P["owned"]),
+            "profile": P["profile"], "modes": modes, "owned": sorted(P["owned"]), "ladder": P.get("ladder"), "region": "",
             "opp": {k: list(v) for k, v in P["opp"].items()}, "champ_vs": champ_vs(P), "vs_enemy": vs_enemy(P), "mastery_top": sorted(P["mastery"].items(), key=lambda x: -x[1])[:8], "mastery_all": dict(P["mastery"]), "season": {k: list(v) for k, v in P["season"].items()}, "stats": {k: list(v) for k, v in P["stats"].items()}}
 
 
@@ -902,6 +912,8 @@ def run(conf, champs, ui):
     next_check, next_lobby = 0.0, 0.0
     prev_turn = None
     force_opgg = False
+    reload_pending = False
+    last_flow = "_"
     next_hist, hist_tries = 0.0, 0
     party, my_puuid = set(), ""
     mode = None
@@ -918,6 +930,14 @@ def run(conf, champs, ui):
                 getattr(ui, "history_updated", lambda: None)()
             elif cmd == "meta":
                 start_meta(conf, P, ui, force=True)
+            elif isinstance(cmd, tuple) and cmd[0] == "analysis" and lcu is not None:
+                try:
+                    getattr(ui, "analysis", lambda *a: None)(str(cmd[1]), analysis.load(lcu, cmd[1], my_puuid, CACHE))
+                except (urllib.error.URLError, ConnectionError, OSError):
+                    getattr(ui, "analysis", lambda *a: None)(str(cmd[1]), None)
+                except Exception:
+                    log_exc("Análisis de la partida")
+                    getattr(ui, "analysis", lambda *a: None)(str(cmd[1]), None)
             if META.pop("dirty", False) and last is not None:
                 last = "_force"  # llego el meta: recalcular
             if lcu is None:
@@ -941,11 +961,34 @@ def run(conf, champs, ui):
             session = lcu.get("/lol-champ-select/v1/session")
             session = sanitize_session(session) if session else session
             if not session:
+                try:
+                    flow = lcu.get("/lol-gameflow/v1/gameflow-phase")
+                except (urllib.error.URLError, ConnectionError, OSError):
+                    raise
+                except Exception:
+                    flow = None
+                in_game = flow in ("InProgress", "GameStart", "Reconnect")  # con la partida en marcha no se toca nada: el PC es del juego
+                if flow != last_flow:
+                    last_flow = flow
+                    getattr(ui, "phase", lambda f: None)(flow)
                 if last is not None:
                     last = prev_turn = mode = None
+                    reload_pending = True
+                    ui.idle(player_info(P), "Partida en curso. LOL-E espera a que acabe." if in_game else "Selección terminada. Esperando la siguiente…")
+                if reload_pending and not in_game:
+                    reload_pending = False
                     P = load_player_data(lcu, season)  # actualiza con la partida que acaba de pasar
-                    ui.idle(player_info(P), "Selección terminada. Esperando la siguiente…")
+                    ui.idle(player_info(P), "Partida terminada. Historial actualizado. Esperando la siguiente…")
                     getattr(ui, "history_updated", lambda: None)()
+                    try:  # análisis de la partida que acaba de terminar, listo en la pestaña «Partida»
+                        g = (lcu.get("/lol-match-history/v1/products/lol/current-summoner/matches?begIndex=0&endIndex=1") or {})["games"]["games"][0]
+                        getattr(ui, "analysis", lambda *a: None)(str(g["gameId"]), analysis.load(lcu, g["gameId"], my_puuid, CACHE))
+                    except (urllib.error.URLError, ConnectionError, OSError):
+                        raise
+                    except Exception:
+                        log_exc("Análisis al terminar la partida")
+                if in_game:
+                    time.sleep(5); continue
                 if P["games"] == 0 and hist_tries < 6 and time.time() >= next_hist:  # el historial no llego: reintentar
                     next_hist, hist_tries = time.time() + 40, hist_tries + 1
                     P = load_player_data(lcu, season)

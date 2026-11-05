@@ -99,21 +99,22 @@ Arriba, tu perfil (icono, nombre, nivel, tus últimas 5 partidas) y tus
 rangos de Solo/Dúo y Flexible. Debajo, una sola tarjeta con TRES
 PESTAÑAS para tener toda la información agrupada:
 
-  Rango y logros   Fichas con lo que tu cliente sabe de ti: mejor rango
-                   de la temporada, temporada anterior, nivel de Retos y
-                   en qué porcentaje de los mejores de tu servidor estás
-                   («Entre el 3,4 % mejor»), tu mejor categoría de Retos,
-                   maestría total, nivel de honor y racha actual.
+  Rango y logros   Fichas con lo que se sabe de ti: mejor rango de la
+                   temporada, temporada anterior, tu puesto en la
+                   clasificación de tu servidor («Top 30,9 %», dato de
+                   op.gg), maestría total y racha actual. (Los Retos y
+                   el honor del juego se han quitado: casi nadie los mira.)
                      · Pasa el ratón por una ficha: se resalta y sale una
                        previsualización.
                      · PULSA una ficha: se despliega con animación su
                        detalle: tus rangos y los PL que te faltan para
-                       subir, las 5 categorías de Retos con su barra,
-                       tus campeones con más maestría, tu honor o tus
+                       subir, tus campeones con más maestría o tus
                        últimas 20 partidas. Pulsa otra vez para cerrarla.
-                     · La posición exacta en el ranking de tu servidor
-                       (el «top» de EUW) no la da el cliente; el
-                       porcentaje de los Retos sí es de tu servidor.
+                     · Un «top» por campeón (por ejemplo «Fiora, 68.º de
+                       EUW») no se puede sacar de forma fiable: el
+                       cliente no lo da y las webs que lo tienen no
+                       ofrecen un acceso estable. Lo que sí hay es tu
+                       puesto general en tu servidor.
   Modos            Tus modos (Solo/Dúo, Flexible, ARAM, Arena…) con su
                    porcentaje y resultados recientes. PULSA un modo para
                    ver sus últimas partidas, KDA, duración media y los
@@ -188,6 +189,21 @@ DURANTE LA SELECCIÓN DE CAMPEÓN
 
                 Si prefieres verlas todas a la vez, cambia a «Lista»
                 con el botón de arriba a la derecha de la sección.
+
+                «LISTAS» (también ahí): muchos campeones de un vistazo
+                (12, 20, 30 o 40 por lista), con varios criterios:
+                  Afinidad          cuánto encajan contigo ahora.
+                  Meta              % de victorias en tu línea este parche.
+                  Contra tu rival   % de victorias de cada campeón contra
+                                    tu rival de línea (Lolalytics).
+                  Ventaja vs rival  puntos de victoria sobre su media
+                                    contra ese rival. Es la «ventaja»
+                                    del enfrentamiento; la diferencia de
+                                    oro por enfrentamiento no la publica
+                                    ninguna fuente abierta.
+                  Mis campeones    los que ya has jugado, de más a menos
+                                    victorias.
+                Los filtros de clase y «Solo los que tengo» se aplican.
 
                 Las etiquetas de colores explican el porqué:
                   verde = a favor (por ejemplo «2/3 victorias» o
@@ -417,6 +433,25 @@ solos. Se cierra con «Cerrar» o con la tecla Esc.
                    registro de errores y restablecer todos los ajustes
                    (no borra tu historial).
   Acerca de        Versión y aviso legal.
+
+
+LA PESTAÑA «PARTIDA»
+--------------------
+  Plan       Tu campeón elegido: su build, runas y habilidades (también
+             contra tu rival), tu enfrentamiento (% de victorias de tu
+             campeón contra ese rival, y los que le ganan mejor) y
+             consejos según la composición rival. Se queda disponible
+             durante la partida: al empezar, LOL-E te lleva solo a esta
+             pestaña, y al empezar la siguiente selección vuelve al
+             Asesor.
+  Análisis   Al terminar una partida (o eligiéndola en la lista), mira
+             la línea de tiempo del propio cliente: ventaja de oro de tu
+             equipo, oro y experiencia frente a tu rival de línea,
+             súbditos, tus muertes y los objetivos minuto a minuto, tu
+             RECORRIDO por el mapa, y consejos que explican en qué dato
+             se basan. El cliente solo conserva las partidas recientes.
+  No incluye: recorridos de jungla recomendados (ninguna fuente
+  abierta fiable) ni datos en directo durante la partida.
 
 
 ATAJOS Y EXTRAS
