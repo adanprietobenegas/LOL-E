@@ -33,8 +33,7 @@ class Section:
         if sig == self.sig and not force:
             return False
         self.sig = sig
-        for w in self.box.winfo_children():
-            w.destroy()
+        self.ui.clear(self.box)
         self.build(ctx)
         if not self.box.winfo_children():
             self.box.configure(height=1)  # un contenedor vacío de Tk conserva su último tamaño: se colapsa a mano
@@ -305,8 +304,7 @@ class SummaryCard(Section):
 
     def paint_tab(self, animate):
         ui = self.ui
-        for w in self.body.winfo_children():
-            w.destroy()
+        self.ui.clear(self.body)
         fn = {"Rango y logros": self.tab_logros, "Modos": self.tab_modos, "Repertorio": self.tab_pool}[self.tab]
         if animate and ui.anim_on():
             ui.reveal(self.body, fn)
@@ -364,8 +362,7 @@ class SummaryCard(Section):
         same = self.sel == key
         self.sel = None if same else key
         self.mark()
-        for w in self.slot.winfo_children():
-            w.destroy()
+        self.ui.clear(self.slot)
         if same:
             return
         fn = self.details.get(key)
@@ -906,6 +903,7 @@ class Recs(Section):
         r2.pack(fill="x", pady=(8, 0))
         for text, key in (("Mi rol", "mi_rol"), ("Mis campeones", "mios"), ("Meta fuerte", "meta")):
             self.toggle(r2, text, key)
+        small_btn(ui, r2, "Restablecer", self.reset_filters, 96).pack(side="right")
 
     def toggle(self, parent, text, key):
         ui = self.ui
@@ -1003,8 +1001,7 @@ class Recs(Section):
         if fast and self.vis:
             self.refilter(fade)  # el esqueleto (flechas, pestañas) se conserva: solo cambian franja y páginas
             return
-        for w in self.dyn.winfo_children():
-            w.destroy()
+        self.ui.clear(self.dyn)
         self.pages, self.cur_page, self.hero_lab, self.cells, self.list_hero = {}, None, None, [], None
         if ui.conf["rec_view"] == "listas" and not ui.conf["compact"] and self.kind() == "sr":
             self.lists_view()

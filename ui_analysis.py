@@ -50,6 +50,7 @@ class AnalysisView:
         self.together = False  # marcador: por equipos o los 10 juntos
         self.mfilter = "Todo"  # filtro de los momentos clave
         self.nosec = False
+        self.hosts, self.folds, self.cur = {}, {}, None   # cuerpo y cabecera de cada sección plegable, y los datos con que se pintó
 
     # ------------------------------------------------------------ utilidades
     def hx(self, c):
@@ -101,6 +102,7 @@ class AnalysisView:
         if opp is None or analysis.player(a, opp) is None:
             opp = (analysis.enemies(a) or [{"pid": None}])[0]["pid"]
         self.nosec = True
+        self.hosts, self.folds, self.cur = {}, {}, (a, opp)
         self.header(host, a, opp)
         self.kpis(host, a, opp)
         adv = analysis.advice(a, opp, ui.champs)
@@ -109,14 +111,37 @@ class AnalysisView:
         ui.fold(host, "Consejos de esta partida", lambda p: self.advice(p, a, opp, adv),
                 f"{nb} a mejorar · {ng} bien" if adv else "sin nada destacable", "an_advice", True)
         mine = sum(1 for e in ev if e["cat"] == "kd")
-        ui.fold(host, "Momentos clave", lambda p: self.moments(p, a, ev), f"{len(ev)} eventos · {mine} tuyos", "an_moments", True)
-        ui.fold(host, "Evolución de la partida", lambda p: self.charts(p, a, opp), gv.chart, "an_charts", True)
+        self.cur = (a, opp, ev)
+        self.folds["moments"] = ui.fold(host, "Momentos clave", lambda p: self.mount("moments", p, a, opp, ev), f"{len(ev)} eventos · {mine} tuyos", "an_moments", True)
+        self.folds["charts"] = ui.fold(host, "Evolución de la partida", lambda p: self.mount("charts", p, a, opp, ev), gv.chart, "an_charts", True)
         if opp is not None:
             o = analysis.player(a, opp)
             g10 = analysis.at(a, analysis.diff(a, "gold_s", a["me"], opp), 10)
             ui.fold(host, f"Tú frente a {self.cname(o['champ'])}", lambda p: self.table(p, a, opp),
                     f"oro a minuto 10: {sg(g10)}" if g10 is not None else "", "an_table", False)
-        ui.fold(host, "Los dos equipos", lambda p: self.scoreboard(p, a, opp), f"orden: {self.sort.lower()}", "an_teams", False)
+        self.folds["teams"] = ui.fold(host, "Los dos equipos", lambda p: self.mount("teams", p, a, opp, ev), f"orden: {self.sort.lower()}", "an_teams", False)
+
+    def mount(self, name, host, a, opp, ev):
+        """Pinta una sección y guarda su contenedor para poder repintar solo esa."""
+        self.hosts[name] = host
+        {"moments": lambda: self.moments(host, a, ev), "charts": lambda: self.charts(host, a, opp), "teams": lambda: self.scoreboard(host, a, opp)}[name]()
+
+    def rerender(self, name, summary=None):
+        """Repinta una sola sección (si existe). Devuelve False si hay que reconstruir la pestaña entera."""
+        host = self.hosts.get(name)
+        if host is None and name in self.folds and self.folds[name].winfo_exists():
+            if summary is not None:  # la sección está plegada y aún sin construir: se pintará bien al abrirla
+                self.folds[name].set_summary(summary)
+            return True
+        if host is None or not host.winfo_exists() or not self.cur:
+            return False
+        a, opp = self.cur[0], self.cur[1]
+        ev = self.cur[2] if len(self.cur) > 2 else []
+        self.ui.clear(host)
+        self.mount(name, host, a, opp, ev)
+        if summary is not None and name in self.folds:
+            self.folds[name].set_summary(summary)
+        return True
 
     def section(self, host, title, sub=None):
         if self.nosec:
@@ -170,13 +195,15 @@ class AnalysisView:
 
     def set_together(self, v):
         self.together = v == "Los 10 juntos"
-        self.gv.sig = None
-        self.gv.refresh(self.gui.make_ctx())
+        if not self.rerender("teams"):
+            self.gv.sig = None
+            self.gv.refresh(self.gui.make_ctx())
 
     def set_sort(self, v):
         self.sort = v
-        self.gv.sig = None
-        self.gv.refresh(self.gui.make_ctx())
+        if not self.rerender("teams", f"orden: {v.lower()}"):
+            self.gv.sig = None
+            self.gv.refresh(self.gui.make_ctx())
 
     def set_opp(self, pid):
         self.gv.opp[self.gv.gid] = pid
@@ -572,8 +599,9 @@ class AnalysisView:
 
     def set_mfilter(self, v):
         self.mfilter = v
-        self.gv.sig = None
-        self.gv.refresh(self.gui.make_ctx())
+        if not self.rerender("moments"):
+            self.gv.sig = None
+            self.gv.refresh(self.gui.make_ctx())
 
     def moments(self, host, a, ev):
         ui, gv = self.ui, self.gv

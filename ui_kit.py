@@ -278,7 +278,7 @@ class Kit:
         b.set(current)
         return b
 
-    def fold(self, parent, title, build, summary="", key=None, open_=False):
+    def fold(self, parent, title, build, summary="", key=None, open_=False, action=None):
         """Sección plegable: cabecera con flecha, título y un resumen a la derecha. El cuerpo se construye al abrirla por primera vez
         (con una animación breve) y se recuerda si estaba abierta. Devuelve el contenedor; `box.set_summary(texto)` cambia el resumen."""
         folds = self.conf.setdefault("folds", {})
@@ -296,6 +296,10 @@ class Kit:
         ttl.pack(side="left")
         sm = tk.Label(head, text=summary, bg=card, fg=dim, font=self.tkf(9, False, False), anchor="e")
         sm.pack(side="right", padx=12)
+        act = None
+        if action:  # botón de texto en la cabecera (por ejemplo «Restablecer»): se ve aunque la sección esté plegada
+            act = tk.Label(head, text=action[0], bg=card, fg=self.hexm(self.acc), font=self.tkf(9, True, False), cursor="hand2")
+            act.bind("<Button-1>", lambda e: (action[1](), "break")[1])
 
         def paint_open():
             if state["open"]:
@@ -319,6 +323,14 @@ class Kit:
             c = hover if on else card
             for w in (head, arrow, ttl, sm):
                 w.configure(bg=c)
+        def show_action(on):
+            if act is None:
+                return
+            if on:
+                act.pack(side="right", padx=(0, 4), before=sm)
+            else:
+                act.pack_forget()
+        box.show_action = show_action
         for w in (head, arrow, ttl, sm):
             w.bind("<Button-1>", toggle)
             w.bind("<Enter>", lambda e: tint(True))
@@ -614,6 +626,39 @@ class Kit:
                 finish()
         step()
         return outer
+
+    def clear(self, frame):
+        """Vacía un contenedor y, si se queda sin hijos, lo encoge: un marco de Tk vacío conserva su último tamaño y dejaba un hueco."""
+        for w in frame.winfo_children():
+            w.destroy()
+        try:
+            frame.configure(height=1)
+        except Exception:
+            pass
+
+    def bubble(self, cid, size, ring, width=3):
+        """Retrato redondo del campeón con un aro de color (verde/rojo/gris): PhotoImage al tamaño real, guardado en memoria."""
+        key = ("bubble", cid, size, ring)
+        ph = self.photos.get(key)
+        if ph is not None:
+            return ph
+        c = self.champs.get(cid)
+        path = os.path.join(CACHE, "icons", f"{c['icon']}.png") if c and c.get("icon") else ""
+        px = max(8, int(round(size * self.scale_px())))
+        S = px * 4
+        out = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+        if path and os.path.exists(path):
+            try:
+                im = Image.open(path).convert("RGBA").crop((8, 8, 112, 112)).resize((S, S), Image.LANCZOS)
+                mask = Image.new("L", (S, S), 0)
+                ImageDraw.Draw(mask).ellipse((0, 0, S - 1, S - 1), fill=255)
+                out.paste(im, (0, 0), mask)
+            except Exception:
+                pass
+        ImageDraw.Draw(out).ellipse((width * 2, width * 2, S - 1 - width * 2, S - 1 - width * 2), outline=ring, width=width * 4)
+        ph = ImageTk.PhotoImage(out.resize((px, px), Image.LANCZOS))
+        self.photos[key] = ph
+        return ph
 
     def rrect(self, cv, x1, y1, x2, y2, r, **kw):
         """Rectángulo redondeado dibujado en un lienzo."""

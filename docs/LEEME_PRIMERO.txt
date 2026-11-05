@@ -1,6 +1,6 @@
 =====================================================================
   LOL-E  ·  Tu asesor para la selección de campeón
-  Versión 1.10.1
+  Versión 1.11.0
 =====================================================================
 
 ¿QUÉ ES?
@@ -44,7 +44,7 @@ CÓMO INSTALARLO (menos de 1 minuto)
   1. Si has descargado un archivo .zip, haz clic con el botón derecho
      y elige «Extraer todo…». Después abre la carpeta que se crea.
 
-  2. Haz doble clic en:   1_Instalar-LOL-E-1.10.1
+  2. Haz doble clic en:   1_Instalar-LOL-E-1.11.0
 
   3. Windows puede mostrar una ventana azul que dice «Windows protegió
      su PC». ES NORMAL en programas nuevos de particulares, que no
@@ -461,6 +461,16 @@ LA PESTAÑA «PARTIDA»
              cliente solo conserva las partidas más recientes.
   No incluye: recorridos de jungla recomendados (ninguna fuente
   abierta fiable) ni datos en directo durante la partida.
+
+
+HISTORIAL POR DÍAS
+------------------
+  Cada día es una cabecera con su resumen, una barra verde/roja de
+  victorias y derrotas y una burbuja por partida (aro verde = ganada, rojo
+  = perdida; «+N» si hay más de las que caben). Púlsala para plegar o
+  desplegar el día; «Plegar todos los días» deja solo las cabeceras para
+  encontrar un día anterior de un vistazo. Los filtros tienen siempre un
+  «Restablecer».
 
 
 SECCIONES PLEGABLES

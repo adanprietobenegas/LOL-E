@@ -61,6 +61,7 @@ class HistoryView:
         self.limit, self.q, self.mode, self.res, self.line, self.sort = None, "", "Todos", "Todas", "Todas", "Más recientes"
         self.shown, self._t, self.width, self.level = STEP, None, 520, 0
         self.list_host = self.summary_host = self.entry = self.filter_fold = None
+        self.day_state, self.days, self.day_games = {}, {}, {}   # días plegados o desplegados, y sus partidas
         self.open = set()
 
     # ---- datos ----
@@ -85,8 +86,7 @@ class HistoryView:
         if sig == self.sig and not force:
             return
         self.sig, self.width, self.level = sig, width, level
-        for w in self.box.winfo_children():
-            w.destroy()
+        self.ui.clear(self.box)
         self.skeleton()
         self.render_all()
 
@@ -99,10 +99,15 @@ class HistoryView:
         self.summary_host = ui.frame(self.sum_card)
         self.summary_host.pack(fill="x")
         desde = fecha(self.all[-1]["t"], False) if n else ""
-        self.filter_fold = ui.fold(self.box, "Buscar y filtrar", lambda c: self.filters(c, n, wl, desde), self.filter_summary(), "hist_filters", False)
+        self.filter_fold = ui.fold(self.box, "Buscar y filtrar", lambda c: self.filters(c, n, wl, desde), self.filter_summary(), "hist_filters", False,
+                                   action=("Restablecer", self.clear_filters))
+        self.filter_fold.show_action(self.filters_active())
         self.list_card = ui.card(self.box)
         self.list_host = ui.frame(self.list_card)
         self.list_host.pack(fill="x")
+
+    def filters_active(self):
+        return bool(self.q or self.mode != "Todos" or self.res != "Todas" or self.line != "Todas" or self.limit or self.sort != "Más recientes")
 
     def filter_summary(self):
         act = [x for x in (self.mode if self.mode != "Todos" else "", self.res if self.res != "Todas" else "", self.line if self.line != "Todas" else "",
@@ -220,6 +225,7 @@ class HistoryView:
         games = self.filtered()
         try:
             self.filter_fold.set_summary(self.filter_summary())
+            self.filter_fold.show_action(self.filters_active())
         except Exception:
             pass
         self.render_summary(games)
@@ -239,8 +245,7 @@ class HistoryView:
 
     def render_summary(self, games):
         ui = self.ui
-        for w in self.summary_host.winfo_children():
-            w.destroy()
+        self.ui.clear(self.summary_host)
         if not games:
             ui.lbl(self.summary_host, "Sin partidas con estos filtros." if self.all else
                    "Cuando juegues, aquí verás tus estadísticas: victorias, KDA, rachas y tus campeones más jugados.", 11, "dim",
@@ -332,8 +337,7 @@ class HistoryView:
 
     def render_list(self, games):
         ui = self.ui
-        for w in self.list_host.winfo_children():
-            w.destroy()
+        self.ui.clear(self.list_host)
         if not games:
             ui.lbl(self.list_host, "Ninguna partida cumple los filtros." if self.all else "Cuando juegues, tus partidas aparecerán aquí.",
                    11, "dim").pack(anchor="w", pady=6)
@@ -344,11 +348,18 @@ class HistoryView:
             self.col_header(self.wrap)
         self.cur_games, self.built, self.last_day, self.more_b = games, 0, None, None
         self.by_day = self.sort in ("Más recientes", "Más antiguas")
-        self.day_stats = {}
+        self.day_stats, self.day_games, self.days = {}, {}, {}
         for x in games:
-            st = self.day_stats.setdefault(day_label(x["t"]), [0, 0])
+            d = day_label(x["t"])
+            st = self.day_stats.setdefault(d, [0, 0])
             st[0] += 1
             st[1] += x["w"]
+            self.day_games.setdefault(d, []).append(x)
+        if self.by_day and len(self.day_stats) > 1:
+            bar = ui.frame(self.wrap)
+            bar.pack(fill="x", padx=8, pady=(0, 2))
+            small_btn(ui, bar, "Plegar todos los días", lambda: self.fold_days(False), 150).pack(side="left")
+            small_btn(ui, bar, "Desplegar todos", lambda: self.fold_days(True), 130).pack(side="left", padx=(6, 0))
         self.append_rows()
 
     def append_rows(self):
@@ -357,14 +368,15 @@ class HistoryView:
         shown = games[:self.shown]
         for e in shown[self.built:]:
             d = day_label(e["t"])
-            if self.by_day and d != self.last_day:
-                self.last_day = d
-                n, w = self.day_stats[d]
-                h = ui.frame(self.wrap)
-                h.pack(fill="x", pady=(10, 2), padx=4)
-                ui.lbl(h, d.upper(), 10, "fg", True).pack(side="left")
-                ui.lbl(h, f"  ·  {n} partida{'s' if n != 1 else ''}  ·  {w}V {n - w}D", 10, "dim").pack(side="left")
-            self.row(self.wrap, e)
+            if self.by_day:
+                dd = self.days.get(d) or self.new_day(d)
+                dd["games"].append(e)
+                if dd["open"]:
+                    self.row(dd["body"], e)
+                else:
+                    dd["pending"].append(e)  # el día está plegado: sus filas se pintan al desplegarlo
+            else:
+                self.row(self.wrap, e)
         self.built = len(shown)
         if self.more_b is not None:
             self.more_b.destroy()
@@ -376,6 +388,91 @@ class HistoryView:
             b.pack(pady=(10, 0))
             ui.smooth_btn(b, PAL["card2"], PAL["border"])
             self.more_b = b
+
+    def row_width(self):
+        """Ancho de una fila (el mismo cálculo que en row()), para que la cabecera del día case con ellas."""
+        lv = self.level
+        widths = [150 if lv == 0 else W_NAME, 92 if lv == 0 else W_KDA] + ([W_CS] if lv >= 1 else []) + ([W_DMG] if lv >= 2 else []) + \
+                 ([W_TIME] if lv >= 1 else []) + ([W_ITEMS] if lv >= 3 else [])
+        chip_w = 28 if lv == 0 else W_RES
+        total = 8 + 38 + 10 + sum(w + 10 for w in widths) + chip_w + 8 - (10 if lv == 0 else 0)
+        return max(300, self.width - 100) if lv == 0 else total
+
+    def new_day(self, d):
+        """Cabecera del día (resumen y burbujas) y contenedor de sus filas; por defecto solo están desplegados los dos días más recientes."""
+        ui = self.ui
+        box = ui.frame(self.wrap)
+        box.pack(fill="x", pady=(8, 2), padx=4)
+        head = ui.frame(box)
+        head.pack(fill="x")
+        body = ui.frame(box)
+        default = len(self.days) < 2
+        st = {"open": self.day_state.get(d, default), "games": [], "pending": [], "body": body, "head": head, "label": d}
+        self.days[d] = st
+        self.paint_day(st)
+        if st["open"]:
+            body.pack(fill="x")
+        return st
+
+    def paint_day(self, st):
+        """Cabecera del día en un solo lienzo: flecha, nombre, resumen, barra de balance y una burbuja por partida (verde ganada, roja perdida)."""
+        ui = self.ui
+        d, items = st["label"], self.day_games[st["label"]]
+        ui.clear(st["head"])
+        sx = ui.scale_px()
+        S = lambda v: int(v * sx)
+        W, H = self.row_width(), 52
+        cv = tk.Canvas(st["head"], width=S(W), height=S(H), bg=ui.bg(st["head"]), highlightthickness=0, bd=0, cursor="hand2")
+        cv.pack(anchor="w")
+        ui.rrect(cv, 0, 0, S(W) - 1, S(H) - 1, S(10), fill=ui.hexm(PAL["card2"]), outline="")
+        n = len(items)
+        wins = sum(1 for g in items if g["w"] and not g.get("rm"))
+        losses = sum(1 for g in items if not g["w"] and not g.get("rm"))
+        played = max(1, wins + losses)
+        pct = round(wins / played * 100)
+        good, bad, dim, fg = ui.hexm(PAL["good"]), ui.hexm(PAL["bad"]), ui.hexm(PAL["dim"]), ui.hexm(PAL["fg"])
+        cv.create_text(S(14), S(20), text="▾" if st["open"] else "▸", fill=dim, font=ui.tkf(12, False, False), anchor="w")
+        cv.create_text(S(34), S(18), text=d.upper(), fill=fg, font=ui.tkf(11, True, False), anchor="w")
+        cv.create_text(S(34), S(36), text=f"{n} partida{'s' if n != 1 else ''}  ·  {wins}V {losses}D  ·  {pct} %", fill=good if pct >= 50 else bad,
+                       font=ui.tkf(9, True, False), anchor="w")
+        # barra de balance: la parte verde es la proporción de victorias
+        bx0, bx1, by = S(14), S(W - 14), S(H - 5)
+        cv.create_rectangle(bx0, by, bx1, by + S(3), fill=bad, outline="")
+        cv.create_rectangle(bx0, by, bx0 + int((bx1 - bx0) * wins / played), by + S(3), fill=good, outline="")
+        # burbujas: las más recientes del día; si hay más de las que caben, una burbuja «+N» abre la lista
+        size, step = 30, 24
+        room = int((W - 250) // step)
+        show = items[:max(1, min(room, 12))]
+        hidden = n - len(show)
+        x = W - 14 - size
+        for g in show:  # de la más reciente (a la derecha) hacia atrás
+            ring = good if g["w"] and not g.get("rm") else bad if not g.get("rm") else dim
+            ph = ui.bubble(g["c"], size, ring)
+            it = cv.create_image(S(x), S(11), image=ph, anchor="nw")
+            cv.image = getattr(cv, "image", []) + [ph]
+            ui.canvas_tip(cv, it, f"{ui.champs.get(g['c'], {}).get('name', '?')} · {'Remake' if g.get('rm') else 'Victoria' if g['w'] else 'Derrota'} · {fecha(g['t'])}")
+            x -= step
+        if hidden > 0:
+            cv.create_oval(S(x), S(11), S(x + size), S(11 + size), outline=dim, width=2)
+            cv.create_text(S(x + size / 2), S(11 + size / 2), text=f"+{hidden}", fill=fg, font=ui.tkf(9, True, False))
+        cv.bind("<Button-1>", lambda e, s=st: self.toggle_day(s))
+
+    def toggle_day(self, st, to=None):
+        st["open"] = (not st["open"]) if to is None else to
+        self.day_state[st["label"]] = st["open"]
+        if st["open"]:
+            for e in st["pending"]:
+                self.row(st["body"], e)
+            st["pending"] = []
+            st["body"].pack(fill="x")
+        else:
+            st["body"].pack_forget()
+        self.paint_day(st)
+
+    def fold_days(self, open_):
+        for st in self.days.values():
+            if st["open"] != open_:
+                self.toggle_day(st, open_)
 
     def more(self):
         self.shown += STEP

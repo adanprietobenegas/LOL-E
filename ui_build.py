@@ -43,8 +43,7 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None):
         if not box.winfo_exists():
             return
         st = builds.peek(key)
-        for w in content.winfo_children():
-            w.destroy()
+        ui.clear(content)
         if st[0] == "loading":
             ui.lbl(content, "Cargando la build…", 10, "dim").pack(anchor="w", pady=4)
             state["n"] += 1

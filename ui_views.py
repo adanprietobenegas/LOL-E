@@ -72,13 +72,18 @@ class MatchupView:
     Dos pasos en pantalla: «1 · Elige a tu rival» y «2 · Qué campeón le gana». Los datos del rival se precargan al buscarlo.
     """
 
+    DEFAULT_FILT = {"show": "Todos", "clase": "Todas", "order": ORDERS[0], "min": "100", "adv": False}
+
     def __init__(self, ui, parent, gui):
         self.ui, self.gui = ui, gui
         self.box = ui.frame(parent)
         self.sig = None
         self.enemy, self.lane = 0, None
         self.query, self.all_tiles = "", False
-        self.filt = {"show": "Todos", "clase": "Todas", "order": ORDERS[0], "min": "100", "adv": False}
+        self.filt = dict(self.DEFAULT_FILT)
+        self.f_show = self.f_adv = self.f_adv_var = None
+        self.f_menus = {}
+        self._bkey = None
         self.shown = PAGE
         self.data, self.errors, self.loading = {}, {}, set()
         self.opened, self.pod_open, self.pod_slot = set(), None, None
@@ -95,9 +100,9 @@ class MatchupView:
         sig = (ui.epoch, ui.conf["matchups_enabled"], self.level)
         if sig != self.sig or force:
             self.sig = sig
-            for w in self.box.winfo_children():
-                w.destroy()
+            self.ui.clear(self.box)
             self._ukey = None
+            self._bkey = None
             self.skeleton(ctx)
         self.update(ctx)
 
@@ -144,7 +149,9 @@ class MatchupView:
 
         r = ui.card(self.box)
         self.res_title = self.step_title(r, 2, "Qué campeón le gana")
-        ui.seg(r, SHOWS, self.filt["show"], lambda v: self.set_filt("show", v), height=28).pack(fill="x", pady=(0, 6))
+        self.f_show = ui.seg(r, SHOWS, self.filt["show"], lambda v: self.set_filt("show", v), height=28)
+        self.f_show.pack(fill="x", pady=(0, 6))
+        self.f_menus = {}
         groups = [(("Clase", list(CLASSES), "clase", 110), ("Orden", ORDERS, "order", 150), ("Partidas ≥", list(MIN_GAMES), "min", 90))]
         if self.level == 0:
             groups = [(g,) for pair in groups for g in pair]
@@ -153,10 +160,15 @@ class MatchupView:
             line.pack(fill="x", pady=2)
             for label, values, key, wd in pair:
                 ui.lbl(line, label, 10, "dim", width=60, anchor="w").pack(side="left")
-                ui.menu(line, values, self.filt[key], lambda v, k=key: self.set_filt(k, v), wd).pack(side="left", padx=(0, 12))
-        var = ctk.BooleanVar(value=self.filt["adv"])
-        ctk.CTkSwitch(r, text="Solo los que ganan más del 50 %", variable=var, font=ui.font(11), progress_color=ui.acc,
-                      command=lambda: self.set_filt("adv", var.get())).pack(anchor="w", pady=(6, 8))
+                m = ui.menu(line, values, self.filt[key], lambda v, k=key: self.set_filt(k, v), wd)
+                m.pack(side="left", padx=(0, 12))
+                self.f_menus[key] = m
+        bar = ui.frame(r)
+        bar.pack(fill="x", pady=(6, 8))
+        self.f_adv_var = ctk.BooleanVar(value=self.filt["adv"])
+        ctk.CTkSwitch(bar, text="Solo los que ganan más del 50 %", variable=self.f_adv_var, font=ui.font(11), progress_color=ui.acc,
+                      command=lambda: self.set_filt("adv", self.f_adv_var.get())).pack(side="left")
+        small_btn(ui, bar, "Restablecer filtros", self.reset_filters, 140).pack(side="right")
         self.host = ui.frame(r)
         self.host.pack(fill="x")
 
@@ -208,8 +220,7 @@ class MatchupView:
         ui = self.ui
         if self.sugg is None or not self.sugg.winfo_exists():
             return
-        for w in self.sugg.winfo_children():
-            w.destroy()
+        self.ui.clear(self.sugg)
         ids = self.matches()
         if self.query:
             if not ids:
@@ -309,6 +320,19 @@ class MatchupView:
         self.shown = PAGE
         self.update(self.gui.make_ctx())
 
+    def reset_filters(self):
+        """Todos los filtros a su valor inicial, sin reconstruir la pantalla: solo se cambian los controles y se repinta la lista."""
+        self.filt = dict(self.DEFAULT_FILT)
+        self.shown = PAGE
+        try:
+            self.f_show.set(self.filt["show"])
+            for k, m in self.f_menus.items():
+                m.set(self.filt[k])
+            self.f_adv_var.set(False)
+        except Exception:
+            pass
+        self.update(self.gui.make_ctx())
+
     def set_filt(self, k, v):
         self.filt[k] = v
         self.shown = PAGE
@@ -362,8 +386,12 @@ class MatchupView:
         if k == self._ukey:
             return  # nada ha cambiado: no se repinta (cambiar de pestaña y volver es instantáneo)
         self._ukey = k
-        self.paint_banner(enemy, lane)
-        if self.lane_seg is not None and self.lane_seg.winfo_exists():
+        kb = self.head_key(ctx, enemy, lane)
+        head_changed = kb != self._bkey
+        self._bkey = kb
+        if head_changed:
+            self.paint_banner(enemy, lane)
+        if head_changed and self.lane_seg is not None and self.lane_seg.winfo_exists():
             try:
                 self.lane_seg.set(LANE_LABEL.get(lane, ""))
             except Exception:
@@ -379,8 +407,7 @@ class MatchupView:
                     hint += "\n" + core.trends.describe(core.TRENDS["data"], lane, enemy)
             self.lane_hint.configure(text=hint)
             self.paint_rising(lane)
-        for w in self.host.winfo_children():
-            w.destroy()
+        self.ui.clear(self.host)
         if self.res_title is not None and self.res_title.winfo_exists():
             self.res_title.configure(text=f"Qué campeón le gana a {ui.champs[enemy]['name']}" if enemy else "Qué campeón le gana")
         wl = min(self.width - 90, 700)
@@ -417,8 +444,7 @@ class MatchupView:
         ui = self.ui
         if self.banner is None or not self.banner.winfo_exists():
             return
-        for w in self.banner.winfo_children():
-            w.destroy()
+        self.ui.clear(self.banner)
         if not enemy:
             return
         box = ctk.CTkFrame(self.banner, fg_color=PAL["card2"], corner_radius=12, border_width=1, border_color=ui.hexm(ui.acc))
@@ -462,8 +488,7 @@ class MatchupView:
         host = getattr(self, "rise_host", None)
         if host is None or not host.winfo_exists():
             return
-        for w in host.winfo_children():
-            w.destroy()
+        self.ui.clear(host)
         data = core.TRENDS["data"]
         if not data or not lane:
             return
@@ -483,17 +508,21 @@ class MatchupView:
             e = core.trends.entry(data, lane, cid)
             ui.tip(cell, core.trends.describe(data, lane, cid))
 
+    def head_key(self, ctx, enemy, lane):
+        """Lo que decide cómo se ve el cartel del rival: si no cambia, no se repinta."""
+        return (enemy, lane, self.rival_open, self.ui.epoch, bool((ctx.get("info") or {}).get("owned")), bool(self.enemy), self.level)
+
     def toggle_rival(self, enemy, lane):
         self.rival_open = not self.rival_open
         self.paint_banner(enemy, lane)
+        self._bkey = self.head_key(self.gui.make_ctx(), enemy, lane)
 
     def paint_rival(self, enemy, lane):
         """Cómo juega el propio rival en esa línea (runas, objetos…), para saber a qué te enfrentas."""
         ui = self.ui
         if self.rival_slot is None or not self.rival_slot.winfo_exists():
             return
-        for w in self.rival_slot.winfo_children():
-            w.destroy()
+        self.ui.clear(self.rival_slot)
         if not (self.rival_open and enemy and lane):
             return
         panel = ctk.CTkFrame(self.rival_slot, fg_color=PAL["card2"], corner_radius=12)
@@ -659,8 +688,7 @@ class MatchupView:
         """Abre o cierra la build debajo de una fila."""
         key = (cid, enemy, lane)
         if slot.winfo_children():
-            for w in slot.winfo_children():
-                w.destroy()
+            self.ui.clear(slot)
             self.opened.discard(key)
             return
         self.opened.add(key)
@@ -673,8 +701,7 @@ class MatchupView:
     def toggle_pod(self, cid, enemy, lane):
         if self.pod_slot is None or not self.pod_slot.winfo_exists():
             return
-        for w in self.pod_slot.winfo_children():
-            w.destroy()
+        self.ui.clear(self.pod_slot)
         if self.pod_open == cid:
             self.pod_open = None
             return
@@ -752,8 +779,7 @@ class DataView:
         if sig == self.sig and not force:
             return
         self.sig = sig
-        for w in self.box.winfo_children():
-            w.destroy()
+        self.ui.clear(self.box)
         self.wl = max(240, min(760, width - 110))  # los textos se ajustan al ancho disponible
         self.col = self.ui.frame(self.box)
         self.col.pack(fill="x", padx=max(0, (width - 52 - 900) // 2))  # en pantallas grandes, una columna central
@@ -838,8 +864,7 @@ class DataView:
 
     def paint_lock(self, host):
         ui = self.ui
-        for w in host.winfo_children():
-            w.destroy()
+        self.ui.clear(host)
         narrow = self.wl < 420
         inner = ui.frame(host)
         inner.pack(fill="x", padx=12, pady=10)

@@ -7,6 +7,40 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.11.0   (6 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES
+  · HISTORIAL POR DÍAS PLEGABLES, CON BURBUJAS: cada día es ahora una
+    cabecera con su resumen («9 partidas · 6V 3D · 67 %»), una barra de
+    balance verde/roja y una burbuja por partida: el retrato del campeón
+    con un aro verde si ganaste y rojo si perdiste (al pasar el ratón,
+    campeón, resultado y hora). Si hay más de las que caben, una burbuja
+    «+N» cuenta el resto. Pulsa la cabecera para plegar o desplegar el día;
+    botones «Plegar todos los días» / «Desplegar todos». Por defecto
+    solo están abiertos los dos días más recientes y las filas de un día
+    plegado no se pintan hasta que lo abres (más rápido). Se recuerda qué
+    días dejaste abiertos mientras cambias filtros.
+  · «RESTABLECER» EN LOS FILTROS: Enfrentamiento (devuelve clase, orden,
+    partidas mínimas y el interruptor a su valor inicial sin reconstruir
+    la pantalla), recomendaciones (junto a «Mi rol / Mis campeones / Meta
+    fuerte») e Historial (en la cabecera de «Buscar y filtrar», visible
+    aunque esté plegado y solo cuando hay algún filtro puesto).
+
+CORRECCIONES
+  · MENOS REPINTADOS Y SALTOS: cambiar un filtro volvía a pintar bloques
+    que no cambiaban. Ahora cada control repinta solo lo suyo:
+      Enfrentamiento: un filtro repinta la lista de resultados, no el
+      cartel del rival, el aviso de línea ni «En auge».
+      Análisis: cambiar de gráfico, el orden del marcador, «por equipos /
+      los 10 juntos» o el filtro de momentos repinta solo esa sección; si
+      la sección está plegada, ni eso (se pinta bien al abrirla).
+      Repertorio: ordenar o «mostrar más» repinta solo la tabla.
+  · HUECO VACÍO AL OCULTAR UNA BUILD: en Enfrentamiento, tras mostrar y
+    luego ocultar «Su build» (o la de un campeón de la lista) quedaba un
+    espacio en blanco del tamaño que tenía. Un marco de Tk vacío conserva
+    su último tamaño; ahora todos los contenedores se encogen al vaciarse.
+
 VERSIÓN 1.10.1   (6 de noviembre de 2026)
 ---------------------------------------------------------------------
 

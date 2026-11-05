@@ -94,6 +94,7 @@ class PoolPanel:
             right.grid(row=0, column=1, sticky="nsew")
             self.dw = int((width - 120) * 0.38)
             self.dparent = right
+            self.table_host = left
             self.table(left, rows)
             self.detail(right, next(r for r in rows if r["cid"] == self.sel))
         else:
@@ -103,6 +104,7 @@ class PoolPanel:
             bottom.pack(fill="x", pady=(10, 0))
             self.dparent = top
             self.detail(top, next(r for r in rows if r["cid"] == self.sel))
+            self.table_host = bottom
             self.table(bottom, rows)
 
     # ---- titular y cifras ----
@@ -152,7 +154,20 @@ class PoolPanel:
 
     def set_sort(self, v):
         self.sort, self.shown = v, PAGE
-        self.render()
+        self.rerender_table()
+
+    def rerender_table(self):
+        """Cambiar el orden o pedir más filas solo repinta la tabla: el titular, las cifras y el detalle se quedan como están."""
+        host = getattr(self, "table_host", None)
+        if host is None or not host.winfo_exists():
+            return self.render()
+        rows = self.rows()
+        if self.sel not in [r["cid"] for r in rows]:
+            return self.render()
+        self.data = rows
+        self.cards = {}
+        self.ui.clear(host)
+        self.table(host, rows)
 
     # ---- tabla de campeones ----
     def table(self, parent, rows):
@@ -180,7 +195,7 @@ class PoolPanel:
 
     def more(self):
         self.shown += PAGE
-        self.render()
+        self.rerender_table()
 
     def row(self, parent, r, nar):
         """Fila de la tabla: un solo lienzo (antes ~15 widgets por fila)."""
@@ -241,8 +256,7 @@ class PoolPanel:
     def render_detail(self):
         if self.dparent is None or not self.dparent.winfo_exists():
             return self.render()
-        for w in self.dparent.winfo_children():
-            w.destroy()
+        self.ui.clear(self.dparent)
         self.detail(self.dparent, next(r for r in self.data if r["cid"] == self.sel))
 
     # ---- detalle ----

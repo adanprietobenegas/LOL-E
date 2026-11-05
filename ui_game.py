@@ -53,13 +53,12 @@ class GameView:
         ui = self.ui
         self.width = ctx["width"]
         plan = ctx.get("plan") or {}
-        sig = (ui.epoch, self.width // 80, self.tab, self.chart, self.gid, plan.get("cid"), plan.get("opp"), plan.get("state"),
+        sig = (ui.epoch, self.width // 80, self.tab, self.gid, plan.get("cid"), plan.get("opp"), plan.get("state"),
                tuple(plan.get("enemies") or ()), str(self.data.get(self.gid))[:20], self.opp.get(self.gid), self.all_moments, str(self.vs.get((plan.get("opp"), plan.get("role"))))[:20])
         if sig == self.sig and not force:
             return
         self.sig = sig
-        for w in self.box.winfo_children():
-            w.destroy()
+        self.ui.clear(self.box)
         card = ui.card(self.box)
         top = ui.frame(card)
         top.pack(fill="x", pady=(0, 10))
@@ -205,8 +204,9 @@ class GameView:
 
     def set_chart(self, v):
         self.chart = v
-        self.sig = None
-        self.refresh(self.gui.make_ctx())
+        if not (self.tab == "Análisis" and self.an.rerender("charts", v)):
+            self.sig = None
+            self.refresh(self.gui.make_ctx())
 
     def toggle_moments(self):
         self.all_moments = not self.all_moments
