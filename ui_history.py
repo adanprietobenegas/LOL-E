@@ -496,7 +496,7 @@ class HistoryView:
         role = ROLES_ES.get(e["r"], "") if e["r"] and not arena else ""
         sub = " · ".join(x for x in (grp, role) if x)
         if lv == 0:
-            sub += f" · {fecha(e['t'], False)[:5]}"
+            sub += f" · {fecha(e['t'])[11:]}"   # hora de inicio: dentro de un día se ve cuál fue antes
         widths = [150 if lv == 0 else W_NAME, 92 if lv == 0 else W_KDA]
         if lv >= 1:
             widths += [W_CS]

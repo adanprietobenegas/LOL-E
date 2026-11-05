@@ -7,6 +7,13 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.12.1   (6 de noviembre de 2026)
+---------------------------------------------------------------------
+
+CAMBIOS
+  · HISTORIAL: cada partida muestra su hora de inicio (dentro de un día ya
+    se ve cuál fue antes y cuál después).
+
 VERSIÓN 1.12.0   (6 de noviembre de 2026)
 ---------------------------------------------------------------------
 

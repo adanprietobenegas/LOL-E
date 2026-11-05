@@ -81,3 +81,11 @@ Cambiar de pestaña: ~110–280 ms (la primera vez que se abre Enfrentamiento, ~
 | `builds.py`, `runes.py`, `trends.py` | Builds y runas (Lolalytics), picks en auge |
 | `meta.py`, `matchups.py`, `players.py`, `synergy.py`, `items.py`, `params.py`, `sounds.py`, `updater.py` | Fuentes de datos y utilidades |
 | `build_release.py`, `docs/` | Empaquetado y documentación |
+
+
+PENDIENTE (anotado el 6 de noviembre de 2026)
+  · Revisar el detalle desplegado de cada partida del Historial: el usuario
+    lo ve pobre y con información innecesaria (nivel, oro, daño/min, CS/min,
+    visión, lista de objetos en texto, id de partida). Rediseñarlo con lo que
+    de verdad ayude. También: tarjeta borrosa al 125-150 %, doble reescalado
+    de retratos y escala única de tamaños de retrato (auditoría de imágenes).
