@@ -19,6 +19,9 @@ def _ph(ui, parent, size):
 VIEWS = ["Más usada", "Variantes", "Situaciones"]
 
 
+_VIEW = {}
+
+
 def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None):
     """Devuelve un contenedor que se rellena solo cuando llegan los datos (sin bloquear la ventana).
     `ens`: composición del equipo rival (comp_stats) para marcar qué situaciones aplican ahora."""
@@ -27,7 +30,8 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None):
     key = builds.request(core.CACHE, champs[cid], lane, champs[enemy] if enemy else None)
     content = ui.frame(box)
     content.pack(fill="x")
-    state = {"n": 0, "m": 0, "view": VIEWS[0]}
+    # la vista elegida se recuerda por campeón y línea: en la selección el panel se reconstruye con cada pick y volvía a "Más usada"
+    state = {"n": 0, "m": 0, "view": _VIEW.get((cid, lane), VIEWS[0])}
 
     def again():
         """Vuelve a pintar mientras llega la segunda fuente (op.gg), sin bloquear la ventana."""
@@ -36,7 +40,7 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None):
             box.after(900, paint)
 
     def setv(v):
-        state["view"] = v
+        state["view"] = _VIEW[(cid, lane)] = v
         paint()
 
     def paint():

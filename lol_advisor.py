@@ -14,7 +14,7 @@ import synergy
 import trends
 from sounds import SOUNDS, synth_wav, play_alert, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.12.1"
+APP_NAME, APP_VERSION = "LOL-E", "1.12.2"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -915,6 +915,7 @@ def run(conf, champs, ui):
     prev_turn = None
     force_opgg = False
     reload_pending = False
+    rank_before, cur_gid, end_tries = None, None, 0
     last_flow = "_"
     next_hist, hist_tries = 0.0, 0
     party, my_puuid = set(), ""
@@ -979,17 +980,42 @@ def run(conf, champs, ui):
                     ui.idle(player_info(P), "Partida en curso. LOL-E espera a que acabe." if in_game else "Selección terminada. Esperando la siguiente…")
                 if reload_pending and not in_game:
                     reload_pending = False
+                    if rank_before is None:
+                        rank_before = {k: (P.get("profile") or {}).get(k) for k in ("solo", "flex")}
                     P = load_player_data(lcu, season)  # actualiza con la partida que acaba de pasar
                     ui.idle(player_info(P), "Partida terminada. Historial actualizado. Esperando la siguiente…")
                     getattr(ui, "history_updated", lambda: None)()
                     try:  # análisis de la partida que acaba de terminar, listo en la pestaña «Partida»
                         g = (lcu.get("/lol-match-history/v1/products/lol/current-summoner/matches?begIndex=0&endIndex=1") or {})["games"]["games"][0]
+                        if cur_gid and str(g["gameId"]) != str(cur_gid) and end_tries < 8:
+                            # el cliente aún no lista la partida recién terminada: sin esto se analizaba la anterior
+                            end_tries += 1
+                            reload_pending = True
+                            time.sleep(8)
+                            continue
+                        qkey = {420: "solo", 440: "flex"}.get(g.get("queueId"))
+                        if qkey and rank_before and rank_before.get(qkey):
+                            dl = analysis.lp_delta(rank_before[qkey], (P.get("profile") or {}).get(qkey))
+                            if dl and dl["d"] == 0 and end_tries < 8:  # el rango tarda un poco más en actualizarse
+                                end_tries += 1
+                                reload_pending = True
+                                time.sleep(8)
+                                continue
+                            if dl:
+                                analysis.save_lp(CACHE, g["gameId"], dl)
+                        rank_before, cur_gid, end_tries = None, None, 0
                         getattr(ui, "analysis", lambda *a: None)(str(g["gameId"]), analysis.load(lcu, g["gameId"], my_puuid, CACHE))
                     except (urllib.error.URLError, ConnectionError, OSError):
                         raise
                     except Exception:
                         log_exc("Análisis al terminar la partida")
                 if in_game:
+                    try:  # id de la partida en curso: luego se espera a que el cliente la liste en el historial
+                        cur_gid = (lcu.get("/lol-gameflow/v1/session") or {}).get("gameData", {}).get("gameId") or cur_gid
+                    except (urllib.error.URLError, ConnectionError, OSError):
+                        raise
+                    except Exception:
+                        pass
                     time.sleep(5); continue
                 if P["games"] == 0 and hist_tries < 6 and time.time() >= next_hist:  # el historial no llego: reintentar
                     next_hist, hist_tries = time.time() + 40, hist_tries + 1

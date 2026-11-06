@@ -192,6 +192,12 @@ class GameView:
             self.games = history.load_all(os.path.join(core.CACHE, "history.json"), os.path.join(core.CACHE, "games.json"))[:30]
         except Exception:
             self.games = []
+        # al terminar una partida nueva se muestra esa, no la que se estaba mirando (antes seguía la anterior)
+        newest = self.games[0]["id"] if self.games else None
+        if newest != getattr(self, "newest", None):
+            if getattr(self, "newest", None) is not None and newest is not None:
+                self.gid, self.auto_try = newest, 0
+            self.newest = newest
 
     def analysis_tab(self, ctx):
         self.an.render(self.host, ctx)

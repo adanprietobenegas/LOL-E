@@ -313,3 +313,53 @@ def load(lcu, gid, my_puuid, cache_dir):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     json.dump(a, open(path, "w", encoding="utf-8"))
     return a
+
+
+# ---- puntos de liga (PL) ganados o perdidos en cada partida clasificatoria ----
+TIER_ORDER = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"]
+DIV_ORDER = {"IV": 0, "III": 1, "II": 2, "I": 3}
+
+
+def ladder_value(rk):
+    """Rango como un solo número de PL (cada división son 100). En maestro o más es solo el PL."""
+    if not rk:
+        return None
+    t = rk.get("key", "")
+    if t not in TIER_ORDER:
+        return None
+    if TIER_ORDER.index(t) >= TIER_ORDER.index("MASTER"):
+        return TIER_ORDER.index("MASTER") * 400 + rk.get("lp", 0)
+    return TIER_ORDER.index(t) * 400 + DIV_ORDER.get(rk.get("div", ""), 0) * 100 + rk.get("lp", 0)
+
+
+def lp_delta(before, after):
+    """Dict con la variación de PL entre dos fotos del rango, o None si no se puede saber."""
+    a, b = ladder_value(before), ladder_value(after)
+    if a is None or b is None:
+        return None
+    ch = ""
+    if before["key"] != after["key"] or before.get("div") != after.get("div"):
+        ch = f"{before['tier']} {before['div']}".strip() + " → " + f"{after['tier']} {after['div']}".strip()
+    return {"d": b - a, "now": after["lp"], "tier": f"{after['tier']} {after['div']}".strip(), "move": ch}
+
+
+def _lp_path(cache_dir):
+    return os.path.join(cache_dir, "lp.json")
+
+
+def save_lp(cache_dir, gid, data):
+    try:
+        cur = json.load(open(_lp_path(cache_dir), encoding="utf-8"))
+    except Exception:
+        cur = {}
+    cur[str(gid)] = data
+    tmp = _lp_path(cache_dir) + ".tmp"
+    json.dump(cur, open(tmp, "w", encoding="utf-8"))
+    os.replace(tmp, _lp_path(cache_dir))
+
+
+def lp_for(cache_dir, gid):
+    try:
+        return json.load(open(_lp_path(cache_dir), encoding="utf-8")).get(str(gid))
+    except Exception:
+        return None

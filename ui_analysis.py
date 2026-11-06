@@ -177,6 +177,12 @@ class AnalysisView:
         mid.pack(side="left", expand=True)
         ui.lbl(mid, "Victoria" if a["win"] else "Derrota", 20, "good" if a["win"] else "bad", True, True).pack()
         ui.lbl(mid, f"{a['dur'] // 60}:{a['dur'] % 60:02d}", 11, "dim").pack()
+        lp = analysis.lp_for(core.CACHE, self.gv.gid)
+        if lp:
+            d = lp["d"]
+            txt = f"{'+' if d > 0 else '−' if d < 0 else ''}{abs(d)} PL"
+            ui.lbl(mid, txt, 13, "good" if d > 0 else "bad" if d < 0 else "dim", True).pack(pady=(2, 0))
+            ui.lbl(mid, (lp["move"] + " · " if lp.get("move") else "") + f"ahora {lp['tier']} · {lp['now']} PL", 9, "dim").pack()
         if opp is None:
             return
         o = analysis.player(a, opp)

@@ -7,6 +7,23 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.12.2   (7 de noviembre de 2026)
+---------------------------------------------------------------------
+
+CORRECCIONES
+  · ANÁLISIS DE LA PARTIDA que acabas de jugar: a veces enseñaba la anterior
+    (con otro campeón) porque el cliente tarda unos segundos en listar la
+    partida nueva. Ahora LOL-E espera a que aparezca y la muestra sola.
+  · SELECCIÓN DE CAMPEÓN: el panel de build volvía a "Más usada" cada vez que
+    alguien elegía o cambiaba algo. Ahora recuerda la vista que elegiste
+    (Más usada / Variantes / Situaciones) por campeón y línea.
+
+NOVEDADES
+  · PL de cada partida clasificatoria (Solo/Dúo y Flexible): en el análisis
+    aparece "+18 PL" o "−16 PL", el rango actual y, si cambia de división,
+    el ascenso o descenso. Se calcula comparando tu rango antes y después de
+    la partida, así que solo hay dato de las partidas jugadas con esta versión.
+
 VERSIÓN 1.12.1   (6 de noviembre de 2026)
 ---------------------------------------------------------------------
 
