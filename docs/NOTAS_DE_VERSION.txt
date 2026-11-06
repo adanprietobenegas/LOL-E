@@ -7,6 +7,16 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.13.0   (7 de noviembre de 2026)
+---------------------------------------------------------------------
+
+NOVEDADES
+  · VENTANA DE NOVEDADES, estilo nota de parche: al abrir una versión nueva
+    sale una vez con lo que ha cambiado (nuevo, mejora, arreglo). Se cierra
+    con "Entendido" y se puede volver a consultar en Ajustes -> "Ver
+    novedades". Las notas viven en novedades.py: para cada versión nueva hay
+    que añadir ahí una entrada ARRIBA del todo (si no, no se mostrará).
+
 VERSIÓN 1.12.2   (7 de noviembre de 2026)
 ---------------------------------------------------------------------
 

@@ -79,6 +79,8 @@ class GUI:
         self.root.after(1500, self.ensure_normal)
         self.root.after(2500, self.prebuild_dock)  # el panel de ajustes se prepara con la ventana en reposo
         self.root.after(5000, self.auto_check)
+        if not os.environ.get("LOLE_GEOMETRY"):  # en las pruebas no se abre
+            self.root.after(3500, self.show_notes_once)
 
     # ---------- interfaz con el motor (otro hilo: solo usa colas) ----------
     def stopped(self):
@@ -995,6 +997,8 @@ class GUI:
         button("Buscar actualizaciones ahora", lambda: (self.set("update_url", entry.get().strip(), redraw=False), self.check_updates(True)))
 
         section("Mantenimiento")
+        button("Ver novedades", self.show_notes)
+        note("Qué ha cambiado en cada versión.")
         button("Copiar informe de diagnóstico", self.copy_diagnostics)
         note("Para pedir ayuda: copia versión, sistema, estado de los datos y últimos errores (sin tu nombre ni tus partidas) y pégalo en el mensaje.")
         button("Abrir el registro de errores", lambda: self.open_log())
@@ -1006,6 +1010,27 @@ class GUI:
                    "ni de nadie que participe oficialmente en League of Legends. Solo lee la selección de campeón "
                    "de tu cliente; nunca interviene en la partida.", 10, "dim", wraplength=self.note_w(), justify="left").pack(
             anchor="w", padx=14, pady=(0, 10))
+
+    def show_notes(self):
+        """Ventana de novedades (la misma que sale al abrir una versión nueva)."""
+        import novedades
+        if getattr(self, "notes_win", None) is not None:
+            try:
+                if self.notes_win.w.winfo_exists():
+                    self.notes_win.w.lift()
+                    return
+            except Exception:
+                pass
+        def done():
+            self.notes_win = None
+            self.conf["notes_seen"] = novedades.NOTES[0]["v"]
+            save_conf(self.conf)
+        self.notes_win = novedades.NotesWindow(self, done)
+
+    def show_notes_once(self):
+        import novedades
+        if novedades.unseen(self.conf):
+            self.show_notes()
 
     def note_w(self):
         """Ancho para las notas del panel de ajustes: el del panel menos sus márgenes (antes era fijo y cortaba textos)."""
