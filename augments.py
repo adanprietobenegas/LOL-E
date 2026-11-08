@@ -21,7 +21,7 @@ def path(name):
 def catalog(lcu=None):
     """{id: {n: nombre, r: nivel}} de todas las mejoras. Se guarda en caché; si hay cliente, se refresca una vez por sesión."""
     with _lock:
-        if _cat:
+        if _cat and (lcu is None or getattr(catalog, "fresh", False)):
             return _cat
         saved = core.read_json(path("augments.json"), {})
         if saved:
@@ -30,7 +30,7 @@ def catalog(lcu=None):
             try:
                 data = lcu.get("/lol-game-data/assets/v1/cherry-augments.json") or []
                 new = {int(x["id"]): {"n": x.get("nameTRA") or x.get("augmentNameId", ""), "r": TIERS.get(x.get("rarity"), ""),
-                                      "i": x.get("augmentSmallIconPath", ""), "a": str(x.get("augmentNameId", "")).startswith("ARAM")} for x in data}
+                                      "i": x.get("augmentSmallIconPath", ""), "a": str(x.get("augmentNameId", "")).startswith("ARAM"), "k": str(x.get("augmentNameId", ""))} for x in data}
                 if new:
                     _cat.clear()
                     _cat.update(new)

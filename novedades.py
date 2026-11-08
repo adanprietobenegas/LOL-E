@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.16.0", "fecha": "8 de noviembre de 2026", "titulo": "Builds de ARAM y Mayhem, y análisis al terminar", "items": [
+        ("nuevo", "Build sugerida para ARAM y ARAM: Mayhem (objetos iniciales, botas, 5 builds de 3 objetos y orden de habilidades), de op.gg. Sale en la selección con tu campeón y en Partida > Plan durante la partida."),
+        ("nuevo", "En Mayhem, las mejoras que sugiere op.gg para tu campeón, agrupadas por categoría (Prismática, Oro, Plata) y con sus iconos, sin porcentajes."),
+        ("nuevo", "Al terminar la partida la ventana pasa sola al Análisis de esa partida (con las mejoras de los 10 jugadores)."),
+    ]},
     {"v": "1.15.2", "fecha": "8 de noviembre de 2026", "titulo": "Ajustes tras probar Mayhem", "items": [
         ("arreglo", "Al empezar una partida, la ventana enseña el plan y no el análisis de la anterior."),
         ("arreglo", "Los iconos de mejoras aparecen solos en cuanto se descargan (antes salían como letras hasta repintar)."),

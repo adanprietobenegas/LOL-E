@@ -7,6 +7,22 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.16.0   (8 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · aram_builds.py: lee de op.gg las páginas /lol/modes/aram/<campeón>/build y
+    /lol/modes/aram-mayhem/<campeón>/build (cache de 1 día): iniciales, botas, 5 builds
+    de 3 objetos, orden de habilidades y, en Mayhem, la lista de mejoras que sugiere
+    op.gg. Esas páginas NO traen porcentajes. Los nombres de mejoras (inglés) se casan
+    con el catálogo del cliente por su id interno (ARAM_Nombre): casan 8 de 10 en la
+    prueba (Ashe).
+  · ui_mayhem.py: build_block (Plan y selección) y AramBuild (sección de la selección
+    de ARAM / Mayhem con el campeón que llevas).
+  · Al llegar el análisis de la partida terminada, la pestaña Partida pasa a Análisis.
+  · Norma de Riot: no se muestran porcentajes de victoria de mejoras; aquí solo hay la
+    lista de nombres de op.gg, agrupada por categoría. Decisión del usuario si se quiere
+    quitar también el listado.
+
 VERSIÓN 1.15.2   (8 de noviembre de 2026)
 ---------------------------------------------------------------------
 

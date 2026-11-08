@@ -17,6 +17,7 @@ from ui_views import DataView, MatchupView
 from ui_kit import REC_VIEWS, ACCENTS, DISPLAY, Kit, PAL, THEMES, res
 from ui_game import GameView
 from ui_draft import DraftCard
+from ui_mayhem import AramBuild
 from ui_sections import (SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
                          WaitCard)
 
@@ -241,7 +242,7 @@ class GUI:
         sr = kind == "sr"   # ARAM, Arena, etc.: solo el campeón, sin línea ni rivales (no hay build de línea)
         plan = {"cid": r["mine"], "role": (r.get("role") or "") if sr else "", "opp": (r.get("lane_opp") or 0) if sr else 0,
                 "enemies": list(r["enemies"]) if sr else [], "allies": list(r["allies"]) if sr else [], "locked": bool(r.get("mine_locked")),
-                "state": "select", "kind": kind, "group": r["mode"].get("group", ""), "mayhem": r["mode"].get("id") in (2400,)}
+                "state": "select", "kind": kind, "group": r["mode"].get("group", ""), "mayhem": r["mode"].get("id") in (2400,), "qid": r["mode"].get("id")}
         if plan != {**(self.ctx.get("plan") or {}), "state": "select"}:
             self.ctx["plan"] = plan
             try:
@@ -331,6 +332,9 @@ class GUI:
                 elif kind == "splash" and self.view == "select":
                     self.recs.render()
                 elif kind == "analysis":
+                    pl = self.ctx.get("plan")
+                    if ev[2] and pl and pl.get("state") == "done" and self.page == "partida" and self.game_view.tab != "Análisis":
+                        self.game_view.tab, self.game_view.gid = "Análisis", ev[1]   # acabó la partida: se enseña su análisis solo
                     self.game_view.on_data(ev[1], ev[2])
                 elif kind == "game_data":
                     self.game_view.on_vs()
@@ -523,9 +527,10 @@ class GUI:
         mypick = MyPick(k, self.select_view)
         ideas = BanIdeas(k, self.select_view)
         self.recs = Recs(k, self.select_view)
+        self.aram_build = AramBuild(k, self.select_view)
         self.lobby = Lobby(k, self.select_view)
         self.enemies = Enemies(k, self.select_view)
-        self.select_secs = [self.turn, self.draft, mypick, ideas, self.recs, self.lobby, self.enemies, BansRow(k, self.select_view)]
+        self.select_secs = [self.turn, self.draft, mypick, ideas, self.recs, self.aram_build, self.lobby, self.enemies, BansRow(k, self.select_view)]
         self.matchup_view = MatchupView(k, self.body, self)
         self.history_view = HistoryView(k, self.body, self)
         self.data_view = DataView(k, self.body, self)
