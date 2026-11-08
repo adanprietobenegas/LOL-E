@@ -45,8 +45,12 @@ def info(aid):
     return catalog().get(int(aid)) or {"n": f"Mejora {aid}", "r": "", "i": ""}
 
 
-def fetch_icons(ids, conf):
+def fetch_icons(ids, conf, done=None):
     """Baja en segundo plano los iconos que falten (del cliente) a cache/augicons/. Devuelve el hilo."""
+    ids = [i for i in dict.fromkeys(ids) if not icon_path(i)]
+    if not ids:
+        return None
+
     def go():
         try:
             lcu = core.LCU(*core.find_client(conf))
@@ -63,6 +67,8 @@ def fetch_icons(ids, conf):
                         f.write(data)
         except Exception:
             pass
+        if done:
+            done()   # los iconos ya están: la pantalla se repinta una vez
     t = threading.Thread(target=go, daemon=True)
     t.start()
     return t

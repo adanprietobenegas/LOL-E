@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.15.2", "fecha": "8 de noviembre de 2026", "titulo": "Ajustes tras probar Mayhem", "items": [
+        ("arreglo", "Al empezar una partida, la ventana enseña el plan y no el análisis de la anterior."),
+        ("arreglo", "Los iconos de mejoras aparecen solos en cuanto se descargan (antes salían como letras hasta repintar)."),
+        ("mejora", "Comprobado con una partida real: la API en vivo de Riot no incluye las mejoras de Mayhem, así que se ven al terminar la partida."),
+    ]},
     {"v": "1.15.1", "fecha": "8 de noviembre de 2026", "titulo": "Preparado para probar Mayhem", "items": [
         ("mejora", "En una partida de Mayhem LOL-E consulta la API en vivo cada 20 s y guarda hasta 6 muestras completas (cache/live_samples) para ver qué datos de mejoras trae."),
         ("mejora", "Si la API trae mejoras, se muestran por su nombre y categoría en Partida > Plan."),

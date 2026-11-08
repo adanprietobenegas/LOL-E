@@ -259,6 +259,8 @@ class GUI:
         if flow in ("InProgress", "GameStart", "Reconnect"):
             if plan["state"] != "game":
                 plan["state"] = "game"
+                self.game_view.tab = "Plan"   # al empezar la partida se ve el plan, no el análisis de la anterior
+                self.game_view.sig = None
                 if self.page == "asesor":  # empieza la partida: la ventana enseña tu plan en vez de volver al inicio
                     self.auto_game = True
                     self.page = "partida"

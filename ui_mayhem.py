@@ -54,7 +54,7 @@ def plan_block(ui, host, plan, ctx, games, width):
         ui.lbl(host, f"Mejoras que más has elegido con {name} ({n} partida{'s' if n != 1 else ''} de Mayhem guardada{'s' if n != 1 else ''})", 11, "fg", True, anchor="w").pack(anchor="w")
         row = ui.frame(host)
         row.pack(anchor="w", pady=(6, 2))
-        augments.fetch_icons([a for a, _ in top], ui.conf)
+        augments.fetch_icons([a for a, _ in top], ui.conf, lambda: ui.notify("game_data"))
         for aid, k in top:
             cell = ui.frame(row)
             cell.pack(side="left", padx=(0, 10))
@@ -80,7 +80,7 @@ def analysis_block(ui, parent, a, width):
     if not players:
         return
     ids = [x for p in players for x in p["aug"]]
-    augments.fetch_icons(ids, ui.conf)
+    augments.fetch_icons(ids, ui.conf, lambda: ui.notify("game_data"))
     ui.lbl(parent, "MEJORAS ELEGIDAS", 9, "dim", True, anchor="w").pack(anchor="w", pady=(10, 3))
     for team_mine in (True, False):
         for p in sorted((p for p in players if (p["team"] == a["team"]) == team_mine), key=lambda p: p["pid"]):
