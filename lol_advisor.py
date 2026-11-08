@@ -14,7 +14,7 @@ import synergy
 import trends
 from sounds import SOUNDS, synth_wav, play_alert, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.15.0"
+APP_NAME, APP_VERSION = "LOL-E", "1.15.1"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -1034,10 +1034,10 @@ def run(conf, champs, ui):
                 if in_game:
                     try:  # ARAM: Mayhem: la API de partida en vivo puede decir qué mejoras llevas (se guarda lo que traiga para poder mejorarlo)
                         if mayhem_live and time.time() >= next_probe:
-                            next_probe = time.time() + 30
+                            next_probe = time.time() + 20
                             got = augments.live_probe(conf)
                             if got:
-                                getattr(ui, "live_augments", lambda f: None)([v for _, v in got])
+                                getattr(ui, "live_augments", lambda f: None)(augments.flat_live([v for _, v in got]))
                     except Exception:
                         pass
                     try:  # id de la partida en curso: luego se espera a que el cliente la liste en el historial

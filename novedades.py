@@ -10,6 +10,10 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.15.1", "fecha": "8 de noviembre de 2026", "titulo": "Preparado para probar Mayhem", "items": [
+        ("mejora", "En una partida de Mayhem LOL-E consulta la API en vivo cada 20 s y guarda hasta 6 muestras completas (cache/live_samples) para ver qué datos de mejoras trae."),
+        ("mejora", "Si la API trae mejoras, se muestran por su nombre y categoría en Partida > Plan."),
+    ]},
     {"v": "1.15.0", "fecha": "8 de noviembre de 2026", "titulo": "ARAM: Mayhem y sus mejoras", "items": [
         ("nuevo", "En ARAM: Mayhem, la pestaña Partida > Plan enseña las mejoras que más has elegido con tu campeón (con icono, nombre y categoría)."),
         ("nuevo", "En el Análisis de una partida de Mayhem, «Mejoras elegidas» muestra las de los 10 jugadores. Sin líneas: el rival de comparación es el que más daño hizo."),

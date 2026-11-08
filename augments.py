@@ -80,6 +80,37 @@ def counts(games, champ):
     return cnt.most_common(8), len(mine)
 
 
+def flat_live(found):
+    """Lo que la API en vivo trae sobre mejoras, como textos legibles (ids de mejora -> nombre)."""
+    out = []
+
+    def one(v):
+        if isinstance(v, bool) or v is None:
+            return
+        if isinstance(v, int) and v in catalog():
+            out.append(info(v)["n"] + (f" ({info(v)['r'].lower()})" if info(v)["r"] else ""))
+        elif isinstance(v, (str, int, float)):
+            out.append(str(v))
+        elif isinstance(v, dict):
+            nm = v.get("displayName") or v.get("name") or v.get("rawDisplayName")
+            if nm:
+                out.append(str(nm))
+            else:
+                for x in v.values():
+                    one(x)
+        elif isinstance(v, list):
+            for x in v:
+                one(x)
+    for x in found:
+        one(x)
+    seen, res = set(), []
+    for x in out:
+        if x not in seen:
+            seen.add(x)
+            res.append(x)
+    return res
+
+
 def mayhem_games(games):
     return [g for g in games if g.get("q") in MAYHEM_QUEUES]
 
@@ -111,6 +142,20 @@ def live_probe(conf):
     except Exception:
         return None
     found = find_augments(d)
+    try:   # muestras completas de lo que devuelve la API (hasta 6 por partida, una cada ~3 min de juego) para poder analizarlas después
+        gt = float((d.get("gameData") or {}).get("gameTime", 0))
+        st = live_probe.__dict__.setdefault("seen", {"t": 1e9, "buckets": set()})
+        if gt < st["t"]:
+            st["buckets"] = set()   # partida nueva
+        st["t"] = gt
+        b = int(gt // 180)
+        if b not in st["buckets"] and len(st["buckets"]) < 6:
+            st["buckets"].add(b)
+            os.makedirs(path("live_samples"), exist_ok=True)
+            with open(path(os.path.join("live_samples", f"allgamedata_{int(gt)}s.json")), "w", encoding="utf-8") as f:
+                json.dump(d, f, ensure_ascii=False)
+    except Exception:
+        pass
     try:
         core.write_json(path("live_probe.json"), {"keys": list(d), "active_keys": list(d.get("activePlayer", {})),
                                                   "player_keys": list((d.get("allPlayers") or [{}])[0]), "game": d.get("gameData", {}),

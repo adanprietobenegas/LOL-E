@@ -68,7 +68,7 @@ def plan_block(ui, host, plan, ctx, games, width):
     live = ctx.get("live_aug")
     if live:
         ui.lbl(host, "DETECTADAS EN LA PARTIDA", 9, "dim", True, anchor="w").pack(anchor="w", pady=(10, 3))
-        ui.lbl(host, "  ·  ".join(str(x) for x in live)[:400], 10, "fg", anchor="w", justify="left", wraplength=wrap).pack(anchor="w")
+        ui.lbl(host, "  ·  ".join(str(x) for x in live)[:500], 10, "fg", anchor="w", justify="left", wraplength=wrap).pack(anchor="w")
     ui.lbl(host, "En cada ronda todos eligen dentro de la misma categoría (Plata, Oro o Prismática); según las guías se puede relanzar una vez cada opción y, según Riot, "
                  "las mejoras se eligen estando muerto (niveles 3, 7, 11 y 15). LOL-E no muestra porcentajes de victoria de mejoras: Riot no permite que "
                  "las aplicaciones los enseñen.", 9, "dim", anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(10, 0))

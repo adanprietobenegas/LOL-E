@@ -7,6 +7,14 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.15.1   (8 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Sonda de la API en vivo en Mayhem: cada 20 s, y hasta 6 muestras completas por
+    partida en cache/live_samples/allgamedata_<segundos>.json (una cada ~3 min de
+    juego) además de cache/live_probe.json. Se muestran las mejoras detectadas con
+    su nombre. Nada de esto sale de tu PC.
+
 VERSIÓN 1.15.0   (8 de noviembre de 2026)
 ---------------------------------------------------------------------
 
