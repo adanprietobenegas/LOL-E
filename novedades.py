@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.13.1", "fecha": "8 de noviembre de 2026", "titulo": "Clasificatorias de 5 (grupos de 5)", "items": [
+        ("arreglo", "La cola «Clasificatorias de 5» se trataba como un modo desconocido y no daba recomendaciones, roles ni bans. Ahora funciona como la Grieta."),
+        ("nuevo", "En esa cola el cliente enseña los nombres del equipo rival: LOL-E muestra de cada rival su rango, su forma reciente, los campeones que más juega y su maestría con el que elige."),
+        ("arreglo", "Los bans de esa cola (que el cliente da de otra forma) ya se ven."),
+    ]},
     {"v": "1.13.0", "fecha": "7 de noviembre de 2026", "titulo": "Novedades dentro de la aplicación", "items": [
         ("nuevo", "Esta ventana: al abrir una versión nueva verás qué ha cambiado. Puedes cerrarla y volver a consultarla en Ajustes → «Ver novedades»."),
     ]},

@@ -7,8 +7,8 @@ TIERS_ES = {"IRON": "Hierro", "BRONZE": "Bronce", "SILVER": "Plata", "GOLD": "Or
             "EMERALD": "Esmeralda", "DIAMOND": "Diamante", "MASTER": "Maestro", "GRANDMASTER": "Gran Maestro",
             "CHALLENGER": "Aspirante"}
 APEX = ("MASTER", "GRANDMASTER", "CHALLENGER")
-SR_QUEUES = {400, 420, 430, 440, 480, 490}
-RANKED_QUEUES = {420, 440}
+SR_QUEUES = {400, 420, 430, 440, 480, 490, 700, 710}
+RANKED_QUEUES = {420, 440, 710}
 CACHE_TTL = 600  # los datos de un jugador valen 10 minutos
 
 
@@ -139,6 +139,8 @@ def fetch_team(lcu, session, emit):
     """Carga en paralelo a tus aliados y va avisando con emit({puuid: datos}) cada vez que llega uno."""
     found = {}
     pus = [pu for _, pu in team_puuids(lcu, session) if pu]
+    # en algunas colas (clasificatorias de 5, Clash) el cliente enseña también los nombres del equipo rival
+    pus += [p["puuid"] for p in session.get("theirTeam", []) if p.get("puuid") and p["puuid"] not in pus]
     if not pus:
         emit({})
         return

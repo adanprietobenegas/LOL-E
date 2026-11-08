@@ -14,7 +14,7 @@ import synergy
 import trends
 from sounds import SOUNDS, synth_wav, play_alert, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.13.0"
+APP_NAME, APP_VERSION = "LOL-E", "1.13.1"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -78,7 +78,7 @@ DEFAULT_CONF = {
 TIERS_ES = {"IRON": "Hierro", "BRONZE": "Bronce", "SILVER": "Plata", "GOLD": "Oro", "PLATINUM": "Platino",
             "EMERALD": "Esmeralda", "DIAMOND": "Diamante", "MASTER": "Maestro", "GRANDMASTER": "Gran Maestro",
             "CHALLENGER": "Aspirante"}
-SR_QUEUES = {400, 420, 430, 440, 480, 490}  # partidas de Grieta (para winrate y matchups)
+SR_QUEUES = {400, 420, 430, 440, 480, 490, 700, 710}  # partidas de Grieta (para winrate y matchups)
 ROLE_TAGS = {  # plan B si no hay datos de posicion
     "TOP": {"Fighter": 1.0, "Tank": 0.8},
     "JUNGLE": {"Fighter": 0.7, "Assassin": 0.8, "Tank": 0.7},
@@ -381,7 +381,7 @@ def maybe_update_opgg(conf, champs, P, force=False):
 
 
 QUEUE_GROUPS = [("Solo/Dúo", {420}), ("Flexible", {440}), ("Normales", {400, 430, 490}), ("Modo rápido", {480}),
-                ("ARAM", {450, 720, 2400}), ("Arena", {1700, 1710, 1750}), ("Clash", {700})]
+                ("ARAM", {450, 720, 2400}), ("Arena", {1700, 1710, 1750}), ("Clash", {700}), ("Clasificatorias de 5", {710})]
 MODE_ORDER = [g for g, _ in QUEUE_GROUPS] + ["Otros"]
 
 
@@ -689,6 +689,14 @@ def sanitize_session(s):
     s["timer"] = {**t, "phase": t.get("phase") or "", "adjustedTimeLeftInPhase": t.get("adjustedTimeLeftInPhase") or 0,
                   "totalTimeInPhase": t.get("totalTimeInPhase") or 0}
     s["actions"] = [[a for a in g if isinstance(a, dict)] for g in (s.get("actions") or []) if isinstance(g, list)]
+    # en varias colas (clasificatorias de 5, Clash) el cliente deja los bans en las acciones y no en "bans": se pasan a su sitio
+    for grp in s["actions"]:
+        for a in grp:
+            cid = a.get("championId") or 0
+            if a.get("type") == "ban" and a.get("completed") and cid > 0:
+                lst = s["bans"]["myTeamBans" if a.get("isAllyAction") else "theirTeamBans"]
+                if cid not in lst:
+                    lst.append(cid)
     s["benchChampions"] = [b_ for b_ in (s.get("benchChampions") or []) if isinstance(b_, dict)]
     lp = s.get("localPlayerCellId")
     s["localPlayerCellId"] = lp if isinstance(lp, int) else -1
@@ -717,6 +725,8 @@ def _result(session, champs, P, conf, mode, role, allies, enemies, lane_opp, ban
             "lane_opp": lane_opp, "ban_ideas": ban_suggestions(champs, P, taken, conf["ban_n"], conf) if mode["kind"] == "sr" else [],
             "turn": my_turn(session), "ally_stats": als, "enemy_stats": ens,
             "pct_scale": 0.8 * (w["mastery"] + w["winrate"]) if mode["kind"] == "aram" else 0.6 * sum(w.values()),
+            "enemy_cells": [{"cell": p["cellId"], "champ": p["championId"] or 0, "puuid": p.get("puuid", ""), "name": p.get("gameName", "")}
+                            for p in session["theirTeam"]],
             "ally_cells": [{"cell": p["cellId"], "champ": p["championId"] or p.get("championPickIntent", 0),
                             "role": norm_role(p.get("assignedPosition")), "puuid": p.get("puuid", "")}
                            for p in session["myTeam"] if p["cellId"] != me_cell],

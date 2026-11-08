@@ -7,6 +7,21 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.13.1   (8 de noviembre de 2026)
+---------------------------------------------------------------------
+
+CORRECCIONES / NOVEDADES
+  · CLASIFICATORIAS DE 5 (cola 710, "RANKED_PREMADE_5x5"): LOL-E no la
+    conocía y la trataba como "Otros" (sin recomendaciones, roles ni bans).
+    Ahora se trata como la Grieta (también la cola 700, Clash).
+  · En esa cola el cliente enseña los nombres de los rivales. LOL-E lee su
+    rango, forma reciente, campeones más jugados y maestría y los muestra en
+    "Equipo rival" (apartado "Jugadores rivales").
+  · Los bans de esa cola llegan en las acciones de la selección, no en la
+    lista de bans: ahora se recogen y se ven.
+  · Pendiente: deducir quién es tu rival de línea a partir de su rol habitual
+    (los rivales no traen la línea asignada).
+
 VERSIÓN 1.13.0   (7 de noviembre de 2026)
 ---------------------------------------------------------------------
 

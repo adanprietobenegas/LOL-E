@@ -1516,13 +1516,13 @@ class Lobby(Section):
             ui.lbl(c, f"Daño físico {st['ad']} · mágico {st['ap']}   ·   Tanques {st['tanks']}   ·   Control {ctl(st['cc'])}", 10,
                    "dim", anchor="w").pack(anchor="w")
 
-    def row(self, parent, a, p, in_party, party_n, loaded, mates=None):
+    def row(self, parent, a, p, in_party, party_n, loaded, mates=None, ring="#3ddc84"):
         ui = self.ui
         box = ctk.CTkFrame(parent, fg_color=PAL["card2"], corner_radius=12)
         box.pack(fill="x", pady=4)
         inner = ui.frame(box)
         inner.pack(fill="x", padx=12, pady=10)
-        ui.champ(inner, a["champ"], 44, False, "#3ddc84" if a["champ"] else None).pack(side="left", anchor="n")
+        ui.champ(inner, a["champ"], 44, False, ring if a["champ"] else None).pack(side="left", anchor="n")
         mid = ui.frame(inner)
         mid.pack(side="left", fill="x", expand=True, padx=12)
         head = ui.frame(mid)
@@ -1571,8 +1571,10 @@ class Lobby(Section):
 class Enemies(Section):
     def key(self, ctx):
         r = ctx["r"]
+        pl = ctx["players"]
         return (tuple(r["enemies"]), ctx["session"]["theirTeam"] and len(ctx["session"]["theirTeam"]), self.ui.conf["show_teams"],
-                self.ui.conf["compact"], r["mode"]["kind"])
+                self.ui.conf["compact"], r["mode"]["kind"], tuple((e["cell"], e["champ"], e["puuid"]) for e in r["enemy_cells"]),
+                tuple(sorted((k, v.get("name", ""), len(v.get("recent", [])), bool(v.get("error"))) for k, v in pl.items() if k in {e["puuid"] for e in r["enemy_cells"]})))
 
     def build(self, ctx):
         ui, r = self.ui, ctx["r"]
@@ -1581,7 +1583,8 @@ class Enemies(Section):
         if r["mode"]["kind"] != "sr" and not r["enemies"]:  # Arena, personalizadas, ARAM: sin rivales conocidos no hay nada que enseñar
             return
         st0 = r["enemy_stats"]
-        summ = f"{len(r['enemies'])} de 5 elegidos" + (f" · físico {st0['ad']} / mágico {st0['ap']}" if st0 and st0["ad"] + st0["ap"] else "")
+        named = any(e["puuid"] for e in r["enemy_cells"])
+        summ = f"{len(r['enemies'])} de 5 elegidos" + (" · con sus nombres" if named else "") + (f" · físico {st0['ad']} / mágico {st0['ap']}" if st0 and st0["ad"] + st0["ap"] else "")
         ui.fold(self.box, "Equipo rival", lambda c: self.fill(c, ctx), summ, "sel_enemy", True)
 
     def fill(self, c, ctx):
@@ -1603,6 +1606,14 @@ class Enemies(Section):
             ui.lbl(info, f"Tanques {st['tanks']}  ·  control {ctl(st['cc'])}", 10, "dim", anchor="w").pack(anchor="w")
             if st["tip"]:
                 ui.lbl(info, st["tip"], 10, "warn", True, anchor="w", wraplength=230, justify="left").pack(anchor="w", pady=(2, 0))
+        # con los nombres visibles se ve quién es cada rival: rango, forma reciente, campeones que más juega y maestría con el que elige
+        pl = ctx["players"]
+        cells = [e for e in r["enemy_cells"] if e["puuid"]]
+        if cells and r["mode"]["kind"] == "sr":
+            ui.lbl(c, "JUGADORES RIVALES", 10, "dim", True).pack(anchor="w", pady=(12, 2))
+            for e in cells:
+                Lobby.row(self, c, {"champ": e["champ"], "role": "", "puuid": e["puuid"]}, pl.get(e["puuid"]), False, 0,
+                          bool(pl), None, "#ff5a5f")
 
 
 class BansRow(Section):
