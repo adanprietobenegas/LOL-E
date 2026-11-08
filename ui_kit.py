@@ -94,6 +94,7 @@ def ring_image(frac, size, text, fill, track, ink, font_ratio=.36, thick=.11):
 
 def make_hero(art_path, title, eyebrow, pct, w, h, accent, label="AFINIDAD"):
     """La pieza propia del producto: el arte del campeón recomendado con su afinidad en un anillo."""
+    w, h = int(w), int(h)   # el ancho lógico puede llegar con decimales (escala de Windows distinta de 100 %)
     S = 2
     W, H = w * S, h * S
     if art_path and os.path.exists(art_path):

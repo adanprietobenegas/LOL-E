@@ -1564,10 +1564,41 @@ class Lobby(Section):
             if p["wr10"] is not None and len(p["recent"]) >= 6:
                 extra.append("racha negativa" if p["wr10"] < .4 else "en buena racha" if p["wr10"] >= .65 else "")
             ui.lbl(line2, "  ·  ".join(x for x in extra if x), 10, "dim").pack(side="left", padx=4)
+            profile_toggle(self, box, inner, mid, a, p, qid)
         elif p and p.get("error"):
             ui.lbl(mid, "No se pudieron leer sus datos.", 10, "dim").pack(anchor="w")
         elif not loaded:
             ui.lbl(mid, "Cargando datos del jugador…", 10, "dim").pack(anchor="w", pady=(4, 0))
+
+
+def profile_toggle(self, box, inner, mid, a, p, qid):
+    """«Perfil completo»: despliega bajo la tarjeta todo lo que el cliente sabe del jugador (ui_player.py). Recuerda qué perfiles estaban abiertos."""
+    import ui_player
+    ui = self.ui
+    opened = ui.__dict__.setdefault("open_prof", set())
+    key = a.get("puuid") or ""
+    det = ui.frame(box)
+    lab = ui.lbl(mid, "", 10, "info", True)
+    lab.pack(anchor="w", pady=(6, 0))
+
+    def paint():
+        if key in opened:
+            lab.configure(text="▾ Ocultar perfil")
+            det.pack(fill="x", padx=12, pady=(0, 10))
+            if not det.winfo_children():
+                ui_player.build(ui, det, p, qid, getattr(self, "width", 520))
+        else:
+            lab.configure(text="▸ Perfil completo")
+            det.pack_forget()
+
+    def toggle(_e=None):
+        opened.symmetric_difference_update({key})
+        paint()
+    lab.configure(cursor="hand2")
+    lab.bind("<Button-1>", toggle)
+    paint()
+
+
 
 
 class Enemies(Section):

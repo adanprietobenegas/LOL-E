@@ -7,6 +7,20 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.13.3   (8 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · PERFIL COMPLETO de cada aliado y rival (ui_player.py): rangos de las tres
+    colas, máximo de temporada y rango de la anterior, últimas partidas con
+    campeón y resultado, KDA / súbditos / daño / visión por minuto y duración,
+    campeones más jugados con % de victorias y KDA, mayor maestría con nivel,
+    puntos y última vez, líneas que juega y señales (rachas, inactividad,
+    pocas partidas, posible cuenta secundaria). Se despliega con "Perfil
+    completo" y recuerda cuáles dejaste abiertos.
+  · CORRECCIÓN: la vista "Lista" de recomendaciones fallaba con un error de
+    número decimal (hero_pil/make_hero) con algunas escalas de pantalla y
+    dejaba la sección vacía.
+
 VERSIÓN 1.13.2   (8 de noviembre de 2026)
 ---------------------------------------------------------------------
 

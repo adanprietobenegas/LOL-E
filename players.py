@@ -90,6 +90,53 @@ def _role(p):
 _cache = {}
 
 
+def marks_info(st):
+    """Rango más alto de la temporada y rango con el que terminó la anterior."""
+    out = {}
+    pk = (st.get("highestCurrentSeasonReachedTierSR") or "").upper()
+    if pk and pk not in ("NONE", "NA"):
+        out["peak"] = TIERS_ES.get(pk, pk.title())
+    pv = (st.get("highestPreviousSeasonEndTier") or "").upper()
+    if pv and pv not in ("NONE", "NA"):
+        dv = (st.get("highestPreviousSeasonEndDivision") or "").replace("NA", "")
+        out["prev"] = (TIERS_ES.get(pv, pv.title()) + (" " + dv if dv and pv not in APEX else "")).strip()
+    return out
+
+
+def recent_stats(recent, sr, allrec):
+    """Cifras de sus últimas partidas de Grieta: KDA, CS, daño, visión, racha, campeones y líneas."""
+    st = {"n": len(recent)}
+    if recent:
+        mins = sum(x["dur"] for x in recent) / 60 or 1
+        k, d, a = (sum(x[f] for x in recent) for f in "kda")
+        st.update(k=k / len(recent), d=d / len(recent), a=a / len(recent), kda=(k + a) / max(1, d), cspm=sum(x["cs"] for x in recent) / mins,
+                  dpm=sum(x["dmg"] for x in recent) / mins, vpm=sum(x["vis"] for x in recent) / mins,
+                  dur=sum(x["dur"] for x in recent) / len(recent))
+        run = 0
+        for x in recent:
+            if run == 0:
+                run = 1 if x["w"] else -1
+            elif (run > 0) == x["w"]:
+                run += 1 if run > 0 else -1
+            else:
+                break
+        st["streak"] = run
+    by = {}
+    for x in sr:
+        b = by.setdefault(x["c"], [0, 0, 0, 0, 0])
+        b[0] += 1; b[1] += x["w"]; b[2] += x["k"]; b[3] += x["d"]; b[4] += x["a"]
+    st["champs"] = [{"c": c, "n": b[0], "w": b[1], "kda": (b[2] + b[4]) / max(1, b[3])} for c, b in sorted(by.items(), key=lambda kv: -kv[1][0])[:5]]
+    rc = Counter(x["role"] for x in sr if x["role"])
+    tot = sum(rc.values()) or 1
+    st["roles"] = [(r, n / tot) for r, n in rc.most_common(3)]
+    st["sr_n"] = len(sr)
+    if st["champs"] and len(sr) >= 6 and st["champs"][0]["n"] / len(sr) >= .5:
+        st["otp"] = st["champs"][0]["c"]
+    if allrec:
+        st["last_days"] = max(0, (time.time() * 1000 - max(x["t"] for x in allrec)) / 86400000)
+    return st
+
+
 def fetch_player(lcu, puuid):
     """Resumen de un jugador: nombre, nivel, rangos, últimas partidas, campeones y roles habituales y maestrías."""
     hit = _cache.get(puuid)
@@ -102,10 +149,18 @@ def fetch_player(lcu, puuid):
     qm = (lcu.get(f"/lol-ranked/v1/ranked-stats/{puuid}") or {}).get("queueMap", {})
     out["solo"], out["flex"] = rank_info(qm.get("RANKED_SOLO_5x5")), rank_info(qm.get("RANKED_FLEX_SR"))
     out["prem"] = rank_info(qm.get("RANKED_PREMADE_5x5"))   # clasificatorias de 5: su propia escalera
+    out["marks"] = marks_info(lcu.get(f"/lol-ranked/v1/ranked-stats/{puuid}") or {})
     try:
         games = lcu.get(f"/lol-match-history/v1/products/lol/{puuid}/matches?begIndex=0&endIndex=20", timeout=20)["games"]["games"]
-        rec = [{"c": g["participants"][0]["championId"], "w": bool(g["participants"][0]["stats"]["win"]), "q": g.get("queueId"),
-                "role": _role(g["participants"][0])} for g in games]
+        rec = []
+        for g in games:
+            pa = g["participants"][0]
+            st = pa["stats"]
+            rec.append({"c": pa["championId"], "w": bool(st["win"]), "q": g.get("queueId"), "role": _role(pa),
+                        "k": st.get("kills", 0), "d": st.get("deaths", 0), "a": st.get("assists", 0),
+                        "cs": st.get("totalMinionsKilled", 0) + st.get("neutralMinionsKilled", 0),
+                        "dmg": st.get("totalDamageDealtToChampions", 0), "vis": st.get("visionScore", 0),
+                        "dur": g.get("gameDuration", 0), "t": g.get("gameCreation", 0)})
         sr = [x for x in rec if x["q"] in SR_QUEUES]
         base = [x for x in sr if x["q"] in RANKED_QUEUES] or sr
         out["recent"] = base[:10]
@@ -113,10 +168,14 @@ def fetch_player(lcu, puuid):
             out["wr10"] = sum(x["w"] for x in out["recent"]) / len(out["recent"])
         out["top"] = [c for c, _ in Counter(x["c"] for x in sr).most_common(3)]
         out["roles"] = [r for r, _ in Counter(x["role"] for x in sr if x["role"]).most_common(2)]
+        out["stats"] = recent_stats(out["recent"], sr, rec)
     except Exception:
         pass
     try:
-        out["mastery"] = {m["championId"]: m["championPoints"] for m in lcu.get(f"/lol-champion-mastery/v1/{puuid}/champion-mastery") or []}
+        ms = lcu.get(f"/lol-champion-mastery/v1/{puuid}/champion-mastery") or []
+        out["mastery"] = {m["championId"]: m["championPoints"] for m in ms}
+        out["mastery_top"] = [{"c": m["championId"], "pts": m["championPoints"], "lvl": m.get("championLevel", 0), "last": m.get("lastPlayTime", 0)}
+                              for m in sorted(ms, key=lambda m: -m["championPoints"])[:5]]
     except Exception:
         pass
     _cache[puuid] = (time.time(), out)

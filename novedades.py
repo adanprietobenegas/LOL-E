@@ -10,6 +10,10 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.13.3", "fecha": "8 de noviembre de 2026", "titulo": "Perfil completo de cada jugador", "items": [
+        ("nuevo", "En «Tu equipo» y «Equipo rival», cada jugador tiene «Perfil completo»: sus rangos (Solo/Dúo, Flexible y Clasificatorias de 5), máximo de la temporada y de la anterior, últimas partidas con campeón y resultado, rendimiento (KDA, súbditos, daño y visión por minuto, duración), campeones más jugados, mayor maestría, líneas y señales (rachas, inactividad, cuenta secundaria)."),
+        ("arreglo", "La vista «Lista» de recomendaciones podía fallar y quedarse vacía con ciertas escalas de pantalla. Corregido."),
+    ]},
     {"v": "1.13.2", "fecha": "8 de noviembre de 2026", "titulo": "Clasificatorias de 5: tu rango y el de los rivales", "items": [
         ("nuevo", "En Clasificatorias de 5 se usa el rango de esa cola (tiene su propia escalera), tanto el tuyo como el de tus aliados y rivales."),
         ("nuevo", "Los PL de cada partida de Clasificatorias de 5 también se calculan."),
