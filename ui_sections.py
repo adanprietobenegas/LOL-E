@@ -106,6 +106,8 @@ class ProfileCard(Section):
             grid.columnconfigure(k, weight=1, uniform="rk")
         rank_block(ui, grid, "Solo / Dúo", pr.get("solo")).grid(row=0, column=0, sticky="ew", padx=(0, 4))
         rank_block(ui, grid, "Flexible", pr.get("flex")).grid(row=0, column=1, sticky="ew", padx=(4, 0))
+        if pr.get("prem"):
+            rank_block(ui, grid, "Clasificatorias de 5", pr["prem"]).grid(row=1, column=0, columnspan=2, sticky="ew", pady=(8, 0))
 
 
 class WaitCard(Section):
@@ -1644,8 +1646,10 @@ class Enemies(Section):
         cells = [e for e in r["enemy_cells"] if e["puuid"]]
         if cells and r["mode"]["kind"] == "sr":
             ui.lbl(c, "JUGADORES RIVALES", 10, "dim", True).pack(anchor="w", pady=(12, 2))
+            import draft5
+            roles = draft5.infer_roles(r["enemy_cells"], pl, ui.champs) if draft5.is_draft(r) else {}
             for e in cells:
-                Lobby.row(self, c, {"champ": e["champ"], "role": "", "puuid": e["puuid"]}, pl.get(e["puuid"]), False, 0,
+                Lobby.row(self, c, {"champ": e["champ"], "role": roles.get(e["puuid"], ""), "puuid": e["puuid"]}, pl.get(e["puuid"]), False, 0,
                           bool(pl), None, "#ff5a5f", r["mode"]["id"])
 
 

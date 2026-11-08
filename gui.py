@@ -16,6 +16,7 @@ from ui_history import HistoryView
 from ui_views import DataView, MatchupView
 from ui_kit import REC_VIEWS, ACCENTS, DISPLAY, Kit, PAL, THEMES, res
 from ui_game import GameView
+from ui_draft import DraftCard
 from ui_sections import (SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
                          WaitCard)
 
@@ -269,6 +270,7 @@ class GUI:
                     first = self.advisor != "select"
                     self.advisor = "select"
                     self.update_plan(r)
+                    self.infer_lane_opp()
                     if first and self.auto_game and self.page == "partida":  # nueva selección: se vuelve al Asesor
                         self.auto_game = False
                         self.page = "asesor"
@@ -295,7 +297,10 @@ class GUI:
                 elif kind == "players":
                     self.ctx["players"] = ev[1]
                     if self.view == "select":
-                        self.lobby.refresh(self.make_ctx())
+                        self.infer_lane_opp()
+                        cx = self.make_ctx()
+                        for sec in (self.lobby, self.enemies, self.draft):
+                            sec.refresh(cx)
                 elif kind == "status":
                     self.status_text = ev[1]
                     self.update_footer()
@@ -498,11 +503,13 @@ class GUI:
         self.idle_secs = [ProfileCard(k, self.idle_view), WaitCard(k, self.idle_view), SummaryCard(k, self.idle_view)]
         # (la fila de rango y racha ya no se muestra en la selección: ahí no ayuda a decidir)
         self.turn = TurnCard(k, self.select_view)
+        self.draft = DraftCard(k, self.select_view)   # el orden de creación es el orden en pantalla
         mypick = MyPick(k, self.select_view)
         ideas = BanIdeas(k, self.select_view)
         self.recs = Recs(k, self.select_view)
         self.lobby = Lobby(k, self.select_view)
-        self.select_secs = [self.turn, mypick, ideas, self.recs, self.lobby, Enemies(k, self.select_view), BansRow(k, self.select_view)]
+        self.enemies = Enemies(k, self.select_view)
+        self.select_secs = [self.turn, self.draft, mypick, ideas, self.recs, self.lobby, self.enemies, BansRow(k, self.select_view)]
         self.matchup_view = MatchupView(k, self.body, self)
         self.history_view = HistoryView(k, self.body, self)
         self.data_view = DataView(k, self.body, self)
@@ -1010,6 +1017,21 @@ class GUI:
                    "ni de nadie que participe oficialmente en League of Legends. Solo lee la selección de campeón "
                    "de tu cliente; nunca interviene en la partida.", 10, "dim", wraplength=self.note_w(), justify="left").pack(
             anchor="w", padx=14, pady=(0, 10))
+
+    def infer_lane_opp(self):
+        """En las colas de grupos de 5 los rivales no traen línea: con sus perfiles se deduce cuál es tu rival directo (si aún no se sabía)."""
+        r = self.ctx.get("r")
+        try:
+            import draft5
+            if not r or not draft5.is_draft(r) or r.get("lane_opp") or not r.get("role"):
+                return
+            roles = draft5.infer_roles(r["enemy_cells"], self.ctx["players"], self.champs)
+            opp = next((e["champ"] for e in r["enemy_cells"] if roles.get(e["puuid"]) == r["role"] and e["champ"]), 0)
+            if opp:
+                r["lane_opp"] = opp
+                self.apply_page()
+        except Exception:
+            pass
 
     def show_notes(self):
         """Ventana de novedades (la misma que sale al abrir una versión nueva)."""

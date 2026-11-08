@@ -7,6 +7,24 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.14.0   (8 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · DRAFT DE 5 (draft5.py + ui_draft.py), solo en las colas 710 y 700:
+    - Tira de pasos (B = ban, P = pick), turno actual y acciones que faltan
+      para el tuyo.
+    - Bans dirigidos: puntaje 0-100 = 50 % maestría (tope 150.000) + 30 % veces
+      jugado en sus últimas partidas (tope 5) + 20 % victorias con el campeón;
+      solo rivales que aún no han elegido; un campeón sale una vez.
+    - Línea probable de cada rival: reparto óptimo entre las 5 líneas con
+      60 % sus líneas habituales y 40 % las líneas del campeón elegido. Con
+      ello se rellena tu rival directo (lane_opp) si no se sabía.
+    - Rango medio de cada equipo, dispersión (avisa desde 4 divisiones) y
+      jugadores sin rango.
+  · Perfiles rivales primero y con 6 hilos (antes 4) para llegar antes de los
+    bans. Los rivales muestran su línea probable en su tarjeta.
+  · Bloque de rango "Clasificatorias de 5" en el Asesor.
+
 VERSIÓN 1.13.3   (8 de noviembre de 2026)
 ---------------------------------------------------------------------
 

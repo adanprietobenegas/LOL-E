@@ -10,6 +10,13 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.14.0", "fecha": "8 de noviembre de 2026", "titulo": "Draft de 5 completo", "items": [
+        ("nuevo", "Tarjeta «Draft de 5» en Clasificatorias de 5 y Clash: la tira de bans y picks (verde tu equipo, rojo el rival), de quién es el turno y cuántas acciones faltan para el tuyo."),
+        ("nuevo", "Bans dirigidos: por cada rival que aún no ha elegido, los campeones que más puede jugar, con puntaje (maestría, veces jugado y % de victorias) a la vista."),
+        ("nuevo", "Línea probable de cada rival (los rivales no la traen) y, con ella, tu rival directo: ya se usa para el enfrentamiento y la build."),
+        ("nuevo", "Rango medio de cada equipo, diferencia entre jugadores y cuentas sin rango; los perfiles rivales se leen primero y más rápido."),
+        ("mejora", "Bloque de rango «Clasificatorias de 5» en el Asesor cuando tienes rango en esa cola."),
+    ]},
     {"v": "1.13.3", "fecha": "8 de noviembre de 2026", "titulo": "Perfil completo de cada jugador", "items": [
         ("nuevo", "En «Tu equipo» y «Equipo rival», cada jugador tiene «Perfil completo»: sus rangos (Solo/Dúo, Flexible y Clasificatorias de 5), máximo de la temporada y de la anterior, últimas partidas con campeón y resultado, rendimiento (KDA, súbditos, daño y visión por minuto, duración), campeones más jugados, mayor maestría, líneas y señales (rachas, inactividad, cuenta secundaria)."),
         ("arreglo", "La vista «Lista» de recomendaciones podía fallar y quedarse vacía con ciertas escalas de pantalla. Corregido."),

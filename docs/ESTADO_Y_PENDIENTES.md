@@ -138,3 +138,9 @@ CLASIFICATORIAS DE 5 (RANKED 5s, cola 710): INVESTIGACIÓN Y MEJORAS (8 nov 2026
   6. Quinto tile de rango "5v5" en el resumen de Asesor y filtro propio en el Historial.
   7. Los 9 perfiles tardan ~15 s en cargar: cargar primero a los rivales o subir los hilos.
   8. Mostrar en Ajustes/Datos que la cola solo está disponible fines de semana y hasta el 7-ene-2027.
+
+  ESTADO (1.14.0): hechas las mejoras 1 (bans dirigidos), 3 (línea probable y rival directo),
+  4 (turnos), 5 (resumen de equipos), 6 (bloque de rango 5v5; el filtro del Historial ya existía
+  como "Clasificatorias de 5"), 7 (rivales primero, 6 hilos) y 8 (aviso de fines de semana y fecha).
+  Parcial: 2 (2.ª tanda de bans) solo cambia el título y ya cuenta con los picks vistos; falta sugerir
+  el campeón que completa la composición rival o contrarresta tus picks bloqueados.

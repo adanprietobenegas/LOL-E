@@ -200,8 +200,9 @@ def fetch_team(lcu, session, emit):
     """Carga en paralelo a tus aliados y va avisando con emit({puuid: datos}) cada vez que llega uno."""
     found = {}
     pus = [pu for _, pu in team_puuids(lcu, session) if pu]
-    # en algunas colas (clasificatorias de 5, Clash) el cliente enseña también los nombres del equipo rival
-    pus += [p["puuid"] for p in session.get("theirTeam", []) if p.get("puuid") and p["puuid"] not in pus]
+    # en algunas colas (clasificatorias de 5, Clash) el cliente enseña también los nombres del equipo rival: se leen primero (deciden los bans)
+    rivals = [p["puuid"] for p in session.get("theirTeam", []) if p.get("puuid")]
+    pus = rivals + [pu for pu in pus if pu not in rivals]
     if not pus:
         emit({})
         return
@@ -212,7 +213,7 @@ def fetch_team(lcu, session, emit):
         except Exception:
             found[pu] = {"puuid": pu, "name": "", "error": True}
         emit(dict(found))
-    with ThreadPoolExecutor(4) as ex:
+    with ThreadPoolExecutor(6) as ex:
         list(ex.map(one, pus))
 
 
