@@ -241,7 +241,7 @@ class GUI:
         sr = kind == "sr"   # ARAM, Arena, etc.: solo el campeón, sin línea ni rivales (no hay build de línea)
         plan = {"cid": r["mine"], "role": (r.get("role") or "") if sr else "", "opp": (r.get("lane_opp") or 0) if sr else 0,
                 "enemies": list(r["enemies"]) if sr else [], "allies": list(r["allies"]) if sr else [], "locked": bool(r.get("mine_locked")),
-                "state": "select", "kind": kind, "group": r["mode"].get("group", "")}
+                "state": "select", "kind": kind, "group": r["mode"].get("group", ""), "mayhem": r["mode"].get("id") in (2400,)}
         if plan != {**(self.ctx.get("plan") or {}), "state": "select"}:
             self.ctx["plan"] = plan
             try:
@@ -311,6 +311,10 @@ class GUI:
                         cx = self.make_ctx()
                         for sec in (self.lobby, self.enemies, self.draft):
                             sec.refresh(cx)
+                elif kind == "live_aug":
+                    self.ctx["live_aug"] = ev[1]
+                    if self.view == "game":
+                        self.game_view.refresh(self.make_ctx(), True)
                 elif kind == "status":
                     self.status_text = ev[1]
                     self.update_footer()
@@ -1042,6 +1046,9 @@ class GUI:
                 self.apply_page()
         except Exception:
             pass
+
+    def live_augments(self, found):
+        self.q.put(("live_aug", found))
 
     def show_notes(self):
         """Ventana de novedades (la misma que sale al abrir una versión nueva)."""

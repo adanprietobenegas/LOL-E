@@ -111,7 +111,11 @@ class GameView:
         if opp and opp in ui.champs:
             sub += f"  ·  contra {core.name(opp, ui.champs)}"
         ui.lbl(txt, sub or "sin línea asignada", 10, "dim").pack(anchor="w")
-        if plan.get("kind") not in (None, "sr"):
+        if plan.get("mayhem"):
+            import ui_mayhem
+            self.load_games()
+            ui_mayhem.plan_block(ui, host, plan, ctx, self.games, self.width)
+        elif plan.get("kind") not in (None, "sr"):
             ui.lbl(host, f"En {plan.get('group') or 'este modo'} no hay plan de línea ni build recomendada. Cuando termine la partida, la pestaña Análisis te la cuenta.",
                    11, "dim", anchor="w", justify="left", wraplength=max(260, self.width - 110)).pack(anchor="w", pady=(6, 0))
         if lane:

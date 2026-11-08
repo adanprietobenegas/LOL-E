@@ -32,7 +32,8 @@ def from_game(g):
             "cs": st.get("totalMinionsKilled", 0) + st.get("neutralMinionsKilled", 0), "lv": st.get("champLevel", 0),
             "dm": st.get("totalDamageDealtToChampions", 0), "g": st.get("goldEarned", 0), "v": st.get("visionScore", 0),
             "rm": bool(st.get("gameEndedInEarlySurrender")), "it": [st.get(f"item{i}", 0) for i in range(7)],
-            "gm": g.get("gameMode", ""), "gt": g.get("gameType", ""), "pl": st.get("subteamPlacement")}
+            "gm": g.get("gameMode", ""), "gt": g.get("gameType", ""), "pl": st.get("subteamPlacement"),
+            "au": [st.get(f"playerAugment{i}", 0) for i in range(1, 7) if st.get(f"playerAugment{i}", 0)]}
 
 
 def save(path, games):

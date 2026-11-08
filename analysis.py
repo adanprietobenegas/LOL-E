@@ -10,7 +10,7 @@ sencillos; cada consejo enseña el dato en que se basa.
 """
 import json, os, statistics
 
-VERSION = 3
+VERSION = 4
 SMITE = 11
 MONSTERS = {"DRAGON": "dragón", "BARON_NASHOR": "Barón", "RIFTHERALD": "Heraldo", "HORDE": "larvas del Vacío", "ATAKHAN": "Atakhan"}
 ROLE_ES = {"TOP": "Superior", "JUNGLE": "Jungla", "MIDDLE": "Central", "BOTTOM": "Tirador", "SUPPORT": "Apoyo"}
@@ -84,7 +84,7 @@ def compute(detail, tl, my_pid):
             "pid": pid, "champ": p["championId"], "team": p["teamId"], "role": roles.get(pid, ""), "spells": [p.get("spell1Id"), p.get("spell2Id")],
             "k": st.get("kills", 0), "d": st.get("deaths", 0), "a": st.get("assists", 0), "dmg": st.get("totalDamageDealtToChampions", 0),
             "taken": st.get("totalDamageTaken", 0), "gold": st.get("goldEarned", 0), "cs": st.get("totalMinionsKilled", 0) + st.get("neutralMinionsKilled", 0),
-            "jcs": st.get("neutralMinionsKilled", 0), "vision": st.get("visionScore", 0), "lvl": st.get("champLevel", 0),
+            "jcs": st.get("neutralMinionsKilled", 0), "aug": [st.get(f"playerAugment{i}", 0) for i in range(1, 7) if st.get(f"playerAugment{i}", 0)], "vision": st.get("visionScore", 0), "lvl": st.get("champLevel", 0),
             "items": [st.get(f"item{i}", 0) for i in range(7)], "win": bool(st.get("win")),
             "gold_s": [pf(f, pid, "totalGold") for f in frames], "xp_s": [pf(f, pid, "xp") for f in frames],
             "cs_s": [pf(f, pid, "minionsKilled") + pf(f, pid, "jungleMinionsKilled") for f in frames],
@@ -124,9 +124,14 @@ def mates(a):
     return [p for p in a["players"].values() if p["team"] == a["team"]]
 
 
+ARAM_QUEUES = {450, 2400}
+
+
 def default_opp(a):
     """Rival directo: el del equipo contrario con tu misma línea."""
     m = me(a)
+    if a.get("queue") in ARAM_QUEUES:   # sin líneas: el rival que más daño hizo
+        return max(enemies(a), key=lambda p: p["dmg"], default={}).get("pid")
     return next((p["pid"] for p in enemies(a) if p["role"] == m["role"]), None)
 
 

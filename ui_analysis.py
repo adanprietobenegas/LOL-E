@@ -53,6 +53,10 @@ class AnalysisView:
         self.hosts, self.folds, self.cur = {}, {}, None   # cuerpo y cabecera de cada sección plegable, y los datos con que se pintó
 
     # ------------------------------------------------------------ utilidades
+    def rl(self, a, role):
+        """Texto de la línea de un jugador; en ARAM no hay líneas."""
+        return "" if a.get("queue") in analysis.ARAM_QUEUES else ROLE_ES.get(role, "?")
+
     def avail(self):
         """Ancho útil para lienzos, en unidades lógicas: el ancho de la ventana está en píxeles reales y los lienzos se escalan después."""
         return max(300, min(self.gv.width - 90, 1100))
@@ -114,6 +118,9 @@ class AnalysisView:
         nb, ng = sum(1 for x in adv if x["tone"] == "bad"), sum(1 for x in adv if x["tone"] == "good")
         ui.fold(host, "Consejos de esta partida", lambda p: self.advice(p, a, opp, adv),
                 f"{nb} a mejorar · {ng} bien" if adv else "sin nada destacable", "an_advice", True)
+        if a.get("queue") in (2400,) and any(p.get("aug") for p in a["players"].values()):
+            import ui_mayhem
+            ui.fold(host, "Mejoras elegidas", lambda p: ui_mayhem.analysis_block(ui, p, a, gv.width), "las de los 10 jugadores", "an_aug", True)
         mine = sum(1 for e in ev if e["cat"] == "kd")
         self.cur = (a, opp, ev)
         self.folds["moments"] = ui.fold(host, "Momentos clave", lambda p: self.mount("moments", p, a, opp, ev), f"{len(ev)} eventos · {mine} tuyos", "an_moments", True)
@@ -172,7 +179,7 @@ class AnalysisView:
         t.pack(side="left")
         ui.lbl(t, "TÚ", 9, "dim", True).pack(anchor="w")
         ui.lbl(t, self.cname(m["champ"]), 17, "fg", True, True).pack(anchor="w")
-        ui.lbl(t, ROLE_ES.get(m["role"], "?"), 10, "dim").pack(anchor="w")
+        ui.lbl(t, self.rl(a, m["role"]) or "ARAM", 10, "dim").pack(anchor="w")
         mid = ui.frame(row)
         mid.pack(side="left", expand=True)
         ui.lbl(mid, "Victoria" if a["win"] else "Derrota", 20, "good" if a["win"] else "bad", True, True).pack()
@@ -192,10 +199,11 @@ class AnalysisView:
         t2.pack(side="left", padx=(0, 10))
         ui.lbl(t2, "COMPARADO CON", 9, "dim", True, anchor="e").pack(anchor="e")
         ui.lbl(t2, self.cname(o["champ"]), 17, "fg", True, True, anchor="e").pack(anchor="e")
-        ui.lbl(t2, ROLE_ES.get(o["role"], "?") + (" · rival directo" if opp == analysis.default_opp(a) else ""), 10, "dim", anchor="e").pack(anchor="e")
+        ui.lbl(t2, (self.rl(a, o["role"]) or "ARAM") + ((" · el que más daño hizo" if a.get("queue") in analysis.ARAM_QUEUES else " · rival directo") if opp == analysis.default_opp(a) else ""),
+               10, "dim", anchor="e").pack(anchor="e")
         ui.champ(right, o["champ"], 56, False, self.hx("bad")).pack(side="left")
         # el rival se puede cambiar: por si la línea no se deduce bien o quieres compararte con otro
-        labels = {f"{self.cname(p['champ'])} · {ROLE_ES.get(p['role'], '?')}": p["pid"] for p in sorted(analysis.enemies(a), key=lambda p: ORDER.index(p["role"]) if p["role"] in ORDER else 9)}
+        labels = {f"{self.cname(p['champ'])}" + (f" · {self.rl(a, p['role'])}" if self.rl(a, p['role']) else ""): p["pid"] for p in sorted(analysis.enemies(a), key=lambda p: ORDER.index(p["role"]) if p["role"] in ORDER else 9)}
         cur = next(k for k, v in labels.items() if v == opp)
         sel = ui.frame(host)
         sel.pack(fill="x", pady=(0, 6))
@@ -487,7 +495,7 @@ class AnalysisView:
                     cv.create_image(S(12), S(y + 5), image=ph, anchor="nw")
                     cv.image.append(ph)
                 cv.create_text(S(46), S(y + 11), text=ui.fit(self.cname(p["champ"]), fb, S(130)), fill=fg, font=fb, anchor="w")
-                cv.create_text(S(46), S(y + 25), text=ROLE_ES.get(p["role"], ""), fill=dim, font=f9, anchor="w")
+                cv.create_text(S(46), S(y + 25), text=self.rl(a, p["role"]) if self.rl(a, p["role"]) != "?" else "", fill=dim, font=f9, anchor="w")
                 cv.create_text(S(x_kda), S(y + row_h / 2), text=f"{p['k']} / {p['d']} / {p['a']}", fill=fg, font=f11, anchor="w")
                 cv.create_rectangle(S(x_dmg), S(y + 12), S(x_dmg + bw), S(y + 18), fill=self.hx("card"), outline="")
                 cv.create_rectangle(S(x_dmg), S(y + 12), S(x_dmg + max(2, bw * p[metric[0]] / tmax)), S(y + 18), fill=acc if p["team"] == a["team"] else self.hx("bad"), outline="")

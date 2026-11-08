@@ -14,7 +14,7 @@ import synergy
 import trends
 from sounds import SOUNDS, synth_wav, play_alert, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.14.1"
+APP_NAME, APP_VERSION = "LOL-E", "1.15.0"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -237,6 +237,15 @@ class LCU:
         try:
             with urllib.request.urlopen(req, context=CTX, timeout=timeout) as r:
                 return json.load(r)
+        except urllib.error.HTTPError:
+            return None
+
+    def get_bytes(self, path, timeout=10):
+        """Archivo binario del cliente (por ejemplo un icono de mejora)."""
+        req = urllib.request.Request(self.base + path, headers={"Authorization": self.auth})
+        try:
+            with urllib.request.urlopen(req, context=CTX, timeout=timeout) as r:
+                return r.read()
         except urllib.error.HTTPError:
             return None
 
@@ -927,6 +936,8 @@ def run(conf, champs, ui):
     force_opgg = False
     reload_pending = False
     rank_before, cur_gid, end_tries = None, None, 0
+    import augments   # (aquí dentro: augments importa este módulo)
+    mayhem_live, next_probe = False, 0.0
     last_flow = "_"
     next_hist, hist_tries = 0.0, 0
     party, my_puuid = set(), ""
@@ -1021,8 +1032,18 @@ def run(conf, champs, ui):
                     except Exception:
                         log_exc("Análisis al terminar la partida")
                 if in_game:
+                    try:  # ARAM: Mayhem: la API de partida en vivo puede decir qué mejoras llevas (se guarda lo que traiga para poder mejorarlo)
+                        if mayhem_live and time.time() >= next_probe:
+                            next_probe = time.time() + 30
+                            got = augments.live_probe(conf)
+                            if got:
+                                getattr(ui, "live_augments", lambda f: None)([v for _, v in got])
+                    except Exception:
+                        pass
                     try:  # id de la partida en curso: luego se espera a que el cliente la liste en el historial
-                        cur_gid = (lcu.get("/lol-gameflow/v1/session") or {}).get("gameData", {}).get("gameId") or cur_gid
+                        gfs = (lcu.get("/lol-gameflow/v1/session") or {}).get("gameData", {})
+                        cur_gid = gfs.get("gameId") or cur_gid
+                        mayhem_live = (gfs.get("queue") or {}).get("id") in augments.MAYHEM_QUEUES
                     except (urllib.error.URLError, ConnectionError, OSError):
                         raise
                     except Exception:

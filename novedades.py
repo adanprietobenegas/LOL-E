@@ -10,6 +10,12 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.15.0", "fecha": "8 de noviembre de 2026", "titulo": "ARAM: Mayhem y sus mejoras", "items": [
+        ("nuevo", "En ARAM: Mayhem, la pestaña Partida > Plan enseña las mejoras que más has elegido con tu campeón (con icono, nombre y categoría)."),
+        ("nuevo", "En el Análisis de una partida de Mayhem, «Mejoras elegidas» muestra las de los 10 jugadores. Sin líneas: el rival de comparación es el que más daño hizo."),
+        ("nuevo", "Durante la partida LOL-E consulta la API de partida en vivo de Riot para ver si trae tus mejoras y guarda lo que encuentre, para poder aprovecharlo."),
+        ("mejora", "Riot no permite que las aplicaciones muestren porcentajes de victoria de mejoras, así que LOL-E no los enseña ni inventa una «mejor mejora»."),
+    ]},
     {"v": "1.14.1", "fecha": "8 de noviembre de 2026", "titulo": "ARAM mostraba la build del campeón anterior", "items": [
         ("arreglo", "En ARAM (y Arena y otros modos sin línea) la pestaña Partida enseñaba el plan y la build de la partida anterior (por ejemplo Urgot teniendo Lee Sin). Ahora muestra tu campeón actual y avisa de que en ese modo no hay plan de línea."),
         ("arreglo", "Al empezar una selección nueva sin campeón marcado se descarta el plan de la partida anterior."),

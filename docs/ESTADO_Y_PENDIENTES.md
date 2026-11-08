@@ -144,3 +144,12 @@ CLASIFICATORIAS DE 5 (RANKED 5s, cola 710): INVESTIGACIÓN Y MEJORAS (8 nov 2026
   como "Clasificatorias de 5"), 7 (rivales primero, 6 hilos) y 8 (aviso de fines de semana y fecha).
   Parcial: 2 (2.ª tanda de bans) solo cambia el título y ya cuenta con los picks vistos; falta sugerir
   el campeón que completa la composición rival o contrarresta tus picks bloqueados.
+
+ARAM: MAYHEM (8 nov 2026) - pendiente
+  · Recomendar mejoras "en torno a" lo que llevas y con relanzamiento: hacen falta las
+    descripciones de las 170 mejoras de ARAM (el cliente no las da; CommunityDragon solo
+    tiene las de Arena) y saber si la API en vivo da las mejoras. Revisar
+    cache/live_probe.json después de una partida de Mayhem.
+  · Opción compatible con la norma de Riot: etiquetar a mano cada mejora (daño físico/mágico,
+    tanque, curación, control...) y puntuar el encaje con el campeón por sus etiquetas, sin
+    ninguna victoria.

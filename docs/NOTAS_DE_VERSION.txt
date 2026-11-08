@@ -7,6 +7,27 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.15.0   (8 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · ARAM: MAYHEM (cola 2400, modo KIWI): el cliente da en cada partida las mejoras
+    de cada jugador (playerAugment1..6). augments.py lee el catálogo del cliente
+    (/lol-game-data/assets/v1/cherry-augments.json: nombre, categoría e icono; NO
+    trae descripciones) y baja los iconos a cache/augicons.
+  · Plan: "mejoras que más has elegido con (campeón)" a partir del historial (campo
+    "au" nuevo en history.json). Solo cuentas de veces elegidas.
+  · Análisis: bloque "Mejoras elegidas" con las de los 10 jugadores; en ARAM no hay
+    líneas y el rival de comparación es el que más daño hizo (análisis versión 4).
+  · Partida en vivo: durante una partida de Mayhem se consulta cada 30 s
+    https://127.0.0.1:2999/liveclientdata/allgamedata y se guarda en
+    cache/live_probe.json qué claves trae y si hay campos con "augment". Si los hay,
+    se muestran en Plan. (Aún no sabemos si la API trae las mejoras: la
+    documentación de Riot no las lista. Hay que mirar live_probe.json tras una
+    partida de Mayhem.)
+  · NORMA DE RIOT (developer.riotgames.com/docs/lol): los productos no pueden mostrar
+    porcentajes de victoria de mejoras (augments). Por eso NO hay "mejores mejoras por
+    campeón" por estadísticas, ni se muestran victorias por mejora.
+
 VERSIÓN 1.14.1   (8 de noviembre de 2026)
 ---------------------------------------------------------------------
 
