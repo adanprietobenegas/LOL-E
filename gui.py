@@ -526,11 +526,11 @@ class GUI:
         self.draft = DraftCard(k, self.select_view)   # el orden de creación es el orden en pantalla
         mypick = MyPick(k, self.select_view)
         ideas = BanIdeas(k, self.select_view)
+        self.aram_build = AramBuild(k, self.select_view)   # la build de tu campeón va antes que la lista del banquillo
         self.recs = Recs(k, self.select_view)
-        self.aram_build = AramBuild(k, self.select_view)
         self.lobby = Lobby(k, self.select_view)
         self.enemies = Enemies(k, self.select_view)
-        self.select_secs = [self.turn, self.draft, mypick, ideas, self.recs, self.aram_build, self.lobby, self.enemies, BansRow(k, self.select_view)]
+        self.select_secs = [self.turn, self.draft, mypick, ideas, self.aram_build, self.recs, self.lobby, self.enemies, BansRow(k, self.select_view)]
         self.matchup_view = MatchupView(k, self.body, self)
         self.history_view = HistoryView(k, self.body, self)
         self.data_view = DataView(k, self.body, self)

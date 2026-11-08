@@ -159,6 +159,9 @@ def build_block(ui, host, cid, mode_id, width):
             ui.lbl(r, "HABILIDADES", 9, "dim", True, width=84, anchor="w").pack(side="left")
             ui.lbl(r, " > ".join(d["skills"][:9]), 11, "warn", True).pack(side="left")
         if mayhem and d.get("augments"):
+            if augments.ensure_catalog(ui.conf, lambda: ui.notify("game_data")):
+                ui.lbl(box, "Cargando las mejoras del cliente…", 10, "dim").pack(anchor="w", pady=(10, 0))
+                return
             ids = aram_builds.augment_ids(d["augments"], augments.catalog())
             known = {n for _, n in ids}
             ui.lbl(box, "MEJORAS QUE SUGIERE OP.GG PARA ESTE CAMPEÓN (sin porcentajes)", 10, "dim", True, anchor="w").pack(anchor="w", pady=(12, 4))

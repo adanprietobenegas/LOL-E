@@ -74,6 +74,22 @@ def fetch_icons(ids, conf, done=None):
     return t
 
 
+def ensure_catalog(conf, done=None):
+    """Si el catálogo guardado es de una versión vieja (sin el id interno), lo refresca desde el cliente en segundo plano. True si hay que esperar."""
+    if any(v.get("k") for v in catalog().values()):
+        return False
+
+    def go():
+        try:
+            catalog(core.LCU(*core.find_client(conf)))
+        except Exception:
+            pass
+        if done:
+            done()
+    threading.Thread(target=go, daemon=True).start()
+    return True
+
+
 def icon_path(aid):
     p = path(os.path.join("augicons", f"{aid}.png"))
     return p if os.path.exists(p) else None

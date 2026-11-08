@@ -7,6 +7,16 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.16.1   (8 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Segunda prueba real de ARAM: Mayhem. El catálogo de mejoras guardado (augments.json)
+    no tenía el id interno ("k") y ninguna mejora de op.gg casaba: ensure_catalog() lo
+    refresca desde el cliente en segundo plano.
+  · La build del campeón (AramBuild) se coloca antes que la lista del banquillo.
+  · Verificado en vivo: al llegar el análisis de la partida terminada, la pestaña
+    Partida pasó sola a Análisis y enseñó "Mejoras elegidas" de los 10 jugadores.
+
 VERSIÓN 1.16.0   (8 de noviembre de 2026)
 ---------------------------------------------------------------------
 
