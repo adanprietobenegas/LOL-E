@@ -111,12 +111,16 @@ class GameView:
         if opp and opp in ui.champs:
             sub += f"  ·  contra {core.name(opp, ui.champs)}"
         ui.lbl(txt, sub or "sin línea asignada", 10, "dim").pack(anchor="w")
+        if plan.get("kind") not in (None, "sr"):
+            ui.lbl(host, f"En {plan.get('group') or 'este modo'} no hay plan de línea ni build recomendada. Cuando termine la partida, la pestaña Análisis te la cuenta.",
+                   11, "dim", anchor="w", justify="left", wraplength=max(260, self.width - 110)).pack(anchor="w", pady=(6, 0))
         if lane:
             self.ui.lbl(self.host, "", 4, "dim").pack()
             build_panel(ui, host, cid, lane, opp or None, self.width - 110,
                         core.comp_stats(plan.get("enemies") or [], ui.champs, True)).pack(fill="x")
         self.matchup_block(plan, lane)
-        self.tips_block(plan, role)
+        if plan.get("kind") in (None, "sr"):
+            self.tips_block(plan, role)
 
     def section(self, title):
         self.ui.lbl(self.host, title, 10, "dim", True, anchor="w").pack(anchor="w", pady=(14, 4))

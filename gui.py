@@ -228,10 +228,20 @@ class GUI:
 
     def update_plan(self, r):
         """Guarda el campeón que has marcado o bloqueado y su contexto: la pestaña «Partida» lo enseña después."""
-        if not r.get("mine") or r["mode"]["kind"] != "sr" or r["mine"] not in self.champs:
+        kind = r["mode"]["kind"]
+        if not r.get("mine") or r["mine"] not in self.champs:
+            # selección nueva sin campeón marcado: el plan de la partida anterior ya no vale (antes se quedaba y salía su build)
+            if (self.ctx.get("plan") or {}).get("state") != "select":
+                self.ctx["plan"] = None
+                try:
+                    os.remove(os.path.join(CACHE, "last_plan.json"))
+                except OSError:
+                    pass
             return
-        plan = {"cid": r["mine"], "role": r.get("role") or "", "opp": r.get("lane_opp") or 0, "enemies": list(r["enemies"]),
-                "allies": list(r["allies"]), "locked": bool(r.get("mine_locked")), "state": "select"}
+        sr = kind == "sr"   # ARAM, Arena, etc.: solo el campeón, sin línea ni rivales (no hay build de línea)
+        plan = {"cid": r["mine"], "role": (r.get("role") or "") if sr else "", "opp": (r.get("lane_opp") or 0) if sr else 0,
+                "enemies": list(r["enemies"]) if sr else [], "allies": list(r["allies"]) if sr else [], "locked": bool(r.get("mine_locked")),
+                "state": "select", "kind": kind, "group": r["mode"].get("group", "")}
         if plan != {**(self.ctx.get("plan") or {}), "state": "select"}:
             self.ctx["plan"] = plan
             try:

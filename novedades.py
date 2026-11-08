@@ -10,6 +10,10 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.14.1", "fecha": "8 de noviembre de 2026", "titulo": "ARAM mostraba la build del campeón anterior", "items": [
+        ("arreglo", "En ARAM (y Arena y otros modos sin línea) la pestaña Partida enseñaba el plan y la build de la partida anterior (por ejemplo Urgot teniendo Lee Sin). Ahora muestra tu campeón actual y avisa de que en ese modo no hay plan de línea."),
+        ("arreglo", "Al empezar una selección nueva sin campeón marcado se descarta el plan de la partida anterior."),
+    ]},
     {"v": "1.14.0", "fecha": "8 de noviembre de 2026", "titulo": "Draft de 5 completo", "items": [
         ("nuevo", "Tarjeta «Draft de 5» en Clasificatorias de 5 y Clash: la tira de bans y picks (verde tu equipo, rojo el rival), de quién es el turno y cuántas acciones faltan para el tuyo."),
         ("nuevo", "Bans dirigidos: por cada rival que aún no ha elegido, los campeones que más puede jugar, con puntaje (maestría, veces jugado y % de victorias) a la vista."),

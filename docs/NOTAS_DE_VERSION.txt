@@ -7,6 +7,17 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.14.1   (8 de noviembre de 2026)
+---------------------------------------------------------------------
+
+CORRECCIONES
+  · ARAM / Arena / otros modos: update_plan solo guardaba el plan en la Grieta,
+    así que el de la partida anterior (cargado de last_plan.json) se quedaba y,
+    al empezar la partida, la pestaña Partida enseñaba su build (Urgot con
+    Lee Sin). Ahora el plan se guarda con tu campeón y el tipo de modo, sin
+    línea ni rivales; la pestaña explica que ahí no hay plan de línea.
+  · Una selección nueva sin campeón marcado borra el plan anterior.
+
 VERSIÓN 1.14.0   (8 de noviembre de 2026)
 ---------------------------------------------------------------------
 
