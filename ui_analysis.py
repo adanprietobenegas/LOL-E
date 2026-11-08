@@ -116,8 +116,11 @@ class AnalysisView:
         adv = analysis.advice(a, opp, ui.champs)
         ev = self.events(a)
         nb, ng = sum(1 for x in adv if x["tone"] == "bad"), sum(1 for x in adv if x["tone"] == "good")
-        ui.fold(host, "Consejos de esta partida", lambda p: self.advice(p, a, opp, adv),
-                f"{nb} a mejorar · {ng} bien" if adv else "sin nada destacable", "an_advice", True)
+        if a.get("queue") in analysis.ARAM_QUEUES:
+            ui.fold(host, "Lo más interesante de la partida", lambda p: self.advice(p, a, opp, adv), f"{len(adv)} datos", "an_advice", True)
+        else:
+            ui.fold(host, "Consejos de esta partida", lambda p: self.advice(p, a, opp, adv),
+                    f"{nb} a mejorar · {ng} bien" if adv else "sin nada destacable", "an_advice", True)
         if a.get("queue") in (2400,) and any(p.get("aug") for p in a["players"].values()):
             import ui_mayhem
             ui.fold(host, "Mejoras elegidas", lambda p: ui_mayhem.analysis_block(ui, p, a, gv.width), "las de los 10 jugadores", "an_aug", True)
@@ -209,7 +212,8 @@ class AnalysisView:
         sel.pack(fill="x", pady=(0, 6))
         ui.lbl(sel, "Comparar con", 10, "dim").pack(side="left", padx=(0, 8))
         ui.menu(sel, list(labels), cur, lambda v: self.set_opp(labels[v]), 240).pack(side="left")
-        ui.lbl(sel, "  La línea de cada jugador se deduce de su Smite y de dónde estuvo en los minutos 3 a 9.", 9, "dim").pack(side="left")
+        ui.lbl(sel, ("  En ARAM no hay líneas: por defecto, el rival que más daño hizo." if a.get("queue") in analysis.ARAM_QUEUES else
+                     "  La línea de cada jugador se deduce de su Smite y de dónde estuvo en los minutos 3 a 9."), 9, "dim").pack(side="left")
 
     def set_together(self, v):
         self.together = v == "Los 10 juntos"
@@ -243,6 +247,10 @@ class AnalysisView:
                  ("Súbditos", n(m["cs"]), (f"{sg(m['cs'] - o['cs'])} vs rival · {m['cs'] / max(1, a['dur'] / 60):.1f}/min".replace(".", ",") if o else ""), "fg"),
                  ("Daño", n(m["dmg"]), f"{m['dmg'] / tdmg * 100:.0f} % de tu equipo" if tdmg else "", "fg"),
                  ("Visión", str(m["vision"]), f"media de tu equipo {vis_avg:.0f}", "fg")]
+        if a.get("queue") in analysis.ARAM_QUEUES:   # en ARAM los súbditos y la visión no cuentan: daño recibido y curación sí
+            ttk = sum(p["taken"] for p in team) or 1
+            cards[2] = ("Daño recibido", n(m["taken"]), f"{m['taken'] / ttk * 100:.0f} % de tu equipo", "fg")
+            cards[4] = ("Curación", n(m["heal"]), f"mitigaste {n(m['mit'])}" if m["mit"] else "", "fg")
         row = ui.frame(host)
         row.pack(fill="x", pady=(0, 4))
         for i, (lb, val, sub, col) in enumerate(cards):

@@ -10,7 +10,7 @@ sencillos; cada consejo enseña el dato en que se basa.
 """
 import json, os, statistics
 
-VERSION = 4
+VERSION = 5
 SMITE = 11
 MONSTERS = {"DRAGON": "dragón", "BARON_NASHOR": "Barón", "RIFTHERALD": "Heraldo", "HORDE": "larvas del Vacío", "ATAKHAN": "Atakhan"}
 ROLE_ES = {"TOP": "Superior", "JUNGLE": "Jungla", "MIDDLE": "Central", "BOTTOM": "Tirador", "SUPPORT": "Apoyo"}
@@ -84,7 +84,12 @@ def compute(detail, tl, my_pid):
             "pid": pid, "champ": p["championId"], "team": p["teamId"], "role": roles.get(pid, ""), "spells": [p.get("spell1Id"), p.get("spell2Id")],
             "k": st.get("kills", 0), "d": st.get("deaths", 0), "a": st.get("assists", 0), "dmg": st.get("totalDamageDealtToChampions", 0),
             "taken": st.get("totalDamageTaken", 0), "gold": st.get("goldEarned", 0), "cs": st.get("totalMinionsKilled", 0) + st.get("neutralMinionsKilled", 0),
-            "jcs": st.get("neutralMinionsKilled", 0), "aug": [st.get(f"playerAugment{i}", 0) for i in range(1, 7) if st.get(f"playerAugment{i}", 0)], "vision": st.get("visionScore", 0), "lvl": st.get("champLevel", 0),
+            "jcs": st.get("neutralMinionsKilled", 0), "aug": [st.get(f"playerAugment{i}", 0) for i in range(1, 7) if st.get(f"playerAugment{i}", 0)],
+            "ks": st.get("largestKillingSpree", 0), "mk": st.get("largestMultiKill", 0), "pk": st.get("pentaKills", 0), "qk": st.get("quadraKills", 0),
+            "tk3": st.get("tripleKills", 0), "heal": st.get("totalHeal", 0), "cc": st.get("totalTimeCrowdControlDealt", 0), "mit": st.get("damageSelfMitigated", 0),
+            "dtur": st.get("damageDealtToTurrets", 0), "phys": st.get("physicalDamageDealtToChampions", 0), "magic": st.get("magicDamageDealtToChampions", 0),
+            "true": st.get("trueDamageDealtToChampions", 0), "taken_p": st.get("physicalDamageTaken", 0), "taken_m": st.get("magicalDamageTaken", 0),
+            "fb": bool(st.get("firstBloodKill")), "life": st.get("longestTimeSpentLiving", 0), "vision": st.get("visionScore", 0), "lvl": st.get("champLevel", 0),
             "items": [st.get(f"item{i}", 0) for i in range(7)], "win": bool(st.get("win")),
             "gold_s": [pf(f, pid, "totalGold") for f in frames], "xp_s": [pf(f, pid, "xp") for f in frames],
             "cs_s": [pf(f, pid, "minionsKilled") + pf(f, pid, "jungleMinionsKilled") for f in frames],
@@ -181,8 +186,109 @@ def _sg(x):
     return ("+" if x >= 0 else "−") + _n(x)
 
 
+def _rank(a, key, pid, team_only=False):
+    """Puesto (1 = el que más) de un jugador en una cifra, entre los 10 o entre su equipo."""
+    pool = [p for p in a["players"].values() if not team_only or p["team"] == player(a, pid)["team"]]
+    vals = sorted((p[key] for p in pool), reverse=True)
+    return vals.index(player(a, pid)[key]) + 1, len(pool)
+
+
+def advice_aram(a, champs=None):
+    """Datos interesantes de una partida de ARAM (sin líneas, sin objetivos de rankeds): daño, aguante, rachas, curación, control, torres y mejoras."""
+    m = me(a)
+    out = []
+
+    def add(tone, title, detail, data, w):
+        out.append({"tone": tone, "title": title, "detail": detail, "data": data, "w": w})
+    team = mates(a)
+    mins = max(1.0, a["dur"] / 60)
+    # --- daño
+    tdmg = sum(p["dmg"] for p in team) or 1
+    r, n_ = _rank(a, "dmg", m["pid"])
+    tot = (m["phys"] + m["magic"] + m["true"]) or 1
+    mix = f"físico {m['phys'] / tot * 100:.0f} %, mágico {m['magic'] / tot * 100:.0f} %" + (f", verdadero {m['true'] / tot * 100:.0f} %" if m["true"] / tot >= .05 else "")
+    data = f"{m['dmg']:,} de daño a campeones".replace(",", ".") + f" ({m['dmg'] / tdmg * 100:.0f} % de tu equipo, {r}.º de {n_}): {mix}."
+    if r == 1:
+        add("good", "El que más daño hizo de la partida", "Tu campeón brilló en las peleas.", data, 90)
+    elif r <= 3:
+        add("good", "Entre los que más daño hicieron", "", data, 70)
+    else:
+        add("info", "Tu daño", "Lo que haces en ARAM depende mucho de cuánto vives en la pelea y de a quién llegas.", data, 40)
+    # --- aguante
+    tt = sum(p["taken"] for p in team) or 1
+    rt, _n = _rank(a, "taken", m["pid"])
+    dat = f"Recibiste {m['taken']:,} de daño ({m['taken'] / tt * 100:.0f} % de tu equipo, {rt}.º de {n_})".replace(",", ".") + (f" y mitigaste {m['mit']:,} con escudos y resistencias".replace(",", ".") if m["mit"] else "") + "."
+    if rt == 1 and m["taken"] / tt >= .25:
+        add("info", "Fuiste el que más golpes recibió", "Si además sobreviviste, abriste las peleas para tu equipo.", dat, 66)
+    elif rt >= 8:
+        add("info", "Casi no recibiste daño", "O jugaste desde atrás con seguridad o llegaste tarde a las peleas.", dat, 30)
+    # --- KDA y muertes
+    kda = (m["k"] + m["a"]) / max(1, m["d"])
+    rk, nk = _rank(a, "k", m["pid"], True)
+    kdas = sorted(((p["k"] + p["a"]) / max(1, p["d"]), p["pid"]) for p in team)
+    best_kda = kdas[-1][1] == m["pid"]
+    worst_d = max(team, key=lambda p: p["d"])
+    if best_kda:
+        add("good", "Mejor KDA de tu equipo", "", f"KDA {kda:.2f} ({m['k']} / {m['d']} / {m['a']}).".replace(".", ",", 1), 62)
+    elif worst_d["pid"] == m["pid"] and m["d"] >= 10:
+        add("info", "El que más murió de tu equipo", "En ARAM morir es normal, pero hay que volver a la pelea con objetos.", f"{m['d']} muertes en {mins:.0f} minutos.", 45)
+    else:
+        add("info", "Tu KDA", "", f"KDA {kda:.2f} ({m['k']} / {m['d']} / {m['a']}).".replace(".", ",", 1), 25)
+    # --- rachas y multikills
+    if m["pk"]:
+        add("good", f"{'¡PENTAKILL!' if m['pk'] == 1 else str(m['pk']) + ' pentakills'}", "Cinco rivales abatidos seguidos.", "", 100)
+    elif m["qk"]:
+        add("good", "Cuádruple muerte", "Casi un pentakill.", f"{m['qk']} vez/veces.", 80)
+    elif m["tk3"]:
+        add("good", "Triple muerte", "", f"{m['tk3']} vez/veces.", 60)
+    if m["ks"] >= 4:
+        add("good", f"Racha de {m['ks']} muertes sin morir", "", "", 58)
+    # --- participación
+    kteam = sum(1 for k in a["kills"] if player(a, k["killer"]) and player(a, k["killer"])["team"] == a["team"])
+    if kteam:
+        kp = (m["k"] + m["a"]) / kteam
+        add("good" if kp >= .65 else "info", "Participación en las peleas",
+            "Estuviste en casi todas las muertes de tu equipo." if kp >= .75 else "", f"{kp * 100:.0f} % de las muertes de tu equipo ({m['k'] + m['a']} de {kteam}).", 50 if kp >= .65 else 28)
+    # --- curación y control
+    rh, _x = _rank(a, "heal", m["pid"])
+    if m["heal"] >= 6000 or rh == 1 and m["heal"] >= 3000:
+        add("good" if rh <= 2 else "info", "Curación", "", f"Te curaste {m['heal']:,} de vida ({rh}.º de {n_}).".replace(",", "."), 48)
+    rc, _x = _rank(a, "cc", m["pid"])
+    if m["cc"] >= 60:
+        add("good" if rc <= 2 else "info", "Control de masas", "", f"{m['cc'] // 60} min {m['cc'] % 60} s de control sobre rivales ({rc}.º de {n_}).", 46 if rc <= 2 else 26)
+    # --- torres y marcha de la partida
+    ours = [t for t in a["towers"] if t["owner"] != a["team"]]
+    theirs = [t for t in a["towers"] if t["owner"] == a["team"]]
+    if a["towers"]:
+        add("good" if len(ours) > len(theirs) else "info", "Estructuras", "", f"Tu equipo derribó {len(ours)} y el rival {len(theirs)}.", 34)
+    tg = team_gold_diff(a)
+    if tg and a["minutes"]:
+        ib, iw = tg.index(max(tg)), tg.index(min(tg))
+        best, worst, end = max(tg), min(tg), tg[-1]
+        if best >= 2500 and end < best - 2000:
+            add("info", "Se escapó una ventaja", "", f"Ibais +{best:,} de oro a minuto {a['minutes'][ib]:.0f} y acabasteis en {_sg(end)}.".replace(",", "."), 64)
+        elif worst <= -2500 and end > worst + 2000:
+            add("good", "Remontada", "Aguantasteis y la partida se dio la vuelta.", f"Ibais {_sg(worst)} de oro a minuto {a['minutes'][iw]:.0f} y acabasteis en {_sg(end)}.", 74)
+    # --- primera sangre
+    if m["fb"]:
+        add("good", "Primera sangre", "Fuiste el primero en abatir a un rival.", "", 44)
+    # --- mejoras (Mayhem)
+    if m.get("aug"):
+        try:
+            import augments
+            names = ", ".join(f"{augments.info(x)['n']} ({augments.info(x)['r'].lower() or '—'})" for x in m["aug"])
+        except Exception:
+            names = ""
+        if names:
+            add("info", "Tus mejoras", "Las que elegiste en esta partida.", names, 56)
+    out.sort(key=lambda x: -x["w"])
+    return out
+
+
 def advice(a, opp, champs=None):
     """Consejos [{tone, title, detail, data, w}] ordenados por importancia. tone: good | bad | info."""
+    if a.get("queue") in ARAM_QUEUES:
+        return advice_aram(a, champs)
     name = lambda pid: (champs or {}).get((player(a, pid) or {}).get("champ"), {}).get("name", "tu rival")
     m, role = me(a), me(a)["role"]
     o = player(a, opp) if opp else None

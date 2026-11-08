@@ -7,6 +7,16 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.16.2   (8 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Análisis de ARAM (colas 450 y 2400) propio: analysis.advice_aram() en lugar de los
+    consejos de la Grieta. Datos: daño (puesto de 10, % del equipo, mezcla física /
+    mágica / verdadera), daño recibido y mitigado, KDA, rachas y multikills, participación,
+    curación, tiempo de control, estructuras, ventajas perdidas o remontadas, primera
+    sangre y mejoras. Análisis versión 5 (guarda ks, mk, pk, qk, tk3, heal, cc, mit...).
+  · Tarjetas de resumen de ARAM: daño recibido y curación en vez de súbditos y visión.
+
 VERSIÓN 1.16.1   (8 de noviembre de 2026)
 ---------------------------------------------------------------------
 

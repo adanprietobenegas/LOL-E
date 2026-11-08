@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.16.2", "fecha": "8 de noviembre de 2026", "titulo": "Análisis de ARAM pensado para ARAM", "items": [
+        ("arreglo", "El análisis de una partida de ARAM / Mayhem ya no habla de muertes tempranas en línea, farmeo ni objetivos de rankeds."),
+        ("nuevo", "«Lo más interesante de la partida»: tu puesto en daño, cuánto aguantaste, mejor KDA, rachas y multikills (pentakill, cuádruple, triple), curación, tiempo de control, estructuras, remontadas, primera sangre y tus mejoras."),
+        ("mejora", "Las tarjetas de resumen cambian súbditos y visión por daño recibido y curación."),
+    ]},
     {"v": "1.16.1", "fecha": "8 de noviembre de 2026", "titulo": "Ajustes tras jugar otro ARAM", "items": [
         ("arreglo", "Las mejoras sugeridas por op.gg salían todas como texto sin icono ni categoría: el catálogo guardado era de una versión anterior y ahora se refresca solo."),
         ("mejora", "En la selección de ARAM, la build de tu campeón sale antes que la lista del banquillo."),
