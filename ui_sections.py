@@ -1505,7 +1505,7 @@ class Lobby(Section):
         else:
             for a in r["ally_cells"]:
                 p = pl.get(a["puuid"]) if a["puuid"] else None
-                self.row(c, a, p, a["puuid"] in party, len(party), bool(pl) or not a["puuid"], r["mates"].get(a["puuid"]))
+                self.row(c, a, p, a["puuid"] in party, len(party), bool(pl) or not a["puuid"], r["mates"].get(a["puuid"]), qid=r["mode"]["id"])
             if r["ally_cells"] and not any(a["puuid"] for a in r["ally_cells"]):
                 ui.lbl(c, "En esta cola Riot oculta los nombres hasta que empieza la partida, así que no hay rango ni historial de tus aliados. "
                           "Se muestran su línea y su campeón.", 10, "dim", anchor="w", justify="left", wraplength=max(260, ctx["width"] - 110)).pack(anchor="w", pady=(2, 6))
@@ -1516,7 +1516,7 @@ class Lobby(Section):
             ui.lbl(c, f"Daño físico {st['ad']} · mágico {st['ap']}   ·   Tanques {st['tanks']}   ·   Control {ctl(st['cc'])}", 10,
                    "dim", anchor="w").pack(anchor="w")
 
-    def row(self, parent, a, p, in_party, party_n, loaded, mates=None, ring="#3ddc84"):
+    def row(self, parent, a, p, in_party, party_n, loaded, mates=None, ring="#3ddc84", qid=0):
         ui = self.ui
         box = ctk.CTkFrame(parent, fg_color=PAL["card2"], corner_radius=12)
         box.pack(fill="x", pady=4)
@@ -1537,9 +1537,11 @@ class Lobby(Section):
             g, w = mates
             ui.chip(head, f"Juntos: {partidas(g)} · {w}V {g - w}D", "good" if w * 2 >= g else "bad").pack(side="left", padx=(6, 0))
         if p and not p.get("error"):
-            rk = p.get("solo") or p.get("flex")
+            rk = (p.get("prem") if qid == 710 else None) or p.get("solo") or p.get("flex")   # en las clasificatorias de 5 cuenta su rango de esa cola
             if rk:
                 ui.lbl(head, f"{rk['tier']} {rk['div']}".strip(), 12, TIER_COLORS.get(rk["key"], "fg"), True, True).pack(side="right")
+            elif len(p.get("recent", [])) < 4:
+                ui.chip(head, "Sin rango ni historial", "warn").pack(side="right")
             line = ui.frame(mid)
             line.pack(fill="x", pady=(5, 0))
             rec = p["recent"]
@@ -1613,7 +1615,7 @@ class Enemies(Section):
             ui.lbl(c, "JUGADORES RIVALES", 10, "dim", True).pack(anchor="w", pady=(12, 2))
             for e in cells:
                 Lobby.row(self, c, {"champ": e["champ"], "role": "", "puuid": e["puuid"]}, pl.get(e["puuid"]), False, 0,
-                          bool(pl), None, "#ff5a5f")
+                          bool(pl), None, "#ff5a5f", r["mode"]["id"])
 
 
 class BansRow(Section):

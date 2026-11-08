@@ -28,6 +28,7 @@ def load_profile(lcu):
     return {"name": me.get("gameName", ""), "tag": me.get("tagLine", ""), "level": me.get("summonerLevel", 0),
             "icon": me.get("profileIconId", 0), "puuid": me.get("puuid", ""),
             "solo": rank_info(qm.get("RANKED_SOLO_5x5")), "flex": rank_info(qm.get("RANKED_FLEX_SR")),
+            "prem": rank_info(qm.get("RANKED_PREMADE_5x5")),
             "extra": load_extra(lcu)}
 
 
@@ -100,6 +101,7 @@ def fetch_player(lcu, puuid):
     out.update(name=s.get("gameName") or s.get("displayName") or "", level=s.get("summonerLevel", 0), icon=s.get("profileIconId", 0))
     qm = (lcu.get(f"/lol-ranked/v1/ranked-stats/{puuid}") or {}).get("queueMap", {})
     out["solo"], out["flex"] = rank_info(qm.get("RANKED_SOLO_5x5")), rank_info(qm.get("RANKED_FLEX_SR"))
+    out["prem"] = rank_info(qm.get("RANKED_PREMADE_5x5"))   # clasificatorias de 5: su propia escalera
     try:
         games = lcu.get(f"/lol-match-history/v1/products/lol/{puuid}/matches?begIndex=0&endIndex=20", timeout=20)["games"]["games"]
         rec = [{"c": g["participants"][0]["championId"], "w": bool(g["participants"][0]["stats"]["win"]), "q": g.get("queueId"),

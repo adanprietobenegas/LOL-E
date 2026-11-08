@@ -14,7 +14,7 @@ import synergy
 import trends
 from sounds import SOUNDS, synth_wav, play_alert, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.13.1"
+APP_NAME, APP_VERSION = "LOL-E", "1.13.2"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -992,7 +992,7 @@ def run(conf, champs, ui):
                 if reload_pending and not in_game:
                     reload_pending = False
                     if rank_before is None:
-                        rank_before = {k: (P.get("profile") or {}).get(k) for k in ("solo", "flex")}
+                        rank_before = {k: (P.get("profile") or {}).get(k) for k in ("solo", "flex", "prem")}
                     P = load_player_data(lcu, season)  # actualiza con la partida que acaba de pasar
                     ui.idle(player_info(P), "Partida terminada. Historial actualizado. Esperando la siguiente…")
                     getattr(ui, "history_updated", lambda: None)()
@@ -1004,7 +1004,7 @@ def run(conf, champs, ui):
                             reload_pending = True
                             time.sleep(8)
                             continue
-                        qkey = {420: "solo", 440: "flex"}.get(g.get("queueId"))
+                        qkey = {420: "solo", 440: "flex", 710: "prem"}.get(g.get("queueId"))
                         if qkey and rank_before and rank_before.get(qkey):
                             dl = analysis.lp_delta(rank_before[qkey], (P.get("profile") or {}).get(qkey))
                             if dl and dl["d"] == 0 and end_tries < 8:  # el rango tarda un poco más en actualizarse

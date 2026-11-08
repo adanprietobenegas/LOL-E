@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.13.2", "fecha": "8 de noviembre de 2026", "titulo": "Clasificatorias de 5: tu rango y el de los rivales", "items": [
+        ("nuevo", "En Clasificatorias de 5 se usa el rango de esa cola (tiene su propia escalera), tanto el tuyo como el de tus aliados y rivales."),
+        ("nuevo", "Los PL de cada partida de Clasificatorias de 5 también se calculan."),
+        ("mejora", "Un jugador sin rango y con casi ningún historial reciente se marca como «Sin rango ni historial» (cuentas nuevas o poco fiables)."),
+    ]},
     {"v": "1.13.1", "fecha": "8 de noviembre de 2026", "titulo": "Clasificatorias de 5 (grupos de 5)", "items": [
         ("arreglo", "La cola «Clasificatorias de 5» se trataba como un modo desconocido y no daba recomendaciones, roles ni bans. Ahora funciona como la Grieta."),
         ("nuevo", "En esa cola el cliente enseña los nombres del equipo rival: LOL-E muestra de cada rival su rango, su forma reciente, los campeones que más juega y su maestría con el que elige."),

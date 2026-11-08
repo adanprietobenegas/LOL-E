@@ -106,3 +106,35 @@ REVISIÓN DEL DETALLE DESPLEGADO DEL HISTORIAL (ui_history.py, método detail, ~
     (diferencia de oro a los 15 min, muertes antes del 15, objetivos).
   · Hay que decidir qué ve cada modo (Arena, ARAM, Normales/Clasificatoria).
   Estado: solo revisado, sin cambios hechos.
+
+CLASIFICATORIAS DE 5 (RANKED 5s, cola 710): INVESTIGACIÓN Y MEJORAS (8 nov 2026)
+  Fuentes: soporte de Riot (support.riotgames.com/en-us/league-of-legends/events/ranked-5s),
+  dev "the return of ranked 5s" (leagueoflegends.com, 27-05-2026), notas del parche 26.13,
+  LoLTheory (blog de terceros), mensajes en X sobre el "Enemy Scouting". No se encontraron
+  hilos de Reddit con datos fiables; el resto es comunidad/terceros.
+  Lo que es: cola solo para grupos completos de 5, sin límite de rango, solo viernes a domingo
+  (4 PM-4 AM hora del servidor según soporte). Experimento 1: 26-jun a 6-sep-2026.
+  Experimento 2: 11-sep-2026 a 7-ene-2027 (después, sin anunciar). Escalera, MMR y LP propios,
+  5 partidas de colocación, sin decay. Tournament Draft: 3 bans y 3 picks, luego 2 bans y 2 picks.
+  Comprobado en una selección real (cliente): bans A0,E5,A1,E6,A2,E7; picks A0,E5,E6,A1,A2,E7;
+  bans E8,A3,E9,A4; picks E8,A3,A4,E9 (A = tu equipo, E = rival). Tu equipo trae la línea
+  asignada; los rivales NO traen línea. Los nombres de los rivales sí son visibles.
+  El cliente NO expone el "scouting" de Riot (probado: no hay endpoint); el desplegable de Riot
+  (top campeones, maestría y rendimiento reciente de cada rival) no se puede copiar de ahí,
+  pero LOL-E ya calcula casi lo mismo con los datos del cliente.
+  Hecho: la cola se trata como la Grieta; rivales con rango, forma, campeones y maestría;
+  bans desde las acciones; rango propio de la cola; PL por partida; aviso "Sin rango ni historial".
+  Mejoras pendientes, por orden de valor:
+  1. BANEOS DIRIGIDOS: sugerir bans por jugador rival: su campeón más jugado, su mayor maestría y
+     su % de victoria reciente con él. Más importante en la 2.ª fase de bans (se ven 6 picks).
+  2. Bans de la 2.ª fase: sugerir el campeón que completa la composición rival o que contrarresta
+     tus picks ya bloqueados, y proteger tu pick pendiente.
+  3. Deducir la línea de cada rival (rol habitual del jugador + posiciones del campeón) y de ahí
+     tu rival directo (lane_opp), que hoy queda vacío en esta cola.
+  4. Mostrar el orden del draft (de quién es el turno y cuántos bans/picks quedan) y el
+     cronómetro por fase.
+  5. Resumen de equipo: media de rango propia y rival, aviso de grandes diferencias (Riot dice que
+     equilibra las disparidades) y de cuentas nuevas (smurf).
+  6. Quinto tile de rango "5v5" en el resumen de Asesor y filtro propio en el Historial.
+  7. Los 9 perfiles tardan ~15 s en cargar: cargar primero a los rivales o subir los hilos.
+  8. Mostrar en Ajustes/Datos que la cola solo está disponible fines de semana y hasta el 7-ene-2027.

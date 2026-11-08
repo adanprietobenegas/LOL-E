@@ -7,6 +7,15 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.13.2   (8 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · CLASIFICATORIAS DE 5 tiene su propia escalera (RANKED_PREMADE_5x5):
+    LOL-E la lee para ti y para cada jugador del equipo y de los rivales.
+  · Los PL por partida también funcionan en esa cola.
+  · Marca "Sin rango ni historial" a quien no tiene rango y casi ninguna
+    partida reciente.
+
 VERSIÓN 1.13.1   (8 de noviembre de 2026)
 ---------------------------------------------------------------------
 
