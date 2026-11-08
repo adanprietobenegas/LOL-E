@@ -7,6 +7,17 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.17.0   (8 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · ui_aram.py: análisis propio de ARAM (colas 450 y 2400). Sin rival de línea ni
+    "Tú frente a (rival)": cabecera con tu campeón en grande, premios de la partida
+    (máximo de daño, aguante, KDA, curación, control y asesinatos entre los 10),
+    tarjetas de resumen, "Lo más interesante", clasificación de los 10 jugadores con
+    selector de cifra (10 opciones) y de equipo (Los 10 / Mi equipo / Rival), mejoras
+    elegidas (Mayhem), momentos clave y ventaja de oro de los equipos.
+  · La clasificación se repinta sola al cambiar el filtro (sin reconstruir la pestaña).
+
 VERSIÓN 1.16.2   (8 de noviembre de 2026)
 ---------------------------------------------------------------------
 

@@ -10,6 +10,12 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.17.0", "fecha": "8 de noviembre de 2026", "titulo": "Análisis de ARAM con los 10 jugadores", "items": [
+        ("nuevo", "El análisis de ARAM y Mayhem ya no te compara con un «rival de línea»: tu campeón sale en grande y se ven los 10 jugadores."),
+        ("nuevo", "Premios de la partida: más daño, más aguante, mejor KDA, más curación, más control y más asesinatos."),
+        ("nuevo", "Clasificación de los 10 con filtros: ordena por daño, KDA, asesinatos, muertes, asistencias, daño recibido, mitigado, curación, control u oro, y mira los 10, tu equipo o el rival. Tu fila va resaltada y más grande."),
+        ("mejora", "En ARAM se quitan la comparación 1 contra 1 y los gráficos de línea; queda la ventaja de oro de los equipos."),
+    ]},
     {"v": "1.16.2", "fecha": "8 de noviembre de 2026", "titulo": "Análisis de ARAM pensado para ARAM", "items": [
         ("arreglo", "El análisis de una partida de ARAM / Mayhem ya no habla de muertes tempranas en línea, farmeo ni objetivos de rankeds."),
         ("nuevo", "«Lo más interesante de la partida»: tu puesto en daño, cuánto aguantaste, mejor KDA, rachas y multikills (pentakill, cuádruple, triple), curación, tiempo de control, estructuras, remontadas, primera sangre y tus mejoras."),

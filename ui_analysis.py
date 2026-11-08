@@ -106,6 +106,10 @@ class AnalysisView:
 
     def body(self, host, a):
         ui, gv = self.ui, self.gv
+        if a.get("queue") in analysis.ARAM_QUEUES:   # ARAM: sin rival de línea, todos los jugadores (ui_aram.py)
+            import ui_aram
+            ui_aram.body(self, host, a)
+            return
         opp = gv.opp.get(gv.gid) or analysis.default_opp(a)
         if opp is None or analysis.player(a, opp) is None:
             opp = (analysis.enemies(a) or [{"pid": None}])[0]["pid"]
@@ -265,6 +269,8 @@ class AnalysisView:
         ui, gv = self.ui, self.gv
         o = analysis.player(a, opp) if opp is not None else None
         names = [c for c in CHARTS if opp is not None or c in ("Oro del equipo", "Ruta en el mapa")]
+        if a.get("queue") in analysis.ARAM_QUEUES:
+            names = ["Oro del equipo"]   # sin rival de línea: solo la ventaja de oro de los equipos
         if gv.chart not in names:
             gv.chart = names[0]
         self.section(host, "EVOLUCIÓN DE LA PARTIDA")
