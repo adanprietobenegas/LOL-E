@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.18.0", "fecha": "9 de noviembre de 2026", "titulo": "Guía de juego y de tu duelo de línea", "items": [
+        ("nuevo", "Nueva «Guía de juego» con tu campeón elegido, en la selección de campeón y en Partida > Plan: sus habilidades con enfriamientos, costes y alcances, su pasiva, los consejos que Riot escribe para jugar con él y sus picos de poder (niveles de la definitiva, habilidad principal y coste de los primeros objetos)."),
+        ("nuevo", "«Tu duelo contra X»: compara a los dos campeones y te dice quién tiene alcance y velocidad, quién llega mejor al nivel 1, quién escala mejor, cuánto tarda en volver cada habilidad del rival (tu hueco para entrar), el maná que aguanta cada uno y su tipo de daño, más los consejos de Riot contra ese campeón y sus habilidades."),
+        ("mejora", "Todo sale de datos oficiales de Riot y de comparar a ambos campeones; no es una guía escrita a mano de cada pareja, y la app lo indica."),
+    ]},
     {"v": "1.17.1", "fecha": "9 de noviembre de 2026", "titulo": "Botas que faltaban en algunas builds", "items": [
         ("arreglo", "En algunos campeones (sobre todo de jungla, como Lee Sin) la build recomendada no mostraba botas porque Lolalytics no las incluye entre sus objetos. Ahora se muestran las más usadas de op.gg, indicando de dónde salen."),
     ]},

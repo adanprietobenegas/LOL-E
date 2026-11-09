@@ -7,6 +7,24 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.18.0   (9 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · guide.py (nuevo): baja de Data Dragon (es_ES) el JSON de cada campeón (se guarda por
+    parche en cache/guide): habilidades (enfriamiento, coste, alcance), pasiva, consejos
+    allytips/enemytips y estadísticas base. duel() compara a dos campeones: alcance,
+    velocidad, nivel 1, escalado a nivel 16 (fórmula oficial de crecimiento), enfriamientos
+    del rival, maná del nivel 1, valoraciones de Meraki y tipo de daño. spikes(): niveles
+    de la definitiva, habilidad principal (orden de Lolalytics) y oro acumulado de los
+    primeros objetos de la build.
+  · ui_guide.py (nuevo): bloque «Guía de juego» con dos pliegues («Cómo jugar con X» y
+    «Tu duelo contra Y»). Se monta en MyPick (selección de campeón) y en Partida > Plan.
+  · Límite honesto: Lolalytics solo sirve la tasa de victorias del duelo; no existe una
+    fuente pública de trucos escritos por pareja de campeones, así que el duelo es un
+    cálculo y así se dice en pantalla. Sin minutos exactos de picos de objetos.
+  · Pendiente: tabla de «cómo se juega» con vídeos/guías de la comunidad no es posible
+    sin API; posible mejora futura: etiquetar a mano campeones con mecánicas clave.
+
 VERSIÓN 1.17.1   (9 de noviembre de 2026)
 ---------------------------------------------------------------------
 

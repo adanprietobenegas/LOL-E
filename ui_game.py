@@ -127,6 +127,9 @@ class GameView:
             build_panel(ui, host, cid, lane, opp or None, self.width - 110,
                         core.comp_stats(plan.get("enemies") or [], ui.champs, True)).pack(fill="x")
         self.matchup_block(plan, lane)
+        if lane and plan.get("kind") in (None, "sr"):
+            import ui_guide
+            ui_guide.guide_block(ui, host, cid, opp or None, lane, self.width)
         if plan.get("kind") in (None, "sr"):
             self.tips_block(plan, role)
 
