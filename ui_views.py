@@ -24,7 +24,8 @@ def open_url(url):
 
 def small_btn(ui, parent, text, cmd, width=10):
     b = ctk.CTkButton(parent, text=text, height=26, width=width, corner_radius=8, font=ui.font(10), fg_color=PAL["card2"],
-                      text_color=PAL["fg"], hover_color=PAL["card2"], command=cmd)
+                      text_color=PAL["fg"], hover_color=PAL["card2"], command=cmd,
+                      border_width=1, border_color=PAL["edge"])
     ui.smooth_btn(b, PAL["card2"], PAL["border"])
     return b
 
@@ -129,8 +130,8 @@ class MatchupView:
         self.banner.pack(fill="x", pady=(0, 8))
         self.rival_slot = ui.frame(c)
         self.rival_slot.pack(fill="x")
-        self.entry = ctk.CTkEntry(c, placeholder_text="Buscar campeón por nombre…", height=34, font=ui.font(12), fg_color=PAL["card2"],
-                                  border_color=PAL["border"], text_color=PAL["fg"])
+        self.entry = ctk.CTkEntry(c, placeholder_text="Buscar campeón por nombre…", height=34, font=ui.font(12), fg_color=PAL["well"],
+                                  border_color=PAL["edge"], text_color=PAL["fg"])
         if self.query:
             self.entry.insert(0, self.query)
         self.entry.pack(fill="x")

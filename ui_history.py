@@ -125,8 +125,8 @@ class HistoryView:
         cur = next((self.range_names[i] for i, r in enumerate(RANGES) if r[1] == self.limit), todas)
         ui.lbl(c, "Cuántas partidas mirar" if not narrow else "Últimas partidas a mostrar", 10, "dim", anchor="w").pack(anchor="w", pady=(0, 2))
         ui.seg(c, self.range_names, cur, self.set_range, height=28).pack(fill="x", pady=(0, 8))
-        self.entry = ctk.CTkEntry(c, placeholder_text="Buscar por campeón…", height=32, font=ui.font(12), fg_color=PAL["card2"],
-                                  border_color=PAL["border"], text_color=PAL["fg"])
+        self.entry = ctk.CTkEntry(c, placeholder_text="Buscar por campeón…", height=32, font=ui.font(12), fg_color=PAL["well"],
+                                  border_color=PAL["edge"], text_color=PAL["fg"])
         if self.q:
             self.entry.insert(0, self.q)
         self.entry.pack(fill="x", pady=(0, 8))
@@ -424,7 +424,8 @@ class HistoryView:
         W, H = self.row_width(), 60
         cv = tk.Canvas(st["head"], width=S(W), height=S(H), bg=ui.bg(st["head"]), highlightthickness=0, bd=0, cursor="hand2")
         cv.pack(anchor="w")
-        ui.rrect(cv, 0, 0, S(W) - 1, S(H) - 1, S(10), fill=ui.hexm(PAL["card2"]), outline="")
+        ui.rrect(cv, 0, 0, S(W) - 1, S(H) - 1, S(10), fill=ui.hexm(PAL["border"]), outline=ui.hexm(PAL["edge"]))  # la cabecera del día pesa más que las partidas
+        cv.create_rectangle(0, S(9), S(4), S(H - 9), fill=ui.hexm(ui.acc), outline="")
         n = len(items)
         wins = sum(1 for g in items if g["w"] and not g.get("rm"))
         losses = sum(1 for g in items if not g["w"] and not g.get("rm"))

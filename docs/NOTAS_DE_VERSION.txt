@@ -19,6 +19,16 @@ VERSIÓN 1.18.0   (9 de noviembre de 2026)
     primeros objetos de la build.
   · ui_guide.py (nuevo): bloque «Guía de juego» con dos pliegues («Cómo jugar con X» y
     «Tu duelo contra Y»). Se monta en MyPick (selección de campeón) y en Partida > Plan.
+  · Repaso estético (contraste): PAL con pasos de luz más anchos (bg #04080d < well <
+    card #111b28 < card2 #1a2a3d < edge) y colores nuevos «well», «shadow», «edge».
+    ui.card dibuja una «sombra» (marco oscuro que asoma 3 px) y borde claro; los títulos de
+    tarjeta llevan barra de acento y línea. Segmentos y menús sobre «pozo»; entradas con
+    fondo hundido y borde «edge»; small_btn con borde; chips sobre pozo; dim más claro
+    (#a6b3c3); franja de estado en TurnCard; cabecera de día del historial más pesada;
+    cabeceras del panel de ajustes en el color de acento; scrollbar #324862.
+    Revisión externa hecha con un subagente de diseño que miró 7 capturas: se aplicaron
+    sus 8 mejoras rápidas y las capas/sombras; quedan sin hacer los degradados nuevos del
+    héroe y el pie con franja propia. Probado en oscuro y claro, sin errores en los tests.
   · itemset.py (nuevo) + export_row en ui_build.py: envío de la build al cliente como
     conjunto de objetos. Endpoint del LCU (existe en el cliente actual, comprobado con
     /help): PUT /lol-item-sets/v1/item-sets/{summonerId}/sets, que SUSTITUYE toda la lista;

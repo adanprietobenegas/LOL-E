@@ -12,10 +12,12 @@ from lol_advisor import CACHE, name, why_kind
 
 # colores como (modo claro, modo oscuro): CustomTkinter elige solo según el tema activo
 PAL = {
-    "bg": ("#eef1f5", "#070d14"), "card": ("#ffffff", "#0e161f"), "card2": ("#e9edf3", "#141e2a"),
-    "border": ("#d5dce6", "#1f2c3b"), "fg": ("#142033", "#ece6d6"), "dim": ("#5b6b80", "#8896a8"),
+    # Capas de menor a mayor luz (oscuro): fondo < pozo < tarjeta < panel interior < borde. Pasos más anchos que antes para que cada nivel se distinga.
+    "bg": ("#e1e7ef", "#04080d"), "card": ("#ffffff", "#111b28"), "card2": ("#edf1f7", "#1a2a3d"),
+    "well": ("#e3e9f1", "#0a121b"), "shadow": ("#bcc7d6", "#010305"), "edge": ("#d3dbe7", "#324862"),
+    "border": ("#c3cedb", "#2e425a"), "fg": ("#142033", "#f0eadb"), "dim": ("#4a5a6e", "#a6b3c3"),
     "good": ("#15803d", "#3ddc84"), "bad": ("#dc2626", "#ff5a5f"), "info": ("#2563eb", "#58a6ff"),
-    "warn": ("#b45309", "#ff9f43"), "chip": ("#e2e8f0", "#1a2634"),
+    "warn": ("#b45309", "#ff9f43"), "chip": ("#dfe6ef", "#233650"),
 }
 ACCENTS = {"Dorado": ("#8a6a2f", "#c8aa6e"), "Azul": ("#2563eb", "#58a6ff"), "Verde": ("#15803d", "#3ddc84"),
            "Morado": ("#7c3aed", "#a78bfa"), "Rojo": ("#dc2626", "#ff6b6b"), "Cian": ("#0e7490", "#22d3ee")}
@@ -128,7 +130,7 @@ def make_hero(art_path, title, eyebrow, pct, w, h, accent, label="AFINIDAD"):
     ring = ring_image(pct / 100, rs * S, str(pct), accent, (255, 255, 255, 46), (240, 232, 214), .34, .10)
     rx, ry = W - 24 * S - rs * S, 24 * S
     im.alpha_composite(ring, (rx, ry))
-    d.text((rx + rs * S / 2, ry + rs * S + 7 * S), label, font=pil_font("med", 9 * S), fill=(200, 192, 176), anchor="mt")
+    d.text((rx + rs * S / 2, ry + rs * S + 7 * S), label, font=pil_font("med", 9 * S), fill=(232, 225, 208), anchor="mt")
     mask = Image.new("L", (W, H), 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, W - 1, H - 1), radius=14 * S, fill=255)
     out = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -259,18 +261,25 @@ class Kit:
         return tk.Frame(parent, bg=self.bg(parent))
 
     def card(self, parent, title=None, pad=6):
-        f = ctk.CTkFrame(parent, fg_color=PAL["card"], corner_radius=14, border_width=1, border_color=PAL["border"])
-        f.pack(fill="x", padx=6, pady=pad)
+        # «sombra»: un marco más oscuro (o gris en claro) asoma 3 px por debajo de la tarjeta; el borde claro de arriba hace de reflejo
+        sh = ctk.CTkFrame(parent, fg_color=PAL["shadow"], corner_radius=15, border_width=0)
+        sh.pack(fill="x", padx=6, pady=pad)
+        f = ctk.CTkFrame(sh, fg_color=PAL["card"], corner_radius=14, border_width=1, border_color=PAL["edge"])
+        f.pack(fill="x", padx=0, pady=(0, 3))
         inner = self.frame(f)
         inner.pack(fill="x", padx=16, pady=14)
         if title:
-            self.lbl(inner, title.upper(), 10, "dim", True).pack(anchor="w", pady=(0, 8))
+            head = self.frame(inner)
+            head.pack(fill="x", pady=(0, 6))
+            ctk.CTkFrame(head, width=3, height=14, corner_radius=2, fg_color=self.acc).pack(side="left", padx=(0, 8))
+            self.lbl(head, title.upper(), 10, "fg", True).pack(side="left")
+            ctk.CTkFrame(inner, height=1, corner_radius=0, fg_color=PAL["border"]).pack(fill="x", pady=(0, 10))
         return inner
 
     def seg(self, parent, values, current, command, **kw):
         b = ctk.CTkSegmentedButton(parent, values=values, command=command, font=self.font(11), selected_color=self.acc,
-                                   selected_hover_color=self.acc, unselected_color=PAL["card2"],
-                                   unselected_hover_color=PAL["border"], text_color=PAL["fg"], fg_color=PAL["card2"], **kw)
+                                   selected_hover_color=self.acc, unselected_color=PAL["well"],
+                                   unselected_hover_color=PAL["card2"], text_color=PAL["fg"], fg_color=PAL["well"], **kw)
         def paint():
             cur = b.get()
             for k, btn in getattr(b, "_buttons_dict", {}).items():
@@ -302,11 +311,14 @@ class Kit:
         hover = self.hexm(PAL["border"])
         box = tk.Frame(parent, bg=bgp)
         box.pack(fill="x", pady=(0, 6), padx=6)
-        head = tk.Frame(box, bg=card, cursor="hand2")
+        head = tk.Frame(box, bg=card, cursor="hand2", highlightthickness=1, highlightbackground=self.hexm(PAL["edge"]),
+                        highlightcolor=self.hexm(PAL["edge"]))
         head.pack(fill="x")
+        stripe = tk.Frame(head, width=3, bg=self.hexm(self.acc) if state["open"] else self.hexm(PAL["edge"]))
+        stripe.pack(side="left", fill="y")
         arrow = tk.Label(head, text="▾" if state["open"] else "▸", bg=card, fg=dim, font=self.tkf(12, False, False), width=2)
         arrow.pack(side="left", padx=(10, 2), pady=7)
-        ttl = tk.Label(head, text=title, bg=card, fg=fg, font=self.tkf(11, True, False), anchor="w")
+        ttl = tk.Label(head, text=title, bg=card, fg=fg, font=self.tkf(12, True, False), anchor="w")
         ttl.pack(side="left")
         sm = tk.Label(head, text=summary, bg=card, fg=dim, font=self.tkf(10, False, False), anchor="e")
         sm.pack(side="right", padx=12)
@@ -325,6 +337,7 @@ class Kit:
             elif state["outer"] is not None:
                 state["outer"].pack_forget()
             arrow.configure(text="▾" if state["open"] else "▸")
+            stripe.configure(bg=self.hexm(self.acc) if state["open"] else self.hexm(PAL["edge"]))
 
         def toggle(_e=None):
             state["open"] = not state["open"]
@@ -356,7 +369,7 @@ class Kit:
 
     def menu(self, parent, values, current, command, width=130):
         m = ctk.CTkOptionMenu(parent, values=values, command=command, width=width, height=28, font=self.font(11),
-                              dropdown_font=self.font(11), fg_color=PAL["card2"], button_color=PAL["border"],
+                              dropdown_font=self.font(11), fg_color=PAL["well"], button_color=PAL["edge"],
                               button_hover_color=PAL["border"], text_color=PAL["fg"], dropdown_fg_color=PAL["card2"],
                               dropdown_text_color=PAL["fg"], dropdown_hover_color=PAL["border"])
         m.set(current)
@@ -392,7 +405,7 @@ class Kit:
 
     def chip(self, parent, text, color="dim"):
         c = ctk.CTkLabel(parent, text=f"  {text[:1].upper()}{text[1:]}  ", font=self.font(10), text_color=col(color), height=22,
-                         fg_color=PAL["chip"], corner_radius=8)
+                         fg_color=PAL["well"], corner_radius=8)
         return c
 
     def chips(self, parent, items, per_row=3):
@@ -423,7 +436,7 @@ class Kit:
         f.pack(side="left", expand=True)
         lab = self.lbl(f, "0" if value.isdigit() and self.anim and self.anim_on() else value, 20, self.acc, True, True)
         lab.pack()
-        self.lbl(f, label, 9, "dim").pack()
+        self.lbl(f, label, 10, "dim").pack(pady=(3, 0))
         if value.isdigit() and self.anim and self.anim_on():
             self.count_up(lab, int(value))
 

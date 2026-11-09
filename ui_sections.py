@@ -742,6 +742,8 @@ class TurnCard(Section):
         c = ui.card(self.box)
         row = ui.frame(c)
         row.pack(fill="x")
+        st_col = {"ban": "bad", "pick": "good"}.get(r["turn"])
+        tk.Frame(row, width=4, bg=ui.hexm(PAL[st_col]) if st_col else ui.hexm(ui.acc)).pack(side="left", fill="y", padx=(0, 12))
         if sr and r["role"] in ROLES_ES:
             ctk.CTkLabel(row, image=ui.role_icon(r["role"], 56), text="").pack(side="left", padx=(0, 14))
         left = ui.frame(row)
@@ -871,7 +873,8 @@ class Recs(Section):
         c = ui.card(self.box)
         head = ui.frame(c)
         head.pack(fill="x", pady=(0, 8))
-        ui.lbl(head, "CAMBIO DE CAMPEÓN (BANQUILLO)" if self.kind() == "aram" else "RECOMENDADO PARA TI", 10, "dim", True).pack(side="left")
+        ctk.CTkFrame(head, width=3, height=14, corner_radius=2, fg_color=ui.acc).pack(side="left", padx=(0, 8))
+        ui.lbl(head, "CAMBIO DE CAMPEÓN (BANQUILLO)" if self.kind() == "aram" else "RECOMENDADO PARA TI", 10, "fg", True).pack(side="left")
         if not compact:
             ui.seg(head, list(REC_VIEWS.values()), REC_VIEWS.get(ui.conf["rec_view"], "Carrusel"),
                    self.set_view, width=280, height=26).pack(side="right")

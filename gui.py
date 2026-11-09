@@ -493,7 +493,7 @@ class GUI:
         k.clbl(bar, APP_NAME, 22, "fg", True, True).pack(side="left")
         k.clbl(bar, f"v{APP_VERSION}", 10, "dim").pack(side="left", padx=(8, 0), pady=(8, 0))
         ajustes = ctk.CTkButton(bar, text="Ajustes", width=88, height=32, corner_radius=10, font=k.font(12), border_width=1,
-                                border_color=PAL["border"], fg_color=PAL["card"], hover_color=PAL["card"], text_color=PAL["fg"],
+                                border_color=PAL["edge"], fg_color=PAL["card"], hover_color=PAL["card"], text_color=PAL["fg"],
                                 command=self.toggle_dock)
         ajustes.pack(side="right")
         k.smooth_btn(ajustes, PAL["card"], PAL["card2"])
@@ -511,7 +511,8 @@ class GUI:
         self.tab_names = tabs
         self.tab_seg = k.seg(self.main, list(tabs.values()), tabs.get(self.page, "Asesor"), self.set_page)
         self.tab_seg.pack(fill="x", padx=18, pady=(8, 0))
-        self.body = ctk.CTkScrollableFrame(self.main, fg_color="transparent", corner_radius=0)
+        self.body = ctk.CTkScrollableFrame(self.main, fg_color="transparent", corner_radius=0, scrollbar_button_color=PAL["edge"],
+                                           scrollbar_button_hover_color=PAL["border"])
         self.body.pack(fill="both", expand=True, padx=10, pady=(8, 0))
         self.footer = k.clbl(self.main, "", 10, "dim", anchor="w")
         self.footer.pack(fill="x", padx=20, pady=(2, 10))
@@ -919,7 +920,8 @@ class GUI:
         sc.pack(fill="both", expand=True, padx=8, pady=(4, 10))
 
         def section(text):
-            k.clbl(sc, text.upper(), 10, "dim", True).pack(anchor="w", padx=12, pady=(18, 4))
+            ctk.CTkFrame(sc, height=1, corner_radius=0, fg_color=PAL["border"]).pack(fill="x", padx=12, pady=(16, 0))
+            k.clbl(sc, text.upper(), 10, k.acc, True).pack(anchor="w", padx=12, pady=(8, 4))
 
         def note(text):
             k.clbl(sc, text, 10, "dim", wraplength=self.note_w(), justify="left", anchor="w").pack(anchor="w", padx=14, pady=(0, 4))
@@ -1016,7 +1018,7 @@ class GUI:
         section("Actualizaciones")
         switch("Buscar actualizaciones al abrir", "auto_update")
         label("Dirección del archivo de versión")
-        entry = ctk.CTkEntry(sc, font=k.font(11), placeholder_text="https://…/latest.json", fg_color=PAL["card2"], border_color=PAL["border"],
+        entry = ctk.CTkEntry(sc, font=k.font(11), placeholder_text="https://…/latest.json", fg_color=PAL["well"], border_color=PAL["edge"],
                              text_color=PAL["fg"])
         entry.insert(0, conf["update_url"])
         entry.pack(fill="x", padx=12, pady=2)
