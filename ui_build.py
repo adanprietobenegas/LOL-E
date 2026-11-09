@@ -7,7 +7,7 @@ import builds
 import opgg_builds
 import lol_advisor as core
 import runes as runemod
-from ui_kit import PAL, ctl
+from ui_kit import PAL, ctl, ON_FILL
 
 CACHE_DIR = core.CACHE   # (en render() «core» es una lista de objetos)
 
@@ -327,6 +327,65 @@ def situations(ui, parent, d, champs, ens, width):
                    "no sustituyen a leer la partida.", 9, "dim", anchor="w", justify="left", wraplength=max(240, width - 60)).pack(anchor="w", pady=(8, 0))
 
 
+_SENT = {}  # (uid, contenido) -> True: lo que ya se envió solo, para no repetirlo en cada repintado
+
+
+def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
+    """Botón «Enviar al cliente» (y envío automático opcional): crea en League un conjunto de objetos propio con esta build."""
+    import itemset
+    import matchups
+    if not blocks:
+        return
+    name = champs[cid]["name"]
+    vs = d.get("vs") and enemy and enemy in champs
+    uid = f"{itemset.PREFIX}{cid}-{lane or 'x'}"
+    title = f"LOL-E · {name}" + (f" · {matchups.LANE_NAMES.get(lane, '')}" if lane else "") + (f" vs {champs[enemy]['name']}" if vs else "")
+    row = ui.frame(parent)
+    row.pack(fill="x", pady=(10, 0))
+    res = {}
+    msg = ui.lbl(row, "", 10, "dim", anchor="w", justify="left", wraplength=360)
+
+    def poll():
+        if not row.winfo_exists():
+            return
+        if res.get("state") == "sending":
+            row.after(300, poll)
+            return
+        if res.get("state") == "done":
+            msg.configure(text=res["msg"] + (" Búscala en la tienda, en «Conjuntos de objetos»." if res["ok"] else ""))
+            btn.configure(state="normal")
+
+    def go():
+        btn.configure(state="disabled")
+        msg.configure(text="Enviando al cliente…")
+        itemset.send_async(ui.conf, uid, title, cid, blocks, res)
+        row.after(300, poll)
+
+    btn = ctk.CTkButton(row, text="Enviar al cliente", height=28, width=140, corner_radius=8, font=ui.font(11, True), fg_color=ui.acc,
+                        text_color=ON_FILL, command=go)
+    btn.pack(side="left", padx=(0, 10))
+    msg.pack(side="left", fill="x", expand=True)
+    var = ctk.BooleanVar(value=bool(ui.conf.get("auto_itemset")))
+
+    def toggle():
+        ui.conf["auto_itemset"] = bool(var.get())
+        core.save_conf(ui.conf)
+        if var.get():
+            go_auto()
+    sw = ctk.CTkSwitch(parent, text="Enviar siempre al elegir campeón", variable=var, font=ui.font(10), progress_color=ui.acc, command=toggle)
+    sw.pack(anchor="w", pady=(6, 0))
+    ui.lbl(parent, "Crea un conjunto de objetos propio en tu cliente de League («LOL-E · campeón · línea»), que verás en la tienda durante la partida. "
+                   "Solo se tocan los conjuntos de LOL-E; los tuyos no.", 9, "dim", anchor="w", justify="left", wraplength=480).pack(anchor="w", pady=(4, 0))
+
+    def go_auto():
+        key = (uid, title, tuple((n, tuple(i)) for n, i in blocks))
+        if not _SENT.get(key):
+            _SENT[key] = True
+            go()
+    if ui.conf.get("auto_itemset"):
+        row.after(400, go_auto)
+
+
 def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
     rd = ui.runedata or {}
     title = f"BUILD MÁS USADA DE {champs[cid]['name'].upper()}" + (f" CONTRA {champs[enemy]['name'].upper()}" if d.get("vs") and enemy else "")
@@ -384,11 +443,14 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
     it = d.get("items") or {}
     boots = [i for k in ("core", "i4", "i5", "i6") for i in (it.get(k) or []) if is_boots(ui, i)]
     boots = list(dict.fromkeys(boots))
+    blocks = []  # lo que se enviará al cliente como conjunto de objetos
     if it.get("start"):
+        blocks.append(("Inicio", list(it["start"])))
         b = _row(ui, parent, "Inicio")
         for i in it["start"]:
             _item(ui, b, i)
     if boots:
+        blocks.append(("Botas", [x for i in boots[:2] for x in (i, tier3(ui, i)) if x]))
         b = _row(ui, parent, "Botas")
         for n, i in enumerate(boots[:2]):
             if n:
@@ -408,6 +470,7 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
             ui.lbl(b, "Consultando op.gg…", 10, "dim").pack(side="left")
             again()
         elif ost[0] == "ok" and ost[1].get("boots"):
+            blocks.append(("Botas", [x for r in ost[1]["boots"][:2] for x in (r["id"], tier3(ui, r["id"])) if x]))
             for n, r in enumerate(ost[1]["boots"][:2]):
                 if n:
                     ui.lbl(b, "o", 10, "dim").pack(side="left", padx=2)
@@ -421,6 +484,7 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
             ui.lbl(b, "Sin datos de botas para esta build.", 10, "dim").pack(side="left")
     core = [i for i in (it.get("core") or []) if not is_boots(ui, i)]
     if core:
+        blocks.append(("Principales (en este orden)", list(core)))
         b = _row(ui, parent, "Principales")
         for n, i in enumerate(core):
             if n:
@@ -429,11 +493,13 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
     for k, label in (("i4", "4.º objeto"), ("i5", "5.º objeto"), ("i6", "6.º objeto")):
         opts = [i for i in (it.get(k) or []) if not is_boots(ui, i)]
         if opts:
+            blocks.append((label + " (a elegir)", list(opts[:3])))
             b = _row(ui, parent, label)
             for n, i in enumerate(opts[:3]):
                 if n:
                     ui.lbl(b, "o", 10, "dim").pack(side="left", padx=2)
                 _item(ui, b, i)
+    export_row(ui, parent, d, champs, cid, enemy, lane, blocks)
     notes = []
     quest = ROLE_QUEST.get(lane)
     if quest:

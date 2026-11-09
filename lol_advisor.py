@@ -46,6 +46,7 @@ DEFAULT_CONF = {
     "preset": "equilibrado",
     "folds": {},             # qué secciones plegables están abiertas
     "notes_seen": "",        # última versión cuyas novedades ya se mostraron al abrir
+    "auto_itemset": False,   # enviar sola la build al cliente (conjunto de objetos) al elegir campeón
     "win_geo": "",           # tamaño y posición de la ventana la última vez (para abrirla en el mismo monitor)
     "rec_view": "carrusel",  # carrusel | lista | listas
     "list_n": 20,            # cuántos campeones por lista en la vista «Listas»

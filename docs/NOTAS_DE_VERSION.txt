@@ -19,6 +19,14 @@ VERSIÓN 1.18.0   (9 de noviembre de 2026)
     primeros objetos de la build.
   · ui_guide.py (nuevo): bloque «Guía de juego» con dos pliegues («Cómo jugar con X» y
     «Tu duelo contra Y»). Se monta en MyPick (selección de campeón) y en Partida > Plan.
+  · itemset.py (nuevo) + export_row en ui_build.py: envío de la build al cliente como
+    conjunto de objetos. Endpoint del LCU (existe en el cliente actual, comprobado con
+    /help): PUT /lol-item-sets/v1/item-sets/{summonerId}/sets, que SUSTITUYE toda la lista;
+    por eso se lee antes, se conservan los conjuntos ajenos y solo se reemplazan los de uid
+    «lole-<campeón>-<línea>» (máx. 12). Bloques: Inicio, Botas, Principales, 4.º/5.º/6.º.
+    Conf nueva: auto_itemset (False). PENDIENTE DE PROBAR EN UN CLIENTE REAL: la escritura
+    no se ha ejecutado aún; comprobar que aparece en la tienda y que los bloques se ven bien.
+    Runas (/lol-perks/v1/pages) no se envían: tocarían las páginas del jugador.
   · Límite honesto: Lolalytics solo sirve la tasa de victorias del duelo; no existe una
     fuente pública de trucos escritos por pareja de campeones, así que el duelo es un
     cálculo y así se dice en pantalla. Sin minutos exactos de picos de objetos.
