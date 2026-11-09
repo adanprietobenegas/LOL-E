@@ -76,6 +76,7 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None):
                 if d.get("stats"):
                     variants(ui, slots[1], d, champs, cid, cw, lane, again)
                 situations(ui, slots[2] if cols == 3 else slots[0], d, champs, ens, cw)
+                export_row(ui, content, d, champs, cid, enemy, lane, build_blocks(ui, d, cid, lane, ens))
                 return
             width1 = min(width, 720)
             if rich:
@@ -86,6 +87,7 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None):
                 situations(ui, content, d, champs, ens, width1)
             else:
                 render(ui, content, d, champs, cid, enemy, width1, lane, again)
+            export_row(ui, content, d, champs, cid, enemy, lane, build_blocks(ui, d, cid, lane, ens))
     paint()
     return box
 
@@ -327,6 +329,55 @@ def situations(ui, parent, d, champs, ens, width):
                    "no sustituyen a leer la partida.", 9, "dim", anchor="w", justify="left", wraplength=max(240, width - 60)).pack(anchor="w", pady=(8, 0))
 
 
+def build_blocks(ui, d, cid, lane, ens):
+    """Bloques del conjunto de objetos: lo principal y, debajo, variantes y objetos por situación (los de «recomendado ahora» primero)."""
+    it, st = d.get("items") or {}, d.get("stats") or {}
+    nb = lambda ids: [i for i in ids if not is_boots(ui, i)]
+    blocks = []
+    if it.get("start"):
+        blocks.append(("Inicio", list(it["start"])))
+    boots = list(dict.fromkeys(i for k in ("core", "i4", "i5", "i6") for i in (it.get(k) or []) if is_boots(ui, i)))
+    if boots:
+        blocks.append(("Botas", [x for i in boots[:2] for x in (i, tier3(ui, i)) if x]))
+    elif lane:
+        ost = opgg_builds.peek(opgg_builds.request(CACHE_DIR, ui.champs[cid], lane))
+        if ost[0] == "ok" and ost[1].get("boots"):
+            blocks.append(("Botas", [x for r in ost[1]["boots"][:2] for x in (r["id"], tier3(ui, r["id"])) if x]))
+    mainl = nb(it.get("core") or [])
+    if mainl:
+        blocks.append(("Principales (en este orden)", mainl))
+    used = set(mainl)
+    for k, label in (("i4", "4.º objeto"), ("i5", "5.º objeto"), ("i6", "6.º objeto")):
+        opts = nb(it.get(k) or [])[:3]
+        if opts:
+            blocks.append((label + " (a elegir)", opts))
+            used.update(opts)
+    # variante: lo más ganador de cada hueco, si añade algo distinto
+    win = []
+    for k in ("i4", "i5", "i6"):
+        cand = [o for o in st.get(k, []) if not is_boots(ui, o["id"]) and o["id"] not in used and o["games"] >= 30]
+        if cand:
+            win.append(max(cand, key=lambda o: o["wr"])["id"])
+    if win:
+        blocks.append(("Variante: más victorias", win))
+        used.update(win)
+    # situaciones
+    pool = []
+    for i in list(d.get("palette") or []) + [o["id"] for k in ("i4", "i5", "i6") for o in st.get(k, [])]:
+        info = ui.items.get(i)
+        if i not in pool and info and not info.get("into") and info["g"] >= 1000 and "Boots" not in info["t"] and "Consumable" not in info["t"]:
+            pool.append(i)
+    sit = []
+    for title, what, test, now in SITUATIONS:
+        found = [i for i in pool if test(ui.items[i])][:4]
+        if found:
+            hot = bool(now(ens))
+            sit.append((not hot, (("★ " if hot else "") + (title if title.startswith("Si ") else f"Si: {title.lower()}") + f" ({what})"), found))
+    for _, name, found in sorted(sit, key=lambda x: x[0]):
+        blocks.append((name, found))
+    return blocks
+
+
 _SENT = {}  # (uid, contenido) -> True: lo que ya se envió solo, para no repetirlo en cada repintado
 
 
@@ -443,14 +494,11 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
     it = d.get("items") or {}
     boots = [i for k in ("core", "i4", "i5", "i6") for i in (it.get(k) or []) if is_boots(ui, i)]
     boots = list(dict.fromkeys(boots))
-    blocks = []  # lo que se enviará al cliente como conjunto de objetos
     if it.get("start"):
-        blocks.append(("Inicio", list(it["start"])))
         b = _row(ui, parent, "Inicio")
         for i in it["start"]:
             _item(ui, b, i)
     if boots:
-        blocks.append(("Botas", [x for i in boots[:2] for x in (i, tier3(ui, i)) if x]))
         b = _row(ui, parent, "Botas")
         for n, i in enumerate(boots[:2]):
             if n:
@@ -470,7 +518,6 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
             ui.lbl(b, "Consultando op.gg…", 10, "dim").pack(side="left")
             again()
         elif ost[0] == "ok" and ost[1].get("boots"):
-            blocks.append(("Botas", [x for r in ost[1]["boots"][:2] for x in (r["id"], tier3(ui, r["id"])) if x]))
             for n, r in enumerate(ost[1]["boots"][:2]):
                 if n:
                     ui.lbl(b, "o", 10, "dim").pack(side="left", padx=2)
@@ -484,7 +531,6 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
             ui.lbl(b, "Sin datos de botas para esta build.", 10, "dim").pack(side="left")
     core = [i for i in (it.get("core") or []) if not is_boots(ui, i)]
     if core:
-        blocks.append(("Principales (en este orden)", list(core)))
         b = _row(ui, parent, "Principales")
         for n, i in enumerate(core):
             if n:
@@ -493,13 +539,11 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
     for k, label in (("i4", "4.º objeto"), ("i5", "5.º objeto"), ("i6", "6.º objeto")):
         opts = [i for i in (it.get(k) or []) if not is_boots(ui, i)]
         if opts:
-            blocks.append((label + " (a elegir)", list(opts[:3])))
             b = _row(ui, parent, label)
             for n, i in enumerate(opts[:3]):
                 if n:
                     ui.lbl(b, "o", 10, "dim").pack(side="left", padx=2)
                 _item(ui, b, i)
-    export_row(ui, parent, d, champs, cid, enemy, lane, blocks)
     notes = []
     quest = ROLE_QUEST.get(lane)
     if quest:

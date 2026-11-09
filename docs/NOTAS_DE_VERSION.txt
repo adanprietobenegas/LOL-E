@@ -23,9 +23,11 @@ VERSIÓN 1.18.0   (9 de noviembre de 2026)
     conjunto de objetos. Endpoint del LCU (existe en el cliente actual, comprobado con
     /help): PUT /lol-item-sets/v1/item-sets/{summonerId}/sets, que SUSTITUYE toda la lista;
     por eso se lee antes, se conservan los conjuntos ajenos y solo se reemplazan los de uid
-    «lole-<campeón>-<línea>» (máx. 12). Bloques: Inicio, Botas, Principales, 4.º/5.º/6.º.
-    Conf nueva: auto_itemset (False). PENDIENTE DE PROBAR EN UN CLIENTE REAL: la escritura
-    no se ha ejecutado aún; comprobar que aparece en la tienda y que los bloques se ven bien.
+    «lole-<campeón>-<línea>» (máx. 12). Bloques (ui_build.build_blocks): Inicio, Botas,
+    Principales, 4.º/5.º/6.º a elegir, Variante de más victorias y un bloque por situación
+    (los «recomendado ahora» primero, con ★). Conf nueva: auto_itemset (False).
+    Probado contra un cliente real: el PUT se acepta y el GET devuelve el conjunto con todos
+    los bloques. Sin comprobar a ojo en la tienda de una partida (lo hace el usuario).
     Runas (/lol-perks/v1/pages) no se envían: tocarían las páginas del jugador.
   · Límite honesto: Lolalytics solo sirve la tasa de victorias del duelo; no existe una
     fuente pública de trucos escritos por pareja de campeones, así que el duelo es un
