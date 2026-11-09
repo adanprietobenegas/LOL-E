@@ -10,6 +10,9 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.17.1", "fecha": "9 de noviembre de 2026", "titulo": "Botas que faltaban en algunas builds", "items": [
+        ("arreglo", "En algunos campeones (sobre todo de jungla, como Lee Sin) la build recomendada no mostraba botas porque Lolalytics no las incluye entre sus objetos. Ahora se muestran las más usadas de op.gg, indicando de dónde salen."),
+    ]},
     {"v": "1.17.0", "fecha": "8 de noviembre de 2026", "titulo": "Análisis de ARAM con los 10 jugadores", "items": [
         ("nuevo", "El análisis de ARAM y Mayhem ya no te compara con un «rival de línea»: tu campeón sale en grande y se ven los 10 jugadores."),
         ("nuevo", "Premios de la partida: más daño, más aguante, mejor KDA, más curación, más control y más asesinatos."),

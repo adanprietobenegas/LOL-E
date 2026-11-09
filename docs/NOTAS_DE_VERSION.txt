@@ -7,6 +7,15 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.17.1   (9 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · ui_build.render: si los objetos de Lolalytics (core, i4, i5, i6) no traen botas,
+    se toman las 2 más usadas de op.gg (con su mejora a nivel 3) y se indica "según
+    op.gg". Pasaba, por ejemplo, con Lee Sin en jungla (Rammus, Zac y Sejuani sí las
+    traían). Detalle: en render() "core" es una lista de objetos, por eso la ruta de
+    caché se guarda en CACHE_DIR.
+
 VERSIÓN 1.17.0   (8 de noviembre de 2026)
 ---------------------------------------------------------------------
 

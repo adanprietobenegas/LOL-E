@@ -9,6 +9,8 @@ import lol_advisor as core
 import runes as runemod
 from ui_kit import PAL, ctl
 
+CACHE_DIR = core.CACHE   # (en render() «core» es una lista de objetos)
+
 SKILLS = {"q": "Q", "w": "W", "e": "E", "r": "R"}
 
 
@@ -70,7 +72,7 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None):
                     s_.grid(row=0, column=k, sticky="nw", padx=(0 if k == 0 else 14, 0))
                     grid.columnconfigure(k, weight=1, uniform="bp")
                     slots.append(s_)
-                render(ui, slots[0], d, champs, cid, enemy, cw, lane)
+                render(ui, slots[0], d, champs, cid, enemy, cw, lane, again)
                 if d.get("stats"):
                     variants(ui, slots[1], d, champs, cid, cw, lane, again)
                 situations(ui, slots[2] if cols == 3 else slots[0], d, champs, ens, cw)
@@ -83,7 +85,7 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None):
             elif state["view"] == "Situaciones":
                 situations(ui, content, d, champs, ens, width1)
             else:
-                render(ui, content, d, champs, cid, enemy, width1, lane)
+                render(ui, content, d, champs, cid, enemy, width1, lane, again)
     paint()
     return box
 
@@ -325,7 +327,7 @@ def situations(ui, parent, d, champs, ens, width):
                    "no sustituyen a leer la partida.", 9, "dim", anchor="w", justify="left", wraplength=max(240, width - 60)).pack(anchor="w", pady=(8, 0))
 
 
-def render(ui, parent, d, champs, cid, enemy, width, lane=None):
+def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
     rd = ui.runedata or {}
     title = f"BUILD MÁS USADA DE {champs[cid]['name'].upper()}" + (f" CONTRA {champs[enemy]['name'].upper()}" if d.get("vs") and enemy else "")
     ui.lbl(parent, title, 10, "dim", True, anchor="w").pack(anchor="w", pady=(0, 4))
@@ -397,6 +399,26 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None):
                 ui.lbl(b, "→", 12, "dim").pack(side="left", padx=(2, 0))
                 _item(ui, b, n3)
         ui.lbl(b, "  nivel 2 → nivel 3", 9, "dim").pack(side="left")
+    elif lane and again is not None:
+        # Lolalytics no puso botas entre los objetos de esta build (pasa en algunos campeones de jungla): se toman las más usadas de op.gg
+        okey = opgg_builds.request(CACHE_DIR, champs[cid], lane)
+        ost = opgg_builds.peek(okey)
+        b = _row(ui, parent, "Botas")
+        if ost[0] == "loading":
+            ui.lbl(b, "Consultando op.gg…", 10, "dim").pack(side="left")
+            again()
+        elif ost[0] == "ok" and ost[1].get("boots"):
+            for n, r in enumerate(ost[1]["boots"][:2]):
+                if n:
+                    ui.lbl(b, "o", 10, "dim").pack(side="left", padx=2)
+                _item(ui, b, r["id"])
+                n3 = tier3(ui, r["id"])
+                if n3:
+                    ui.lbl(b, "→", 12, "dim").pack(side="left", padx=(2, 0))
+                    _item(ui, b, n3)
+            ui.lbl(b, "  según op.gg (Lolalytics no las incluye en esta build)", 9, "dim").pack(side="left")
+        else:
+            ui.lbl(b, "Sin datos de botas para esta build.", 10, "dim").pack(side="left")
     core = [i for i in (it.get("core") or []) if not is_boots(ui, i)]
     if core:
         b = _row(ui, parent, "Principales")
