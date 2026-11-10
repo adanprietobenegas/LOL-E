@@ -44,7 +44,7 @@ def _spells(ui, parent, d, width):
 
 
 def _own(ui, parent, d, name, width, b):
-    sp = guide.spikes(d, name, (b or {}).get("skills") or [], ((b or {}).get("items") or {}).get("core") or [], ui.items)
+    sp = guide.spikes(d, name, (b or {}).get("skills") or [], [i for i in (((b or {}).get("items") or {}).get("core") or []) if "Boots" not in (ui.items.get(i) or {}).get("t", [])], ui.items)
     if d["ally"]:
         ui.lbl(parent, "CONSEJOS DE RIOT PARA JUGAR CON " + name.upper(), 9, "dim", True, anchor="w").pack(anchor="w", pady=(0, 3))
         for t in d["ally"]:

@@ -105,6 +105,21 @@ def is_boots(ui, iid):
     return "Boots" in (ui.items.get(iid) or {}).get("t", [])
 
 
+def slot_labels(ui, it):
+    """Rótulos de los huecos 4/5/6 de Lolalytics contando solo objetos completos: allí las botas ocupan un hueco,
+    así que si van entre los principales (o en un hueco anterior) el «4.º» de la web es en realidad el 3.º objeto."""
+    boots_seen = any(is_boots(ui, i) for i in (it.get("core") or []))
+    out = {}
+    for raw, k in ((4, "i4"), (5, "i5"), (6, "i6")):
+        opts = it.get(k) or []
+        if not boots_seen and opts and is_boots(ui, opts[0]):
+            out[k] = "Con las botas"  # este hueco suele ser las botas: lo que no son botas se compra a la vez
+            boots_seen = True
+            continue
+        out[k] = f"{raw - (1 if boots_seen else 0)}.º objeto"
+    return out
+
+
 def tier3(ui, iid):
     """Botas de nivel 3 a las que mejoran unas botas de nivel 2 (Data Dragon), o None."""
     for nxt in (ui.items.get(iid) or {}).get("into", []):
@@ -266,7 +281,7 @@ def variants(ui, parent, d, champs, cid, width, lane=None, again=None):
         b0 = _row(ui, parent, "Principales")
         _chain(ui, b0, core)
         ui.lbl(b0, "  " + pct_txt(st["core"]), 9, "dim").pack(side="left")
-    for k, label in (("i4", "4.º objeto"), ("i5", "5.º objeto"), ("i6", "6.º objeto")):
+    for k, label in slot_labels(ui, it).items():
         if not opts[k]:
             continue
         b0 = _row(ui, parent, label)
@@ -347,7 +362,7 @@ def build_blocks(ui, d, cid, lane, ens):
     if mainl:
         blocks.append(("Principales (en este orden)", mainl))
     used = set(mainl)
-    for k, label in (("i4", "4.º objeto"), ("i5", "5.º objeto"), ("i6", "6.º objeto")):
+    for k, label in slot_labels(ui, it).items():
         opts = nb(it.get(k) or [])[:3]
         if opts:
             blocks.append((label + " (a elegir)", opts))
@@ -536,7 +551,7 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
             if n:
                 ui.lbl(b, "›", 13, "dim").pack(side="left")
             _item(ui, b, i)
-    for k, label in (("i4", "4.º objeto"), ("i5", "5.º objeto"), ("i6", "6.º objeto")):
+    for k, label in slot_labels(ui, it).items():
         opts = [i for i in (it.get(k) or []) if not is_boots(ui, i)]
         if opts:
             b = _row(ui, parent, label)
