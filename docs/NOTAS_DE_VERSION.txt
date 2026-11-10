@@ -7,7 +7,7 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
-VERSIÓN 1.18.0   (9 de noviembre de 2026)
+VERSIÓN 1.18.0   (10 de noviembre de 2026)
 ---------------------------------------------------------------------
 
   · guide.py (nuevo): baja de Data Dragon (es_ES) el JSON de cada campeón (se guarda por
@@ -39,7 +39,20 @@ VERSIÓN 1.18.0   (9 de noviembre de 2026)
     Probado contra un cliente real: el PUT se acepta y el GET devuelve el conjunto con todos
     los bloques. Sin comprobar a ojo en la tienda de una partida (lo hace el usuario).
     Runas (/lol-perks/v1/pages) no se envían: tocarían las páginas del jugador.
-  · Límite honesto: Lolalytics solo sirve la tasa de victorias del duelo; no existe una
+  · sounds.py: sonido por fase. PHASES = partida encontrada (gameflow ReadyCheck), baneo y
+    elegir (turno propio), campeón confirmado (mine_locked pasa a verdadero) y empieza la
+    partida (gameflow pasa a GameStart/InProgress; no suena al conectar con una partida ya
+    en marcha). Conf nueva: phase_sounds {fase: {sound, file}}; sin ajuste propio valen
+    DEFAULTS (found Campana, locked Arpegio, start sin sonido, ban/pick = sonido general).
+    «Mi archivo…» acepta .wav; los de 16 bits se copian a cache/sounds escalados al volumen
+    (winsound no tiene volumen); si el archivo falta o no se lee suena el sonido general.
+    lol_advisor llama a play_phase en el bucle principal; Ajustes: _phase_sound_row.
+    Probado: lógica (6 casos, escalado, archivo roto), ventana de Ajustes (5 filas, cambio
+    de sonido, 0 errores) y tests de regresión. Sin oír cada fase en una partida real.
+  · Arreglo (botas): Lolalytics cuenta las botas como un hueco de compra; ui_build.slot_labels
+    numera 4/5/6 restando el hueco de botas (si van entre los principales: 3.º/4.º/5.º; si
+    son el primer hueco de un i4/i5/i6: «Con las botas»). Se aplica a Alternativas, Build y
+    conjunto del cliente; guide.spikes ya no recibe las botas como primer objeto.  · Límite honesto: Lolalytics solo sirve la tasa de victorias del duelo; no existe una
     fuente pública de trucos escritos por pareja de campeones, así que el duelo es un
     cálculo y así se dice en pantalla. Sin minutos exactos de picos de objetos.
   · Pendiente: tabla de «cómo se juega» con vídeos/guías de la comunidad no es posible

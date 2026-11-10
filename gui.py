@@ -700,6 +700,61 @@ class GUI:
         v = self.conf["volume"]
         return "🔇" if v <= 0 else "🔈" if v < .35 else "🔉" if v < .7 else "🔊"
 
+    def _phase_sound_row(self, sc, k, ph, ph_name, ph_desc):
+        """Una fila de Ajustes: el sonido de una fase, con su selector, su archivo propio y el botón de probar."""
+        conf = self.conf
+        choices = list(core.SOUNDS) + [core.NONE, core.FILE]
+
+        def current():
+            return core.phase_cfg(conf, ph)
+
+        def store(snd, file=None):
+            cfg = dict((conf.get("phase_sounds") or {}).get(ph) or {})
+            cfg["sound"] = snd
+            if file is not None:
+                cfg["file"] = file
+            conf["phase_sounds"] = {**(conf.get("phase_sounds") or {}), ph: cfg}
+            save_conf(conf)
+
+        info = k.clbl(sc, "", 10, "dim", anchor="w")
+
+        def show_file():
+            snd, f = current()
+            info.configure(text=("Archivo: " + os.path.basename(f)) if snd == core.FILE and f else "")
+
+        def chosen(v):
+            if v == core.FILE:
+                from tkinter import filedialog
+                path = filedialog.askopenfilename(title="Elige un sonido (.wav)", filetypes=[("Sonido WAV", "*.wav")])
+                if not path:
+                    menu.set(current()[0])  # cancelado: se queda como estaba
+                    return
+                store(v, path)
+            else:
+                store(v)
+            show_file()
+            test()
+
+        def test():
+            snd, f = current()
+            if snd == core.FILE:
+                if not core.play_file(f, conf["volume"]):
+                    messagebox.showinfo(APP_NAME, "No se pudo reproducir ese archivo. Usa un .wav de 16 bits (se usará el sonido general mientras tanto).")
+            else:
+                core.play_alert(snd, conf["volume"])
+
+        k.clbl(sc, ph_name, 11, "fg", True).pack(anchor="w", padx=12, pady=(10, 0))
+        k.clbl(sc, ph_desc, 10, "dim", anchor="w").pack(anchor="w", padx=12)
+        row = k.frame(sc)
+        row.pack(anchor="w", padx=12, pady=2)
+        menu = k.menu(row, choices, current()[0], chosen, 220)
+        menu.pack(side="left")
+        b = ctk.CTkButton(row, text="Probar", width=70, font=k.font(11), fg_color=PAL["card2"], text_color=PAL["fg"], hover_color=PAL["card2"],
+                          border_width=1, border_color=PAL["edge"], command=test)
+        b.pack(side="left", padx=(8, 0))
+        k.smooth_btn(b, PAL["card2"], PAL["border"])
+        info.pack(anchor="w", padx=12)
+        show_file()
     def add_volume_slider(self, parent, width):
         a = self.kit.acc
         s = ctk.CTkSlider(parent, from_=0, to=1, number_of_steps=20, width=width, height=14, progress_color=a, button_color=a,
@@ -1000,14 +1055,17 @@ class GUI:
         button("Abrir la pestaña «Datos»", lambda: (self.tab_seg.set("Datos"), self.set_page("Datos")))
 
         section("Sonido")
-        switch("Aviso sonoro cuando llega tu turno", "beep")
-        label("Sonido del aviso")
-        k.menu(sc, list(core.SOUNDS), conf["sound"],
-               lambda v: (self.set("sound", v, redraw=False), core.play_alert(v, conf["volume"])), 300).pack(anchor="w", padx=12, pady=2)
+        switch("Avisos sonoros", "beep")
         label("Volumen")
         self.add_volume_slider(sc, 300).pack(anchor="w", padx=12, pady=2)
-        button("Probar el sonido", lambda: core.play_alert(conf["sound"], conf["volume"]))
-
+        label("Sonido general")
+        k.menu(sc, list(core.SOUNDS), conf["sound"],
+               lambda v: (self.set("sound", v, redraw=False), core.play_alert(v, conf["volume"])), 300).pack(anchor="w", padx=12, pady=2)
+        note("Lo usan las fases que no tengan sonido propio (baneo y elegir, mientras no los cambies).")
+        section("Sonido de cada fase")
+        note("Elige un sonido para cada momento, «Sin sonido» para silenciarlo, o «Mi archivo…» para usar un .wav tuyo.")
+        for ph, ph_name, ph_desc in core.PHASES:
+            self._phase_sound_row(sc, k, ph, ph_name, ph_desc)
         section("Datos")
         note("Qué fuentes se usan, y su activación, se gestiona en la pestaña «Datos».")
         button("Actualizar estadísticas de op.gg", lambda: (self.cmds.put("opgg"), self.status("Actualizando op.gg…")))

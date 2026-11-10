@@ -12,7 +12,7 @@ import players
 import sounds
 import synergy
 import trends
-from sounds import SOUNDS, synth_wav, play_alert, beep  # noqa: F401  (los usa la ventana)
+from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
 APP_NAME, APP_VERSION = "LOL-E", "1.18.0"
 FROZEN = getattr(sys, "frozen", False)
@@ -43,6 +43,7 @@ DEFAULT_CONF = {
     "beep": True,            # aviso sonoro cuando es tu turno
     "sound": "Doble tono",
     "volume": 0.7,           # 0 a 1
+    "phase_sounds": {},      # sonido de cada fase de la selección: {fase: {"sound": ..., "file": ...}}
     "preset": "equilibrado",
     "folds": {},             # qué secciones plegables están abiertas
     "notes_seen": "",        # última versión cuyas novedades ya se mostraron al abrir
@@ -934,6 +935,7 @@ def run(conf, champs, ui):
     last = None
     next_check, next_lobby = 0.0, 0.0
     prev_turn = None
+    prev_locked = False
     force_opgg = False
     reload_pending = False
     rank_before, cur_gid, end_tries = None, None, 0
@@ -995,10 +997,16 @@ def run(conf, champs, ui):
                     flow = None
                 in_game = flow in ("InProgress", "GameStart", "Reconnect")  # con la partida en marcha no se toca nada: el PC es del juego
                 if flow != last_flow:
+                    if last_flow != "_":  # sonidos por fase (no al conectar con el cliente a medias)
+                        if flow == "ReadyCheck":
+                            play_phase(conf, "found")
+                        elif flow in ("GameStart", "InProgress") and last_flow not in ("GameStart", "InProgress", "Reconnect"):
+                            play_phase(conf, "start")
                     last_flow = flow
                     getattr(ui, "phase", lambda f: None)(flow)
                 if last is not None:
                     last = prev_turn = mode = None
+                    prev_locked = False
                     reload_pending = True
                     ui.idle(player_info(P), "Partida en curso. LOL-E espera a que acabe." if in_game else "Selección terminada. Esperando la siguiente…")
                 if reload_pending and not in_game:
@@ -1080,8 +1088,10 @@ def run(conf, champs, ui):
                 r["party"] = list(party)
                 ui.show(session, r)
                 if r["turn"] and r["turn"] != prev_turn:
-                    beep(conf)
-                prev_turn = r["turn"]
+                    play_phase(conf, "ban" if r["turn"] == "ban" else "pick")
+                if r.get("mine_locked") and not prev_locked:
+                    play_phase(conf, "locked")
+                prev_turn, prev_locked = r["turn"], bool(r.get("mine_locked"))
             time.sleep(conf["poll_seconds"])
         except KeyboardInterrupt:
             break

@@ -1,6 +1,8 @@
 # LOL-E · Estado del proyecto y pendientes
 
-Actualizado el 5/11/2026. Versión instalada en tu PC: **1.11.2** (en GitHub está publicada la 1.8.2; la 1.11.2 está sin subir por decisión tuya).
+Actualizado el 10/11/2026. Versión: **1.18.0**, publicada en GitHub el 10/11/2026 (detalle de cambios en `docs/NOTAS_DE_VERSION.txt`; lo que sigue de esta cabecera hasta «Cómo está ahora» es histórico).
+
+**1.18.0 en resumen:** guía de juego y duelo de línea (`guide.py`, `ui_guide.py`), botón «Enviar al cliente» con conjunto de objetos y variantes (`itemset.py`, `ui_build.py`), repaso estético de contraste, sonido propio por fase (`sounds.py`, Ajustes > Sonido de cada fase) y arreglo de la numeración de huecos de objeto (las botas ya no cuentan como objeto completo). Sin comprobar a ojo en una partida real: el conjunto de objetos en la tienda y cada sonido de fase.
 
 ## Qué es
 App de Windows (Python + CustomTkinter) que lee el cliente de League of Legends (LCU) y te asesora en la selección de campeón. Cuatro pestañas: **Asesor**, **Enfrentamiento**, **Historial** y **Datos**. Se reparte en un instalador (Inno Setup) dentro de un `.zip` con instrucciones.
@@ -79,7 +81,10 @@ Cambiar de pestaña: ~110–280 ms (la primera vez que se abre Enfrentamiento, ~
 | `ui_kit.py` | Colores, componentes, iconos, animaciones |
 | `ui_pool.py`, `ui_build.py` | Repertorio y panel de build |
 | `builds.py`, `runes.py`, `trends.py` | Builds y runas (Lolalytics), picks en auge |
-| `meta.py`, `matchups.py`, `players.py`, `synergy.py`, `items.py`, `params.py`, `sounds.py`, `updater.py` | Fuentes de datos y utilidades |
+| `meta.py`, `matchups.py`, `players.py`, `synergy.py`, `items.py`, `params.py`, `updater.py` | Fuentes de datos y utilidades |
+| `sounds.py` | Sonidos sintetizados, un sonido por fase (o un .wav del usuario) |
+| `guide.py`, `ui_guide.py` | Guía de juego y duelo de línea (Data Dragon) |
+| `itemset.py` | Envío de la build al cliente como conjunto de objetos |
 | `build_release.py`, `docs/` | Empaquetado y documentación |
 
 
