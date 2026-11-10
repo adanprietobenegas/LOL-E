@@ -3,17 +3,19 @@ rivales ya visibles y la build, las runas y la guía de juego se recalculan cont
 
 Cada rival muestra el % de victorias de tu campeón contra él en tu línea (Lolalytics, página de tu campeón: una sola consulta para todos).
 El rival de línea de los rivales NO lo da el cliente en todas las colas: por eso se puede corregir a mano, también durante la partida."""
-import threading
+import threading, time
 
 import lol_advisor as core
 import matchups
 
-_ROWS = {}  # (campeón, línea) -> filas | "cargando" | ("error", texto)
+_ROWS = {}  # (campeón, línea) -> filas | "cargando" | ("error", texto, hora)\nRETRY = 60  # segundos hasta volver a intentar tras un error de red
 
 
 def _rows(ui, cid, lane):
     key = (cid, lane)
     got = _ROWS.get(key)
+    if isinstance(got, tuple) and time.time() - got[2] > RETRY:
+        got = None  # un fallo puntual (sin red, Lolalytics caído) no se queda para toda la sesión
     if got is None:
         _ROWS[key] = "cargando"
 
@@ -21,7 +23,7 @@ def _rows(ui, cid, lane):
             try:
                 _ROWS[key] = matchups.load(core.CACHE, ui.champs[cid], lane)
             except Exception as e:
-                _ROWS[key] = ("error", str(e))
+                _ROWS[key] = ("error", str(e), time.time())
         threading.Thread(target=go, daemon=True).start()
         return "cargando"
     return got
@@ -82,7 +84,7 @@ def picker(ui, parent, cid, lane, enemies, auto, chosen, on_pick, width=520):
     def paint():
         if not box.winfo_exists():
             return
-        rows = _rows(ui, cid, lane) if lane else ("error", "")
+        rows = _rows(ui, cid, lane) if lane else ("error", "", 0)
         for e, sub in tiles:
             if not e:
                 sub.configure(text=core.name(auto, ui.champs)[:10] if auto else "sin datos")

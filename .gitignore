@@ -12,3 +12,15 @@ config.json
 season_seed.json
 docs/img/demo/
 herramientas/salida/
+
+assets/icon_options/
+assets/exe_test.png
+assets/install_test.png
+assets/instalada*.png
+make_icon_options*.py
+
+assets/icon_options/
+assets/exe_test.png
+assets/install_test.png
+assets/instalada*.png
+make_icon_options*.py

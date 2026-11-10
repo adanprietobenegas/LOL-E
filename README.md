@@ -27,7 +27,9 @@ No hace falta tener Python ni nada más. Se actualiza solo: al abrirse avisa si 
 | `updater.py` | Actualización automática (lee un `latest.json`) |
 | `build_release.py` | Genera el instalador (PyInstaller + Inno Setup) y el `.zip` |
 | `docs/` | Léeme, notas de versión, guía visual, estado y pendientes, capturas |
-| `herramientas/` | Scripts de demo y pruebas de modos de juego |
+| `guide.py`, `ui_guide.py`, `ui_opp.py` | Guía de juego y duelo de línea (Data Dragon) y selector de rival de línea |
+| `itemset.py`, `sounds.py` | Envío de la build al cliente como conjunto de objetos; sonidos por fase |
+| `herramientas/` | Scripts de demo y pruebas de modos de juego; `tests_unitarios.py` (14 pruebas de la lógica, sin cliente ni ventana: `python herramientas/tests_unitarios.py`) |
 
 ## Para desarrolladores: ejecutarlo desde el código
 

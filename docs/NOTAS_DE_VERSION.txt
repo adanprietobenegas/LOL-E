@@ -27,6 +27,12 @@ VERSIÓN 1.19.0   (10 de noviembre de 2026)
     conserva la elección, selección nueva la reinicia, y el selector en Partida cambia
     plan["opp"]. 0 errores; datos reales de Lolalytics (Zed: Yasuo 49,6 %, Tryndamere 42 %).
     Sin probar en una selección real.
+  · Vuelta de mejoras: si falla la consulta a Lolalytics del selector, se reintenta al minuto
+    (antes el fallo se quedaba toda la sesión); itemset.client_copied cierra el archivo que lee;
+    nuevo herramientas/tests_unitarios.py (14 pruebas sin cliente ni ventana: sonidos por fase,
+    conjunto de objetos, numeración de huecos, selector de rival y coherencia versión/notas);
+    .gitignore ignora las pruebas de iconos y capturas sueltas de assets.
+
 VERSIÓN 1.18.1   (10 de noviembre de 2026)
 ---------------------------------------------------------------------
 

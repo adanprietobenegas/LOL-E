@@ -65,8 +65,10 @@ def client_copied(conf, key, uid, wait=6.0):
     while True:
         try:
             for fn in os.listdir(folder):
-                if fn.startswith("RIOT_ItemSet") and uid in open(os.path.join(folder, fn), encoding="utf-8", errors="ignore").read():
-                    return True
+                if fn.startswith("RIOT_ItemSet"):
+                    with open(os.path.join(folder, fn), encoding="utf-8", errors="ignore") as f:
+                        if uid in f.read():
+                            return True
         except OSError:
             pass
         if time.time() >= end:
