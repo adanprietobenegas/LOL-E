@@ -792,7 +792,7 @@ class MyPick(Section):
 
     def key(self, ctx):
         r = ctx["r"]
-        return (r.get("mine"), r.get("mine_locked"), r["role"], r["lane_opp"], r["mode"]["kind"])
+        return (r.get("mine"), r.get("mine_locked"), r["role"], r["lane_opp"], r["mode"]["kind"], tuple(r.get("enemies") or ()), r.get("lane_opp_auto"))
 
     def build(self, ctx):
         ui, r = self.ui, ctx["r"]
@@ -808,6 +808,11 @@ class MyPick(Section):
         txt.pack(side="left")
         ui.lbl(txt, "TU CAMPEÓN ELEGIDO" if r.get("mine_locked") else "LO ESTÁS ELIGIENDO", 10, "dim", True).pack(anchor="w")
         ui.lbl(txt, name(cid, ui.champs), 18, "fg", True, True).pack(anchor="w")
+        import ui_opp
+        pk = ui_opp.picker(ui, c, cid, lane, r.get("enemies") or [], r.get("lane_opp_auto") or 0,
+                           ui.opp_now(), ui.set_opp, ctx["width"] - 110)
+        if pk is not None:
+            pk.pack(fill="x", pady=(0, 10))
         build_panel(ui, c, cid, lane, r["lane_opp"] or None, ctx["width"] - 110, r.get("enemy_stats")).pack(fill="x")
         import ui_guide
         ui_guide.guide_block(ui, c, cid, r["lane_opp"] or None, lane, ctx["width"])

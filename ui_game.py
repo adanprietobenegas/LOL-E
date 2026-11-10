@@ -111,6 +111,11 @@ class GameView:
         if opp and opp in ui.champs:
             sub += f"  ·  contra {core.name(opp, ui.champs)}"
         ui.lbl(txt, sub or "sin línea asignada", 10, "dim").pack(anchor="w")
+        if lane and plan.get("kind") in (None, "sr") and plan.get("enemies"):
+            import ui_opp
+            pk = ui_opp.picker(ui, host, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 110)
+            if pk is not None:
+                pk.pack(fill="x", pady=(0, 8))
         if plan.get("mayhem"):
             import ui_mayhem
             self.load_games()

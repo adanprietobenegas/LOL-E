@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.19.0", "fecha": "10 de noviembre de 2026", "titulo": "Elige tu rival de línea", "items": [
+        ("nuevo", "«Rival de línea»: cuando no sabes contra quién vas (por ejemplo en top, donde los rivales no traen línea) puedes elegir uno de los campeones rivales ya visibles. La build, las runas, el duelo y la guía se rehacen contra él, y cada ficha muestra el % de victorias de tu campeón contra ese rival en tu línea. «Auto» vuelve a la detección."),
+        ("nuevo", "Lo mismo en Partida > Plan, para corregirlo cuando ya veas contra quién juegas (pantalla de carga o partida en curso)."),
+        ("mejora", "El rival elegido solo vale para esa selección: al empezar otra, vuelve a Auto."),
+    ]},
     {"v": "1.18.1", "fecha": "10 de noviembre de 2026", "titulo": "El conjunto de objetos llega a la partida", "items": [
         ("arreglo", "«Enviar al cliente» guardaba el conjunto en tu cuenta, pero el juego solo lo lee al empezar la partida y el cliente lo copiaba a su carpeta con retraso (hasta después de que la partida arrancara), así que no aparecía en la tienda. Ahora LOL-E también escribe el archivo en la carpeta del campeón (Config/Champions/<campeón>/Recommended) y comprueba que el cliente lo ha copiado."),
         ("mejora", "El botón explica qué ha pasado: si ya está en la carpeta del juego, o si no se ha podido copiar. Recuerda enviarlo durante la selección de campeón (o activar «Enviar siempre al elegir campeón»); con la partida ya cargada, el conjunto aparece en la siguiente."),

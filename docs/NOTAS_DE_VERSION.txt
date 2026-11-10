@@ -7,6 +7,26 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.19.0   (10 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · ui_opp.py (nuevo): selector «Rival de línea». picker() dibuja una ficha «Auto» y una por
+    cada rival visible; al pulsar una se llama a GUI.set_opp(cid). Cada ficha lleva el % de
+    victorias de tu campeón contra ese rival en tu línea, de matchups.load() sobre la página
+    de TU campeón en Lolalytics (una sola consulta cacheada para todos los rivales; «s/d» si
+    hay menos de 20 partidas). Se muestra en MyPick (selección) y en Partida > Plan.
+  · gui.py: opp_choice (0 = automático), apply_opp(r) (aplica la elección a r["lane_opp"] y
+    guarda lo detectado en r["lane_opp_auto"]; se descarta si el elegido ya no está entre los
+    rivales), set_opp(cid) (en selección recalcula plan y pantalla; en partida cambia
+    plan["opp"] y last_plan.json). Al empezar una selección nueva opp_choice vuelve a 0.
+    infer_lane_opp respeta la elección. El plan guarda opp_auto para el botón «Auto».
+  · Todo lo que dependía de lane_opp (build vs rival, duelo, guía, enfrentamiento) sigue la
+    elección sin cambios. Las recomendaciones de campeón NO se recalculan con la elección
+    (se puntuaron en el motor con el rival detectado).
+  · Probado con sesiones simuladas: elegir, Auto, otra actualización de la misma selección
+    conserva la elección, selección nueva la reinicia, y el selector en Partida cambia
+    plan["opp"]. 0 errores; datos reales de Lolalytics (Zed: Yasuo 49,6 %, Tryndamere 42 %).
+    Sin probar en una selección real.
 VERSIÓN 1.18.1   (10 de noviembre de 2026)
 ---------------------------------------------------------------------
 

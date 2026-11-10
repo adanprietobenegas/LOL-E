@@ -64,6 +64,7 @@ class GUI:
         self.root.bind("<Configure>", self.on_resize)
         self.kit = Kit(self.root, conf, champs, lambda ev: self.q.put((ev,)))
         self.kit.goto_history, self.kit.goto_matchup = self.goto_history, self.goto_matchup
+        self.kit.set_opp, self.kit.opp_now = self.set_opp, lambda: self.opp_choice
         self.apply_window()
         self.build_shell()
         self.layout_main(self.root.winfo_width())
@@ -240,7 +241,7 @@ class GUI:
                     pass
             return
         sr = kind == "sr"   # ARAM, Arena, etc.: solo el campeón, sin línea ni rivales (no hay build de línea)
-        plan = {"cid": r["mine"], "role": (r.get("role") or "") if sr else "", "opp": (r.get("lane_opp") or 0) if sr else 0,
+        plan = {"cid": r["mine"], "role": (r.get("role") or "") if sr else "", "opp": (r.get("lane_opp") or 0) if sr else 0, "opp_auto": (r.get("lane_opp_auto") or 0) if sr else 0,
                 "enemies": list(r["enemies"]) if sr else [], "allies": list(r["allies"]) if sr else [], "locked": bool(r.get("mine_locked")),
                 "state": "select", "kind": kind, "group": r["mode"].get("group", ""), "mayhem": r["mode"].get("id") in (2400,), "qid": r["mode"].get("id")}
         if plan != {**(self.ctx.get("plan") or {}), "state": "select"}:
@@ -282,6 +283,9 @@ class GUI:
                     self.ctx.update(session=session, r=r, got=got)
                     first = self.advisor != "select"
                     self.advisor = "select"
+                    if first:
+                        self.opp_choice = 0   # selección nueva: el rival que elegiste a mano en la anterior ya no vale
+                    self.apply_opp(r)
                     self.update_plan(r)
                     self.infer_lane_opp()
                     if first and self.auto_game and self.page == "partida":  # nueva selección: se vuelve al Asesor
@@ -1099,6 +1103,37 @@ class GUI:
                    "de tu cliente; nunca interviene en la partida.", 10, "dim", wraplength=self.note_w(), justify="left").pack(
             anchor="w", padx=14, pady=(0, 10))
 
+    opp_choice = 0  # rival de línea elegido a mano (0 = el que se deduce solo)
+
+    def apply_opp(self, r):
+        """Aplica a la selección actual el rival de línea elegido a mano; si ya no está entre los rivales, se descarta."""
+        r.setdefault("lane_opp_auto", r.get("lane_opp") or 0)
+        if self.opp_choice and r["mode"]["kind"] == "sr" and self.opp_choice in (r.get("enemies") or []):
+            r["lane_opp"] = self.opp_choice
+        else:
+            if self.opp_choice and r["mode"]["kind"] == "sr" and r.get("enemies") is not None and self.opp_choice not in r["enemies"]:
+                self.opp_choice = 0
+            r["lane_opp"] = r["lane_opp_auto"]
+
+    def set_opp(self, cid):
+        """El jugador elige (o suelta, con 0) a mano su rival de línea: build, runas y guía se rehacen contra él, en la selección y en la partida."""
+        self.opp_choice = cid or 0
+        r, plan = self.ctx.get("r"), self.ctx.get("plan")
+        if self.advisor == "select" and r:
+            self.apply_opp(r)
+            self.update_plan(r)
+        elif plan:
+            plan["opp"] = self.opp_choice or plan.get("opp_auto") or 0
+            try:
+                core.write_json(os.path.join(CACHE, "last_plan.json"), plan)
+            except Exception:
+                pass
+        self.kit.anim = False
+        if self.view == "game":
+            self.game_view.sig = None
+            self.game_view.refresh(self.make_ctx(), True)
+        else:
+            self.apply_page()
     def infer_lane_opp(self):
         """En las colas de grupos de 5 los rivales no traen línea: con sus perfiles se deduce cuál es tu rival directo (si aún no se sabía)."""
         r = self.ctx.get("r")
@@ -1109,7 +1144,8 @@ class GUI:
             roles = draft5.infer_roles(r["enemy_cells"], self.ctx["players"], self.champs)
             opp = next((e["champ"] for e in r["enemy_cells"] if roles.get(e["puuid"]) == r["role"] and e["champ"]), 0)
             if opp:
-                r["lane_opp"] = opp
+                r["lane_opp_auto"] = opp
+                r["lane_opp"] = self.opp_choice or opp
                 self.apply_page()
         except Exception:
             pass

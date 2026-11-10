@@ -1,6 +1,6 @@
 # LOL-E · Estado del proyecto y pendientes
 
-Actualizado el 10/11/2026. Versión: **1.18.1** (1.18.0 y 1.18.1 publicadas el 10/11/2026) (detalle de cambios en `docs/NOTAS_DE_VERSION.txt`; lo que sigue de esta cabecera hasta «Cómo está ahora» es histórico).
+Actualizado el 10/11/2026. Versión: **1.19.0** (1.18.0 y 1.18.1 publicadas el 10/11/2026; la 1.19.0, con el selector de rival de línea, sin publicar) (detalle de cambios en `docs/NOTAS_DE_VERSION.txt`; lo que sigue de esta cabecera hasta «Cómo está ahora» es histórico).
 
 **1.18.0 en resumen:** guía de juego y duelo de línea (`guide.py`, `ui_guide.py`), botón «Enviar al cliente» con conjunto de objetos y variantes (`itemset.py`, `ui_build.py`), repaso estético de contraste, sonido propio por fase (`sounds.py`, Ajustes > Sonido de cada fase) y arreglo de la numeración de huecos de objeto (las botas ya no cuentan como objeto completo). Sin comprobar a ojo en una partida real: el conjunto de objetos en la tienda (1.18.1 escribe además el archivo en la carpeta del juego; ver NOTAS_DE_VERSION) y cada sonido de fase.
 
@@ -85,6 +85,7 @@ Cambiar de pestaña: ~110–280 ms (la primera vez que se abre Enfrentamiento, ~
 | `sounds.py` | Sonidos sintetizados, un sonido por fase (o un .wav del usuario) |
 | `guide.py`, `ui_guide.py` | Guía de juego y duelo de línea (Data Dragon) |
 | `itemset.py` | Envío de la build al cliente como conjunto de objetos |
+| `ui_opp.py` | Selector de rival de línea (selección y Partida > Plan) |
 | `build_release.py`, `docs/` | Empaquetado y documentación |
 
 
