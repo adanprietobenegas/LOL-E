@@ -1,8 +1,8 @@
 # LOL-E · Estado del proyecto y pendientes
 
-Actualizado el 10/11/2026. Versión: **1.18.0**, publicada en GitHub el 10/11/2026 (detalle de cambios en `docs/NOTAS_DE_VERSION.txt`; lo que sigue de esta cabecera hasta «Cómo está ahora» es histórico).
+Actualizado el 10/11/2026. Versión: **1.18.1** (1.18.0 y 1.18.1 publicadas el 10/11/2026) (detalle de cambios en `docs/NOTAS_DE_VERSION.txt`; lo que sigue de esta cabecera hasta «Cómo está ahora» es histórico).
 
-**1.18.0 en resumen:** guía de juego y duelo de línea (`guide.py`, `ui_guide.py`), botón «Enviar al cliente» con conjunto de objetos y variantes (`itemset.py`, `ui_build.py`), repaso estético de contraste, sonido propio por fase (`sounds.py`, Ajustes > Sonido de cada fase) y arreglo de la numeración de huecos de objeto (las botas ya no cuentan como objeto completo). Sin comprobar a ojo en una partida real: el conjunto de objetos en la tienda y cada sonido de fase.
+**1.18.0 en resumen:** guía de juego y duelo de línea (`guide.py`, `ui_guide.py`), botón «Enviar al cliente» con conjunto de objetos y variantes (`itemset.py`, `ui_build.py`), repaso estético de contraste, sonido propio por fase (`sounds.py`, Ajustes > Sonido de cada fase) y arreglo de la numeración de huecos de objeto (las botas ya no cuentan como objeto completo). Sin comprobar a ojo en una partida real: el conjunto de objetos en la tienda (1.18.1 escribe además el archivo en la carpeta del juego; ver NOTAS_DE_VERSION) y cada sonido de fase.
 
 ## Qué es
 App de Windows (Python + CustomTkinter) que lee el cliente de League of Legends (LCU) y te asesora en la selección de campeón. Cuatro pestañas: **Asesor**, **Enfrentamiento**, **Historial** y **Datos**. Se reparte en un instalador (Inno Setup) dentro de un `.zip` con instrucciones.

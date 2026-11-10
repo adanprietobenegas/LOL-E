@@ -7,6 +7,24 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.18.1   (10 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Arreglo: el conjunto de objetos enviado no aparecía en la tienda. Qué se comprobó en el
+    equipo del usuario: el cliente SÍ copia los conjuntos de LOL-E a
+    League of Legends\Config\ItemSets.json y a Config\Champions\<campeón>\Recommended\
+    RIOT_ItemSet_N.json, pero esos archivos llevaban fecha posterior al arranque del juego
+    (copiados ~86 s después de abrirse la partida) y para una partida sin conjunto enviado
+    no se escribió nada. El juego lee esa carpeta al empezar, no durante la partida.
+  · itemset.py: send() escribe además Config\Champions\<id de Data Dragon>\Recommended\
+    LOLE_ItemSet.json (formato de archivo documentado por Riot: title, type, map "SR", mode
+    "any", blocks con items de id en texto), comprueba durante 6 s si el cliente ha copiado
+    el suyo y devuelve un mensaje que lo dice. Funciones nuevas: config_dir, game_file,
+    game_json, write_game_file, client_copied. Probado con una carpeta temporal.
+  · Límite honesto: NO se ha visto el conjunto dentro de una partida (el cliente no se pudo
+    abrir sin iniciar sesión, y eso lo hace el usuario). Quedan por comprobar: que el juego
+    lea el archivo propio y dónde lo muestra la tienda. Si tras enviarlo en la selección
+    sigue sin verse, hay que mirar la carpeta Config\Champions\<campeón>\Recommended.
 VERSIÓN 1.18.0   (10 de noviembre de 2026)
 ---------------------------------------------------------------------
 

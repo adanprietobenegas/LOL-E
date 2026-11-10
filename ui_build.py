@@ -418,13 +418,13 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
             row.after(300, poll)
             return
         if res.get("state") == "done":
-            msg.configure(text=res["msg"] + (" Búscala en la tienda, en «Conjuntos de objetos»." if res["ok"] else ""))
+            msg.configure(text=res["msg"])
             btn.configure(state="normal")
 
     def go():
         btn.configure(state="disabled")
         msg.configure(text="Enviando al cliente…")
-        itemset.send_async(ui.conf, uid, title, cid, blocks, res)
+        itemset.send_async(ui.conf, uid, title, cid, blocks, res, champs[cid].get("icon"))
         row.after(300, poll)
 
     btn = ctk.CTkButton(row, text="Enviar al cliente", height=28, width=140, corner_radius=8, font=ui.font(11, True), fg_color=ui.acc,
@@ -440,7 +440,9 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
             go_auto()
     sw = ctk.CTkSwitch(parent, text="Enviar siempre al elegir campeón", variable=var, font=ui.font(10), progress_color=ui.acc, command=toggle)
     sw.pack(anchor="w", pady=(6, 0))
-    ui.lbl(parent, "Crea un conjunto de objetos propio en tu cliente de League («LOL-E · campeón · línea»), que verás en la tienda durante la partida. "
+    ui.lbl(parent, "Crea un conjunto de objetos propio en tu cliente de League («LOL-E · campeón · línea»), y lo copia a la carpeta del juego. "
+                   "El juego lo lee al EMPEZAR la partida: envíalo durante la selección de campeón (o activa el envío automático); si lo envías "
+                   "con la partida ya cargada, aparecerá en la siguiente. "
                    "Solo se tocan los conjuntos de LOL-E; los tuyos no.", 9, "dim", anchor="w", justify="left", wraplength=480).pack(anchor="w", pady=(4, 0))
 
     def go_auto():

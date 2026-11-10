@@ -10,6 +10,10 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.18.1", "fecha": "10 de noviembre de 2026", "titulo": "El conjunto de objetos llega a la partida", "items": [
+        ("arreglo", "«Enviar al cliente» guardaba el conjunto en tu cuenta, pero el juego solo lo lee al empezar la partida y el cliente lo copiaba a su carpeta con retraso (hasta después de que la partida arrancara), así que no aparecía en la tienda. Ahora LOL-E también escribe el archivo en la carpeta del campeón (Config/Champions/<campeón>/Recommended) y comprueba que el cliente lo ha copiado."),
+        ("mejora", "El botón explica qué ha pasado: si ya está en la carpeta del juego, o si no se ha podido copiar. Recuerda enviarlo durante la selección de campeón (o activar «Enviar siempre al elegir campeón»); con la partida ya cargada, el conjunto aparece en la siguiente."),
+    ]},
     {"v": "1.18.0", "fecha": "10 de noviembre de 2026", "titulo": "Guía de juego, build al cliente y sonidos por fase", "items": [
         ("nuevo", "Nueva «Guía de juego» con tu campeón elegido, en la selección de campeón y en Partida > Plan: sus habilidades con enfriamientos, costes y alcances, su pasiva, los consejos que Riot escribe para jugar con él y sus picos de poder (niveles de la definitiva, habilidad principal y coste de los primeros objetos)."),
         ("nuevo", "«Tu duelo contra X»: compara a los dos campeones y te dice quién tiene alcance y velocidad, quién llega mejor al nivel 1, quién escala mejor, cuánto tarda en volver cada habilidad del rival (tu hueco para entrar), el maná que aguanta cada uno y su tipo de daño, más los consejos de Riot contra ese campeón y sus habilidades."),
