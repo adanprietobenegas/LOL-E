@@ -10,6 +10,14 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.20.0", "fecha": "11 de noviembre de 2026", "titulo": "Los 10 jugadores en la pantalla de carga y actualizaciones solas", "items": [
+        ("nuevo", "Pantalla de carga: en Partida > Plan ves a los 10 jugadores a la vez, cada línea frente a su rival. Cada tarjeta lleva su campeón, su rango, sus últimas partidas en puntos verdes y rojos y etiquetas con lo destacado: mucha maestría con el campeón, primera vez con él, racha, especialista, fuera de su línea, posible cuenta secundaria, dúo contigo…"),
+        ("nuevo", "Comparativa de equipos: rango medio, victorias recientes, maestría media con el campeón que llevan, daño físico y mágico, tanques y control; el lado mejor se marca en verde."),
+        ("nuevo", "Pasa el ratón por una tarjeta para ver sus últimas 10 partidas (victoria o derrota, muertes/asistencias, KDA, cola y cuándo), su media, lo que más juega y avisos. Un clic abre su perfil completo bajo la línea."),
+        ("mejora", "Con la línea de cada rival ya conocida, el plan deja de adivinar contra quién juegas: tu rival directo sale marcado y la build, las runas y la guía se rehacen contra él (salvo que lo hayas elegido tú a mano)."),
+        ("nuevo", "Actualizaciones automáticas: LOL-E busca versiones nuevas al abrirse y cada pocas horas, y las instala solo (descarga, comprueba la huella y se reinicia), sin que nadie tenga que pulsar nada. Nunca lo hace durante la cola, la selección ni la partida: espera a que acabe. Se puede desactivar en Ajustes > Actualizaciones."),
+        ("arreglo", "El récord de un rango ajeno («106V 0D, 100 %») ya no se muestra cuando el cliente no da las derrotas de otros jugadores."),
+    ]},
     {"v": "1.19.0", "fecha": "10 de noviembre de 2026", "titulo": "Elige tu rival de línea", "items": [
         ("nuevo", "«Rival de línea»: cuando no sabes contra quién vas (por ejemplo en top, donde los rivales no traen línea) puedes elegir uno de los campeones rivales ya visibles. La build, las runas, el duelo y la guía se rehacen contra él, y cada ficha muestra el % de victorias de tu campeón contra ese rival en tu línea. «Auto» vuelve a la detección."),
         ("nuevo", "Lo mismo en Partida > Plan, para corregirlo cuando ya veas contra quién juegas (pantalla de carga o partida en curso)."),

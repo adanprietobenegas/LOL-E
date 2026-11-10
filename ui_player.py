@@ -56,7 +56,10 @@ def rank_line(rk):
     if not rk:
         return None
     n = rk["w"] + rk["l"]
-    return (f"{rk['tier']} {rk['div']}".strip() + f" · {rk['lp']} PL · {rk['w']}V {rk['l']}D" + (f" ({rk['wr'] * 100:.0f} %)" if n else ""))
+    base = f"{rk['tier']} {rk['div']}".strip() + f" · {rk['lp']} PL"
+    if rk["l"] == 0 and rk["w"] >= 20:   # el cliente no da las derrotas de otros jugadores (saldría «0D, 100 %»): no se inventa el récord
+        return base
+    return base + f" · {rk['w']}V {rk['l']}D" + (f" ({rk['wr'] * 100:.0f} %)" if n else "")
 
 
 def build(ui, parent, p, qid, width):

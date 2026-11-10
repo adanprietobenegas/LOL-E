@@ -217,6 +217,51 @@ def fetch_team(lcu, session, emit):
         list(ex.map(one, pus))
 
 
+ROLE_ORDER = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "SUPPORT"]
+
+
+def game_roster(gf, my_puuid):
+    """Los 10 jugadores de la partida en curso a partir de la sesión de gameflow (pantalla de carga y partida):
+    [{team: «ally»|«enemy», cid, puuid, role, spells, me}], aliados primero y por línea. None si el cliente aún no los da
+    o si no se sabe cuál es tu equipo (espectador)."""
+    gd = (gf or {}).get("gameData") or {}
+    one, two = gd.get("teamOne") or [], gd.get("teamTwo") or []
+    if not one and not two:
+        return None
+    spells = {s.get("puuid"): [s.get("spell1Id", 0), s.get("spell2Id", 0)] for s in gd.get("playerChampionSelections") or [] if s.get("puuid")}
+    mine = next((t for t in (one, two) if any(p.get("puuid") == my_puuid for p in t)), None) if my_puuid else None
+    if mine is None:
+        return None
+    out = []
+    for team, lst in (("ally", mine), ("enemy", two if mine is one else one)):
+        for p in lst:
+            pu = p.get("puuid") or ""
+            role = (p.get("selectedPosition") or "").upper()
+            role = "SUPPORT" if role == "UTILITY" else role
+            out.append({"team": team, "cid": p.get("championId") or 0, "puuid": pu, "role": role if role in ROLE_ORDER else "",
+                        "spells": spells.get(pu, []), "me": bool(pu) and pu == my_puuid, "icon": p.get("profileIconId", 0)})
+    out.sort(key=lambda x: (x["team"] != "ally", ROLE_ORDER.index(x["role"]) if x["role"] else 9))
+    return out
+
+
+def fetch_roster(lcu, roster, emit):
+    """Lee en paralelo el perfil de los jugadores de la partida (menos el tuyo) y avisa con emit({puuid: datos}) cada vez que llega uno."""
+    found = {}
+    pus = [x["puuid"] for x in roster if x["puuid"] and not x["me"]]
+    if not pus:
+        emit({})
+        return
+
+    def one(pu):
+        try:
+            found[pu] = fetch_player(lcu, pu)
+        except Exception:
+            found[pu] = {"puuid": pu, "name": "", "error": True}
+        emit(dict(found))
+    with ThreadPoolExecutor(4) as ex:
+        list(ex.map(one, pus))
+
+
 def lobby_party(lcu, my_puuid):
     """Puuids del resto de tu grupo (dúo o grupo de 5) mientras estás en la sala."""
     lob = lcu.get("/lol-lobby/v2/lobby")

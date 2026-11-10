@@ -14,7 +14,7 @@ import synergy
 import trends
 from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.19.0"
+APP_NAME, APP_VERSION = "LOL-E", "1.20.0"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -55,7 +55,8 @@ DEFAULT_CONF = {
     "matchups_enabled": True,  # enfrentamientos globales (Lolalytics)
     "custom_weights": {},    # pesos propios (estilo «personalizado»)
     "params": {},            # umbrales propios (ver params.py)
-    "auto_update": True,     # buscar actualizaciones al abrir (si hay update_url)
+    "auto_update": True,     # buscar actualizaciones al abrir y cada pocas horas (si hay update_url)
+    "auto_install": True,    # instalar solas las versiones nuevas (sin pulsar nada), nunca durante una cola, selección o partida
     "update_url": "https://github.com/adanprietobenegas/LOL-E/releases/latest/download/latest.json",        # direccion del archivo latest.json
     "tab": "asesor",
     "start_tab": "ultima",   # ultima | asesor | enfrentamiento | datos
@@ -942,6 +943,7 @@ def run(conf, champs, ui):
     import augments   # (aquí dentro: augments importa este módulo)
     mayhem_live, next_probe = False, 0.0
     last_flow = "_"
+    next_roster, roster_gid = 0.0, None
     next_hist, hist_tries = 0.0, 0
     party, my_puuid = set(), ""
     mode = None
@@ -1040,6 +1042,20 @@ def run(conf, champs, ui):
                         raise
                     except Exception:
                         log_exc("Análisis al terminar la partida")
+                if in_game and time.time() >= next_roster:
+                    next_roster = time.time() + 3
+                    try:  # pantalla de carga: quién juega la partida (los 10), con su rango y su forma; se lee una vez por partida
+                        gfr = lcu.get("/lol-gameflow/v1/session") or {}
+                        gid_r = (gfr.get("gameData") or {}).get("gameId")
+                        ros = players.game_roster(gfr, my_puuid) if gid_r and gid_r != roster_gid else None
+                        if ros:
+                            roster_gid = gid_r
+                            getattr(ui, "roster", lambda *a: None)(ros)
+                            threading.Thread(target=players.fetch_roster, args=(lcu, ros, getattr(ui, "roster_players", lambda d: None)), daemon=True).start()
+                    except (urllib.error.URLError, ConnectionError, OSError):
+                        raise
+                    except Exception:
+                        log_exc("Jugadores de la partida")
                 if in_game:
                     try:  # ARAM: Mayhem: la API de partida en vivo puede decir qué mejoras llevas (se guarda lo que traiga para poder mejorarlo)
                         if mayhem_live and time.time() >= next_probe:

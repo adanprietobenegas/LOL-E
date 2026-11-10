@@ -13,7 +13,7 @@ Asesor de selección de campeón para League of Legends (Windows). Lee el client
 3. Si Windows muestra «SmartScreen» (el instalador no está firmado), pulsa **Más información → Ejecutar de todos modos**.
 4. Abre **LOL-E** desde el menú Inicio, deja abierto el cliente de League of Legends y entra en una selección de campeón.
 
-No hace falta tener Python ni nada más. Se actualiza solo: al abrirse avisa si hay una versión nueva. Para desinstalar: *Configuración → Aplicaciones*. Más detalle en `docs/LEEME_PRIMERO.txt` (también va dentro del `.zip`).
+No hace falta tener Python ni nada más. Se actualiza solo: al abrirse y cada pocas horas busca versiones nuevas y las instala sin preguntar (nunca durante cola, selección o partida). Para desinstalar: *Configuración → Aplicaciones*. Más detalle en `docs/LEEME_PRIMERO.txt` (también va dentro del `.zip`).
 
 > Los archivos `latest.json` que ves en los Releases los usa la app para detectar actualizaciones; no tienes que descargarlos.
 ## Qué hay aquí
@@ -28,6 +28,7 @@ No hace falta tener Python ni nada más. Se actualiza solo: al abrirse avisa si 
 | `build_release.py` | Genera el instalador (PyInstaller + Inno Setup) y el `.zip` |
 | `docs/` | Léeme, notas de versión, guía visual, estado y pendientes, capturas |
 | `guide.py`, `ui_guide.py`, `ui_opp.py` | Guía de juego y duelo de línea (Data Dragon) y selector de rival de línea |
+| `ui_vs.py` | Tablero 5 contra 5 de la pantalla de carga |
 | `itemset.py`, `sounds.py` | Envío de la build al cliente como conjunto de objetos; sonidos por fase |
 | `herramientas/` | Scripts de demo y pruebas de modos de juego; `tests_unitarios.py` (14 pruebas de la lógica, sin cliente ni ventana: `python herramientas/tests_unitarios.py`) |
 

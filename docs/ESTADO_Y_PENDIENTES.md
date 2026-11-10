@@ -1,6 +1,6 @@
 # LOL-E · Estado del proyecto y pendientes
 
-Actualizado el 10/11/2026. Versión: **1.19.0** (1.18.0 y 1.18.1 publicadas el 10/11/2026; la 1.19.0, con el selector de rival de línea, publicada el mismo día) (detalle de cambios en `docs/NOTAS_DE_VERSION.txt`; lo que sigue de esta cabecera hasta «Cómo está ahora» es histórico).
+Actualizado el 10/11/2026. Versión: **1.20.0** (1.18.0, 1.18.1 y 1.19.0 publicadas el 10/11/2026; la 1.20.0, con los 10 jugadores de la pantalla de carga y las actualizaciones automáticas, preparada el 11/11/2026) (detalle de cambios en `docs/NOTAS_DE_VERSION.txt`; lo que sigue de esta cabecera hasta «Cómo está ahora» es histórico).
 
 **1.18.0 en resumen:** guía de juego y duelo de línea (`guide.py`, `ui_guide.py`), botón «Enviar al cliente» con conjunto de objetos y variantes (`itemset.py`, `ui_build.py`), repaso estético de contraste, sonido propio por fase (`sounds.py`, Ajustes > Sonido de cada fase) y arreglo de la numeración de huecos de objeto (las botas ya no cuentan como objeto completo). Sin comprobar a ojo en una partida real: el conjunto de objetos en la tienda (1.18.1 escribe además el archivo en la carpeta del juego; ver NOTAS_DE_VERSION) y cada sonido de fase.
 
@@ -66,7 +66,7 @@ Cambiar de pestaña: ~110–280 ms (la primera vez que se abre Enfrentamiento, ~
 - Carpeta de trabajo: `%USERPROFILE%\Documents\LOL-E` (git). Para compilar hace falta `cache/` con `champions.json`, `meraki.json` e `icons/` (datos públicos; no están en el repo).
 - Construir: `python build_release.py` (genera `release/LOL-E-<versión>.zip`, `Instalar-LOL-E-<versión>.exe` y `latest.json`). Trabaja en `%TEMP%\lolb` por el límite de 260 caracteres de Windows.
 - Versión: constante `APP_VERSION` en `lol_advisor.py`.
-- Pruebas de la lógica (sin cliente): `python herramientas/tests_unitarios.py` (14 pruebas; ejecutarlas antes de cada versión).
+- Pruebas de la lógica (sin cliente): `python herramientas/tests_unitarios.py` (21 pruebas; ejecutarlas antes de cada versión).
 - Probar sin jugar: `herramientas/demo_live.py` abre la app con una partida simulada y se maneja escribiendo órdenes en un archivo (ver la cabecera del script). `herramientas/test_modes.py` prueba sesiones raras (Arena, personalizada, ARAM vacío). Ambos usan `shots2.py` (necesita el cliente de LoL abierto) y escriben en `herramientas/salida/` (ignorada por git).
 - Regla: **no editar archivos UTF-8 con los cmdlets de PowerShell** (corrompen los acentos); usar Python o el editor.
 
@@ -87,6 +87,7 @@ Cambiar de pestaña: ~110–280 ms (la primera vez que se abre Enfrentamiento, ~
 | `guide.py`, `ui_guide.py` | Guía de juego y duelo de línea (Data Dragon) |
 | `itemset.py` | Envío de la build al cliente como conjunto de objetos |
 | `ui_opp.py` | Selector de rival de línea (selección y Partida > Plan) |
+| `ui_vs.py` | Tablero 5 contra 5 de la pantalla de carga (Partida > Plan): comparativa, tarjetas, ventana con las últimas 10 partidas. Sin comprobar en una carga real |
 | `build_release.py`, `docs/` | Empaquetado y documentación |
 
 

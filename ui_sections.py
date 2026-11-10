@@ -1528,7 +1528,7 @@ class Lobby(Section):
             ui.lbl(c, f"Daño físico {st['ad']} · mágico {st['ap']}   ·   Tanques {st['tanks']}   ·   Control {ctl(st['cc'])}", 10,
                    "dim", anchor="w").pack(anchor="w")
 
-    def row(self, parent, a, p, in_party, party_n, loaded, mates=None, ring="#3ddc84", qid=0):
+    def row(self, parent, a, p, in_party, party_n, loaded, mates=None, ring="#3ddc84", qid=0, tag=None):
         ui = self.ui
         box = ctk.CTkFrame(parent, fg_color=PAL["card2"], corner_radius=12)
         box.pack(fill="x", pady=4)
@@ -1543,6 +1543,8 @@ class Lobby(Section):
         ui.lbl(head, nm, 13, "fg", True).pack(side="left")
         if ROLES_ES.get(a["role"]):
             ui.chip(head, ROLES_ES[a["role"]], "dim").pack(side="left", padx=(8, 0))
+        if tag:
+            ui.chip(head, tag, "warn").pack(side="left", padx=(6, 0))
         if in_party:
             ui.chip(head, "Dúo contigo" if party_n == 1 else "Tu grupo", "info").pack(side="left", padx=(6, 0))
         if mates and mates[0]:

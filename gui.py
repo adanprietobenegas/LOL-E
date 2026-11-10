@@ -118,6 +118,12 @@ class GUI:
     def players(self, data):
         self.q.put(("players", data))
 
+    def roster(self, ros):
+        self.q.put(("roster", ros))
+
+    def roster_players(self, data):
+        self.q.put(("roster_pl", data))
+
     def poll_cmd(self):
         try:
             return self.cmds.get_nowait()
@@ -275,6 +281,38 @@ class GUI:
             if self.view == "game":
                 self.game_view.refresh(self.make_ctx(), True)
 
+    def on_roster(self, ros):
+        """Pantalla de carga: ya se sabe quién juega cada línea. Se guardan los 10 jugadores y, con ellos, el plan se afina:
+        los rivales reales, su línea y tu rival directo (sin adivinar)."""
+        self.ctx["roster"], self.ctx["roster_pl"] = ros, {}
+        plan = self.ctx.get("plan")
+        if plan and plan.get("kind") in (None, "sr"):
+            enemies = [x["cid"] for x in ros if x["team"] == "enemy" and x["cid"]]
+            me = next((x for x in ros if x["me"]), None)
+            if not plan.get("role") and me and me["role"]:
+                plan["role"] = me["role"]
+            plan["enemies"] = enemies
+            plan["allies"] = [x["cid"] for x in ros if x["team"] == "ally" and not x["me"] and x["cid"]]
+            opp = next((x["cid"] for x in ros if x["team"] == "enemy" and x["role"] and x["role"] == plan.get("role") and x["cid"]), 0)
+            if opp:
+                plan["opp_auto"] = opp
+            if self.opp_choice and self.opp_choice not in enemies:
+                self.opp_choice = 0
+            plan["opp"] = self.opp_choice or plan.get("opp_auto") or plan.get("opp") or 0
+            try:
+                core.write_json(os.path.join(CACHE, "last_plan.json"), plan)
+            except Exception:
+                pass
+        if not plan and self.page == "asesor" and self.view in ("idle", None):   # sin campeón marcado: igualmente se enseña la partida
+            self.auto_game = True
+            self.page = "partida"
+            self.tab_seg.set("Partida")
+            self.game_view.tab = "Plan"
+            self.apply_page()
+        elif self.view == "game":
+            self.game_view.sig = None
+            self.game_view.refresh(self.make_ctx(), True)
+
     def handle_event(self, ev, kind):
         if True:
             if True:
@@ -285,6 +323,7 @@ class GUI:
                     self.advisor = "select"
                     if first:
                         self.opp_choice = 0   # selección nueva: el rival que elegiste a mano en la anterior ya no vale
+                        self.ctx["roster"], self.ctx["roster_pl"] = None, {}   # y los jugadores de la partida anterior tampoco
                     self.apply_opp(r)
                     self.update_plan(r)
                     self.infer_lane_opp()
@@ -318,6 +357,12 @@ class GUI:
                         cx = self.make_ctx()
                         for sec in (self.lobby, self.enemies, self.draft):
                             sec.refresh(cx)
+                elif kind == "roster":
+                    self.on_roster(ev[1])
+                elif kind == "roster_pl":
+                    self.ctx["roster_pl"] = ev[1]
+                    if self.view == "game":
+                        self.game_view.refresh(self.make_ctx(), True)
                 elif kind == "live_aug":
                     self.ctx["live_aug"] = ev[1]
                     if self.view == "game":
@@ -357,6 +402,7 @@ class GUI:
                     self.update_btn.configure(state="normal", text=f"Actualizar a {self.update_info['version']}")
                 elif kind == "update_ready":
                     updater.install(ev[1])
+                    self.root.after(800, self.close)   # el instalador reabre LOL-E al terminar
                     self.close()
 
     def tick(self):
@@ -423,9 +469,33 @@ class GUI:
             pass
 
     # ---------- actualizaciones ----------
+    UPDATE_EVERY = 3 * 3600 * 1000     # se vuelve a mirar cada 3 horas: quien deja LOL-E abierto también se actualiza
+    BUSY = ("Matchmaking", "ReadyCheck", "ChampSelect", "GameStart", "InProgress", "Reconnect")
+    installing = False
+
     def auto_check(self):
-        if self.conf["auto_update"] and self.conf["update_url"]:
+        if self.conf["auto_update"] and self.conf["update_url"] and not self.installing:
             self.check_updates(False)
+        self.root.after(self.UPDATE_EVERY, self.auto_check)
+
+    def auto_install(self, info):
+        """Instala la versión nueva sin preguntar. Solo con la ventana en reposo: si hay cola, selección o partida, espera y vuelve a probar."""
+        if self.installing or not self.running:
+            return
+        if self.advisor == "select" or self.ctx.get("phase") in self.BUSY:
+            self.root.after(120000, lambda: self.auto_install(info))
+            return
+        self.installing = True
+        self.status(f"Actualizando LOL-E a la versión {info['version']}…")
+
+        def go():
+            try:
+                path = updater.download(info)
+                self.q.put(("update_ready", path))
+            except Exception as e:
+                self.installing = False
+                self.status(f"No se ha podido actualizar solo ({e}). Pulsa «Actualizar» cuando quieras.")
+        threading.Thread(target=go, daemon=True).start()
 
     def check_updates(self, manual):
         def go():
@@ -451,6 +521,8 @@ class GUI:
         self.update_btn.configure(text=f"Actualizar a {info['version']}")
         self.update_btn.pack(side="right", padx=(0, 10))
         self.status(f"Hay una versión nueva: {info['version']}")
+        if self.conf.get("auto_install", True) and not manual:
+            self.auto_install(info)
 
     def confirm_update(self):
         info = self.update_info
@@ -1078,7 +1150,10 @@ class GUI:
         button("Borrar la caché de imágenes y enfrentamientos", self.clear_cache)
 
         section("Actualizaciones")
-        switch("Buscar actualizaciones al abrir", "auto_update")
+        switch("Buscar actualizaciones al abrir y cada pocas horas", "auto_update")
+        switch("Instalar las actualizaciones solas", "auto_install")
+        note("Con esto activo no hay que hacer nada: al salir una versión nueva LOL-E la descarga, comprueba su huella y se reinicia solo. "
+             "Nunca lo hace durante la cola, la selección ni la partida.")
         label("Dirección del archivo de versión")
         entry = ctk.CTkEntry(sc, font=k.font(11), placeholder_text="https://…/latest.json", fg_color=PAL["well"], border_color=PAL["edge"],
                              text_color=PAL["fg"])

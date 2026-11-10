@@ -7,6 +7,36 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.20.0   (11 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · players.py: game_roster(gf, my_puuid) lee de /lol-gameflow/v1/session (gameData.teamOne,
+    teamTwo, playerChampionSelections) los 10 jugadores de la partida: equipo (aliado/rival),
+    campeón, línea, puuid, hechizos. El cliente los da con nombre en la pantalla de carga
+    (comprobado con los datos de una partida real terminada). fetch_roster() carga sus perfiles
+    en paralelo (4 hilos) con fetch_player, la misma lectura que ya se hacía con tus aliados.
+  · lol_advisor.py: en el bucle principal, con la partida en curso y cada 3 s hasta conseguirlo,
+    se lee el reparto una vez por partida (roster_gid) y se avisa a la ventana con ui.roster /
+    ui.roster_players.
+  · gui.py: on_roster() guarda el reparto, afina el plan (enemies, allies, opp_auto/opp con la
+    línea real de cada rival, role si faltaba) y, sin plan, abre la pestaña Partida.
+  · ui_vs.py (nuevo): tablero 5 contra 5 (clase Board): comparativa de equipos (rango medio,
+    victorias recientes, maestría media, daño, tanques y control), cinco líneas con una tarjeta
+    por jugador (etiquetas de badges()), ventana emergente con las últimas 10 partidas al pasar
+    el ratón y perfil completo (ui_player.build) al hacer clic. Con menos de 640 px de ancho se
+    usa la lista de siempre (GameView.roster_block). El cliente no da las derrotas de otros
+    jugadores en algunas ligas: rank_line oculta el récord «106V 0D».
+  · gui.py / updater.py / lol_advisor.py: actualizaciones automáticas. auto_check() mira al
+    abrir (5 s) y cada 3 h; si hay versión nueva y «auto_install» (por defecto activo) está
+    puesto, auto_install() descarga, comprueba el SHA-256 y lanza el instalador con
+    /VERYSILENT /SUPPRESSMSGBOXES /UPDATE=1; la ventana se cierra y el instalador reabre LOL-E.
+    Espera (reintento cada 2 min) si hay cola, selección o partida. Si falla, queda el botón
+    «Actualizar». Ajuste nuevo en Ajustes > Actualizaciones.
+  · Las instalaciones anteriores a la 1.20.0 todavía tienen el botón con confirmación: deben
+    actualizarse a mano una vez; desde la 1.20.0 en adelante lo hacen solas.
+  · herramientas/tests_unitarios.py: 21 pruebas (lector de jugadores, rango medio y etiquetas
+    del tablero, actualización automática).
+
 VERSIÓN 1.19.0   (10 de noviembre de 2026)
 ---------------------------------------------------------------------
 

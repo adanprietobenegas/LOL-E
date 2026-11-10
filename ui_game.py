@@ -54,7 +54,8 @@ class GameView:
         self.width = ctx["width"]
         plan = ctx.get("plan") or {}
         sig = (ui.epoch, self.width // 80, self.tab, self.gid, plan.get("cid"), plan.get("opp"), plan.get("state"),
-               tuple(plan.get("enemies") or ()), str(self.data.get(self.gid))[:20], self.opp.get(self.gid), self.all_moments, str(self.vs.get((plan.get("opp"), plan.get("role"))))[:20])
+               tuple(plan.get("enemies") or ()), str(self.data.get(self.gid))[:20], self.opp.get(self.gid), self.all_moments, str(self.vs.get((plan.get("opp"), plan.get("role"))))[:20],
+               len(ctx.get("roster") or ()), len(ctx.get("roster_pl") or {}))
         if sig == self.sig and not force:
             return
         self.sig = sig
@@ -89,10 +90,57 @@ class GameView:
             self.refresh(self.gui.make_ctx(), True)
 
     # ---- plan ----
+    def roster_block(self, ctx, plan):
+        """«Jugadores de la partida»: los 10 de la pantalla de carga, cada uno con su rango, su forma reciente, lo que más juega y su maestría
+        con el campeón que lleva. Los datos salen del cliente (el de cada jugador, igual que en la selección): no hay clave de Riot."""
+        ros, ui = ctx.get("roster"), self.ui
+        if not ros:
+            return
+        import ui_vs
+        if self.width >= ui_vs.MIN_WIDTH:   # con sitio: los 10 a la vez, cada línea frente a su rival
+            ui.lbl(self.host, "JUGADORES DE LA PARTIDA", 10, "dim", True, anchor="w").pack(anchor="w", pady=(2, 6))
+            ui_vs.Board(self).render(self.host, ctx, plan)
+            return
+        from ui_sections import Lobby
+        pl, r = ctx.get("roster_pl") or {}, ctx.get("r") or {}
+        party, mates, qid = set(r.get("party") or ()), r.get("mates") or {}, (plan or {}).get("qid") or 0
+        mine = next((x for x in ros if x["me"]), None)
+        my_role = (plan or {}).get("role") or (mine or {}).get("role") or ""
+        opp = (plan or {}).get("opp") or 0
+        n_load = len([x for x in ros if x["puuid"] and not x["me"]])
+        ui.lbl(self.host, "JUGADORES DE LA PARTIDA", 10, "dim", True, anchor="w").pack(anchor="w", pady=(2, 4))
+        if n_load and len(pl) < n_load:
+            ui.lbl(self.host, f"Leyendo perfiles… {len(pl)} de {n_load}", 10, "dim", anchor="w").pack(anchor="w", pady=(0, 4))
+        for team, title, ring in (("ally", "TU EQUIPO", "#3ddc84"), ("enemy", "EQUIPO RIVAL", "#ff5a5f")):
+            grp = [x for x in ros if x["team"] == team]
+            if not grp:
+                continue
+            ui.lbl(self.host, title, 9, "dim", True, anchor="w").pack(anchor="w", pady=(8, 0))
+            for x in grp:
+                a = {"champ": x["cid"], "role": x["role"], "puuid": x["puuid"]}
+                tag = "Tu rival de línea" if team == "enemy" and my_role and x["role"] == my_role and (not opp or x["cid"] == opp) else None
+                if x["me"]:
+                    box = ctk.CTkFrame(self.host, fg_color=PAL["card2"], corner_radius=12)
+                    box.pack(fill="x", pady=4)
+                    inner = ui.frame(box)
+                    inner.pack(fill="x", padx=12, pady=10)
+                    ui.champ(inner, x["cid"], 44, False, ring).pack(side="left")
+                    ui.lbl(inner, "Tú", 13, "fg", True).pack(side="left", padx=12)
+                    if ROLES_ES.get(x["role"]):
+                        ui.chip(inner, ROLES_ES[x["role"]], "dim").pack(side="left")
+                    continue
+                Lobby.row(self, self.host, a, pl.get(x["puuid"]) if x["puuid"] else None, x["puuid"] in party, len(party),
+                          False, mates.get(x["puuid"]), ring, qid, tag)
+        ui.lbl(self.host, "Rango y partidas recientes salen del cliente de cada jugador. Un rango oculto o sin partidas se marca como tal.", 9, "dim",
+               anchor="w", justify="left", wraplength=max(260, self.width - 110)).pack(anchor="w", pady=(6, 10))
+
     def plan_tab(self, ctx):
         ui, host = self.ui, self.host
         plan = ctx.get("plan")
+        self.roster_block(ctx, plan)
         if not plan or plan["cid"] not in ui.champs:
+            if ctx.get("roster"):
+                return
             ui.lbl(host, "Cuando elijas campeón en una selección, aquí tendrás su build, sus runas, el enfrentamiento y consejos, "
                          "también durante la partida y después.", 11, "dim", anchor="w", justify="left",
                    wraplength=max(260, self.width - 110)).pack(anchor="w", pady=6)

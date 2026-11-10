@@ -124,6 +124,71 @@ class SelectorDeRival(unittest.TestCase):
         self.assertIsNone(ui_opp.wr_vs(self.Kit, filas, 999))
 
 
+class JugadoresDeLaPartida(unittest.TestCase):
+    def sesion(self):
+        def p(pu, cid, pos):
+            return {"puuid": pu, "championId": cid, "selectedPosition": pos, "profileIconId": 1}
+        return {"gameData": {
+            "teamOne": [p("a2", 11, "JUNGLE"), p("a1", 10, "TOP"), p("me", 14, "UTILITY")],
+            "teamTwo": [p("e2", 21, "MIDDLE"), p("e1", 20, "TOP"), p("e3", 22, "")],
+            "playerChampionSelections": [{"puuid": "me", "spell1Id": 4, "spell2Id": 3}]}}
+
+    def test_equipos_roles_y_orden(self):
+        import players
+        ros = players.game_roster(self.sesion(), "me")
+        self.assertEqual([(x["team"], x["role"]) for x in ros],
+                         [("ally", "TOP"), ("ally", "JUNGLE"), ("ally", "SUPPORT"), ("enemy", "TOP"), ("enemy", "MIDDLE"), ("enemy", "")])
+        self.assertEqual([x["puuid"] for x in ros if x["me"]], ["me"])
+        self.assertEqual(next(x for x in ros if x["me"])["spells"], [4, 3])
+
+    def test_mi_equipo_puede_ser_el_dos(self):
+        import players
+        ros = players.game_roster(self.sesion(), "e1")
+        self.assertEqual([x["cid"] for x in ros if x["team"] == "ally"], [20, 21, 22])
+
+    def test_sin_datos_o_sin_mi_equipo(self):
+        import players
+        self.assertIsNone(players.game_roster({}, "me"))
+        self.assertIsNone(players.game_roster({"gameData": {"teamOne": [], "teamTwo": []}}, "me"))
+        self.assertIsNone(players.game_roster(self.sesion(), "otro"))
+        self.assertIsNone(players.game_roster(self.sesion(), ""))
+
+
+class TableroCincoContraCinco(unittest.TestCase):
+    def test_rango_medio(self):
+        import ui_vs
+        oro4, plat1 = {"key": "GOLD", "div": "IV"}, {"key": "PLATINUM", "div": "I"}
+        self.assertLess(ui_vs.rank_score(oro4), ui_vs.rank_score(plat1))
+        self.assertEqual(ui_vs.score_rank((ui_vs.rank_score(oro4) + ui_vs.rank_score(plat1)) / 2)[0].split()[0] in ("Oro", "Platino"), True)
+        self.assertEqual(ui_vs.score_rank(ui_vs.rank_score(plat1))[0], "Platino I")
+        self.assertIsNone(ui_vs.rank_score(None))
+        self.assertEqual(ui_vs.score_rank(ui_vs.rank_score({"key": "MASTER", "div": ""}))[0], "Maestro")   # las ligas altas no llevan división
+
+    def test_etiquetas(self):
+        import ui_vs
+        x = {"cid": 5, "role": "TOP", "puuid": "p", "me": False}
+        p = {"mastery": {5: 250000}, "stats": {"streak": 4, "otp": 5, "sr_n": 10}, "roles": ["JUNGLE"], "level": 200, "solo": {"key": "GOLD"}}
+        textos = [t for t, _ in ui_vs.badges(p, x, set(), None)]
+        self.assertIn("Maestría 250k", textos)
+        self.assertIn("Racha +4", textos)
+        self.assertIn("Fuera de su línea", textos)
+        self.assertEqual(ui_vs.badges(None, x, {"p"}, None), [("Dúo contigo", "info")])
+        nuevo = {"mastery": {}, "stats": {}, "roles": [], "level": 200, "solo": {"key": "GOLD"}}
+        self.assertIn("Primera vez", [t for t, _ in ui_vs.badges(nuevo, x, set(), None)])
+
+
+class ActualizacionAutomatica(unittest.TestCase):
+    def test_instalacion_sin_ventanas_y_activada_por_defecto(self):
+        import inspect, updater
+        self.assertIn("/VERYSILENT", inspect.getsource(updater.install))
+        self.assertTrue(core.DEFAULT_CONF["auto_update"] and core.DEFAULT_CONF["auto_install"])
+
+    def test_comparacion_de_versiones(self):
+        import updater
+        self.assertGreater(updater.vtuple("1.20.0"), updater.vtuple("1.19.9"))
+        self.assertGreater(updater.vtuple("v1.10.0"), updater.vtuple("1.9.9"))
+
+
 class Versiones(unittest.TestCase):
     def test_la_version_tiene_notas_y_documentacion(self):
         import novedades

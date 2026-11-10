@@ -1,7 +1,8 @@
 """Actualizaciones automáticas: comprueba un archivo de versión (latest.json), descarga el instalador, verifica su huella y lo lanza.
 
 El archivo de versión lo publica quien reparte el programa (por ejemplo, en las «Releases» de un repositorio de GitHub).
-Si `update_url` está vacío, no se comprueba nada. Nada se instala sin que el usuario pulse «Actualizar».
+Si `update_url` está vacío, no se comprueba nada. Por defecto la app se actualiza sola (al abrir y cada pocas horas, solo fuera de cola, selección y partida); con el ajuste
+«Instalar las actualizaciones solas» desactivado, queda el botón «Actualizar».
 
 latest.json:  {"version": "1.2.0", "url": "https://…/Instalar-LOL-E-1.2.0.exe", "sha256": "…", "notes": "…"}
 """
@@ -51,5 +52,5 @@ def download(info, progress=None):
 
 
 def install(path):
-    """Lanza el instalador (con barra de progreso) y pide reabrir la aplicación al terminar. El programa debe cerrarse después."""
-    subprocess.Popen([path, "/SILENT", "/UPDATE=1", "/NORESTART"], close_fds=True)
+    """Lanza el instalador sin ventanas; al terminar vuelve a abrir LOL-E (UPDATE=1). El programa debe cerrarse después."""
+    subprocess.Popen([path, "/VERYSILENT", "/SUPPRESSMSGBOXES", "/UPDATE=1", "/NORESTART"], close_fds=True)
