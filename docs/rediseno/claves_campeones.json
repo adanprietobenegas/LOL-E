@@ -1,0 +1,3124 @@
+{
+ "_estado": "BORRADOR (11/11/2026). Salido de la wiki oficial por 5 revisores automáticos (parche 26.22 aprox.); ninguna guía externa contrastada, ningún orden de habilidades afirmado. Un error ya detectado y corregido (Cassiopeia). NO mostrar en la app sin una segunda verificación independiente de las claves con revisar=true y una muestra del resto.",
+ "_campos": "relevante, claves[{tipo, habilidad?, texto, fuente, parche, verificado_dos_fuentes, revisar}], sin_verificar[]",
+ "campeones": {
+  "Aatrox": {
+   "relevante": false,
+   "motivo": "kit estándar sin condicionantes de build"
+  },
+  "Ahri": {
+   "relevante": false,
+   "motivo": "kit estándar sin mecánicas de build"
+  },
+  "Akali": {
+   "relevante": false,
+   "motivo": "híbrida sin mecánica especial"
+  },
+  "Akshan": {
+   "relevante": false,
+   "motivo": "sin acumulación ni condicionante de build"
+  },
+  "Alistar": {
+   "relevante": false,
+   "motivo": "soporte tanque sin mecánicas de build"
+  },
+  "Ambessa": {
+   "relevante": false,
+   "motivo": "sin mecánica que condicione compras"
+  },
+  "Amumu": {
+   "relevante": false,
+   "motivo": "tanque estándar sin mecánicas especiales"
+  },
+  "Anivia": {
+   "relevante": false,
+   "motivo": "mago estándar sin condicionantes"
+  },
+  "Annie": {
+   "relevante": false,
+   "motivo": "mago estándar sin condicionantes"
+  },
+  "Aphelios": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "habilidad": "pasiva",
+     "texto": "Tiene 5 armas con 50 de munición cada una; dos equipadas a la vez (empieza con Calibrum y Severum). Cada ataque o Q gasta 1; al agotarse, el arma pasa al final de la cola.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Aphelios",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "orden_habilidades",
+     "habilidad": "Q/W/E",
+     "texto": "No sube habilidades: los puntos van a daño de ataque adicional (Q), velocidad de ataque (W) y letalidad (E). Los tres llegan al rango 6 como pronto en nivel 9; la R mejora sola en 11 y 16.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Aphelios",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "pasiva",
+     "texto": "Runaan's Hurricane no gasta munición extra con su viento furioso. Infinity Edge hace críticos del 200 % + 30 % en los centinelas de Calibrum y aumenta el daño crítico de la R.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Aphelios",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de armas y prioridad de runas/objetos por guía de alto nivel"
+   ]
+  },
+  "Ashe": {
+   "relevante": false,
+   "motivo": "tirador estándar, concentración simple"
+  },
+  "AurelionSol": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "pasiva",
+     "texto": "Polvo estelar permanente: Q da 2 por ráfaga a campeón, E da 1 por segundo con campeón dentro y 2 por baja, R da 5 por campeón golpeado. Mejora daño de Q, umbral de ejecución de E y radios.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Aurelion_Sol",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "evolucion",
+     "habilidad": "R",
+     "texto": "Al reunir 75 de polvo estelar, la siguiente Estrella fugaz se convierte en Ocaso celeste (The Skies Descend), y se repite cada 75 acumulados tras cada uso potenciado.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Aurelion_Sol",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "La ejecución de Singularidad es de un 5 % de vida máxima más un 2,6 % por cada 100 de polvo estelar; la R aumenta su radio con el polvo. Priorizar acertar habilidades sobre campeones.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Aurelion_Sol",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de subida de habilidades (no contrastado con guía)",
+    "Posible límite máximo de polvo estelar"
+   ]
+  },
+  "Aurora": {
+   "relevante": false,
+   "motivo": "sin mecánicas que cambien la build"
+  },
+  "Azir": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "W",
+     "texto": "Los ataques de los soldados aplican efectos al impactar y al atacar solo al 50 % al objetivo principal; no aplican robo de vida y los demás objetivos no reciben efectos.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Azir",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "Máximo de 2 soldados almacenados, duran 10 s (la mitad cerca de torretas enemigas) y desaparecen si Azir se aleja demasiado. La Q exige tener un soldado invocado.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Azir",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades con guía de alto nivel",
+    "Interacción con críticos"
+   ]
+  },
+  "Bard": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "pasiva",
+     "texto": "Cada campana recogida cuenta: meeps con ralentización a 5, daño en área a 15 y más meeps máximos (2 a 10, 3 a 30 ... 9 a 100). Daño de meep: 30 + 6 por cada 5 campanas + 40 % AP.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Bard",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "pasiva",
+     "texto": "Los meeps escalan con poder de habilidad y activan Electrocutar y Conquistador; los objetivos secundarios activan Hidra voraz y Muramana.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Bard",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "pasiva",
+     "texto": "Cada campana da 12 % de maná máximo y velocidad de movimiento fuera de combate. Solo Bardo ve las campanas no recogidas en la niebla; recogerlas ya a tiempo marca el ritmo de su escalado.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Bard",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades con guía de alto nivel"
+   ]
+  },
+  "Belveth": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "pasiva",
+     "texto": "Gana acumulaciones permanentes de velocidad de ataque: 2 por campeón o monstruo épico y 1 por súbdito grande o monstruo grande tras dañarlo. Sin tope listado; su límite de velocidad de ataque es enorme.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Bel%27Veth",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "evolucion",
+     "habilidad": "R",
+     "texto": "Consumir coral del Vacío (aparece al matar campeón o monstruo épico) activa Verdadera forma: 45 s con 0 acumulaciones, 90 s con 40 e infinita con 80. Cada coral consumido da una acumulación.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Bel%27Veth",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "E",
+     "texto": "Los cortes de Vorágine real añaden uno por cada 40 % de velocidad de ataque adicional, y con velocidades de ataque absurdas dejan de hacer daño; el enfriamiento de Q baja con velocidad de ataque.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Bel%27Veth",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades con guía de alto nivel",
+    "Qué habilidad corresponde a Royal Maelstrom en español exacto (E)"
+   ]
+  },
+  "Blitzcrank": {
+   "relevante": false,
+   "motivo": "soporte de enganche sin condicionantes"
+  },
+  "Brand": {
+   "relevante": false,
+   "motivo": "mago estándar sin condicionantes de build"
+  },
+  "Braum": {
+   "relevante": false,
+   "motivo": "soporte tanque sin mecánicas de build"
+  },
+  "Briar": {
+   "relevante": false,
+   "motivo": "luchadora sin condicionantes de build"
+  },
+  "Caitlyn": {
+   "relevante": false,
+   "motivo": "tiradora estándar sin condicionantes"
+  },
+  "Camille": {
+   "relevante": false,
+   "motivo": "luchadora sin mecánicas que condicionen"
+  },
+  "Cassiopeia": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "pasiva",
+     "texto": "Desde el parche 26.01 ya puede comprar botas. Su pasiva hace entre un 5 % y un 36 % (según nivel) más efectivas todas las bonificaciones de velocidad de movimiento: las botas y los objetos con velocidad rinden más.",
+     "fuente": "Data Dragon 15.24.1 frente a 16.1.1 (texto de la pasiva) y wiki.leagueoflegends.com/en-us/Boots (Trivia)",
+     "parche": "26.18",
+     "verificado_dos_fuentes": true,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "Colmillo doble hace más daño (20/45/70/95/120 + 45 % AP) y cura (10-16 % AP) a objetivos envenenados; el veneno viene de Q y W. Ciclo clave: Q, luego E repetido.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Cassiopeia",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades con guía de alto nivel (E primero)",
+    "Lo que ponía el primer revisor («no puede comprar botas») era un error: lo corrigió el usuario y se confirmó."
+   ]
+  },
+  "Chogath": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "R",
+     "texto": "Cada baja con Festín da una acumulación permanente de vida adicional (80/120/160 por rango), tamaño y daño. Súbditos y monstruos no épicos dan como máximo 6 acumulaciones; campeones sin límite.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Cho%27Gath",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "Festín hace daño verdadero 300/475/650 + 50 % AP + 10 % de vida adicional (más 8/12/16 por acumulación). Vida adicional y poder de habilidad suben su daño de ejecución.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Cho%27Gath",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades con guía de alto nivel",
+    "Si el daño por acumulación sigue vigente en el parche actual"
+   ]
+  },
+  "Corki": {
+   "relevante": false,
+   "motivo": "no verificado; sin mecánica clara"
+  },
+  "Darius": {
+   "relevante": false,
+   "motivo": "luchador estándar con sangrado simple"
+  },
+  "Diana": {
+   "relevante": false,
+   "motivo": "asesina sin condicionantes de build"
+  },
+  "DrMundo": {
+   "relevante": false,
+   "motivo": "tanque con escalado simple de vida"
+  },
+  "Draven": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "pasiva",
+     "texto": "Cada hacha atrapada o súbdito, monstruo o torre eliminados dan 1 de Adoración. Matar un campeón da 25 + 2 de oro por acumulación. Muere perdiendo el 50 % de las acumulaciones.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Draven",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Puede tener dos hachas giratorias a la vez; atraparlas reinicia el enfriamiento de W y prepara otra Q. El daño de la Q escala con el daño de ataque adicional (75-115 %).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Draven",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades con guía de alto nivel",
+    "Tope de acumulaciones de Adoración"
+   ]
+  },
+  "Ekko": {
+   "relevante": false,
+   "motivo": "sin mecánicas que condicionen compras"
+  },
+  "Elise": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "forma",
+     "habilidad": "R",
+     "texto": "Alterna humana y araña; cada forma tiene sus habilidades y su enfriamiento propio, con 3 s al cambiar. Cambiar no cuenta como lanzar habilidad (no activa filo de hechizo).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Elise",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "forma",
+     "habilidad": "pasiva",
+     "texto": "En forma humana cada habilidad que impacta guarda una arañita (tope 2/3/4/5 según rango de forma humana). Al pasar a araña salen todas; en araña su ataque hace daño mágico y cura a Elise.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Elise",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "pasiva",
+     "texto": "Ataque de araña: 14/24/34/44 de daño mágico + 15 % AP y cura 6/8/10/12 + 8 % AP. Aplica efectos al impactar pero no puede ser crítico. Las arañitas escalan con AP (15 %).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Elise",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades con guía de alto nivel"
+   ]
+  },
+  "Evelynn": {
+   "relevante": false,
+   "motivo": "asesina sin condicionantes de build"
+  },
+  "Ezreal": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "Q",
+     "texto": "Disparo místico aplica efectos al impactar y al atacar, escala con 130 % AD y 40 % AP, y si acierta reduce 1,5 s los enfriamientos de todas sus habilidades. Se beneficia de reducción de enfriamiento.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Ezreal",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    },
+    {
+     "tipo": "acumulacion",
+     "habilidad": "pasiva",
+     "texto": "Cada habilidad que impacta da 10 % de velocidad de ataque (máx. 5 acumulaciones, 50 %) durante 6 s. Acertar la Q mantiene las acumulaciones.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Ezreal",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Interacción con objetos de filo de hechizo (Sheen, Trinity, Essence Reaver)",
+    "Orden de habilidades con guía de alto nivel (Q primero)"
+   ]
+  },
+  "Fiddlesticks": {
+   "relevante": false,
+   "motivo": "mago estándar sin condicionantes"
+  },
+  "Fiora": {
+   "relevante": false,
+   "motivo": "luchadora sin mecánicas de build"
+  },
+  "Fizz": {
+   "relevante": false,
+   "motivo": "Asesino mágico sin mecánicas especiales"
+  },
+  "Galio": {
+   "relevante": false,
+   "motivo": "Tanque mago sin acumulaciones especiales"
+  },
+  "Gangplank": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Q da 3-7 de oro y 4-8 Serpientes de Plata por baja (también con barriles). Las Serpientes se gastan en la tienda (500 c/u) en mejoras de la R.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Gangplank",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "Q",
+     "texto": "Q aplica efectos al impactar y puede ser crítica. Si Q activa la Hidra voraz, la Hidra titánica o Luden's Echo, esos efectos dan botín (oro/Serpientes) extra.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Gangplank",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "E tiene 3 cargas (4 en rango 3-4 y 5 en rango 5); recarga 17 a 13 s. La explosión del barril hereda el crítico del ataque que lo rompe y los efectos Spellblade se suman.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Gangplank",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades (guía de alto nivel no contrastada)"
+   ]
+  },
+  "Garen": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "W",
+     "texto": "Cada baja (campeón, súbdito, monstruo) da una carga permanente de 0,2 armadura y RM adicionales, hasta 150 cargas (máximo +30 de cada).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Garen",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "E da 7 giros (+1 por cada 25 % de velocidad de ataque adicional) y los críticos escalan cada giro; la armadura enemiga baja un 25 % tras 6 golpes seguidos.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Garen",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "R ejecuta con daño verdadero: 125/200/275 más 25/30/35 % de la vida perdida; mata si la vida del objetivo baja del 20/23/26 % de la máxima más una cantidad fija.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Garen",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades (guía de alto nivel no contrastada)"
+   ]
+  },
+  "Gnar": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "forma",
+     "texto": "Al llenar la furia (100) se transforma en Mega Gnar 15 s, sin generar furia; después queda 15 s sin generarla. La furia decae a los 13 s fuera de combate.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Gnar",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "texto": "Mega Gnar pierde parte de la velocidad de ataque adicional (hasta el 93,5 % según nivel) y gana vida, armadura y RM base: la velocidad de ataque rinde poco en Mega.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Gnar",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Recoger el bumerán (Mini) devuelve el 40 % del enfriamiento de Q; recoger el peñasco (Mega) devuelve el 70 %. Mini tiene +alcance y +velocidad de movimiento.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Gnar",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "Los daños de E (Brinco/Sacudida) incluyen un 6 % de la vida máxima de Gnar, por lo que la vida añade daño; en Mega también cuenta en Crunch.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Gnar",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades (la wiki no lo incluye, guía no contrastada)",
+    "Si el 6 % de vida máxima de la clave de E aplica exactamente a E o a W (la wiki lo muestra en Hop y Crunch)"
+   ]
+  },
+  "Gragas": {
+   "relevante": false,
+   "motivo": "Luchador mago sin mecánicas especiales"
+  },
+  "Graves": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "E",
+     "texto": "E da Auténtico valor: hasta 8 cargas de 4 s (2 si te lanzas hacia un campeón); cada una da 7-19 de armadura y la mitad en RM. Cada perdigón que golpea reduce 0,5 s la recarga de E.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Graves",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    },
+    {
+     "tipo": "aviso",
+     "texto": "Solo 2 cartuchos; recarga más lenta con entre 150 y 200 % de velocidad de ataque adicional. Cada ataque lanza 4 perdigones (6 si es crítico) y solo el primero aplica efectos al golpear.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Graves",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "texto": "Cada perdigón aplica Carve de Black Cleaver: un ataque puede dar hasta 4 acumulaciones (5 con crítico). Randuin's Omen reduce el daño crítico por perdigón.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Graves",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades (guía de alto nivel no contrastada)"
+   ]
+  },
+  "Gwen": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "texto": "Cada golpe de Gwen hace el 1 % de la vida máxima (+0,6 % por 100 AP) como daño mágico y cura el 67 % del daño a campeones: bueno contra objetivos con mucha vida.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Gwen",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "acumulacion",
+     "habilidad": "Q",
+     "texto": "Cada ataque básico al golpear da un Snippy (hasta 4, dura 6 s). Q los consume todos y añade un tijeretazo por cada uno; el centro convierte el 50 % del daño en verdadero.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Gwen",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "R se lanza hasta 3 veces (1, 3 y 5 agujas) con un máximo de 8 s entre lanzamientos; cada aguja aplica la pasiva de vida máxima.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Gwen",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades (guía de alto nivel no contrastada)"
+   ]
+  },
+  "Hecarim": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "texto": "Su pasiva da AD igual al 12-24 % (según nivel) de su velocidad de movimiento adicional: las botas y los objetos con velocidad de movimiento aumentan su daño.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Hecarim",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "acumulacion",
+     "habilidad": "Q",
+     "texto": "Cada golpe de Q da una acumulación (máx. 3, 8 s): +3 % de daño y -0,75 s de enfriamiento por acumulación. Con 3, Q baja hasta 2,25 s de enfriamiento.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Hecarim",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "R (Envite de sombras) se lanza a 300-1000 de distancia: el miedo dura 0,75-1,5 s según la distancia recorrida y la ralentización depende de la distancia a Hecarim.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Hecarim",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Daño de E (Carga devastadora) según distancia: la wiki leída no lo mostró",
+    "Orden de habilidades"
+   ]
+  },
+  "Heimerdinger": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Q almacena hasta 3 kits de torreta (recarga 20 s por kit) y mantiene 3 torretas a la vez; una cuarta destruye la más antigua.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Heimerdinger",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "R no daña: mejora el siguiente Q, W o E sin coste de maná (Q = torreta Apex de 8 s, W = enjambre de cohetes, E = granada con 3 rebotes). Si la cancelas, pierdes los 100 de maná.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Heimerdinger",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "orden_habilidades",
+     "habilidad": "R",
+     "texto": "Las versiones mejoradas escalan con el rango de R, así que se sube R siempre en 6, 11 y 16 (enfriamiento 100/85/70 s).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Heimerdinger",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades Q/W/E concreto"
+   ]
+  },
+  "Hwei": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "forma",
+     "texto": "Q, W y E abren tres temáticas (Desastres, Serenidades, Tormentos) con 3 hechizos cada una (Q/W/E tras elegir). Cada tema tiene 5 rangos y no se sube de nivel dentro de una temática.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Hwei",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "texto": "La pasiva marca 4 s con una habilidad de daño; otra habilidad distinta sobre el marcado crea una explosión a los 0,85 s (40-285 + 35 % AP) en el sitio donde estaba.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Hwei",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "R solo se lanza si no estás en una temática. Pincelada de salida sin coste ni enfriamiento; salir de una temática lanzando un hechizo ocurre solo.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Hwei",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Cómo se reparten los puntos de habilidad entre los tres hechizos de una misma tecla",
+    "Orden de habilidades"
+   ]
+  },
+  "Illaoi": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Q pasiva: los tentáculos infligen un 10-30 % más de daño. El tentáculo de la pasiva escala con 110 % AD y 40 % AP y su daño se reduce un 50 % por golpe reciente (máx. 75 %).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Illaoi",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "W hace un 3-5 % de la vida máxima del objetivo (+3,5 % por 100 AD adicional), mínimo 20-60, tope 300 contra no campeones; hace atacar a los tentáculos.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Illaoi",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "R invoca un tentáculo por campeón golpeado, hasta 6; los tentáculos curan a Illaoi el 5 % de su vida perdida si golpean a un campeón.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Illaoi",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades"
+   ]
+  },
+  "Irelia": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "texto": "Cada campeón golpeado con habilidades da 1 acumulación (máx. 4, 6 s): +10-25 % de velocidad de ataque por acumulación. Con 4, los ataques hacen daño mágico adicional.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Irelia",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Q se reinicia si mata o si el objetivo muere durante el dash; contra un objetivo marcado (Dúo impecable/R) baja el enfriamiento a 0,2 s. Aplica efectos al golpear.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Irelia",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "W se carga hasta 1,5 s: 40-70 % menos daño físico y 20-35 % menos mágico mientras carga; el daño sube hasta un 200 % según el tiempo de carga.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Irelia",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades"
+   ]
+  },
+  "Ivern": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "texto": "No ataca la jungla; planta una arboleda en el campamento (canaliza 2,5 s). Madura en unos 40 s y al liberarla da todo el oro y la experiencia. Smite sobre el monstruo la libera al instante.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Ivern",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "Maleza: sus ataques en maleza hacen 20-50 (+20 % AP) de daño mágico adicional y los de aliados cercanos 10-30 (+10 % AP de Ivern). Hasta 3 cargas (20 s).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Ivern",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "Escudo de E 75-235 (+50 % AP) que explota a los 2 s; si no golpea a nadie se vuelve a aplicar sin explosión. Se pone sobre aliados para que roben el crédito de la baja.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Ivern",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades y objetos de jungla"
+   ]
+  },
+  "Janna": {
+   "relevante": false,
+   "motivo": "Soporte clásico sin mecánicas especiales"
+  },
+  "JarvanIV": {
+   "relevante": false,
+   "motivo": "Luchador sin mecánicas especiales"
+  },
+  "Jax": {
+   "relevante": false,
+   "motivo": "Luchador clásico sin acumulaciones especiales"
+  },
+  "Jayce": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "forma",
+     "texto": "Cambia entre Martillo (melé: armadura/RM y daño mágico en el siguiente ataque) y Cañón (alcance 500, reduce armadura/RM un 20-35 %). Transformarse no se sube y tarda 6 s en recargar.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Jayce",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "Si el Disparo atraviesa el Portal de aceleración, gana alcance (1050 a 1600), velocidad y daño: 112-399 en vez de 80-285 (+182 % AD adicional). Es la clave del combo.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Jayce",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "Hipercarga (Cañón): 3 ataques en 4 s con 360 % de velocidad de ataque adicional y 70-110 % de AD cada uno; reinicia el temporizador de ataque.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Jayce",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades concreto",
+    "Ratios de Manamune"
+   ]
+  },
+  "Jhin": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "texto": "Velocidad de ataque fija: solo crece con niveles. Cada 1 % de velocidad de ataque adicional da un 0,3 % de AD y cada 1 % de crítico un 0,35 %; sin ella el ataque suma 4-44 % de AD por nivel.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Jhin",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "texto": "El 4.º disparo siempre es crítico y hace un 15-25 % de la vida perdida adicional. Recarga de 2,5 s tras 4 disparos. Infinity Edge añade +22,5 % al daño crítico.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Jhin",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "R: 4 disparos en hasta 10 s con 1 s entre recastes; el 4.º es crítico (200 %, 230 % con Infinity Edge). Daño según la vida perdida del objetivo.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Jhin",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades",
+    "Letalidad y enfriamiento (la wiki no los incluyó en la lectura)"
+   ]
+  },
+  "Jinx": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Pium Pium: 3 acumulaciones de velocidad de ataque (15-65 %, máx. 30-130 %). Espinas: +100-200 de alcance, 20 de maná por ataque, daño en área y pierde el 10 % de la velocidad de ataque adicional.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Jinx",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "texto": "A tope: ayudar a matar a un campeón, monstruo épico o estructura (daño en 3 s) da +175 % de velocidad de movimiento; cada baja de campeón añade 25 % de velocidad de ataque, hasta 5 veces (125 %).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Jinx",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "R gana daño con la distancia (10-100 % tras unas 1500 unidades) y suma 25-35 % de la vida perdida; el máximo en monstruos es 1200.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Jinx",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades (guía de alto nivel no contrastada)",
+    "Interacción con Runaan's Hurricane: la wiki indica que cada rayo genera pila de Pium Pium"
+   ]
+  },
+  "KSante": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "forma",
+     "habilidad": "R",
+     "texto": "Órdago dura 15 s: la vida actual baja al 65 % si la superas y no se recupera; da 40/60/80 % de velocidad de ataque, 50 % de penetración de armadura y 20 % de omnivampirismo.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/K%27Sante",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "texto": "Su daño escala con la armadura y RM adicionales: Q suma 40 % de cada una, W hace 2 % de la vida máxima por 100 de cada una y cambia la velocidad de lanzamiento de Q.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/K%27Sante",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "texto": "Las habilidades marcan 4 s: el siguiente ataque básico consume la marca y hace daño físico (12 + 1-2 % de la vida máxima del objetivo).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/K%27Sante",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades (la wiki no lo incluye)",
+    "Letras exactas de W y Q en los escalados por resistencias (la wiki nombra Path Maker y Ntofo Strikes)"
+   ]
+  },
+  "Kaisa": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "evolucion",
+     "habilidad": "Q",
+     "texto": "Q evoluciona con 100 de AD de objetos (o 100 entre objetos y crecimiento): pasa de 6 a 12 misiles. No cuenta fuerza adaptativa.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kai%27Sa",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "evolucion",
+     "habilidad": "W",
+     "texto": "W evoluciona con 100 de AP de objetos: aplica 3 de Plasma en vez de 2 y devuelve el 75 % del enfriamiento si golpea a un campeón.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kai%27Sa",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "evolucion",
+     "habilidad": "E",
+     "texto": "E evoluciona con 100 % de velocidad de ataque de objetos (o 100 % entre objetos y crecimiento): da invisibilidad 0,5 s al lanzar. Evolucionar tarda 2 s.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kai%27Sa",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "acumulacion",
+     "texto": "Plasma: 1 por ataque, 2-3 por W, máx. 5 durante 4 s. La 5.ª consume todo y hace el 15 % (+6 % por 100 AP) de la vida perdida (tope 400 en monstruos).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kai%27Sa",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades Q, luego E, luego W (dado por el encargo, no contrastado por mí con una guía)"
+   ]
+  },
+  "Kalista": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "texto": "Cada ataque la hace saltar en la dirección del cursor. El salto es menor sin botas mejoradas (140-240 vs 175-300) y deja de seguir el ritmo por encima de unos 2,1 de velocidad de ataque.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kalista",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "Marca de alma 4 s (con el Juramentado): 10-18 % de la vida máxima como daño mágico, con tope de 100-200 contra no campeones.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kalista",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "E hace daño por lanza clavada (más con cada lanza extra); matar a un objetivo reinicia el enfriamiento y devuelve maná. Q transfiere las lanzas si mata.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kalista",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Letras W/E de la wiki salían cruzadas en la lectura; confirmado por conocimiento del juego, no por la wiki",
+    "Orden de habilidades"
+   ]
+  },
+  "Karma": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "Mantra está desde el nivel 1 con rango 1 y mejora la siguiente habilidad (8 s). Sus bonificaciones escalan con el rango de R (enfriamiento 40/38/36/34 s).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Karma",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "texto": "Cada campeón golpeado por una habilidad de daño reduce 4 s el enfriamiento de Mantra (pasiva). Q con Mantra es la mayor reducción: golpea dos veces.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Karma",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades"
+   ]
+  },
+  "Karthus": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "texto": "Al morir pasa a espíritu: sigue lanzando hechizos sin coste pero no puede moverse. Con daño fatal queda 7 s en estado zombi (R se desactiva a los 4 s).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Karthus",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Q hace el doble de daño a un único objetivo aislado (80-232 +70 % AP frente a 40-116 +35 %); mejor contra un solo objetivo que contra el grupo.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Karthus",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades"
+   ]
+  },
+  "Kassadin": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "R",
+     "texto": "R acumula hasta 4 cargas (15 s): maná 40/80/160/320/640 y +35-55 (+7 % AP, +1 % maná máximo) de daño por carga. Con 4: hasta +140-220 y +4 % de maná máximo.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kassadin",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "texto": "R escala con el maná máximo (1 % por carga, 4 % máx.): objetos de maná mejoran el daño. Necesita maná para encadenar R.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kassadin",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "E baja 0,75 s su enfriamiento actual por cada habilidad lanzada por él o campeones cercanos; Q da escudo mágico 1,5 s al lanzar.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kassadin",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades",
+    "Interacción con Lich Bane y Seraph's"
+   ]
+  },
+  "Katarina": {
+   "relevante": false,
+   "motivo": "Asesino sin mecánicas de compra especiales"
+  },
+  "Kayle": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "forma",
+     "texto": "Evoluciona al subir de nivel: 6 pasa a distancia (+350 de alcance, 525 total); 11 añade ondas de fuego al máximo de Fervor (20-41 de daño); 16 suma +100 de alcance (625).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kayle",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "acumulacion",
+     "texto": "Cada ataque da un Fervor (6 % de velocidad de ataque; 5 máx., 5 s). Con 5 queda Exaltada y gana +10 % de velocidad de movimiento.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kayle",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "E pasiva hace 15-35 (+10 % AD, +20 % AP) por golpe; la activa hace 8-10 % de la vida perdida del objetivo (+1,5 % por 100 AP), tope 400 en monstruos.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kayle",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "texto": "Muramana se activa dos veces por objetivo con Filo purificador (5,2 % del maná máximo en melé, 4,2 % a distancia). Manaflow Band no se activa con ondas de fuego.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kayle",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades"
+   ]
+  },
+  "Kayn": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "forma",
+     "texto": "La forma sale del daño a campeones: ataques cuerpo a cuerpo llenan Rhaast (Darkin) y a distancia Asesino de sombras; la barra llena a 500 puntos. Se decide una vez, tras 6 s invulnerable.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kayn",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "forma",
+     "texto": "Rhaast cura el 25 % del daño físico de habilidades a campeones y su Q hace daño de vida máxima. Asesino de sombras convierte 20-40 % del daño en daño mágico adicional y reduce la W.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kayn",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "Tras 4 min puedes desbloquear la otra forma (5 s menos por esfera de ese tipo recogida). El daño por efectos, First Strike y Aery no da esferas.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kayn",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades",
+    "Build recomendada de cada forma"
+   ]
+  },
+  "Kennen": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "texto": "Cada habilidad que golpea apunta Marca de la tormenta (3 máx., 6 s). La 3.ª aturde 1,25 s y devuelve 25 de energía; si repite en 6 s el aturdimiento es de 0,5 s.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kennen",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "W pasiva: 4 ataques cargan el siguiente (35-75, +80-120 % AD adicional, +35 % AP), que puede ser crítico y aplica marca. La activa requiere objetivos marcados.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kennen",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "Al reactivar E gana 50-90 % de velocidad de ataque y los críticos extienden el efecto 1 s; Rapid Firecannon reduce su alcance de ataque más aún.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kennen",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades"
+   ]
+  },
+  "Khazix": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "evolucion",
+     "habilidad": "R",
+     "texto": "Cada rango de R da un punto de evolución (3 + 1 por derrotar a Rengar). Evolucionar tarda 2 s de lanzamiento y no se puede bajo control de lanzamiento.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kha%27Zix",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "evolucion",
+     "habilidad": "Q",
+     "texto": "Garras desgarradoras: +50 de alcance y -45 % de enfriamiento contra aislados (Q hace 168-378 contra aislados, 210 % del daño normal).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kha%27Zix",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "evolucion",
+     "habilidad": "E",
+     "texto": "Alas: +300 de alcance y reinicia el enfriamiento de Salto al conseguir una baja o asistencia de campeón.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kha%27Zix",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "evolucion",
+     "habilidad": "W",
+     "texto": "Pinchos: lanza 3 en cono, ralentiza un 40 % (60 % a aislados) y revela 2,25 s. Ocultamiento adaptable (R): invisibilidad de 2 s y 3 usos totales.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kha%27Zix",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de evolución Q, luego R, luego según partida (dado por el encargo, no contrastado por mí)"
+   ]
+  },
+  "Kindred": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "texto": "Cada caza completada da una marca permanente: Q +5 % de velocidad de ataque, W +1 % de vida actual y E +0,5 % de vida perdida. Cada 4 marcas, más alcance de ataque.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kindred",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "texto": "Cordera elige un campeón cada 75 s; Lobo marca monstruos de la jungla enemiga desde 2:53 (más grandes con más marcas). Un objetivo cazado no se repite en 4 min.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kindred",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "E: 3 ataques seguidos y el tercero lanza al Lobo (80-200, +100 % AD adicional, +5 % de vida perdida). Tope de vida en monstruos 200.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kindred",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Número máximo de marcas",
+    "Orden de habilidades"
+   ]
+  },
+  "Kled": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "forma",
+     "texto": "Montado, Skaarl recibe todo el daño. Al caer a 0 de vida, huye y Kled queda desmontado (410 de vida base vs 810) con Q = Arma de bolsillo; recupera coraje (máx. 100) peleando.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kled",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "texto": "Desmontado hace 85-100 % de daño a campeones y se mueve a 305 (vs 345). Curación y regeneración rellenan antes a Skaarl que a Kled.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kled",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "Tendencias violentas: +150 % de velocidad de ataque durante 4 ataques; el 4.º hace daño de vida máxima (tope 200 en monstruos).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kled",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Letra concreta de Tendencias violentas (la wiki la lista como pasiva, la app la muestra en W)",
+    "Orden de habilidades"
+   ]
+  },
+  "KogMaw": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "W",
+     "texto": "W (8 s): +130-210 de alcance y 3-6 % de la vida máxima como daño mágico al golpear (+1,5 % por 100 AP), tope 100 contra súbditos y monstruos. Escala con velocidad de ataque.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kog%27Maw",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "acumulacion",
+     "habilidad": "R",
+     "texto": "R acumula 9 cargas máx. (8 s); cada carga cuesta 40 más de maná. Daño 100-360 que sube hasta +50 % por vida perdida y se duplica por debajo del 40 %.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kog%27Maw",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Q da 5-25 % de velocidad de ataque pasiva y rompe armadura/RM un 16-32 % durante 4 s.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kog%27Maw",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "texto": "Al recibir daño fatal queda 4 s zombi y explota con 140-650 de daño verdadero en radio 400; los hechizos de invocador tienen 5 s de enfriamiento.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Kog%27Maw",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Interacción con Blade of the Ruined King y Guinsoo's",
+    "Orden de habilidades"
+   ]
+  },
+  "Leblanc": {
+   "relevante": false,
+   "motivo": "Asesino mago sin mecánicas de compra"
+  },
+  "Nasus": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "Q",
+     "texto": "Q da 4 cargas permanentes por baja de unidad normal y 10 por campeón, súbdito grande o monstruo grande; cada carga suma 1 de daño al Q. Prioriza farmear y subir Q primero.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Nasus",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Tope de cargas: la wiki no lo indica",
+    "Orden de habilidades de guía (Q primero) no contrastado"
+   ]
+  },
+  "Pyke": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "Pasiva",
+     "texto": "Convierte la vida adicional en AD (1 AD por 14 de vida adicional): los objetos de vida dan AD, no vida real. Mejor letalidad y AD que vida.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Pyke",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "R ejecuta por debajo de 250-550 (según nivel) + 80 % de AD adicional + 1,5 por letalidad; por eso AD y letalidad suben el umbral. El aliado que asiste recibe oro extra.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Pyke",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Pasiva",
+     "texto": "Guarda vida gris (9 % del daño de campeones; 40 % con 2+ enemigos cerca, tope 55 % vida máx.) y la cura al ocultarse de la visión enemiga.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Pyke",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guía de alto nivel no consultado"
+   ]
+  },
+  "Ornn": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "Pasiva",
+     "texto": "Puede comprar objetos no consumibles desde cualquier punto del mapa canalizando 4 s (se interrumpe con daño de campeones o torres).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Ornn",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "Pasiva",
+     "texto": "Nivel 13: mejora Obra maestra de su primer objeto legendario (+1000 oro en stats). Niveles 14-17: una vez por aliado mejora su primer legendario compatible (4 aliados).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Ornn",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "acumulacion",
+     "habilidad": "Pasiva",
+     "texto": "Su armadura, RM y vida adicionales suben un 10 % de todas las fuentes, +4 % por cada mejora hasta un 30 % con 5. Los objetos de resistencias rinden más.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Ornn",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guía de alto nivel no consultado"
+   ]
+  },
+  "Malphite": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "E",
+     "texto": "E escala con 60 % AP y 40 % de armadura total; W con 15 % de armadura en dos componentes. La armadura es su estadística de daño, además de AP.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Malphite",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Pasiva",
+     "texto": "Su tamaño crece un 8 % de la armadura total (tope 35 % con 437,5 de armadura). Pasiva W: armadura adicional que se triplica con Escudo de granito activo.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Malphite",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guía de alto nivel no consultado"
+   ]
+  },
+  "Mordekaiser": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "R",
+     "texto": "R roba el 10 % de AP, velocidad de ataque, vida máx., armadura, RM y tamaño del objetivo durante 7 s; si muere en el Reino de la Muerte, conserva lo robado hasta que reaparezca.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Mordekaiser",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "W guarda el 45 % del daño infligido y el 7,5 % del recibido (tope 30 % vida máx.) para el escudo; recastear lo convierte en curación del 35-45 % del escudo restante.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Mordekaiser",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guía de alto nivel no consultado"
+   ]
+  },
+  "Nidalee": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "forma",
+     "habilidad": "Q",
+     "texto": "Jabalina escala con distancia recorrida de 0 % a 225 % del daño (70-150 +50 % AP mín., hasta 162,5 % AP máx.). Su daño depende de acertar de lejos.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Nidalee",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "forma",
+     "habilidad": "R",
+     "texto": "En forma felina, Tumbar (Takedown) hace más daño cuanta menos vida tenga el objetivo (hasta +175 % y +30 % si está Cazado). Escala con AD y AP.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Nidalee",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "forma",
+     "habilidad": "R",
+     "texto": "Jabalina o Emboscada aplican Cacería 4 s; así Asalto/Tumbar son más fuertes y reducen su enfriamiento. Los rangos felinos suben con R en nivel 6, 11 y 16.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Nidalee",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guía de alto nivel no consultado"
+   ]
+  },
+  "MasterYi": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Cada ataque básico reduce 1 s el enfriamiento del Q (Golpe fulgurante); el propio Q no lo reduce. Los objetos de velocidad de ataque y efectos al golpear rinden mucho.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Master_Yi",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "Con R (Imparable) activo, cada baja o asistencia suma 7 s de duración. Pasiva de R: una baja o asistencia reduce un 70 % el enfriamiento actual de Q, W y E.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Master_Yi",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "E (Estilo Wuju) añade daño verdadero 20-40 + 35 % de AD adicional en ataques básicos durante 5 s; no se aplica a estructuras ni a críticos.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Master_Yi",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guía de alto nivel no consultado"
+   ]
+  },
+  "Mel": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "Pasiva",
+     "texto": "Cada habilidad da 3 proyectiles extra (máx. 9, 5 s) que consume el siguiente ataque. Aplica Deslumbrar acumulable; ejecuta si el daño almacenado supera la vida actual.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Mel",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "R golpea a todos los marcados con Deslumbrar sin importar distancia: 125/200/275 +30 % AP más 4/7/10 +4 % AP por acumulación. Sus niveles amplifican Deslumbrar.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Mel",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guía de alto nivel no consultado"
+   ]
+  },
+  "Locke": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "R",
+     "texto": "Cada campeón ejecutado con R y sellado con el tótem da un acumulador permanente de Campeón sellado: +0,5 % al umbral de ejecución (10/11/12 % vida máx.) y -20 % enfriamiento de R.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Locke",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Q marca con hasta 3 clavos (4 s); el siguiente ataque o E los consume. Con 2+ clavos la ralentización sube a 60 % y el daño pasa de 15-43 a 63-181 (+105-147 % AP).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Locke",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Pasiva",
+     "texto": "Ataques con daño mágico adicional que sube hasta un 100 % según la vida que falte al enemigo (5-40 +10 % AP, tope 10-80 +20 % AP).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Locke",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guía de alto nivel no consultado"
+   ]
+  },
+  "LeeSin": {
+   "relevante": false,
+   "motivo": "Sin mecánica que altere compras"
+  },
+  "Leona": {
+   "relevante": false,
+   "motivo": "Tanque estándar sin particularidades"
+  },
+  "Lillia": {
+   "relevante": false,
+   "motivo": "Mago luchador sin condiciones especiales"
+  },
+  "Lissandra": {
+   "relevante": false,
+   "motivo": "Mago estándar sin mecánica especial"
+  },
+  "Lucian": {
+   "relevante": false,
+   "motivo": "Tirador sin interacción especial"
+  },
+  "Lulu": {
+   "relevante": false,
+   "motivo": "Soporte estándar sin interacción especial"
+  },
+  "Lux": {
+   "relevante": false,
+   "motivo": "Mago estándar sin interacción especial"
+  },
+  "Malzahar": {
+   "relevante": false,
+   "motivo": "Mago estándar sin mecánica especial"
+  },
+  "Maokai": {
+   "relevante": false,
+   "motivo": "Tanque estándar sin particularidades"
+  },
+  "MissFortune": {
+   "relevante": false,
+   "motivo": "Tiradora estándar sin particularidades"
+  },
+  "MonkeyKing": {
+   "relevante": false,
+   "motivo": "Luchador estándar sin particularidades"
+  },
+  "Morgana": {
+   "relevante": false,
+   "motivo": "Soporte estándar sin particularidades"
+  },
+  "Naafiri": {
+   "relevante": false,
+   "motivo": "Asesina sin condicionantes de compra"
+  },
+  "Nami": {
+   "relevante": false,
+   "motivo": "Soporte estándar sin particularidades"
+  },
+  "Nautilus": {
+   "relevante": false,
+   "motivo": "Tanque estándar sin particularidades"
+  },
+  "Neeko": {
+   "relevante": false,
+   "motivo": "Mago estándar sin particularidades"
+  },
+  "Nilah": {
+   "relevante": false,
+   "motivo": "Luchadora sin condicionantes de compra"
+  },
+  "Nocturne": {
+   "relevante": false,
+   "motivo": "Asesino sin condicionantes de compra"
+  },
+  "Nunu": {
+   "relevante": false,
+   "motivo": "Tanque estándar sin particularidades"
+  },
+  "Olaf": {
+   "relevante": false,
+   "motivo": "Luchador estándar sin particularidades"
+  },
+  "Orianna": {
+   "relevante": false,
+   "motivo": "Maga estándar sin particularidades"
+  },
+  "Pantheon": {
+   "relevante": false,
+   "motivo": "Luchador sin condicionantes de compra"
+  },
+  "Poppy": {
+   "relevante": false,
+   "motivo": "Tanque estándar sin particularidades"
+  },
+  "Qiyana": {
+   "relevante": false,
+   "motivo": "Asesina sin condicionantes de compra"
+  },
+  "Quinn": {
+   "relevante": false,
+   "motivo": "Tiradora sin condicionantes de compra"
+  },
+  "Milio": {
+   "relevante": false,
+   "motivo": "Soporte estándar sin particularidades"
+  },
+  "Rakan": {
+   "relevante": false,
+   "motivo": "kit de apoyo sin mecanica especial"
+  },
+  "Rammus": {
+   "relevante": false,
+   "motivo": "pasiva escala solo con defensas"
+  },
+  "RekSai": {
+   "relevante": false,
+   "motivo": "formas sin efecto en compras"
+  },
+  "Rell": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "forma",
+     "habilidad": "W",
+     "texto": "W alterna montada/desmontada. Desmontada gana +15 % armadura y RM, +20 % vel. de ataque y +75 de alcance; Montar da un ataque potenciado con aturdimiento de 0,6 s.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Rell",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "P",
+     "texto": "La pasiva inflige daño mágico al impacto igual al 5 % de su armadura total + 5 % de su RM total, y reduce 3 % armadura/RM por acumulación (máx. 5): los objetos defensivos suman daño.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Rell",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades no contrastado con guía externa"
+   ]
+  },
+  "Renata": {
+   "relevante": false,
+   "motivo": "apoyo sin mecanica de compra"
+  },
+  "Renekton": {
+   "relevante": false,
+   "motivo": "furia estandar sin condicionar compras"
+  },
+  "Rengar": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "P",
+     "texto": "Collar dientehueso: 1 trofeo por campeón único eliminado (máx. 5) que da AD adicional creciente. Con 4 de ferocidad, la siguiente habilidad básica queda potenciada.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Rengar",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "P",
+     "texto": "En maleza, sus ataques básicos saltan al objetivo y ganan alcance. Las habilidades potenciadas dan: Q velocidad de ataque, W limpia el control, E enraíza en vez de ralentizar.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Rengar",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Qué habilidad potenciar primero: la wiki no lo indica",
+    "Valor de AD por trofeo (solo rango 1 %-36 %)"
+   ]
+  },
+  "Riven": {
+   "relevante": false,
+   "motivo": "combos sin condicionar build"
+  },
+  "Rumble": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "habilidad": "P",
+     "texto": "Q, W y E dan 20 de calor cada una. Desde 50 de calor (Zona de riesgo) todas sus habilidades básicas mejoran: daño +50 % en Q y E, escudo y velocidad +50 % en W.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Rumble",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "P",
+     "texto": "Al llegar al calor máximo se sobrecalienta: no puede lanzar hechizos durante unos 4 s, pero sus ataques ganan velocidad de ataque y daño mágico al impacto (incluye 4 % de vida máx.).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Rumble",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    }
+   ],
+   "sin_verificar": [
+    "Calor máximo: la wiki dice 150, el texto del juego habla de 100 %",
+    "Orden de habilidades no contrastado con guía externa"
+   ]
+  },
+  "Ryze": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "P",
+     "texto": "Gana maná máximo igual al 10 % de su AP y sus hechizos escalan con maná adicional (Q 2 %, W 3 %, E 2 %): los objetos con maná (Tear, Archangel) mejoran su daño.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Ryze",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Cada otra habilidad básica reinicia el enfriamiento de Q y carga una runa (máx. 2); lanzar Q con 2 runas da velocidad de movimiento. Combo: W/E y luego Q.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Ryze",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "Rango de R (Distorsión de reinos) potencia la marca Flujo: el daño extra de Q sobre objetivos marcados sube 10/40/70/100 % según el rango.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Ryze",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades no contrastado con guía externa",
+    "Parte de la página de la wiki (110k caracteres) no leída"
+   ]
+  },
+  "Samira": {
+   "relevante": false,
+   "motivo": "combo de estilo, sin build especial"
+  },
+  "Sejuani": {
+   "relevante": false,
+   "motivo": "tanque estandar sin mecanica de compra"
+  },
+  "Senna": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "P",
+     "texto": "Cada alma de Niebla da +0,75 AD de forma permanente; cada 20 almas, +20 de alcance y +10 % prob. de crítico. Los críticos sobre 100 % se convierten en robo de vida.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Senna",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "acumulacion",
+     "habilidad": "P",
+     "texto": "Fuentes de almas: siempre campeones y monstruos grandes (épicos dan 2), súbditos asesinados por ella solo 5 % de probabilidad. Atacar a los espectros que no mata ella da almas fiables.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Senna",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "R",
+     "texto": "El escudo de R escala +150 % de las almas acumuladas y +50 % AP; Q y W escalan con AD adicional (Q también con AP).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Senna",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades no contrastado con guía externa"
+   ]
+  },
+  "Seraphine": {
+   "relevante": false,
+   "motivo": "pasiva simple, sin condicionar build"
+  },
+  "Sett": {
+   "relevante": false,
+   "motivo": "luchador sin mecanica de compra"
+  },
+  "Shaco": {
+   "relevante": false,
+   "motivo": "ataques por la espalda, sin build especial"
+  },
+  "Shen": {
+   "relevante": false,
+   "motivo": "tanque estandar sin mecanica especial"
+  },
+  "Shyvana": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "P",
+     "texto": "Cota de escamas: +0,3 armadura y RM adicionales por acumulación; súbdito/monstruo grande da 1, campeón o monstruo épico da 3.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Shyvana",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "forma",
+     "habilidad": "R",
+     "texto": "R exige 100 de furia de dragón; la furia sube con ataques y habilidades (más en forma de dragón) y la forma cuesta furia hasta revertir. La celeridad de habilidad suma furia.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Shyvana",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "En forma de dragón no puede usar Destello ni Teleport; solo conserva Youmuu, Shurelya y Randuin entre los objetos activos.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Shyvana",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    }
+   ],
+   "sin_verificar": [
+    "Tope de acumulaciones de Cota de escamas",
+    "Orden de habilidades no contrastado con guía externa"
+   ]
+  },
+  "Singed": {
+   "relevante": false,
+   "motivo": "kit sin interaccion con objetos"
+  },
+  "Sion": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "W",
+     "texto": "W otorga vida máxima permanente: +15 por campeón (muerte o asistencia) o súbdito/monstruo grande, +4 por súbdito pequeño o medio.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Sion",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "P",
+     "texto": "Al morir revive 1,5 s después con vida decreciente hasta 60 s; gana 100 % robo de vida y su cura recibida está muy reducida. Hay que matar mientras dura.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Sion",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Q se carga hasta 2 s: alcance 500 a 850; con 1 s o más lanza por los aires (0,5-1 s) y aturde de 1,25 a 2,25 s.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Sion",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades no contrastado con guía externa"
+   ]
+  },
+  "Sivir": {
+   "relevante": false,
+   "motivo": "tirador estandar sin mecanica especial"
+  },
+  "Skarner": {
+   "relevante": false,
+   "motivo": "acumulaciones de seismo sin condicionar build"
+  },
+  "Smolder": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "P",
+     "texto": "Entrenamiento dracónico: +1 acumulación por golpe de habilidad a campeón y por matar con Q. Las acumulaciones aumentan permanentemente el daño de sus habilidades básicas.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Smolder",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "evolucion",
+     "habilidad": "Q",
+     "texto": "Q mejora por umbrales de acumulaciones: 25 explosión al colisionar, 125 lanza dardos en arco (3), 225 quema con daño verdadero y ejecuta a campeones bajo 6,5 % de vida.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Smolder",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades (probablemente Q primero): no contrastado con guía externa"
+   ]
+  },
+  "Sona": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "P",
+     "texto": "Accelerando: +0,5 de celeridad de habilidad por acumulación hasta 120 acumulaciones (60 de celeridad). Se gana al acertar bolas de Q a campeones y curar o escudar con W a aliados dañados.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Sona",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "P",
+     "texto": "Superado el tope, cada acumulación reduce 1,5 s el enfriamiento actual de R. Cada 3 lanzamientos básicos el siguiente ataque tiene efecto según la última habilidad usada.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Sona",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades no contrastado con guía externa"
+   ]
+  },
+  "Soraka": {
+   "relevante": false,
+   "motivo": "curadora clasica sin mecanica especial"
+  },
+  "Swain": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "P",
+     "texto": "Cada fragmento de alma da +15 de vida máxima permanente y cura 6 %; los campeones enemigos que mueren lo dejan 16 s. W y recast de E también los atraen.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Swain",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "forma",
+     "habilidad": "R",
+     "texto": "Ascensión demoníaca: dura mientras haya energía (50, cae 5 cada 0,5 s). Drenar a un campeón enemigo suma 10 cada 0,5 s y matar a uno la rellena a 50.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Swain",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades no contrastado con guía externa"
+   ]
+  },
+  "Sylas": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "El ultimate robado escala con el rango de Apropiación de Sylas, no con el original; los ratios de AD se convierten en AP (0,6 % AP por 1 % de AD total). Se guarda hasta 90 s.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Sylas",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "P",
+     "texto": "Cada habilidad da una carga (máx. 3, 4 s); la siguiente auto gasta una con +125 % vel. de ataque y daño mágico del 130 % AD + 30 % AP: conviene intercalar ataques entre hechizos.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Sylas",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "La curación de W crece con la vida que le falta (de 20 a 40 base, 5-10 % de vida adicional): usar W con poca vida.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Sylas",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades no contrastado con guía externa"
+   ]
+  },
+  "Syndra": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "evolucion",
+     "habilidad": "P",
+     "texto": "Trascendencia: mejoras por astillas (no por rango): 40 Q guarda 2 cargas de esfera, 60 W añade daño verdadero, 80 E ensancha y ralentiza 70 %, 100 R ejecuta bajo 15 % de vida.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Syndra",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "acumulacion",
+     "habilidad": "P",
+     "texto": "Máx. 120 astillas = +15 % AP. Subir una habilidad por encima del nivel 1 da 5 astillas (hasta 85 por ese medio); 2 golpes a campeón en 4 s dan 1-3; súbdito grande, 1.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Syndra",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades no contrastado con guía externa",
+    "Maná por astilla: wiki inconsistente (199 vs 239 por nivel)"
+   ]
+  },
+  "TahmKench": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "P",
+     "texto": "Cada campeón golpeado da una acumulación (5 s, máx. 3). Con 3, Lengüetazo (Q) aturde y Devorar queda disponible; la pasiva añade daño mágico por vida adicional.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Tahm_Kench",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "Piel gruesa guarda 15-47 % del daño como vida gris (tope 300 % de vida máx.), se cura tras 4 s sin recibir daño y se convierte en escudo de 2,5 s al activarla.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Tahm_Kench",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "La wiki sitúa Devorar en W y el JSON del lote en R: revisar la tecla",
+    "Orden de habilidades no contrastado con guía externa"
+   ]
+  },
+  "Taliyah": {
+   "relevante": false,
+   "motivo": "maga sin mecanica de compra"
+  },
+  "Talon": {
+   "relevante": false,
+   "motivo": "asesino estandar con heridas"
+  },
+  "Taric": {
+   "relevante": false,
+   "motivo": "apoyo con vinculo sin interaccion"
+  },
+  "Teemo": {
+   "relevante": false,
+   "motivo": "kit sencillo sin condicionar build"
+  },
+  "Thresh": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "P",
+     "texto": "Cada alma recogida da +1 AP y +1 armadura adicional permanentes. Las sueltan campeones y monstruos grandes (épicos 2) y súbditos ligeros con 33 % de probabilidad.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Thresh",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "Los ataques básicos hacen 1,7 de daño mágico por alma, más un porcentaje de AD que crece durante 10 s sin atacar (90-210 % AD según rango): asaltar tras esperar.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Thresh",
+     "parche": "26.21",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Tope de almas no indicado por la wiki",
+    "Orden de habilidades no contrastado con guía externa"
+   ]
+  },
+  "Tristana": {
+   "relevante": false,
+   "motivo": "tiradora estandar sin mecanica especial"
+  },
+  "Trundle": {
+   "relevante": false,
+   "motivo": "sin mecanica que condicione compras"
+  },
+  "Tryndamere": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "Pasiva",
+     "texto": "Furia: +5 por ataque, +10 por crítico y +10 por baja. La probabilidad de crítico va de 0 % a 50 % según la furia, así que el crítico de objetos pesa menos al tenerla alta.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Tryndamere",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "Cada crítico reduce 0,75 s el enfriamiento de Cuchillada giratoria (el doble, 1,5 s, contra campeones): el crítico alimenta la movilidad.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Tryndamere",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "Furia inmortal dura 5 s, da 50/75/100 de furia y fija la vida mínima en 30/50/70; el enfriamiento baja de 120 a 80 s por rango.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Tryndamere",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guías (Metasrc devolvió 403)"
+   ]
+  },
+  "TwistedFate": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "La carta dorada aturde 1-2 s, la azul devuelve 70-150 de maná y la roja ralentiza. El ataque con carta no puede ser crítico.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Twisted_Fate",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "E",
+     "texto": "Baraja de cartas da velocidad de ataque pasiva (15-55 %) y un golpe extra de magia cada 4 ataques (escala con 20 % de AD adicional y 40 % de AP): admite objetos mixtos de AP y velocidad de ataque.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Twisted_Fate",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "Destino revela a los campeones enemigos 6/8/10 s en todo el mapa y permite teletransportarse (5500 de alcance, canalización 1,5 s).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Twisted_Fate",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Interacción exacta con Lich Bane y similares",
+    "Orden de habilidades de guías"
+   ]
+  },
+  "Twitch": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "Pasiva",
+     "texto": "Veneno mortal: hasta 6 acumulaciones durante 6 s; solo las aplican los ataques básicos (no otros efectos al golpear como Guinsoo). Los proyectiles de Runaan's Hurricane sí aplican.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Twitch",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "orden_habilidades",
+     "habilidad": "E",
+     "texto": "Contaminar escala con las acumulaciones: por acumulación 15-35 de daño físico (+35 % de AD adicional) y +35 % de AP en la versión mixta. Es su daño de ráfaga, no la Q.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Twitch",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "Vacía el cargador da 30/45/60 de AD adicional y 300 de alcance durante 6 s; los proyectiles atraviesan y aplican efectos al golpear a cada enemigo.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Twitch",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guías"
+   ]
+  },
+  "Udyr": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "forma",
+     "habilidad": "Pasiva",
+     "texto": "No tiene definitiva: cuatro habilidades de 6 rangos. Al lanzar una entra en su postura; reactivarla (desde 0,25 s y hasta 5 s después) la despierta. Despertar Espiritual: 50/40/30/20 s de enfriamiento.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Udyr",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "orden_habilidades",
+     "texto": "No se pueden subir las 4 al máximo: 18 de 24 puntos vienen de niveles y hasta 21 de la misión de la calle superior y del Elixir de habilidad. Elegir la postura principal marca la build.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Udyr",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "texto": "Hexplate Experimental y Zeke's Convergence se activan al entrar en postura (no al despertar). Malignance se activa con Garra bestial y Tormenta alada despertadas.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Udyr",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guías (Metasrc devolvió 403)"
+   ]
+  },
+  "Urgot": {
+   "relevante": false,
+   "motivo": "sin mecanica que condicione compras"
+  },
+  "Varus": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "W",
+     "texto": "Carcaj infectado: 3 acumulaciones de Infección; cada una detona 2,5-4,5 % de vida máxima (+1,4 % por 100 de AP). Admite builds de letalidad con AP, de efectos al golpear o de AP.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Varus",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "orden_habilidades",
+     "habilidad": "Q",
+     "texto": "Flecha penetrante: cargarla completa sube el alcance (895 a 1595), el daño y el reembolso de enfriamiento hasta un 70 %. Usada tras W con acumulaciones, detona la vida máxima ampliada.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Varus",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "acumulacion",
+     "habilidad": "Pasiva",
+     "texto": "Venganza viviente: tras baja o asistencia obtiene velocidad de ataque temporal y AD/AP del 14 % (baja) o 42 % (asistencia a campeón) de esa velocidad de ataque; tope 3,33.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Varus",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guías",
+    "Relación entre ramas de build y patrón de juego"
+   ]
+  },
+  "Vayne": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "Proyectiles de plata: el tercer golpe inflige daño verdadero del 4-10 % de vida máxima (mínimo 40-100). Contra monstruos son 140-200 fijos.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Vayne",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "Q",
+     "texto": "Pirueta añade 75-115 % de AD adicional (+50 % de AP) al golpe preparado; valora el AD frente a la velocidad de ataque. Enfriamiento 6 a 2 s.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Vayne",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "Hora final dura 8/10/12 s; sigilo de 1 s al usar Pirueta (se rompe al atacar). Una baja en 3 s tras dañar prolonga 4 s.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Vayne",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guías"
+   ]
+  },
+  "Veigar": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "Pasiva",
+     "texto": "Cada acumulación da 1 de AP permanente: +1 por habilidad que golpea a un campeón y +5 por asesinato (+6/+7 si se combinan). Sin tope indicado.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Veigar",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "acumulacion",
+     "habilidad": "Q",
+     "texto": "Ataque maligno: +1 acumulación por cada unidad asesinada y +3 si es un esbirro grande o monstruo grande. Es la herramienta principal de farmeo de AP.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Veigar",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "Las acumulaciones reducen el enfriamiento de Materia oscura (de 8 s hacia 0).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Veigar",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    }
+   ],
+   "sin_verificar": [
+    "Reducción de enfriamiento de W por acumulación"
+   ]
+  },
+  "Velkoz": {
+   "relevante": false,
+   "motivo": "sin mecanica que condicione compras"
+  },
+  "Vex": {
+   "relevante": false,
+   "motivo": "sin mecanica que condicione compras"
+  },
+  "Vi": {
+   "relevante": false,
+   "motivo": "sin mecanica que condicione compras"
+  },
+  "Viego": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "forma",
+     "habilidad": "Pasiva",
+     "texto": "Una baja en 3 s tras dañar crea un espectro 8 s. Atacarlo posee al muerto 10 s: Viego usa sus objetos (no activas), sus habilidades básicas y se cura 2 % de su vida máxima más escalados.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Viego",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "Q",
+     "texto": "Q inflige 2-6 % de vida actual (mínimo 10-30): compensa estar justo en objetos de efectos al golpear. Daña dos veces tras una habilidad con marca y roba vida.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Viego",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Pasiva",
+     "texto": "Mientras posee no puede usar activas ni consumibles ni la tienda; atacar un espectro o lanzar Rompecorazones termina la posesión.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Viego",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    }
+   ],
+   "sin_verificar": [
+    "La wiki no confirmó que la posesión sustituya la definitiva del objetivo",
+    "Orden de habilidades de guías"
+   ]
+  },
+  "Viktor": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "evolucion",
+     "habilidad": "Pasiva",
+     "texto": "Cada 100 fragmentos hextech mejora una habilidad: esbirro/monstruo 1, esbirro de asedio, súper o épico 10, campeón 20. Q, W y E en cualquier orden; la R solo tras las tres.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Viktor",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "evolucion",
+     "habilidad": "E",
+     "texto": "Rayo hextech mejorado: explosión 1 s después, +20/50/80/110/140 de daño (+80 % de AP). Total 90-370 (+130 % de AP) frente a 70-230 (+50 % de AP) sin mejora.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Viktor",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "evolucion",
+     "habilidad": "Q",
+     "texto": "Q mejorada: el escudo sube un 60 % y da un 30 % de velocidad de movimiento 2,5 s. W mejorada: sus hechizos ralentizan un 20 % 1 s. R mejorada: tormenta un 25 % más rápida y crece con cada muerte.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Viktor",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de mejora recomendado en guías (Metasrc devolvió 403)"
+   ]
+  },
+  "Vladimir": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "Pasiva",
+     "texto": "Pacto carmesí: 1 AP por cada 30 de vida adicional (3,333 % de la vida adicional) y 1,6 de vida adicional por cada AP. Compra vida: los dos bonos no se acumulan entre sí.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Vladimir",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "E",
+     "texto": "Mareas de sangre escala con vida adicional: 3,75 % por tick y 15 % en total. Cuesta 15 % de la vida actual.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Vladimir",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Transfusión con 2 de Prisa carmesí hace 148-296 (+111 % de AP) y cura extra por vida perdida (5 % de la vida perdida).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Vladimir",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guías",
+    "Cifra exacta de Prisa carmesí (stacks de recurso)"
+   ]
+  },
+  "Volibear": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "Pasiva",
+     "texto": "Ataques y habilidades dan hasta 5 acumulaciones (6 s): 5 % de velocidad de ataque cada una (+4 % por 100 de AP). Con 5, los golpes lanzan rayos a 4 enemigos extra.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Volibear",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "W",
+     "texto": "Acometida frenética escala con 6 % de la vida adicional y cura más cuanta más vida falte al morder una marca. Premia la vida adicional.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Volibear",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "Heraldo de la tormenta: salta, da 175/350/525 de vida adicional y desactiva torretas 2/3/4 s. Útil para asediar.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Volibear",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guías"
+   ]
+  },
+  "Warwick": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "habilidad": "Pasiva",
+     "texto": "Sed insaciable: daño mágico extra con 15 % de AD adicional y 10 % de AP. Cura el 100 % del daño bajo 50 % de vida y el 250 % bajo 25 %.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Warwick",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "Caza sanguinaria: contra enemigos bajo 50 % de vida da 70-110 % de velocidad de ataque y bajo 25 % se duplica. Persigue a campeones heridos.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Warwick",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "R",
+     "texto": "El alcance de Presión infinita es el 250 % de tu velocidad de movimiento: la velocidad de movimiento adicional aumenta el salto (1112 a 1538 con W).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Warwick",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "La wiki es incoherente entre 20 % y 25 % para el umbral inferior",
+    "Orden de habilidades de guías"
+   ]
+  },
+  "Xayah": {
+   "relevante": false,
+   "motivo": "sin mecanica que condicione compras"
+  },
+  "Xerath": {
+   "relevante": false,
+   "motivo": "sin mecanica que condicione compras"
+  },
+  "XinZhao": {
+   "relevante": false,
+   "motivo": "sin mecanica que condicione compras"
+  },
+  "Yasuo": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "Pasiva",
+     "texto": "Su probabilidad de crítico se duplica (50 % real = 100 %) y el exceso sobre 100 % da 0,5 de AD por 1 %. Su daño crítico es el 95 % del habitual; Infinity Edge aun así cuenta.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yasuo",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Tempestad de acero se comporta como ataque básico (efectos al golpear, crítico) y su enfriamiento baja de 4 a 1,33 s con la velocidad de ataque adicional.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yasuo",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "acumulacion",
+     "habilidad": "E",
+     "texto": "Hoja cortante: cada uso apila +25 % de daño hasta 4 (+100 %), 5 s. No repite objetivo en 6-10 s.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yasuo",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Pasiva",
+     "texto": "El escudo de flujo (125-674) se activa al recibir daño de un campeón o monstruo con el flujo lleno y dura 1 s.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yasuo",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guías"
+   ]
+  },
+  "Yone": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "Pasiva",
+     "texto": "Su probabilidad de crítico se duplica; hace falta un 50 % real para llegar a 100 %. El exceso da 0,5 de AD por 1 %. Su daño crítico es el 95 % del habitual.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yone",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Pasiva",
+     "texto": "Cada dos ataques usa la Espada Azakana: 50 % de daño físico y 50 % mágico del AD. Mezcla penetraciones de armadura y de resistencia mágica.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yone",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Acero mortal: tiempo de lanzamiento y enfriamiento bajan con la velocidad de ataque adicional (de 4 a 1,33 s).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yone",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "Destino sellado: la marca guarda 25-35 % del daño infligido a campeones y lo repite como daño verdadero al detonar.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yone",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guías"
+   ]
+  },
+  "Yorick": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "forma",
+     "habilidad": "Pasiva",
+     "texto": "Pastor de Almas: una tumba por cada 8.ª a 2.ª muerte cercana según nivel, máximo 4. Ritos funerarios y Niebla de luto las convierten en Caminantes de la Niebla (hasta 4).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yorick",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Ritos funerarios levanta una tumba si mata o daña a un campeón o monstruo grande; matar un campeón levanta solo 1.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yorick",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "objetos",
+     "habilidad": "Pasiva",
+     "texto": "Los Caminantes escalan con 15 % de la vida adicional y 20 % del AD adicional de Yorick, y atacan a enemigos marcados dentro de 1500.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yorick",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "La Dama de la Niebla (160/130/100 s) trae 2/3/4 caminantes y marca campeones para +2/2,5/3 % de vida máxima. Si Yorick muere, pierde vida.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yorick",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guías"
+   ]
+  },
+  "Yunara": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "Pasiva",
+     "texto": "Los críticos infligen magia extra: 10 % (+10 % por 100 de AP) del daño crítico total, con robo de vida. Se beneficia del crítico y del AP.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yunara",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "acumulacion",
+     "habilidad": "Q",
+     "texto": "Florescencia: cada golpe da 1 acumulación (2 contra campeones), máximo 8. Activarla cuesta 8: 5 s de +20-60 % de velocidad de ataque y golpes que se propagan a enemigos cercanos.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yunara",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "forma",
+     "habilidad": "R",
+     "texto": "Trascender (100/90/80 s): 15 s de estado que convierte W en Arco de la ruina y E en un deslizamiento, y activa la Q sin coste.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yunara",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades: la wiki no lo indica"
+   ]
+  },
+  "Yuumi": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "Pasiva",
+     "texto": "Vinculada, gana acumulaciones de Amistad cuando el aliado mata. El aliado con más es su mejor amigui: mejora Q, W, R y le da curación al golpear.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yuumi",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Pasiva",
+     "texto": "Con el mejor amigui la ralentización de Q siempre es la mejorada y da daño al golpear (hasta +75 % según su crítico); el aliado cura 3-7 al golpear (+3 % de AP).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yuumi",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "W",
+     "texto": "Vinculada no puede atacar ni moverse, y no puede usar Flash ni Teletransporte. Se suelta cuando el aliado recall o muere; pueden usar activas de objetos (menos Rocketbelt).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Yuumi",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    }
+   ],
+   "sin_verificar": [
+    "Interacción con Moonstone y objetos de curación",
+    "Orden de habilidades de guías"
+   ]
+  },
+  "Zaahen": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "acumulacion",
+     "habilidad": "Pasiva",
+     "texto": "Determinación: hasta 12 acumulaciones (5 s) por golpear campeones, cada una da 1,5-2,95 % de AD total. Al máximo el bonus se duplica (36-70,87 %).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zaahen",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Pasiva",
+     "texto": "Con el máximo de Determinación y golpe letal revive: 4 s invulnerable y cura 30-75 % de su vida máxima. Enfriamiento 300 a 120 s según nivel.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zaahen",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "Redención funesta da 10-30 % de penetración de armadura pasiva y cura parte del daño; E inflige un 4-6 % de vida máxima en el borde.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zaahen",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "La wiki no confirma qué habilidad es la R",
+    "Orden de habilidades de guías"
+   ]
+  },
+  "Zac": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "W",
+     "texto": "Materia inestable inflige 4-8 % de vida máxima del objetivo (+3 % por 100 de AP) y su Q (Golpes estiradores) escala con 3 % de vida adicional. Construye vida; el AP es secundario.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zac",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Pasiva",
+     "texto": "División celular: al caer se divide en 4 partículas de 12 % de la vida máxima. Si una sobrevive revive; enfriamiento de 300 s.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zac",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "E",
+     "texto": "Honda elástica: el alcance sube con el rango (1200 a 1800); cargada al máximo 0,9-1,3 s. Cancelarla reembolsa el 50 % del coste y enfriamiento.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zac",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guías"
+   ]
+  },
+  "Zed": {
+   "relevante": false,
+   "motivo": "sin mecanica que condicione compras"
+  },
+  "Zeri": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "objetos",
+     "habilidad": "Q",
+     "texto": "Fuego explosivo cuenta como ataque (crítico, efectos al golpear). El 60 % de la velocidad de ataque sobre el tope 1,5 se convierte en AD adicional (cambio del 26.10).",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zeri",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Pasiva",
+     "texto": "Sus ataques dañan con magia y cuentan como habilidades. Carga 1 por 40 unidades recorridas y 10 por Q (máx. 100); cargada, hace daño por vida máxima.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zeri",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "Choque de rayos (80/75/70 s): 5 s de +30 % de velocidad de ataque, sube el tope a 1,6875, y Q dispara 3 rayos que rebotan en 4 enemigos.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zeri",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guías (Metasrc devolvió 403)"
+   ]
+  },
+  "Ziggs": {
+   "relevante": false,
+   "motivo": "sin mecanica que condicione compras"
+  },
+  "Zilean": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "habilidad": "Pasiva",
+     "texto": "Tiempo embotellado: almacena experiencia cada 5 s. Clic derecho a un aliado (canalización 1,2 s, fuera de combate) para dar nivel; los dos reciben lo mismo. Enfriamiento inicial 120 s.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zilean",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "orden_habilidades",
+     "habilidad": "W",
+     "texto": "Retroceder reduce 10 s los enfriamientos de Q y E y no se puede aprender en nivel 1 (cambio del 26.08); requiere Q o E en enfriamiento.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zilean",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": true
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "Q",
+     "texto": "Una segunda bomba sobre el mismo objetivo detona la primera y aturde 1,1-1,5 s.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zilean",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guías"
+   ]
+  },
+  "Zoe": {
+   "relevante": false,
+   "motivo": "sin mecanica que condicione compras"
+  },
+  "Zyra": {
+   "relevante": true,
+   "claves": [
+    {
+     "tipo": "aviso",
+     "habilidad": "Pasiva",
+     "texto": "Semillas del jardín (13,6 a 8,51 s, nivel); máximo 8 a la vez. Q o E cerca de una semilla crea una planta de 8 s que escala con 20 % de AP.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zyra",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "orden_habilidades",
+     "habilidad": "W",
+     "texto": "Crecimiento desenfrenado no se puede aprender en nivel 1 (cambio del 26.08). Hasta 2 cargas; recarga 16 a 10 s, y una baja de campeón da una carga completa.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zyra",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    },
+    {
+     "tipo": "aviso",
+     "habilidad": "R",
+     "texto": "Tuercespinas enfurece las plantas del matorral: +50 % de vida máxima, +25 % de tamaño y dos disparos por ráfaga, 10 s.",
+     "fuente": "https://wiki.leagueoflegends.com/en-us/Zyra",
+     "parche": "26.22",
+     "verificado_dos_fuentes": false,
+     "revisar": false
+    }
+   ],
+   "sin_verificar": [
+    "Orden de habilidades de guías"
+   ]
+  }
+ }
+}
