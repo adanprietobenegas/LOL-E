@@ -109,6 +109,52 @@ def team_stats(members, info, ui):
             "pts": sum(pts) / len(pts) if pts else None, "comp": comp}
 
 
+def collapsible(ui, parent, title, summary, key, build, open_=True):
+    """Cabecera plegable (flecha, título y resumen) con el cuerpo debajo. Recuerda si estaba abierta. Sin animación: el cuerpo es grande y con
+    la animación de ui.fold se medía antes de tiempo y se quedaba cortado."""
+    folds = ui.conf.setdefault("folds", {})
+    st = {"open": folds.get(key, open_), "built": False}
+    bgp = ui.bg(parent)
+    card, fg, dim = ui.hexm(PAL["card2"]), ui.hexm(PAL["fg"]), ui.hexm(PAL["dim"])
+    box = tk.Frame(parent, bg=bgp)
+    box.pack(fill="x", pady=(0, 8))
+    head = tk.Frame(box, bg=card, cursor="hand2", highlightthickness=1, highlightbackground=ui.hexm(PAL["edge"]))
+    head.pack(fill="x")
+    stripe = tk.Frame(head, width=3, bg=ui.hexm(ui.acc))
+    stripe.pack(side="left", fill="y")
+    arrow = tk.Label(head, text="", bg=card, fg=dim, font=ui.tkf(12, False, False), width=2)
+    arrow.pack(side="left", padx=(10, 2), pady=7)
+    ttl = tk.Label(head, text=title, bg=card, fg=fg, font=ui.tkf(12, True, False), anchor="w")
+    ttl.pack(side="left")
+    sm = tk.Label(head, text=summary, bg=card, fg=dim, font=ui.tkf(10, False, False), anchor="e")
+    sm.pack(side="right", padx=12)
+    body = tk.Frame(box, bg=bgp)
+
+    def paint():
+        arrow.configure(text="▾" if st["open"] else "▸")
+        stripe.configure(bg=ui.hexm(ui.acc) if st["open"] else ui.hexm(PAL["edge"]))
+        if st["open"]:
+            if not st["built"]:
+                st["built"] = True
+                build(body)
+            body.pack(fill="x", pady=(8, 0))
+        else:
+            body.pack_forget()
+
+    def toggle(_e=None):
+        st["open"] = not st["open"]
+        folds[key] = st["open"]
+        try:
+            core.save_conf(ui.conf)
+        except Exception:
+            pass
+        paint()
+    for w in (head, arrow, ttl, sm):
+        w.bind("<Button-1>", toggle)
+    paint()
+    return box
+
+
 class Board:
     def __init__(self, view):
         self.v, self.ui = view, view.ui
@@ -351,6 +397,15 @@ class Board:
         rl = rank_line(best_rank(p))
         sub.append(rl or "Sin rango esta temporada")
         label(frame, "  ·  ".join(sub), 10, False, dim).pack(anchor="w")
+        if x.get("cid") in ui.champs:   # lo que importa de este jugador ahora: cómo le va con el campeón que lleva y qué línea hace normalmente
+            cn = core.name(x["cid"], ui.champs)
+            pts = (p.get("mastery") or {}).get(x["cid"], 0)
+            rc = next((c for c in (p.get("stats") or {}).get("champs") or [] if c["c"] == x["cid"]), None)
+            txt = f"Con {cn}: " + (f"{rc['n']} partidas recientes, {round(100 * rc['w'] / rc['n'])} % de victorias" if rc else "ninguna partida reciente")
+            txt += f" · maestría {pts:,}".replace(",", ".") if pts else " · sin maestría"
+            label(frame, txt, 10, True, ui.hexm(PAL["info"]) if pts >= 50000 else fg).pack(anchor="w", pady=(4, 0))
+        if p.get("roles"):
+            label(frame, "Suele jugar: " + ", ".join(ROLES_ES.get(r, r).lower() for r in p["roles"]), 9, False, dim).pack(anchor="w")
         pk = (p.get("marks") or {}).get("peak")
         if pk:
             label(frame, f"Máximo de la temporada: {pk}", 9, False, dim).pack(anchor="w")
@@ -375,8 +430,11 @@ class Board:
                 kda = (g["k"] + g["a"]) / max(1, g["d"])
                 tk.Label(grid, text=f"{g['k']}/{g['d']}/{g['a']}", font=ui.tkf(10, False, False), fg=fg, bg=bg, width=8, anchor="w").grid(row=i, column=2)
                 tk.Label(grid, text=f"{num(kda)} KDA", font=ui.tkf(9, False, False), fg=dim, bg=bg, width=8, anchor="w").grid(row=i, column=3)
-                tk.Label(grid, text=QUEUES.get(g.get("q"), "Grieta"), font=ui.tkf(9, False, False), fg=dim, bg=bg, width=10, anchor="w").grid(row=i, column=4)
-                tk.Label(grid, text=ago(g.get("t")), font=ui.tkf(9, False, False), fg=dim, bg=bg, width=12, anchor="w").grid(row=i, column=5)
+                mins = max(1, g.get("dur", 0)) / 60
+                tk.Label(grid, text=f"{num(g.get('cs', 0) / mins)} súb./min", font=ui.tkf(9, False, False), fg=dim, bg=bg, width=10, anchor="w").grid(row=i, column=4)
+                tk.Label(grid, text=f"{g.get('dmg', 0) / 1000:.0f}k daño".replace(".", ","), font=ui.tkf(9, False, False), fg=dim, bg=bg, width=8, anchor="w").grid(row=i, column=5)
+                tk.Label(grid, text=QUEUES.get(g.get("q"), "Grieta"), font=ui.tkf(9, False, False), fg=dim, bg=bg, width=10, anchor="w").grid(row=i, column=6)
+                tk.Label(grid, text=f"{ago(g.get('t'))} · {int(g.get('dur', 0) // 60)} min", font=ui.tkf(9, False, False), fg=dim, bg=bg, width=16, anchor="w").grid(row=i, column=7)
             if stt.get("n"):
                 label(frame, f"Media: {num(stt['k'])}/{num(stt['d'])}/{num(stt['a'])} · {num(stt['kda'])} KDA · {num(stt['cspm'])} súbditos por minuto",
                       9, False, dim).pack(anchor="w", pady=(6, 0))

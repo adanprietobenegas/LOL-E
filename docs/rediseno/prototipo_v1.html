@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LOL-E · prototipo de rediseño v1</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{--surface-0:#f4f3ef;--surface-1:#ebe9e2;--surface-2:#fff;--text-primary:#1c1b19;--text-secondary:#5d5b55;--text-muted:#8d8b84;
+--text-accent:#185fa5;--text-warning:#854f0b;--text-success:#27632a;--text-danger:#a32d2d;
+--bg-accent:#e6f1fb;--bg-success:#eaf3de;--bg-warning:#faeeda;--bg-danger:#fceaea;
+--border:#00000026;--border-strong:#0000004d;--border-stronger:#00000073;--border-success:#639922;--border-warning:#ba7517;--radius:8px}
+@media (prefers-color-scheme:dark){:root{--surface-0:#14130f;--surface-1:#1f1e1a;--surface-2:#272621;--text-primary:#f1efe8;--text-secondary:#b4b2a9;--text-muted:#888780;
+--text-accent:#85b7eb;--text-warning:#fac775;--text-success:#97c459;--text-danger:#f09595;
+--bg-accent:#0c447c;--bg-success:#27500a;--bg-warning:#633806;--bg-danger:#791f1f;
+--border:#ffffff26;--border-strong:#ffffff4d;--border-stronger:#ffffff73;--border-success:#639922;--border-warning:#ba7517}}
+body{margin:0;padding:20px;background:var(--surface-0);color:var(--text-primary);font:14px/1.5 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-size:18px;font-weight:500;margin:0 0 4px}
+.nota{color:var(--text-secondary);font-size:13px;margin:0 0 14px}
+button{font:inherit;color:var(--text-primary);background:transparent;border:0.5px solid var(--border-strong);border-radius:var(--radius);padding:5px 12px;cursor:pointer}
+button:hover{background:var(--surface-1)}
+input{font:inherit;color:var(--text-primary);background:var(--surface-2);border:0.5px solid var(--border-strong);border-radius:var(--radius);padding:6px 10px;height:34px;box-sizing:border-box}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.pr{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.pr button{font-size:12px;padding:4px 10px}
+.pr button.on{background:var(--surface-1);border-color:var(--border-stronger)}
+.app{display:flex;border:0.5px solid var(--border-strong);border-radius:12px;overflow:hidden;background:var(--surface-0);min-height:560px}
+.sb{width:54px;background:var(--surface-1);border-right:0.5px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0}
+.sb .lg{font-weight:500;font-size:11px;margin-bottom:8px}
+.sb button{width:38px;height:38px;padding:0;border:none;background:transparent;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;color:var(--text-secondary);position:relative}
+.sb button:hover{background:var(--surface-0)}
+.sb button.act{background:var(--bg-accent);color:var(--text-accent)}
+.live .sb button.act{background:var(--bg-warning);color:var(--text-warning)}
+.dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--text-warning)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.band{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:0.5px solid var(--border);font-size:13px;background:var(--surface-1)}
+.live .band{background:var(--bg-warning);border-bottom-color:var(--border-warning)}
+.badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:6px;background:var(--bg-accent);color:var(--text-accent)}
+.live .badge{background:var(--text-warning);color:var(--surface-2)}
+.band .r{margin-left:auto;display:flex;gap:8px;align-items:center;color:var(--text-secondary);font-size:12px}
+.band .r button{font-size:12px;padding:3px 9px}
+.body{padding:14px;display:flex;flex-direction:column;gap:10px}
+.c{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:12px 14px}
+.row{display:flex;gap:10px;align-items:center}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.lab{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;margin:0 0 6px}
+.ch{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex:none}
+.p{background:var(--bg-accent);color:var(--text-accent)}.t{background:var(--bg-success);color:var(--text-success)}.a{background:var(--bg-warning);color:var(--text-warning)}.d{background:var(--bg-danger);color:var(--text-danger)}.n{background:var(--surface-1);color:var(--text-secondary)}
+.chip{font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap}
+.bar{height:6px;border-radius:3px;background:var(--surface-1);position:relative;flex:1}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--text-accent)}
+.big{font-size:26px;font-weight:500;line-height:1}
+.sm{font-size:12px;color:var(--text-secondary)}
+.mut{color:var(--text-muted);font-size:11px}
+.fold{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;font-weight:500}
+.bd{display:grid;grid-template-columns:1fr 48px 1fr;gap:4px 8px;align-items:center;margin-top:10px}
+.pl{display:flex;align-items:center;gap:8px;background:var(--surface-1);border-radius:8px;padding:5px 8px;font-size:12px;min-width:0}
+.pl.me{border:1.5px solid var(--border-success)}.pl.op{border:1.5px solid var(--border-warning)}
+.rt{font-size:11px;color:var(--text-secondary);text-align:center}
+.step{display:flex;gap:6px;font-size:12px;color:var(--text-muted)}
+.step b{font-weight:500;color:var(--text-primary);background:var(--bg-warning);padding:1px 8px;border-radius:6px}
+.hr{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border);font-size:13px}
+.hr .vb{width:4px;align-self:stretch;border-radius:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>LOL-E · prototipo de rediseño v1 (no implementado)</h1>
+<p class="nota">Maqueta interactiva con datos de ejemplo. Elige una fase en «Simular»: en cuanto hay cola, selección, carga o partida la app pasa sola a modo EN VIVO (banda ámbar); «Consultar» abre el modo consulta y «Volver a la partida» regresa. Ver docs/rediseno/PROPUESTA_REDISENO.md.</p>
+<h2 class="sr-only">Prototipo interactivo de LOL-E con barra lateral y dos modos: en vivo y consulta</h2>
+<div class="pr" id="pr"></div>
+<div class="app" id="app">
+  <div class="sb" id="sb"></div>
+  <div class="main"><div class="band" id="band"></div><div class="body" id="body"></div></div>
+</div>
+</div>
+<script>
+var S={fase:'idle',sec:'inicio',forced:false,open:true};
+var FASES=[['idle','Fuera de partida'],['cola','En cola'],['sel','Selección'],['carga','Carga'],['juego','Partida'],['fin','Fin']];
+var NAV=[['inicio','ti-home','Inicio'],['camp','ti-trophy','Campeones'],['vs','ti-swords','Enfrentamientos'],['hist','ti-history','Historial'],['aj','ti-settings','Ajustes']];
+function live(){return S.fase!='idle'&&!S.forced}
+function ch(t,c){return '<div class="ch '+c+'">'+t+'</div>'}
+function chip(t,c){return '<span class="chip '+c+'">'+t+'</span>'}
+function ic(n){return '<i class="ti '+n+'" aria-hidden="true"></i>'}
+function route(){var it=[['Dg','a'],['Bt','n'],['Es','p'],['Hm','p'],['Ob','p']];return '<div class="row" style="gap:6px;flex-wrap:wrap">'+it.map(function(x,i){return ch(x[0],x[1])+(i<4?'<span class="mut">'+ic('ti-chevron-right')+'</span>':'')}).join('')+'</div><div class="mut" style="margin-top:6px">Inicio, botas, 1.º, 2.º y 3.º objeto. Variantes y situaciones: pasa el ratón o pulsa.</div>'}
+function duel(){return '<div class="c"><p class="lab">Tu rival de línea</p><div class="row" style="gap:14px;flex-wrap:wrap"><div class="row">'+ch('Le','p')+'<div><div style="font-weight:500">Leona</div><div class="sm">contra Caitlyn</div></div></div><div style="margin-left:auto;text-align:right"><div class="big" style="color:var(--text-success)">59,7 %</div><div class="sm">favorable · 176 partidas</div></div></div>'+
+'<div style="margin-top:10px;display:grid;gap:5px">'+['Vida|82|74','Armadura|64|58','Alcance|35|88','Velocidad|60|55'].map(function(x){var a=x.split('|');return '<div class="row"><span class="sm" style="width:72px">'+a[0]+'</span><div class="bar"><i style="width:'+a[1]+'%"></i></div><div class="bar"><i style="width:'+a[2]+'%;background:var(--text-warning)"></i></div></div>'}).join('')+'</div>'+
+'<div class="row" style="margin-top:8px;flex-wrap:wrap;gap:6px">'+chip('Ventaja nivel 1','t')+chip('Pierde en escalado','d')+chip('Hueco de trade: 17 s','a')+chip('Rival: daño físico','n')+'</div></div>'}
+function board(){var A=[['Top','Zy','Mikasa','Esm. III'],['Jng','Hw','ElDuo','Dia. IV'],['Mid','Ya','Zed4Life','Dia. IV'],['Adc','Ez','Tanquero','Pla. II'],['Sup','Le','Tú','Pla. IV']],E=[['Vi','VolBeat','Pla. I','Racha +5'],['Za','Kha','Dia. III','Maestría 480k'],['Or','Orianna','Oro III',''],['Ca','Mitch','Oro III','Fuera de línea'],['Ne','Nocturno','Esm. IV','Tu rival']];
+var h='<div class="bd">';A.forEach(function(a,i){var e=E[i],me=a[0]=='Sup';h+='<div class="pl'+(me?' me':'')+'">'+ch(a[1],'p').replace('34px','')+'<b style="font-weight:500">'+a[2]+'</b><span class="sm" style="margin-left:auto">'+a[3]+'</span></div><div class="rt">'+a[0]+'</div><div class="pl'+(e[3]=='Tu rival'?' op':'')+'">'+ch(e[0],'d')+'<b style="font-weight:500">'+e[1]+'</b>'+(e[3]?chip(e[3],e[3]=='Tu rival'?'a':e[3].indexOf('Fuera')>=0?'a':'t'):'')+'<span class="sm" style="margin-left:auto">'+e[2]+'</span></div>'});
+return h+'</div><div class="mut" style="margin-top:8px">Cada tarjeta: pasa el ratón y verás sus últimas 10 partidas; clic abre el perfil.</div>'}
+function boardCard(){return '<div class="c"><div class="fold" onclick="S.open=!S.open;draw()">'+ic(S.open?'ti-chevron-down':'ti-chevron-right')+'Jugadores de la partida<span class="sm" style="margin-left:auto;font-weight:400">Rango medio: Esm. III frente a Pla. II</span></div>'+(S.open?board():'')+'</div>'}
+function tips(){return '<div class="c"><p class="lab">Qué hacer</p><div class="row" style="flex-wrap:wrap;gap:6px">'+chip('Equipo rival: 4 de daño físico, compra armadura','a')+chip('Nocturno tiene maestría alta: cuidado con su R','d')+chip('Tu equipo sin control: prioriza Redención','p')+'</div></div>'}
+var V={
+idle:function(){return ''},
+cola:function(){return '<div class="g2"><div class="c"><p class="lab">Cola</p><div class="big">0:42</div><div class="sm">Rol asignado: Apoyo</div></div><div class="c"><p class="lab">Tus mejores por rol</p><div class="row">'+ch('Le','p')+ch('Na','p')+ch('Th','p')+'<span class="sm">Apoyo · 58 % de victorias</span></div></div></div><div class="mut">En cola solo se muestra lo imprescindible.</div>'},
+sel:function(){return '<div class="c"><div class="step"><span>Planificación</span><span>›</span><span>Bans</span><span>›</span><b>Picks</b><span>›</span><span>Final</span><span style="margin-left:auto;font-weight:500;color:var(--text-primary)">36 s</span></div></div><div class="g2"><div class="c"><p class="lab">Recomendado para ti</p><div style="display:grid;gap:6px">'+[['Le','Leona','59,7 %'],['Na','Nautilus','56,2 %'],['Ra','Rakan','54,8 %']].map(function(x){return '<div class="row">'+ch(x[0],'p')+'<span style="font-weight:500">'+x[1]+'</span><span class="sm" style="margin-left:auto;color:var(--text-success)">'+x[2]+'</span></div>'}).join('')+'</div></div><div class="c"><p class="lab">Equipo</p><div class="sm">Daño: 2 físico · 3 mágico</div><div class="bar" style="margin:6px 0"><i style="width:40%;background:var(--text-warning)"></i></div><div class="sm">Control: 1,8 de 3 · Tanques: 1</div></div></div>'+duel()+boardCard()},
+carga:function(){return duel()+'<div class="c"><p class="lab">Tu build</p>'+route()+'</div>'+boardCard()+tips()},
+juego:function(){return '<div class="g2"><div class="c"><p class="lab">Build</p>'+route()+'</div><div class="c"><p class="lab">Tu rival</p><div class="row">'+ch('Ca','d')+'<div><div style="font-weight:500">Caitlyn</div><div class="sm">Definitiva: nivel 6</div></div></div><div class="mut" style="margin-top:6px">Objetivos y timers: depende de los datos en vivo del juego (por verificar).</div></div></div>'+boardCard()},
+fin:function(){return '<div class="c"><div class="row"><div class="big" style="color:var(--text-success)">Victoria</div><span class="sm">Leona · apoyo · 28 min</span><span class="chip t" style="margin-left:auto">+18 PL</span></div><div class="sm" style="margin-top:8px">Moriste 2 veces menos que tu media con Leona; tu visión subió a 1,6 por minuto.</div></div><div class="row"><button onclick="go(\'hist\')">Ver el análisis</button><button onclick="S.fase=\'idle\';S.forced=false;draw()">Volver a consulta</button></div>'}
+};
+var C={
+inicio:function(){return '<div class="c"><div class="row"><div class="ch p" style="width:44px;height:44px">Pl</div><div><div style="font-weight:500;font-size:16px">adankskrew</div><div class="sm">Platino IV · 40 PL · Flexible: sin clasificar</div></div><div style="margin-left:auto;display:flex;gap:4px">'+['V','V','D','V','V'].map(function(x){return '<span class="chip '+(x=='V'?'t':'d')+'">'+x+'</span>'}).join('')+'</div></div></div><div class="g2"><div class="c"><p class="lab">Racha</p><div class="big">2 victorias</div><div class="sm">Récord: 5</div></div><div class="c"><p class="lab">Más jugados</p><div class="row">'+ch('Hw','p')+ch('Zy','p')+ch('Ya','p')+'</div></div><div class="c"><p class="lab">Modos</p><div class="sm">ARAM 148 · Solo/Dúo 28 · Flex 18</div></div></div>'},
+camp:function(){return '<div class="c"><p class="lab">Repertorio y recomendaciones</p><div class="sm">Aquí vive el carrusel «Recomendado para ti», con filtros plegados.</div><div class="row" style="margin-top:8px">'+ch('Le','p')+ch('Na','p')+ch('Th','p')+ch('Ra','p')+ch('Ys','p')+'</div></div>'},
+vs:function(){return '<div class="c"><div class="row"><input placeholder="Buscar campeón rival" style="flex:1"/><span class="chip n">'+ic('ti-shield')+' Top</span><span class="chip n">Jng</span><span class="chip n">Mid</span><span class="chip n">Adc</span><span class="chip n">Sup</span></div><div class="mut" style="margin-top:8px">Recientes</div><div class="row" style="margin-top:4px">'+ch('Ca','d')+ch('Vi','d')+ch('Ne','d')+'</div></div>'},
+hist:function(){return '<div class="c"><div class="row" style="flex-wrap:wrap;gap:14px"><div><div class="big">220</div><div class="mut">partidas</div></div><div><div class="big" style="color:var(--text-danger)">46 %</div><div class="mut">victorias</div></div><div><div class="big">3,28</div><div class="mut">KDA</div></div><div style="margin-left:auto" class="sm">Filtros: sin filtros ›</div></div></div><div class="c">'+[['Zyra','4/11/27','Flex · 38 min','d','Hoy'],['Urgot','13/4/7','Solo · 32 min','t','Ayer'],['Hwei','6/3/9','ARAM · 19 min','t','Ayer']].map(function(x){return '<div class="hr"><span class="vb" style="background:var(--text-'+(x[3]=='t'?'success':'danger')+')"></span>'+ch(x[0].slice(0,2),'p')+'<b style="font-weight:500;width:56px">'+x[0]+'</b><span style="width:70px">'+x[1]+'</span><span class="sm">'+x[2]+'</span><span class="sm" style="margin-left:auto">'+x[4]+'</span></div>'}).join('')+'</div>'},
+aj:function(){return '<div class="g2"><div class="c"><p class="lab">Apariencia</p><div class="row" style="flex-wrap:wrap;gap:6px">'+chip('Oscuro','p')+chip('Claro','n')+chip('Acento','n')+chip('Tamaño','n')+'</div></div><div class="c"><p class="lab">En vivo</p><div class="sm">Sonidos por fase · Ventana siempre encima · Modo compacto</div></div><div class="c"><p class="lab">Actualizaciones</p><div class="sm">Automáticas · versión 1.20.0</div></div><div class="c"><p class="lab">Acerca de los datos</p><div class="sm">Fuentes, cálculo de afinidad, umbrales y glosario (lo que hoy es la pestaña Datos)</div></div></div>'}
+};
+function go(s){S.sec=s;S.forced=S.fase!='idle'?true:S.forced;draw()}
+function draw(){
+ var L=live(),app=document.getElementById('app');app.className='app'+(L?' live':'');
+ var pr=document.getElementById('pr');pr.innerHTML='<span class="sm" style="align-self:center">Simular:</span>'+FASES.map(function(f){return '<button class="'+(S.fase==f[0]?'on':'')+'" onclick="S.fase=\''+f[0]+'\';S.forced=false;draw()">'+f[1]+'</button>'}).join('');
+ var sb='<div class="lg">LOL-E</div>';
+ if(S.fase!='idle')sb+='<button class="'+(L?'act':'')+'" aria-label="En vivo" onclick="S.forced=false;draw()">'+ic('ti-broadcast')+'<span class="dot"></span></button>';
+ NAV.forEach(function(n){sb+='<button class="'+(!L&&S.sec==n[0]?'act':'')+'" aria-label="'+n[2]+'" title="'+n[2]+'" onclick="go(\''+n[0]+'\')">'+ic(n[1])+'</button>'});
+ document.getElementById('sb').innerHTML=sb;
+ var nm={idle:'Sin partida',cola:'En cola',sel:'Selección de campeón',carga:'Pantalla de carga',juego:'Partida en curso',fin:'Partida terminada'}[S.fase];
+ var b;
+ if(L)b='<span class="badge">EN VIVO</span><b style="font-weight:500">'+nm+'</b><span class="sm">Leona · apoyo · Grieta</span><span class="r">'+(S.fase=='sel'?'36 s':'')+'<button onclick="S.forced=true;S.sec=\'hist\';draw()">'+ic('ti-search')+' Consultar</button></span>';
+ else b='<span class="badge">CONSULTA</span><b style="font-weight:500">'+NAV.filter(function(n){return n[0]==S.sec})[0][2]+'</b>'+(S.fase!='idle'?'<span class="r"><span class="chip a">'+nm+'</span><button onclick="S.forced=false;draw()">Volver a la partida</button></span>':'<span class="r">Sin partida en curso</span>');
+ document.getElementById('band').innerHTML=b;
+ document.getElementById('body').innerHTML=L?V[S.fase]():C[S.sec]();
+}
+draw();
+</script>
+</body>
+</html>

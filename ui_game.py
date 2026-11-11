@@ -96,10 +96,20 @@ class GameView:
         ros, ui = ctx.get("roster"), self.ui
         if not ros:
             return
+        kind = (plan or {}).get("kind") or ((ctx.get("r") or {}).get("mode") or {}).get("kind") or "sr"
+        if kind != "sr":   # ARAM, Arena, personalizadas…: sin líneas ni rivales directos, el tablero no aporta
+            return
         import ui_vs
-        if self.width >= ui_vs.MIN_WIDTH:   # con sitio: los 10 a la vez, cada línea frente a su rival
-            ui.lbl(self.host, "JUGADORES DE LA PARTIDA", 10, "dim", True, anchor="w").pack(anchor="w", pady=(2, 6))
-            ui_vs.Board(self).render(self.host, ctx, plan)
+        if self.width >= ui_vs.MIN_WIDTH:   # con sitio: los 10 a la vez, cada línea frente a su rival; plegable para centrarse en la build
+            opp = (plan or {}).get("opp")
+            summ = "5 contra 5" + (f" · tu rival: {core.name(opp, ui.champs)}" if opp and opp in ui.champs else "")
+            def fill(c):
+                try:
+                    ui_vs.Board(self).render(c, ctx, plan)
+                except Exception:
+                    core.log_exc("Tablero de jugadores")
+                    ui.lbl(c, "No se pudo dibujar el tablero.", 10, "dim").pack(anchor="w")
+            ui_vs.collapsible(ui, self.host, "Jugadores de la partida", summ, "game_roster", fill)
             return
         from ui_sections import Lobby
         pl, r = ctx.get("roster_pl") or {}, ctx.get("r") or {}
