@@ -1,0 +1,44 @@
+{
+  "_nota": "Colores relativos: mix(a,b,p) = a*(1-p)+b*p en RGB. bg = fondo de ventana, card = relleno base de tarjeta, fg = texto principal, accent = acento.",
+  "plano": {
+    "card_radius": 12, "chip_radius": 6, "control_radius": 8,
+    "border_width": 1, "border_color": "mix(card, fg, 0.15)",
+    "shadow": null,
+    "card_fill": "card",
+    "header_gradient": null,
+    "title_weight": "bold", "title_size": 13, "body_size": 11,
+    "gap": 8, "card_padding": [14, 12]
+  },
+  "cristal": {
+    "card_radius": 14, "chip_radius": 8, "control_radius": 10,
+    "border_width": 1, "border_color": "mix(card, fg, 0.22)",
+    "highlight_top": {"width": 1, "color": "mix(card, fg, 0.38)"},
+    "shadow": {"dx": 0, "dy": 2, "color": "mix(bg, #000000, 0.35)", "kind": "una sola capa dura, sin difusion"},
+    "card_fill": "mix(bg, accent, 0.06) -> mix(bg, fg, 0.07) (degradado vertical solo en cabecera de tarjeta, 24 px)",
+    "bg_gradient": "mix(bg, accent, 0.12) -> bg (fondo de ventana, imagen PIL precalculada una vez)",
+    "title_weight": "bold", "title_size": 13, "body_size": 11,
+    "gap": 10, "card_padding": [16, 12],
+    "nota": "relleno opaco (card_fill nunca por debajo de contraste 4.5:1 con el texto)"
+  },
+  "neobrutal": {
+    "card_radius": 4, "chip_radius": 2, "control_radius": 3,
+    "border_width": 2, "border_color": "dark: #f5f5f0 ; light: #111111",
+    "shadow": {"dx": 4, "dy": 4, "color": "dark: #000000 (o accent al 100%) ; light: #111111", "kind": "rectangulo solido desplazado detras (frame extra)"},
+    "card_fill": "card plano; chips con colores planos saturados (accent, aviso, exito, peligro)",
+    "header_gradient": null,
+    "title_weight": "bold", "title_size": 14, "title_case": "normal (no mayusculas en texto largo)", "body_size": 11,
+    "gap": 14, "card_padding": [14, 12],
+    "hover": {"shift": [-1, -1], "shadow_dx": 5, "shadow_dy": 5},
+    "pressed": {"shift": [3, 3], "shadow_dx": 1, "shadow_dy": 1},
+    "focus": {"outline_width": 3, "color": "accent"}
+  },
+  "neumorfismo": {
+    "recomendacion": "NO ofrecer; solo si se pide, y limitado a 2-3 controles grandes (interruptor, boton de modo)",
+    "card_radius": 16, "border_width": 0,
+    "shadow": {"light": {"dx": -3, "dy": -3, "color": "mix(bg, #ffffff, 0.08)"}, "dark": {"dx": 3, "dy": 3, "color": "mix(bg, #000000, 0.5)"}},
+    "card_fill": "bg (misma superficie que el fondo)",
+    "contraste_borde_vs_fondo": "~1.1:1 (incumple WCAG 1.4.11 de 3:1)"
+  },
+  "opciones_ajustes": ["Plano (por defecto)", "Cristal", "Brutal"],
+  "orden_implementacion": ["Plano", "Brutal", "Cristal"]
+}

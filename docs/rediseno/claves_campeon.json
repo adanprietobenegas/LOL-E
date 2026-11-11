@@ -1,0 +1,22 @@
+{
+  "_formato": "campeon (id Data Dragon) -> lista de claves. tipo: evolucion | orden_habilidades | aviso | acumulacion. fuente y parche para auditar.",
+  "_verificado_en": "Data Dragon 16.22.1 / wiki V26.22 / Skill-Capped 26.22",
+  "Kaisa": [
+    {"tipo": "evolucion", "habilidad": "Q", "texto": "Evoluciona la Q con 100 de AD de objetos (menos a nivel alto, hasta 56): dispara 12 misiles en vez de 6.", "fuente": "https://wiki.leagueoflegends.com/en-us/Kai'Sa", "parche": "26.22"},
+    {"tipo": "evolucion", "habilidad": "W", "texto": "Evoluciona la W con 100 de AP de objetos: 3 cargas de Plasma y devuelve el 75% del enfriamiento al golpear.", "fuente": "https://wiki.leagueoflegends.com/en-us/Kai'Sa", "parche": "26.22"},
+    {"tipo": "evolucion", "habilidad": "E", "texto": "Evoluciona la E con 100% de velocidad de ataque de objetos (menos a nivel alto, hasta 70%): invisibilidad 0,5 s.", "fuente": "https://wiki.leagueoflegends.com/en-us/Kai'Sa", "parche": "26.22"},
+    {"tipo": "orden_habilidades", "texto": "Evolucion Q, luego E, luego W. Maximiza Q, luego E; maximizar W es una trampa.", "fuente": "https://www.skill-capped.com/lol/guides/builds/kaisa/adc", "parche": "26.22"},
+    {"tipo": "aviso", "texto": "La fuerza adaptativa de los objetos no cuenta para las evoluciones.", "fuente": "https://wiki.leagueoflegends.com/en-us/Kai'Sa", "parche": "26.22"}
+  ],
+  "Khazix": [
+    {"tipo": "evolucion", "texto": "Cada rango de R da 1 punto de evolucion (R a 6, 11 y 16); cada habilidad se evoluciona una sola vez. La cuarta solo si matas a Rengar.", "fuente": "https://wiki.leagueoflegends.com/en-us/Kha'Zix", "parche": "26.22"},
+    {"tipo": "orden_habilidades", "texto": "Evolucion Q, luego R, luego situacional (W hacia nivel 12). Subida Q > W > E.", "fuente": "https://www.skill-capped.com/lol/guides/m/builds/khazix/jungle", "parche": "26.22"},
+    {"tipo": "aviso", "texto": "E evolucionada: +300 de alcance y reinicia el Salto al conseguir una muerte.", "fuente": "https://wiki.leagueoflegends.com/en-us/Kha'Zix", "parche": "26.19+"}
+  ],
+  "Nasus": [
+    {"tipo": "acumulacion", "texto": "Cada muerte da 4 cargas permanentes (10 si es campeon o esbirro/monstruo grande); cada carga suma 1 de dano a Golpe succionador.", "fuente": "https://wiki.leagueoflegends.com/en-us/Nasus", "parche": "26.19"}
+  ],
+  "Veigar": [
+    {"tipo": "acumulacion", "texto": "Cada campeon golpeado por una habilidad da 1 AP permanente (la baja de campeon da mas); Golpe maligno da 1 por muerte.", "fuente": "https://wiki.leagueoflegends.com/en-us/Veigar", "parche": "26.07"}
+  ]
+}

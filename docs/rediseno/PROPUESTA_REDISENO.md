@@ -62,3 +62,25 @@ Principios: 4 niveles tipográficos, color con significado (verde/rojo solo con 
 
 ## Cómo se generó el material de la auditoría
 Capturas simuladas de cada pantalla con el arnés de pruebas (datos de ejemplo, ventana 1000x900) y tres agentes de revisión de solo lectura. Las cifras y afirmaciones de los expertos sobre datos externos (por ejemplo qué entrega el puerto 2999 o qué hace Porofessor) son opiniones sin comprobar.
+
+---
+
+## Ronda 2 (11/11/2026): temas de color, estilos y claves del campeón
+Prototipo: `docs/rediseno/prototipo_v2.html` (selector de tema, estilo, claro/oscuro y campeón). Datos en `temas_color.json`, `estilos_ui.json` y `claves_campeon.json` (misma carpeta). Sigue sin implementarse nada.
+
+### Temas de color (experto en color, contrastes WCAG calculados y daltonismo simulado)
+- **Hallazgo clave:** los colores semánticos son FIJOS para todos los temas: positivo menta (#6FF0CC oscuro / #006A5D claro), negativo rojo-coral (#FF5C6C / #991B2F), aliado azul, rival naranja, aviso ámbar. Los acentos libres de verdad son violeta, cian, magenta y lima. Victoria y derrota llevan además signo ▲ ▼ (en claro, la protanopía no se arregla solo con color).
+- **Recomendados (5-6 para Ajustes):** predeterminado (oro, con el modo en vivo pasando a coral porque el ámbar se confundía con el oro), **F1 Abisal** (azul noche, cian, violeta), **F4 Neón medianoche** (negro azulado, violeta, lima: la mejor separación consulta/en vivo), **F2 Brasa** (grafito cálido, cian, lima), **F3 Bosque** (verde profundo, lila, lima), **3c Cloud Dancer corregido** (el único crema cálido; el vivo pasa a violeta). 7c Galactic corregido, como séptimo, es el más débil con daltonismo.
+- **Las 10 ideas del usuario:** 4 (Peach Fuzz), 5 (Forest/Jungle), 6 (Saffron/Cherry) y 9 (Tangerine/Acid lime) se descartan porque chocan con rival, positivo, aviso, Oro o bronce y no se arreglan sin cambiar su identidad; 1, 2, 3, 7, 8 y 10 funcionan solo cambiando el color del modo en vivo (detalles en `temas_color.json` y en las notas del prototipo).
+- Aviso: los contrastes se midieron contra el fondo y las dos superficies de cada tema, no sobre imágenes ni gráficos. F1: el cian queda cerca del color de Aspirante (dE 11).
+
+### Estilos de tarjeta (experto en UI; Tk no tiene desenfoque, ni sombras difusas, ni transparencia por widget)
+- **Ofrecer: Plano (por defecto), Brutal y Cristal.** Orden de implementación: Plano (refactor de tokens), Brutal (el más fiel y barato: bordes de 2 px y sombra dura desplazada), Cristal (último: borde y filo claros, degradado cacheado en cabecera y fondo; se llama «aproximación», nunca se promete desenfoque).
+- **Neumorfismo: fuera.** Contraste ≈1,1:1 (incumple WCAG 1.4.11) y exige sombras difusas dobles que Tk no hace.
+- Tokens (radio, borde, sombra, relleno, separación) en `estilos_ui.json`. Brutal: sombra solo en las 6-10 tarjetas principales, no en filas ni chips. Medir antes el tiempo de reconstrucción (hoy ~2,5 s al cambiar de tema).
+
+### Claves del campeón en la build (investigación con fuentes; sin implementar)
+- Datos verificados (wiki oficial y Skill-Capped, parche 26.22): **Kai'Sa** evoluciona Q con 100 de AD de objetos, W con 100 de AP y E con 100 % de velocidad de ataque (los umbrales bajan a 56 y 70 % a nivel alto; la fuerza adaptativa no cuenta); orden habitual Q, luego E, luego W. **Kha'Zix**: cada rango de R da un punto de evolución; orden Q, luego R, luego situacional (W hacia el nivel 12). También **Nasus** y **Veigar** (acumulación permanente).
+- **Sin verificar (no escribir como hechos):** los niveles exactos de evolución de Kha'Zix según la fuente, y las mecánicas de Viego, Sylas y Yone. Otros candidatos con fuente en la wiki: Sion, Cho'Gath, Senna, Smolder, Aurelion Sol, Zeri, Ornn.
+- **Cómo hacerlo:** Data Dragon (es_ES) trae el texto oficial de cada evolución en los tooltips de Q/W/E de Kai'Sa («Evolucionada») y los umbrales máximos (effectBurn), así que se puede detectar y mostrar solo; los umbrales por nivel, el orden recomendado y los avisos necesitan una tabla curada a mano con fuente y parche (formato en `claves_campeon.json`).
+- Idea extra: una barra de progreso hacia cada evolución con los objetos que llevas (necesitaría leer los objetos en vivo; sin verificar).

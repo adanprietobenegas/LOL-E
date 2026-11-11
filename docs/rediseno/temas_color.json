@@ -1,0 +1,498 @@
+{
+ "1 Cerulean+Tangerine Tango+Blue Iris": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#0F1A26",
+   "s1": "#172636",
+   "s2": "#1F3247",
+   "text": "#EAF1F8",
+   "text2": "#9BB7D4",
+   "acento_consulta": "#9BB7D4",
+   "acento_vivo": "#E77A66",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF6675",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#F2F6FA",
+   "s1": "#E4ECF4",
+   "s2": "#D5E1EC",
+   "text": "#142536",
+   "text2": "#4A6580",
+   "acento_consulta": "#3B6693",
+   "acento_vivo": "#B5361C",
+   "positivo": "#006F62",
+   "negativo": "#991B2F",
+   "aliado": "#1F5FBF",
+   "rival": "#994C00",
+   "aviso": "#7A5C00"
+  }
+ },
+ "2 Navy Blazer+Living Coral+Aqua Sky": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#0E1424",
+   "s1": "#161E36",
+   "s2": "#1F2A48",
+   "text": "#EDF0F8",
+   "text2": "#9AA6C4",
+   "acento_consulta": "#7BC4C4",
+   "acento_vivo": "#FF6F61",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF5C6C",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#F3F5FA",
+   "s1": "#E5E9F3",
+   "s2": "#D6DCEB",
+   "text": "#1B2240",
+   "text2": "#515B80",
+   "acento_consulta": "#26696E",
+   "acento_vivo": "#B22F23",
+   "positivo": "#006A5D",
+   "negativo": "#991B2F",
+   "aliado": "#1E5DBB",
+   "rival": "#994C00",
+   "aviso": "#7A5C00"
+  }
+ },
+ "3 Cloud Dancer+Viva Magenta+Classic Blue": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#101823",
+   "s1": "#18283A",
+   "s2": "#203349",
+   "text": "#F0EEE9",
+   "text2": "#A0B0C4",
+   "acento_consulta": "#719DCC",
+   "acento_vivo": "#E47891",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF6675",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#F0EEE9",
+   "s1": "#E6E3DC",
+   "s2": "#D8D4CB",
+   "text": "#15233A",
+   "text2": "#555A65",
+   "acento_consulta": "#0F4C81",
+   "acento_vivo": "#AE2344",
+   "positivo": "#006559",
+   "negativo": "#991B2F",
+   "aliado": "#1D58B2",
+   "rival": "#8E4700",
+   "aviso": "#755800"
+  }
+ },
+ "4 Peach Fuzz+Greenery+Marsala": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#1E1416",
+   "s1": "#2B1D20",
+   "s2": "#38262A",
+   "text": "#FBEFE8",
+   "text2": "#C9A9A0",
+   "acento_consulta": "#FFBE98",
+   "acento_vivo": "#88B04B",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF5C6C",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#FFF4EC",
+   "s1": "#F6E5DA",
+   "s2": "#EBD3C6",
+   "text": "#3A1F22",
+   "text2": "#7A5555",
+   "acento_consulta": "#884B4A",
+   "acento_vivo": "#4A6421",
+   "positivo": "#006A5D",
+   "negativo": "#991B2F",
+   "aliado": "#1E5BB6",
+   "rival": "#944A00",
+   "aviso": "#755800"
+  }
+ },
+ "5 Forest+Jungle+Blush peach": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#0D1B13",
+   "s1": "#14281C",
+   "s2": "#1C3626",
+   "text": "#F6E9E2",
+   "text2": "#A9C2B2",
+   "acento_consulta": "#29AB87",
+   "acento_vivo": "#F6C9B6",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF6675",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#F6EEE8",
+   "s1": "#E8EADF",
+   "s2": "#D7DDCE",
+   "text": "#12301F",
+   "text2": "#4A6553",
+   "acento_consulta": "#1F4D2E",
+   "acento_vivo": "#8F4C32",
+   "positivo": "#006A5D",
+   "negativo": "#991B2F",
+   "aliado": "#1E5DBB",
+   "rival": "#944A00",
+   "aviso": "#7A5C00"
+  }
+ },
+ "6 Saffron+Cherry+Rose+Sunshine": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#1A1210",
+   "s1": "#271B17",
+   "s2": "#33241E",
+   "text": "#FFF3D6",
+   "text2": "#CDB892",
+   "acento_consulta": "#F4C430",
+   "acento_vivo": "#FC4B6E",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF5C6C",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#FFF8E3",
+   "s1": "#F6EBC9",
+   "s2": "#EBDDAE",
+   "text": "#3A1A12",
+   "text2": "#7A5A3A",
+   "acento_consulta": "#7D5900",
+   "acento_vivo": "#B91D52",
+   "positivo": "#006A5D",
+   "negativo": "#991B2F",
+   "aliado": "#1E5DBB",
+   "rival": "#994C00",
+   "aviso": "#7A5C00"
+  }
+ },
+ "7 Galactic+True blue+Magenta pink": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#0B1130",
+   "s1": "#131B45",
+   "s2": "#1B265C",
+   "text": "#E8ECFA",
+   "text2": "#97A3D4",
+   "acento_consulta": "#3D95E8",
+   "acento_vivo": "#E664B2",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF5C6C",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#F1F3FB",
+   "s1": "#E2E7F6",
+   "s2": "#D2D9EF",
+   "text": "#101A4A",
+   "text2": "#4A5688",
+   "acento_consulta": "#005FAB",
+   "acento_vivo": "#AC1F75",
+   "positivo": "#006A5D",
+   "negativo": "#991B2F",
+   "aliado": "#1E5BB6",
+   "rival": "#944A00",
+   "aviso": "#755800"
+  }
+ },
+ "8 Royal purple+White+Sunglow": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#150F26",
+   "s1": "#1F1638",
+   "s2": "#2A1E4A",
+   "text": "#F6F3FC",
+   "text2": "#B5A7D4",
+   "acento_consulta": "#A58AD8",
+   "acento_vivo": "#FFC93C",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF5C6C",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#F7F4FC",
+   "s1": "#EBE4F6",
+   "s2": "#DDD3EF",
+   "text": "#24124A",
+   "text2": "#5E4D86",
+   "acento_consulta": "#6B3FA8",
+   "acento_vivo": "#785800",
+   "positivo": "#006A5D",
+   "negativo": "#991B2F",
+   "aliado": "#1E5BB6",
+   "rival": "#944A00",
+   "aviso": "#755800"
+  }
+ },
+ "9 Tangerine+White+Acid lime": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#14120D",
+   "s1": "#211E15",
+   "s2": "#2D291C",
+   "text": "#FFFFFF",
+   "text2": "#BDB6A0",
+   "acento_consulta": "#F28500",
+   "acento_vivo": "#C6F432",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF5C6C",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#FFFFFF",
+   "s1": "#F4F1E8",
+   "s2": "#E8E3D4",
+   "text": "#241B05",
+   "text2": "#6B6240",
+   "acento_consulta": "#9A5200",
+   "acento_vivo": "#506B00",
+   "positivo": "#006F62",
+   "negativo": "#991B2F",
+   "aliado": "#1F5FBF",
+   "rival": "#9E4F00",
+   "aviso": "#7A5C00"
+  }
+ },
+ "10 Lagoon+Cloud white+Bubblegum": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#0A1A22",
+   "s1": "#112A36",
+   "s2": "#193746",
+   "text": "#F4F6F8",
+   "text2": "#9FBDCB",
+   "acento_consulta": "#22AAC9",
+   "acento_vivo": "#FF8FB1",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF6B7A",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#F4F6F8",
+   "s1": "#E3EBF0",
+   "s2": "#D2DEE6",
+   "text": "#0C2A36",
+   "text2": "#446474",
+   "acento_consulta": "#13687D",
+   "acento_vivo": "#AA335E",
+   "positivo": "#006A5D",
+   "negativo": "#991B2F",
+   "aliado": "#1E5DBB",
+   "rival": "#994C00",
+   "aviso": "#7A5C00"
+  }
+ },
+ "7c Galactic corregido (consulta cian)": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#0B1130",
+   "s1": "#131B45",
+   "s2": "#1B265C",
+   "text": "#E8ECFA",
+   "text2": "#97A3D4",
+   "acento_consulta": "#5CC8E8",
+   "acento_vivo": "#E664B2",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF5C6C",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#F1F3FB",
+   "s1": "#E2E7F6",
+   "s2": "#D2D9EF",
+   "text": "#101A4A",
+   "text2": "#4A5688",
+   "acento_consulta": "#0D6783",
+   "acento_vivo": "#AC1F75",
+   "positivo": "#006A5D",
+   "negativo": "#991B2F",
+   "aliado": "#1E5BB6",
+   "rival": "#944A00",
+   "aviso": "#755800"
+  }
+ },
+ "3c Cloud Dancer corregido (vivo violeta)": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#101823",
+   "s1": "#18283A",
+   "s2": "#203349",
+   "text": "#F0EEE9",
+   "text2": "#A0B0C4",
+   "acento_consulta": "#719DCC",
+   "acento_vivo": "#B58CFF",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF6675",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#F0EEE9",
+   "s1": "#E6E3DC",
+   "s2": "#D8D4CB",
+   "text": "#15233A",
+   "text2": "#555A65",
+   "acento_consulta": "#0F4C81",
+   "acento_vivo": "#683BCF",
+   "positivo": "#006559",
+   "negativo": "#991B2F",
+   "aliado": "#1D58B2",
+   "rival": "#8E4700",
+   "aviso": "#755800"
+  }
+ },
+ "F1 Abisal (azul noche + cian hielo + violeta electrico)": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#0C1220",
+   "s1": "#141C30",
+   "s2": "#1D2740",
+   "text": "#EAF0FA",
+   "text2": "#9AA9C8",
+   "acento_consulta": "#5CC8E8",
+   "acento_vivo": "#B58CFF",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF5C6C",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#F2F5FA",
+   "s1": "#E3E9F3",
+   "s2": "#D3DCEA",
+   "text": "#101A30",
+   "text2": "#4B5A78",
+   "acento_consulta": "#0D6783",
+   "acento_vivo": "#6B3FD0",
+   "positivo": "#006A5D",
+   "negativo": "#991B2F",
+   "aliado": "#1E5DBB",
+   "rival": "#944A00",
+   "aviso": "#7A5C00"
+  }
+ },
+ "F2 Brasa (grafito calido + cian + lima)": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#15110F",
+   "s1": "#211B18",
+   "s2": "#2D2521",
+   "text": "#F5EEE8",
+   "text2": "#B9A99C",
+   "acento_consulta": "#4FC3D9",
+   "acento_vivo": "#B8F040",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF5C6C",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#F8F3EE",
+   "s1": "#EDE5DD",
+   "s2": "#E0D5CA",
+   "text": "#241A14",
+   "text2": "#665548",
+   "acento_consulta": "#0D6677",
+   "acento_vivo": "#486500",
+   "positivo": "#006A5D",
+   "negativo": "#991B2F",
+   "aliado": "#1E5BB6",
+   "rival": "#8E4700",
+   "aviso": "#755800"
+  }
+ },
+ "F3 Bosque (verde profundo + lila + lima)": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#0C1813",
+   "s1": "#13241C",
+   "s2": "#1B3127",
+   "text": "#EAF4EE",
+   "text2": "#9BB8A8",
+   "acento_consulta": "#C3A8FF",
+   "acento_vivo": "#D4F55A",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF5C6C",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#F2F7F3",
+   "s1": "#E2ECE5",
+   "s2": "#D1E0D6",
+   "text": "#10281E",
+   "text2": "#456554",
+   "acento_consulta": "#6A44C0",
+   "acento_vivo": "#4B6A00",
+   "positivo": "#006A5D",
+   "negativo": "#991B2F",
+   "aliado": "#1E5DBB",
+   "rival": "#994C00",
+   "aviso": "#7A5C00"
+  }
+ },
+ "F4 Neon medianoche (negro azulado + lima + violeta)": {
+  "notas": "Semanticos base: positivo menta, negativo rojo-coral, aliado azul, rival naranja, aviso ambar; refuerzo obligatorio con icono/signo. Colores ajustados por programa para >=4.5:1 sobre bg/s1/s2.",
+  "oscuro": {
+   "bg": "#0A0C14",
+   "s1": "#12151F",
+   "s2": "#1B1F2D",
+   "text": "#F0F2FA",
+   "text2": "#A0A7C0",
+   "acento_consulta": "#8C7CFF",
+   "acento_vivo": "#C6F432",
+   "positivo": "#6FF0CC",
+   "negativo": "#FF5C6C",
+   "aliado": "#4DA3FF",
+   "rival": "#FFA13D",
+   "aviso": "#F2D04A"
+  },
+  "claro": {
+   "bg": "#F5F6FA",
+   "s1": "#E7E9F1",
+   "s2": "#D8DBE7",
+   "text": "#12142A",
+   "text2": "#525878",
+   "acento_consulta": "#5A3FD0",
+   "acento_vivo": "#456B00",
+   "positivo": "#006A5D",
+   "negativo": "#991B2F",
+   "aliado": "#1E5DBB",
+   "rival": "#944A00",
+   "aviso": "#7A5C00"
+  }
+ }
+}
