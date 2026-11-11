@@ -117,7 +117,7 @@ class GameView:
         mine = next((x for x in ros if x["me"]), None)
         my_role = (plan or {}).get("role") or (mine or {}).get("role") or ""
         opp = (plan or {}).get("opp") or 0
-        n_load = len([x for x in ros if x["puuid"] and not x["me"]])
+        n_load = len([x for x in ros if x["puuid"]])
         ui.lbl(self.host, "JUGADORES DE LA PARTIDA", 10, "dim", True, anchor="w").pack(anchor="w", pady=(2, 4))
         if n_load and len(pl) < n_load:
             ui.lbl(self.host, f"Leyendo perfiles… {len(pl)} de {n_load}", 10, "dim", anchor="w").pack(anchor="w", pady=(0, 4))
@@ -130,15 +130,7 @@ class GameView:
                 a = {"champ": x["cid"], "role": x["role"], "puuid": x["puuid"]}
                 tag = "Tu rival de línea" if team == "enemy" and my_role and x["role"] == my_role and (not opp or x["cid"] == opp) else None
                 if x["me"]:
-                    box = ctk.CTkFrame(self.host, fg_color=PAL["card2"], corner_radius=12)
-                    box.pack(fill="x", pady=4)
-                    inner = ui.frame(box)
-                    inner.pack(fill="x", padx=12, pady=10)
-                    ui.champ(inner, x["cid"], 44, False, ring).pack(side="left")
-                    ui.lbl(inner, "Tú", 13, "fg", True).pack(side="left", padx=12)
-                    if ROLES_ES.get(x["role"]):
-                        ui.chip(inner, ROLES_ES[x["role"]], "dim").pack(side="left")
-                    continue
+                    tag = "Tú"
                 Lobby.row(self, self.host, a, pl.get(x["puuid"]) if x["puuid"] else None, x["puuid"] in party, len(party),
                           False, mates.get(x["puuid"]), ring, qid, tag)
         ui.lbl(self.host, "Rango y partidas recientes salen del cliente de cada jugador. Un rango oculto o sin partidas se marca como tal.", 9, "dim",

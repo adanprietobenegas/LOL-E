@@ -210,6 +210,71 @@ class ClavesDelCampeon(unittest.TestCase):
             self.assertIn(k, src)
 
 
+class Temas(unittest.TestCase):
+    ROLES = ("bg", "s1", "s2", "text", "text2", "acento_consulta", "acento_vivo", "positivo", "negativo", "aliado", "rival", "aviso")
+
+    @staticmethod
+    def lum(h):
+        h = h.lstrip("#")
+        c = [int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+        c = [x / 12.92 if x <= .03928 else ((x + .055) / 1.055) ** 2.4 for x in c]
+        return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]
+
+    def cr(self, a, b):
+        la, lb = sorted((self.lum(a), self.lum(b)), reverse=True)
+        return (la + .05) / (lb + .05)
+
+    def test_todos_los_temas_tienen_los_dos_modos_y_contraste(self):
+        import temas
+        for nombre, t in {**temas.COLORES, **temas.LOOKS}.items():
+            for modo in ("oscuro", "claro"):
+                m = t[modo]
+                self.assertTrue(all(r in m for r in self.ROLES), (nombre, modo))
+                for r in ("text", "text2"):
+                    self.assertGreaterEqual(self.cr(m[r], m["s2"]), 4.5, (nombre, modo, r))
+                for r in ("positivo", "negativo", "aliado", "rival", "aviso"):
+                    self.assertGreaterEqual(self.cr(m[r], m["s2"]), 4.4, (nombre, modo, r))   # 4,4: margen de redondeo del cálculo
+
+    def test_estilos_y_looks_tienen_todos_los_tokens(self):
+        import temas
+        for nombre, e in {**temas.ESTILOS, **temas.FORMA_LOOKS}.items():
+            for k in ("radio", "bw", "sombra", "borde", "filo", "sombra_color", "doble", "titulo", "nota"):
+                self.assertIn(k, e, (nombre, k))
+        for nombre in temas.LOOKS:
+            self.assertIn(nombre, temas.FORMA_LOOKS)
+
+    def test_aplicar_cambia_paleta_estilo_y_tipografia(self):
+        import temas, ui_kit
+        try:
+            temas.apply({"color_theme": "Terminal", "style": "Plano"})
+            self.assertEqual(ui_kit.BODY, "Consolas")
+            self.assertEqual(temas.style()["titulo"], "corchetes")
+            self.assertEqual(ui_kit.PAL["fg"][1].upper(), "#C8F5D0")
+            temas.apply({"color_theme": "Abisal", "style": "Brutal"})
+            self.assertEqual(ui_kit.BODY, "Segoe UI")        # un tema de color no cambia la tipografía
+            self.assertEqual(temas.style()["bw"], 2)
+        finally:
+            temas.apply({"color_theme": "Predeterminado", "style": "Plano"})
+        self.assertEqual(tuple(ui_kit.PAL["bg"]), temas._DEFAULT_PAL["bg"])
+        self.assertNotIn("Tema", ui_kit.ACCENTS)
+
+
+class JugadoresDeLaPartidaCarga(unittest.TestCase):
+    def test_la_lectura_avisa_una_sola_vez(self):
+        import players
+        orig = players.fetch_player
+        players.fetch_player = lambda lcu, pu: {"puuid": pu, "name": pu}
+        try:
+            ros = [{"puuid": f"p{i}", "me": i == 0} for i in range(10)] + [{"puuid": "", "me": False}]
+            avisos, prog = [], []
+            players.fetch_roster(None, ros, avisos.append, lambda h, t: prog.append((h, t)))
+        finally:
+            players.fetch_player = orig
+        self.assertEqual(len(avisos), 1)                  # el tablero se dibuja una vez, no por cada jugador
+        self.assertEqual(len(avisos[0]), 10)              # incluido el propio
+        self.assertEqual(prog[-1], (10, 10))
+
+
 class ActualizacionAutomatica(unittest.TestCase):
     def test_instalacion_sin_ventanas_y_activada_por_defecto(self):
         import inspect, updater

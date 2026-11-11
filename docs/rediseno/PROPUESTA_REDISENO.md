@@ -103,3 +103,12 @@ Archivo: `docs/rediseno/claves_campeones.json` (**borrador**, no se usa todavía
 - **Fuentes que fallaron:** U.GG, Metasrc y esports.gg dieron 403; las notas 26.1 a 26.3 dieron 404 con el patrón de URL usado; Meraki está desfasado (parches 14.x a 25.x) y no se usó para cifras actuales. Mobalytics, OP.GG, LeagueOfGraphs y Skill-Capped apenas se consultaron.
 - **Avisos:** los cambios de Gangplank, Garen y Graves de las notas 26.17-26.22 son de League Classic, no de la Grieta; las cifras de Varus, Vayne y Zyra chocan entre fuentes y se omitieron. La verdad cambia con cada parche: hay que revisar el archivo cuando salga uno nuevo (la pasiva de Cassiopeia cambió dos veces en 2026).
 - **Siguiente paso (si se implementa):** tabla en el programa con aviso de parche, mostrar evoluciones, acumulaciones, formas y avisos de objetos, y el orden de habilidades (que la app ya trae de Lolalytics en la build; no duplicar). Comparar el parche del archivo con el de Data Dragon al arrancar y avisar si está caducado.
+
+---
+
+## Ronda 5 (12/11/2026): temas, looks y Datos aparte (IMPLEMENTADO en la 1.22.0)
+- **Dos ejes independientes:** el tema de color (paleta) y el estilo de las tarjetas (Plano, Brutal, Cristal) se combinan libremente; el estilo cambia esquinas, bordes y sombras en TODA la app mediante tokens (no solo en las tarjetas principales: el radio de cada widget se multiplica por el factor del estilo).
+- **Looks:** Terminal, Papel, Blueprint, Hextech, Arcade, Neón Tokio y Océano traen su propia paleta (oscura y clara), tipografía, forma y estilo de título; ignoran el selector de estilo.
+- **Auditorías:** contraste (todos los temas pasan 4,5:1 en texto y 4,4:1 en colores de estado, comprobado en las pruebas) y fidelidad de estilos. Correcciones aplicadas: colores de rango legibles en claro, bordes de estado con los colores del tema, victoria/derrota también por forma, Cristal más claro y con filo a todo el ancho, sombras sin muescas.
+- **Datos fuera de las pestañas:** botón junto a Ajustes (4 pestañas: Asesor, Partida, Enfrentamiento, Historial).
+- **Siguiente (no hecho):** la barra lateral completa del prototipo v2, texturas de fondo y degradados cacheados con PIL, bordes en chips y selectores para Brutal.

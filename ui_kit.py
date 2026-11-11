@@ -17,7 +17,7 @@ PAL = {
     "well": ("#e3e9f1", "#0a121b"), "shadow": ("#bcc7d6", "#010305"), "edge": ("#d3dbe7", "#324862"),
     "border": ("#c3cedb", "#2e425a"), "fg": ("#142033", "#f0eadb"), "dim": ("#4a5a6e", "#a6b3c3"),
     "good": ("#15803d", "#3ddc84"), "bad": ("#dc2626", "#ff5a5f"), "info": ("#2563eb", "#58a6ff"),
-    "warn": ("#b45309", "#ff9f43"), "chip": ("#dfe6ef", "#233650"),
+    "warn": ("#9a4a06", "#ff9f43"), "chip": ("#dfe6ef", "#233650"),
 }
 ACCENTS = {"Dorado": ("#8a6a2f", "#c8aa6e"), "Azul": ("#2563eb", "#58a6ff"), "Verde": ("#15803d", "#3ddc84"),
            "Morado": ("#7c3aed", "#a78bfa"), "Rojo": ("#dc2626", "#ff6b6b"), "Cian": ("#0e7490", "#22d3ee")}
@@ -25,8 +25,18 @@ THEMES = {"Oscuro": "dark", "Claro": "light", "Sistema": "system"}
 PHASES = {"PLANNING": "Planificación", "BAN_PICK": "Bans y picks", "FINALIZATION": "Últimos retoques",
           "GAME_STARTING": "Empezando la partida"}
 ROLES_ES = {"TOP": "Superior", "JUNGLE": "Jungla", "MIDDLE": "Central", "BOTTOM": "Tirador", "SUPPORT": "Apoyo"}
-TIER_COLORS = {"IRON": "#9a9a9a", "BRONZE": "#c0804a", "SILVER": "#b4c2d0", "GOLD": "#e8bd4e", "PLATINUM": "#4fc0b0",
-               "EMERALD": "#3ddc84", "DIAMOND": "#6a9bff", "MASTER": "#c06bff", "GRANDMASTER": "#ff6b6b", "CHALLENGER": "#ffd86b"}
+def _dk(h, t=.45):
+    """El mismo color oscurecido (para texto sobre fondo claro: los colores de rango eran ilegibles sobre crema o blanco)."""
+    h = h.lstrip("#")
+    return "#%02x%02x%02x" % tuple(round(int(h[i:i + 2], 16) * (1 - t)) for i in (0, 2, 4))
+
+
+# (modo claro, modo oscuro)
+TIER_COLORS = {k: (_dk(v), v) for k, v in {"IRON": "#9a9a9a", "BRONZE": "#c78e5e", "SILVER": "#b4c2d0", "GOLD": "#e8bd4e", "PLATINUM": "#4fc0b0",
+               "EMERALD": "#3ddc84", "DIAMOND": "#6a9bff", "MASTER": "#c577ff", "GRANDMASTER": "#ff6b6b", "CHALLENGER": "#ffd86b"}.items()}
+# en modo claro, valores calculados para llegar a 4,5:1 sobre las superficies claras de todos los temas (auditoría de contraste)
+TIER_COLORS.update({"GOLD": ("#6e5925", "#e8bd4e"), "EMERALD": ("#1d683f", "#3ddc84"), "SILVER": ("#555c62", "#b4c2d0"),
+                    "PLATINUM": ("#29655c", "#4fc0b0"), "CHALLENGER": ("#6a5a2d", "#ffd86b")})
 ON_FILL = ("#ffffff", "#07101a")
 REC_VIEWS = {"carrusel": "Carrusel", "lista": "Lista", "listas": "Por categorías"}   # valor guardado -> texto del botón
 
@@ -260,20 +270,51 @@ class Kit:
             return ctk.CTkFrame(parent, **kw)
         return tk.Frame(parent, bg=self.bg(parent))
 
+    def edge_color(self):
+        """Color del borde de tarjetas y cabeceras plegables según el estilo (temas.py): el de siempre, el del texto (Brutal) o uno más claro (Cristal)."""
+        import temas
+        b = temas.style()["borde"]
+        if b == "texto":
+            return PAL["fg"]
+        if b == "acento":
+            return self.acc
+        if b == "claro":
+            return tuple(mix(PAL["card"][i], PAL["fg"][i], .32) for i in (0, 1))
+        return PAL["edge"]
+
     def card(self, parent, title=None, pad=6):
-        # «sombra»: un marco más oscuro (o gris en claro) asoma 3 px por debajo de la tarjeta; el borde claro de arriba hace de reflejo
-        sh = ctk.CTkFrame(parent, fg_color=PAL["shadow"], corner_radius=15, border_width=0)
+        # «sombra»: un marco más oscuro (o gris en claro) asoma por debajo de la tarjeta (en Brutal, también a la derecha y con el color del acento)
+        import temas
+        st = temas.style()
+        dx, dy = st["sombra"]
+        big = st["radio"] > 1.1   # esquinas muy redondas: el marco de sombra dejaba muescas en las esquinas; sin sombra de color, solo el hueco
+        sh = ctk.CTkFrame(parent, fg_color="transparent" if big else (self.acc if st["sombra_color"] == "acento" else PAL["shadow"]), corner_radius=14, border_width=0)   # mismo radio que la tarjeta: sin esquinas con fuga de color
         sh.pack(fill="x", padx=6, pady=pad)
-        f = ctk.CTkFrame(sh, fg_color=PAL["card"], corner_radius=14, border_width=1, border_color=PAL["edge"])
-        f.pack(fill="x", padx=0, pady=(0, 3))
-        inner = self.frame(f)
+        f = ctk.CTkFrame(sh, fg_color=PAL["card"], corner_radius=14, border_width=st["bw"], border_color=self.edge_color())
+        f.pack(fill="x", padx=(0, dx), pady=(0, dy))
+        if st["filo"]:   # luz arriba: línea clara de 1 px a todo el ancho, como el reflejo del borde del vidrio
+            ctk.CTkFrame(f, height=1, corner_radius=0, fg_color=tuple(mix(PAL["card"][i], PAL["fg"][i], .55) for i in (0, 1))).pack(fill="x", padx=6, pady=(1, 0))
+        host = f
+        if st.get("doble"):   # segundo marco fino por dentro (plano técnico, filigrana)
+            host = ctk.CTkFrame(f, fg_color="transparent", corner_radius=2, border_width=1,
+                                border_color=tuple(mix(PAL["card"][i], self.acc[i], .55) for i in (0, 1)))
+            host.pack(fill="x", padx=4, pady=4)
+        inner = self.frame(host)
         inner.pack(fill="x", padx=16, pady=14)
         if title:
             head = self.frame(inner)
             head.pack(fill="x", pady=(0, 6))
-            ctk.CTkFrame(head, width=3, height=14, corner_radius=2, fg_color=self.acc).pack(side="left", padx=(0, 8))
-            self.lbl(head, title.upper(), 10, "fg", True).pack(side="left")
-            ctk.CTkFrame(inner, height=1, corner_radius=0, fg_color=PAL["border"]).pack(fill="x", pady=(0, 10))
+            tt = st.get("titulo", "barra")
+            if tt == "barra":
+                ctk.CTkFrame(head, width=3, height=14, corner_radius=2, fg_color=self.acc).pack(side="left", padx=(0, 8))
+                self.lbl(head, title.upper(), 10, "fg", True).pack(side="left")
+                ctk.CTkFrame(inner, height=1, corner_radius=0, fg_color=PAL["border"]).pack(fill="x", pady=(0, 10))
+            elif tt == "corchetes":
+                self.lbl(head, f"[ {title.upper()} ]", 10, self.hexm(self.acc), True).pack(side="left")
+                ctk.CTkFrame(inner, height=1, corner_radius=0, fg_color=PAL["border"]).pack(fill="x", pady=(0, 10))
+            else:   # regla: título en grande y filete grueso del acento debajo
+                self.lbl(head, title, 13, "fg", True, True).pack(side="left")
+                ctk.CTkFrame(inner, height=2, corner_radius=0, fg_color=self.acc).pack(fill="x", pady=(0, 10))
         return inner
 
     def seg(self, parent, values, current, command, **kw):
@@ -311,8 +352,9 @@ class Kit:
         hover = self.hexm(PAL["border"])
         box = tk.Frame(parent, bg=bgp)
         box.pack(fill="x", pady=(0, 6), padx=6)
-        head = tk.Frame(box, bg=card, cursor="hand2", highlightthickness=1, highlightbackground=self.hexm(PAL["edge"]),
-                        highlightcolor=self.hexm(PAL["edge"]))
+        import temas
+        head = tk.Frame(box, bg=card, cursor="hand2", highlightthickness=1, highlightbackground=self.hexm(self.edge_color()),
+                        highlightcolor=self.hexm(self.edge_color()))
         head.pack(fill="x")
         stripe = tk.Frame(head, width=3, bg=self.hexm(self.acc) if state["open"] else self.hexm(PAL["edge"]))
         stripe.pack(side="left", fill="y")
@@ -325,7 +367,7 @@ class Kit:
         act = None
         if action:  # botón de texto en la cabecera (por ejemplo «Restablecer»): se ve aunque la sección esté plegada
             act = tk.Label(head, text=action[0], bg=card, fg=self.hexm(self.acc), font=self.tkf(9, True, False), cursor="hand2")
-            act.bind("<Button-1>", lambda e: (action[1](), "break")[1])
+            act.bind("<Button-1>", lambda e=None: (action[1](), "break")[1])
 
         def paint_open():
             if state["open"]:
@@ -360,8 +402,8 @@ class Kit:
         box.show_action = show_action
         for w in (head, arrow, ttl, sm):
             w.bind("<Button-1>", toggle)
-            w.bind("<Enter>", lambda e: tint(True))
-            w.bind("<Leave>", lambda e: tint(False))
+            w.bind("<Enter>", lambda e=None: tint(True))
+            w.bind("<Leave>", lambda e=None: tint(False))
         box.set_summary = lambda t: sm.configure(text=t)
         if state["open"]:
             paint_open()
@@ -418,8 +460,8 @@ class Kit:
     def dots(self, parent, results, size=9):
         """Resultados recientes como puntos verdes (victoria) y rojos (derrota)."""
         row = self.frame(parent)
-        for w in results:
-            tk.Frame(row, width=size, height=size, bg=self.hexm(PAL["good" if w else "bad"])).pack(side="left", padx=1)
+        for w in results:   # la victoria es un cuadrado entero y la derrota uno más bajo: se distinguen aunque no se vea el color (daltonismo)
+            tk.Frame(row, width=size, height=size if w else max(3, round(size * .55)), bg=self.hexm(PAL["good" if w else "bad"])).pack(side="left", padx=1, anchor="s")
         return row
 
     def clickable(self, w, cb):

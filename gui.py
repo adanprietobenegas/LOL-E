@@ -44,6 +44,8 @@ class GUI:
                 ctk.FontManager.load_font(res("fonts", f))
             except Exception:
                 pass
+        import temas
+        temas.apply(conf)   # paleta y estilo guardados: antes de crear ningún widget
         ctk.set_appearance_mode(conf["theme"])
         ctk.set_widget_scaling(conf["scale"])
         self.root = ctk.CTk(fg_color=PAL["bg"])
@@ -123,6 +125,9 @@ class GUI:
 
     def roster_players(self, data):
         self.q.put(("roster_pl", data))
+
+    def roster_progress(self, done, total):
+        self.q.put(("roster_prog", done, total))
 
     def poll_cmd(self):
         try:
@@ -359,6 +364,13 @@ class GUI:
                             sec.refresh(cx)
                 elif kind == "roster":
                     self.on_roster(ev[1])
+                elif kind == "roster_prog":   # solo cambia el contador: no se redibuja el tablero
+                    lab = getattr(self.game_view, "roster_lbl", None)
+                    try:
+                        if lab is not None and lab.winfo_exists():
+                            lab.configure(text=f"Leyendo perfiles… {ev[1]} de {ev[2]}")
+                    except Exception:
+                        pass
                 elif kind == "roster_pl":
                     self.ctx["roster_pl"] = ev[1]
                     if self.view == "game":
@@ -573,6 +585,12 @@ class GUI:
                                 command=self.toggle_dock)
         ajustes.pack(side="right")
         k.smooth_btn(ajustes, PAL["card"], PAL["card2"])
+        # «Datos» (fuentes, cálculo de la afinidad, umbrales y glosario) es consulta de referencia, no una pestaña de uso diario: botón junto a Ajustes
+        self.datos_btn = ctk.CTkButton(bar, text="Datos", width=74, height=32, corner_radius=10, font=k.font(12), border_width=1,
+                                       border_color=k.acc if self.page == "datos" else PAL["edge"], fg_color=PAL["card"], hover_color=PAL["card"],
+                                       text_color=PAL["fg"], command=lambda: self.set_page("Datos"))
+        self.datos_btn.pack(side="right", padx=(0, 8))
+        k.smooth_btn(self.datos_btn, PAL["card"], PAL["card2"])
         self.link_lbl = k.clbl(bar, "", 11, "warn", True)
         self.link_lbl.pack(side="right", padx=(10, 12))
         vol = k.frame(bar)
@@ -583,9 +601,9 @@ class GUI:
         self.add_volume_slider(vol, 70).pack(side="left")
         self.update_btn = ctk.CTkButton(bar, text="", height=28, corner_radius=14, font=k.font(11, True), fg_color=k.acc,
                                         text_color=PAL["bg"], hover_color=k.acc, command=self.confirm_update)
-        tabs = {"asesor": "Asesor", "partida": "Partida", "enfrentamiento": "Enfrentamiento", "historial": "Historial", "datos": "Datos"}
-        self.tab_names = tabs
-        self.tab_seg = k.seg(self.main, list(tabs.values()), tabs.get(self.page, "Asesor"), self.set_page)
+        tabs = {"asesor": "Asesor", "partida": "Partida", "enfrentamiento": "Enfrentamiento", "historial": "Historial"}
+        self.tab_names = {**tabs, "datos": "Datos"}   # «Datos» es una página más, pero se abre desde su botón de la cabecera
+        self.tab_seg = k.seg(self.main, list(tabs.values()), tabs.get(self.page, ""), self.set_page)
         self.tab_seg.pack(fill="x", padx=18, pady=(8, 0))
         self.body = ctk.CTkScrollableFrame(self.main, fg_color="transparent", corner_radius=0, scrollbar_button_color=PAL["edge"],
                                            scrollbar_button_hover_color=PAL["border"])
@@ -664,8 +682,13 @@ class GUI:
 
     def set_page(self, name):
         self.page = {v: k for k, v in self.tab_names.items()}[name]
-        if self.tab_seg.get() != name:
-            self.tab_seg.set(name)
+        want = name if self.page != "datos" else ""   # en «Datos» ninguna pestaña queda marcada
+        if self.tab_seg.get() != want:
+            self.tab_seg.set(want)
+        try:
+            self.datos_btn.configure(border_color=self.kit.acc if self.page == "datos" else PAL["edge"])
+        except Exception:
+            pass
         self.conf["tab"] = self.page
         save_conf(self.conf)
         self.apply_page()
@@ -869,7 +892,15 @@ class GUI:
         self.conf[key] = value
         save_conf(self.conf)
         self.apply_window()
-        if key in ("accent", "theme", "scale"):
+        if key in ("accent", "theme", "scale", "color_theme", "style"):
+            if key in ("color_theme", "style"):
+                import temas
+                if key == "color_theme":
+                    self.conf["accent"] = temas.accent_for(value)   # cada tema trae su acento; luego se puede cambiar a mano
+                    save_conf(self.conf)
+                temas.apply(self.conf)
+            if key in ("color_theme", "style"):
+                self.kit.fonts.clear()   # la tipografía puede cambiar con el tema (los looks traen la suya)
             if key == "scale":
                 self.kit.fonts = {k_: v for k_, v in self.kit.fonts.items() if k_[0] != "tk"}
             self.kit.epoch += 1  # las secciones se reconstruyen con los colores y tamaños nuevos
@@ -1079,6 +1110,17 @@ class GUI:
         section("Apariencia")
         seg(list(THEMES), {v: k_ for k_, v in THEMES.items()}.get(conf["theme"], "Oscuro"),
             lambda v: self.set("theme", THEMES[v]))
+        import temas
+        label("Tema de color")
+        k.menu(sc, temas.NOMBRES, conf.get("color_theme", temas.DEFAULT_THEME), lambda v: self.set("color_theme", v), width=220).pack(anchor="w", padx=12, pady=2)
+        cur_theme = conf.get("color_theme", temas.DEFAULT_THEME)
+        if temas.is_look(cur_theme):
+            note(f"«{cur_theme}»: " + temas.FORMA_LOOKS[cur_theme]["nota"] + " Es un look completo: trae su propia tipografía y estilo de tarjetas.")
+        else:
+            note("Paletas revisadas por contraste y daltonismo. Los looks (Terminal, Papel, Blueprint, Hextech y Arcade) cambian además la tipografía y la forma.")
+            label("Estilo de las tarjetas")
+            seg(temas.ESTILOS_NOMBRES, conf.get("style", temas.DEFAULT_STYLE), lambda v: self.set("style", v))
+            note(temas.ESTILOS[conf.get("style", temas.DEFAULT_STYLE)]["nota"] + " Se combina con cualquier tema de color.")
         label("Color de acento")
         sw = k.frame(sc)
         sw.pack(anchor="w", padx=12, pady=(2, 0))
@@ -1127,8 +1169,8 @@ class GUI:
             self.data_view.sig = None  # la pestaña «Datos» recoge los pesos nuevos la próxima vez
         seg(list(names), PRESET_INFO[conf["preset"]][0], pick)
         desc.pack(anchor="w", padx=14, pady=(2, 4))
-        note("Los pesos, los umbrales y de dónde sale cada dato están en la pestaña «Datos».")
-        button("Abrir la pestaña «Datos»", lambda: (self.tab_seg.set("Datos"), self.set_page("Datos")))
+        note("Los pesos, los umbrales y de dónde sale cada dato están en «Datos» (botón junto a Ajustes).")
+        button("Abrir «Datos»", lambda: self.set_page("Datos"))
 
         section("Sonido")
         switch("Avisos sonoros", "beep")
@@ -1143,7 +1185,7 @@ class GUI:
         for ph, ph_name, ph_desc in core.PHASES:
             self._phase_sound_row(sc, k, ph, ph_name, ph_desc)
         section("Datos")
-        note("Qué fuentes se usan, y su activación, se gestiona en la pestaña «Datos».")
+        note("Qué fuentes se usan, y su activación, se gestiona en «Datos» (botón junto a Ajustes).")
         button("Actualizar estadísticas de op.gg", lambda: (self.cmds.put("opgg"), self.status("Actualizando op.gg…")))
         button("Actualizar el meta del parche", lambda: (self.cmds.put("meta"), self.status("Actualizando el meta…")))
         button("Abrir la carpeta de datos", lambda: os.startfile(DATA_DIR) if os.path.isdir(DATA_DIR) else None)

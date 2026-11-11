@@ -7,6 +7,31 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.0   (12 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · temas.py (nuevo): sistema de temas. COLORES (6 paletas: Abisal, Neón medianoche, Brasa, Bosque, Cloud
+    Dancer más el Predeterminado) y LOOKS (Terminal, Papel, Blueprint, Hextech, Arcade, Neón Tokio y Océano) con
+    paleta oscura y clara; ESTILOS (Plano, Brutal, Cristal) como tokens de forma (radio, borde, sombra, filo,
+    marco doble, estilo de título, tipografía). apply(conf) reescribe ui_kit.PAL en el sitio, fija ACCENTS["Tema"]
+    y las fuentes (ui_kit.DISPLAY/BODY) y multiplica el corner_radius de todos los widgets de CustomTkinter por el
+    factor del estilo (parche único de __init__). Un look trae su propia forma y tipografía y ignora el selector
+    de estilo; un tema de color se combina con cualquier estilo.
+  · Los colores salen de una auditoría de color (contrastes WCAG calculados y daltonismo simulado) y de una de
+    estilos (viabilidad en Tk). Neumorfismo descartado (contraste ≈1,1:1). Cristal es una aproximación sin
+    desenfoque real. Datos y valores en docs/rediseno/temas_color.json y estilos_ui.json.
+  · ui_kit.py: Kit.card (marco doble, filo, títulos «barra», «regla» o «corchetes», sombra de acento),
+    Kit.edge_color, Kit.dots (la derrota es un cuadrado más bajo: se distingue sin color), TIER_COLORS con
+    (claro, oscuro) y valores legibles en claro, aviso claro #9a4a06. fold y ui_vs.collapsible usan el borde del
+    estilo.
+  · gui.py: «Datos» sale de las pestañas y es un botón junto a Ajustes (set_page("Datos") deja ninguna pestaña
+    marcada); Ajustes > Apariencia con «Tema de color» y «Estilo de las tarjetas» (oculto en los looks).
+  · players.py / ui_vs.py: fetch_roster también lee tu perfil (tu tarjeta con tus 10 últimas y el popup) y avisa
+    UNA sola vez cuando han llegado todos, más un contador de progreso (roster_prog) que no redibuja el tablero;
+    antes se redibujaba por cada jugador. Los bordes de estado usan los colores del tema y del modo.
+  · herramientas/tests_unitarios.py: 28 pruebas (nuevas: contraste de todos los temas, tokens de estilos, aplicar
+    un look cambia paleta y tipografía, el tablero avisa una sola vez).
+
 VERSIÓN 1.21.0   (11 de noviembre de 2026)
 ---------------------------------------------------------------------
 

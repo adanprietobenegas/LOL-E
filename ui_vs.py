@@ -85,7 +85,7 @@ def team_stats(members, info, ui):
     """Cifras del equipo a partir de los datos leídos: rango medio, victorias recientes y maestría con el campeón que lleva."""
     ranks, wrs, pts, n = [], [], [], 0
     for x, p in members:
-        if x["me"]:
+        if x["me"] and (not p or p.get("error")):   # tu perfil aún no ha llegado: se usan tus datos ya cargados
             prof = (info or {}).get("profile") or {}
             rk = prof.get("solo") or prof.get("flex")
             if rank_score(rk) is not None:
@@ -118,7 +118,8 @@ def collapsible(ui, parent, title, summary, key, build, open_=True):
     card, fg, dim = ui.hexm(PAL["card2"]), ui.hexm(PAL["fg"]), ui.hexm(PAL["dim"])
     box = tk.Frame(parent, bg=bgp)
     box.pack(fill="x", pady=(0, 8))
-    head = tk.Frame(box, bg=card, cursor="hand2", highlightthickness=1, highlightbackground=ui.hexm(PAL["edge"]))
+    import temas
+    head = tk.Frame(box, bg=card, cursor="hand2", highlightthickness=1, highlightbackground=ui.hexm(ui.edge_color()))
     head.pack(fill="x")
     stripe = tk.Frame(head, width=3, bg=ui.hexm(ui.acc))
     stripe.pack(side="left", fill="y")
@@ -170,9 +171,13 @@ class Board:
         self.my_role = (plan or {}).get("role") or next((x["role"] for x in ros if x["me"]), "")
         self.opp = (plan or {}).get("opp") or 0
         self.pl, self.info = pl, info
-        n_load = len([x for x in ros if x["puuid"] and not x["me"]])
+        # colores de estado del tema y del modo actuales (antes eran fijos de modo oscuro y con 1,4:1 de contraste en claro)
+        self.c_ally, self.c_enemy, self.c_rival = ui.hexm(PAL["good"]), ui.hexm(PAL["bad"]), ui.hexm(PAL["warn"])
+        n_load = len([x for x in ros if x["puuid"]])
+        v.roster_lbl = None
         if n_load and len(pl) < n_load:
-            ui.lbl(host, f"Leyendo perfiles… {len(pl)} de {n_load}", 10, "dim", anchor="w").pack(anchor="w", pady=(0, 4))
+            v.roster_lbl = ui.lbl(host, f"Leyendo perfiles… 0 de {n_load}", 10, "dim", anchor="w")
+            v.roster_lbl.pack(anchor="w", pady=(0, 4))
         mine = [(x, pl.get(x["puuid"])) for x in ros if x["team"] == "ally"]
         theirs = [(x, pl.get(x["puuid"])) for x in ros if x["team"] == "enemy"]
         self.compare(host, mine, theirs)
@@ -245,7 +250,7 @@ class Board:
             g.grid_columnconfigure(2, weight=1, uniform="lane")
             g.grid_columnconfigure(1, minsize=84)
             det = ui.frame(box)
-            for col_, side, ring in ((0, left.get(k), "#3ddc84"), (2, right.get(k), "#ff5a5f")):
+            for col_, side, ring in ((0, left.get(k), self.c_ally), (2, right.get(k), self.c_enemy)):
                 if side:
                     self.card(g, side[0], side[1], ring, cw, box, det).grid(row=0, column=col_, sticky="nsew", padx=2)
             mid = ui.frame(g)
@@ -259,9 +264,9 @@ class Board:
     # ---------- una tarjeta ----------
     def card(self, parent, x, p, ring, cw, row, det):
         ui = self.ui
-        lane_rival = ring == "#ff5a5f" and self.my_role and x["role"] == self.my_role and (not self.opp or x["cid"] == self.opp)
+        lane_rival = ring == self.c_enemy and self.my_role and x["role"] == self.my_role and (not self.opp or x["cid"] == self.opp)
         card = ctk.CTkFrame(parent, fg_color=PAL["card2"], corner_radius=12, border_width=2 if (x["me"] or lane_rival) else 0,
-                            border_color="#3ddc84" if x["me"] else "#f0b429")
+                            border_color=self.c_ally if x["me"] else self.c_rival)
         inner = ui.frame(card)
         inner.pack(fill="both", expand=True, padx=10, pady=8)
         ui.champ(inner, x["cid"], 46, False, ring if x["cid"] else None).pack(side="left", anchor="n")
@@ -270,9 +275,9 @@ class Board:
         head = ui.frame(col_)
         head.pack(fill="x")
         prof = (self.info or {}).get("profile") or {}
-        name = prof.get("name") if x["me"] else (p or {}).get("name")
+        name = (p or {}).get("name") or (prof.get("name") if x["me"] else "")
         name = name or ("Nombre oculto" if not x["puuid"] else "Cargando…")
-        rk = best_rank(prof if x["me"] else p)
+        rk = best_rank(p) or (best_rank(prof) if x["me"] else None)
         rank_w = 0
         if rk:
             txt = f"{rk['tier']} {rk['div']}".strip()
@@ -282,7 +287,7 @@ class Board:
         ui.lbl(head, ui.fit(shown, ui.tkf(11, True, False), max(60, cw - 46 - 36 - rank_w)), 11, "fg", True).pack(side="left")
         line = ui.frame(col_)
         line.pack(fill="x", pady=(4, 0))
-        if p and not p.get("error") and not x["me"]:
+        if p and not p.get("error"):
             rec = p.get("recent") or []
             if rec:
                 ui.dots(line, [g["w"] for g in rec], 7).pack(side="left")
@@ -292,8 +297,8 @@ class Board:
                 ui.lbl(line, "Sin partidas recientes", 9, "dim").pack(side="left")
         elif p and p.get("error"):
             ui.lbl(line, "No se pudieron leer sus datos", 9, "dim").pack(side="left")
-        elif not x["me"] and x["puuid"]:
-            ui.lbl(line, "Leyendo su perfil…", 9, "dim").pack(side="left")
+        elif x["puuid"]:
+            ui.lbl(line, "Leyendo tu perfil…" if x["me"] else "Leyendo su perfil…", 9, "dim").pack(side="left")
         bw = ui.frame(col_)
         bw.pack(fill="x", pady=(5, 0))
         used = 0
@@ -304,7 +309,7 @@ class Board:
                 break
             ui.chip(bw, txt, colr).pack(side="left", padx=(0, 4))
             used += w + 4
-        if p and not p.get("error") and not x["me"]:
+        if p and not p.get("error"):
             self.hover(card, p, x)
             self.click(card, p, x, row, det)
         return card

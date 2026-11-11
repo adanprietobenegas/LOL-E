@@ -14,7 +14,7 @@ import synergy
 import trends
 from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.21.0"
+APP_NAME, APP_VERSION = "LOL-E", "1.22.0"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -56,7 +56,9 @@ DEFAULT_CONF = {
     "custom_weights": {},    # pesos propios (estilo «personalizado»)
     "params": {},            # umbrales propios (ver params.py)
     "auto_update": True,     # buscar actualizaciones al abrir y cada pocas horas (si hay update_url)
-    "auto_install": True,    # instalar solas las versiones nuevas (sin pulsar nada), nunca durante una cola, selección o partida
+    "color_theme": "Predeterminado",   # tema de color (ver temas.py)
+    "style": "Plano",                  # estilo de las tarjetas: Plano, Brutal o Cristal
+    "auto_install": True,   # instalar solas las versiones nuevas (sin pulsar nada), nunca durante una cola, selección o partida
     "update_url": "https://github.com/adanprietobenegas/LOL-E/releases/latest/download/latest.json",        # direccion del archivo latest.json
     "tab": "asesor",
     "start_tab": "ultima",   # ultima | asesor | enfrentamiento | datos
@@ -1051,7 +1053,7 @@ def run(conf, champs, ui):
                         if ros:
                             roster_gid = gid_r
                             getattr(ui, "roster", lambda *a: None)(ros)
-                            threading.Thread(target=players.fetch_roster, args=(lcu, ros, getattr(ui, "roster_players", lambda d: None)), daemon=True).start()
+                            threading.Thread(target=players.fetch_roster, args=(lcu, ros, getattr(ui, "roster_players", lambda d: None), getattr(ui, "roster_progress", None)), daemon=True).start()
                     except (urllib.error.URLError, ConnectionError, OSError):
                         raise
                     except Exception:

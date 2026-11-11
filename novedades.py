@@ -10,6 +10,13 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.0", "fecha": "12 de noviembre de 2026", "titulo": "Temas y looks, Datos aparte y tu tarjeta en la carga", "items": [
+        ("nuevo", "Temas de color y estilos: en Ajustes > Apariencia eliges una paleta (Predeterminado, Abisal, Neón medianoche, Brasa, Bosque, Cloud Dancer; cada una con modo oscuro y claro) y un estilo de tarjetas (Plano, Brutal con bordes gruesos y sombra dura, o Cristal con bordes luminosos). Son independientes: cualquier paleta vale con cualquier estilo, y el estilo cambia esquinas, bordes y sombras en toda la app."),
+        ("nuevo", "Siete looks con personalidad propia, que no son solo colores: Terminal (todo en monoespaciada, verde fosforito), Papel (serif, crema y titulares subrayados), Blueprint (azul de plano, doble línea y rotulación técnica), Hextech (oro y azul profundo con doble marco), Arcade (neón sobre morado, bordes gruesos y sombra de color), Neón Tokio (doble borde luminoso rosa y cian) y Océano (esquinas muy redondas y verdes azulados). Cada uno trae su tipografía, su forma y su manera de titular las tarjetas."),
+        ("mejora", "Todos los temas pasan una auditoría de contraste (texto, acentos y colores de victoria, derrota, aliado y rival), y la victoria y la derrota se distinguen también por forma (cuadrado entero o bajo) además del color. Los colores de rango son legibles en modo claro."),
+        ("mejora", "«Datos» sale de las pestañas y pasa a un botón junto a Ajustes: son fuentes, cálculo y glosario, no un uso diario."),
+        ("mejora", "«Jugadores de la partida» muestra también tu tarjeta (tus 10 últimas, rango, etiquetas y la ventana al pasar el ratón) y carga los 10 perfiles de una vez: ya no se redibuja por cada jugador que llega, solo avanza un contador."),
+    ]},
     {"v": "1.21.0", "fecha": "11 de noviembre de 2026", "titulo": "Claves del campeón", "items": [
         ("nuevo", "«Claves del campeón» sobre la build, en la selección y en Partida > Plan: lo que cambia cómo se compra o se juega y no sale en las estadísticas. Por ejemplo, qué evoluciona cada habilidad de Kai'Sa (100 de AD, 100 de AP, 100 % de velocidad de ataque), los puntos de evolución de Kha'Zix, las cargas permanentes de Nasus o Veigar, las formas de Jayce o Kayn, o que Cassiopeia sí puede comprar botas. Son 250 claves de 95 campeones, verificadas en dos pasadas con notas de parche de Riot, Data Dragon y Lolalytics."),
         ("mejora", "Cada bloque indica el parche en el que se verificó y avisa cuando el parche actual es otro: los datos pueden haber cambiado y conviene comprobarlos. Se puede plegar y recuerda si lo dejaste abierto."),
