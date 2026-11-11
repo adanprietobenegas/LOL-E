@@ -177,6 +177,39 @@ class TableroCincoContraCinco(unittest.TestCase):
         self.assertIn("Primera vez", [t for t, _ in ui_vs.badges(nuevo, x, set(), None)])
 
 
+class ClavesDelCampeon(unittest.TestCase):
+    def test_archivo_valido_y_con_los_casos_conocidos(self):
+        import claves
+        d = claves.load()
+        self.assertTrue(d["patch"] and len(d["champs"]) > 50)
+        for k, v in d["champs"].items():
+            self.assertTrue(v["n"] and v["c"], k)
+            for tipo, texto in v["c"]:
+                self.assertIn(tipo, claves.TIPOS, k)
+                self.assertTrue(10 < len(texto) <= 260, (k, len(texto)))
+        kaisa = " ".join(t for _, t in claves.for_champ("Kaisa"))
+        self.assertIn("100", kaisa)                      # umbrales de evolución
+        cas = " ".join(t for _, t in claves.for_champ("Cassiopeia")).lower()
+        self.assertIn("sí puede comprar botas", cas)     # error de la primera pasada, corregido
+        self.assertNotIn("no puede comprar botas", cas)
+        self.assertEqual(claves.for_champ("NoExiste"), [])
+        self.assertEqual(claves.for_champ(None), [])
+
+    def test_aviso_de_parche(self):
+        import claves
+        self.assertEqual(claves.patch_of("16.22.1"), "26.22")
+        self.assertEqual(claves.patch_of(""), "")
+        self.assertEqual(claves.stale("16.22.1"), "" if claves.load()["patch"] == "26.22" else "26.22")
+        self.assertEqual(claves.stale("16.23.1"), "26.23")
+        self.assertEqual(claves.stale("basura"), "")
+
+    def test_el_archivo_de_la_app_sale_del_documento_verificado(self):
+        src = json.load(open(os.path.join(ROOT, "docs", "rediseno", "claves_campeones.json"), encoding="utf-8"))["campeones"]
+        import claves
+        for k in claves.load()["champs"]:
+            self.assertIn(k, src)
+
+
 class ActualizacionAutomatica(unittest.TestCase):
     def test_instalacion_sin_ventanas_y_activada_por_defecto(self):
         import inspect, updater

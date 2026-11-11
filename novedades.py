@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.21.0", "fecha": "11 de noviembre de 2026", "titulo": "Claves del campeón", "items": [
+        ("nuevo", "«Claves del campeón» sobre la build, en la selección y en Partida > Plan: lo que cambia cómo se compra o se juega y no sale en las estadísticas. Por ejemplo, qué evoluciona cada habilidad de Kai'Sa (100 de AD, 100 de AP, 100 % de velocidad de ataque), los puntos de evolución de Kha'Zix, las cargas permanentes de Nasus o Veigar, las formas de Jayce o Kayn, o que Cassiopeia sí puede comprar botas. Son 250 claves de 95 campeones, verificadas en dos pasadas con notas de parche de Riot, Data Dragon y Lolalytics."),
+        ("mejora", "Cada bloque indica el parche en el que se verificó y avisa cuando el parche actual es otro: los datos pueden haber cambiado y conviene comprobarlos. Se puede plegar y recuerda si lo dejaste abierto."),
+        ("mejora", "«Jugadores de la partida» (pantalla de carga) se puede plegar para centrarte en la build, ya no sale en ARAM, Arena ni personalizadas, y la ventana al pasar el ratón enseña más: cómo le va con su campeón, su maestría, su línea habitual y los súbditos por minuto, el daño y la duración de cada partida."),
+    ]},
     {"v": "1.20.0", "fecha": "11 de noviembre de 2026", "titulo": "Los 10 jugadores en la pantalla de carga y actualizaciones solas", "items": [
         ("nuevo", "Pantalla de carga: en Partida > Plan ves a los 10 jugadores a la vez, cada línea frente a su rival. Cada tarjeta lleva su campeón, su rango, sus últimas partidas en puntos verdes y rojos y etiquetas con lo destacado: mucha maestría con el campeón, primera vez con él, racha, especialista, fuera de su línea, posible cuenta secundaria, dúo contigo…"),
         ("nuevo", "Comparativa de equipos: rango medio, victorias recientes, maestría media con el campeón que llevan, daño físico y mágico, tanques y control; el lado mejor se marca en verde."),

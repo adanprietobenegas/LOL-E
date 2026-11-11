@@ -7,8 +7,29 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
-SIN PUBLICAR (después de la 1.20.0, en el repositorio; saldrá en la próxima versión)
+VERSIÓN 1.21.0   (11 de noviembre de 2026)
 ---------------------------------------------------------------------
+
+  · claves.py (nuevo): carga assets/claves.json y lo sirve por campeón (for_champ, id de Data Dragon);
+    patch_of() convierte la versión de Data Dragon al parche del juego («16.22.1» -> «26.22») y stale()
+    avisa cuando el parche actual no es el verificado. Si el archivo falta o está roto, la app sigue
+    igual sin el bloque.
+  · assets/claves.json (nuevo, 44 KB, incluido en el instalador): 250 claves de 95 campeones (evolución,
+    forma, acumulación, objetos, aviso), generado con `python herramientas/generar_claves.py` desde
+    docs/rediseno/claves_campeones.json (verificado en dos pasadas; ver docs/rediseno/PROPUESTA_REDISENO.md,
+    rondas 3 y 4). Pasan solo las claves confirmadas, corregidas y nuevas, máximo 6 por campeón. El orden de
+    habilidades no se copia: la build ya lo trae de Lolalytics.
+  · ui_claves.py (nuevo): bloque plegable «Claves de <campeón>» (con ui_vs.collapsible). Se dibuja encima de la
+    build en la selección (MyPick) y en Partida > Plan (cualquier modo). Pie con el parche verificado, en
+    ámbar si el actual es otro.
+  · ui_vs.py: collapsible() (cabecera plegable sin animación; ui.fold medía el cuerpo antes de tiempo y lo
+    dejaba cortado). «Jugadores de la partida» se puede plegar y recuerda su estado
+    (conf["folds"]["game_roster"]). La ventana al pasar el ratón añade el rendimiento con el campeón que lleva,
+    la maestría, la línea habitual, súbditos/min, daño y duración de cada partida.
+  · ui_game.py: el tablero solo se dibuja en la Grieta (kind «sr»); en ARAM, Arena y personalizadas no sale.
+  · herramientas/tests_unitarios.py: 24 pruebas (nuevas: archivo de claves válido, caso de Cassiopeia, avisos
+    de parche, coherencia con el documento verificado).
+  · docs/rediseno/: propuesta de rediseño y prototipos (NO implementado; pendiente de que el usuario lo revise).
 
   · ui_vs.py: collapsible() (cabecera plegable sin animación; ui.fold medía el cuerpo antes de tiempo y
     lo dejaba cortado). «Jugadores de la partida» se puede plegar para centrarse en la build y recuerda

@@ -42,7 +42,7 @@ def main():
     step("2/5 Ejecutable (PyInstaller)")
     run([sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", "--windowed", "--name", "LOL-E",
          "--icon", icon, "--collect-all", "customtkinter", "--add-data", f"{HERE}\\assets\\icon.png;assets", "--add-data", f"{HERE}\\assets\\icon.ico;assets",
-         "--add-data", f"{HERE}\\assets\\fonts;assets\\fonts", "--distpath", os.path.join(TMP, "dist"),
+         "--add-data", f"{HERE}\\assets\\fonts;assets\\fonts", "--add-data", f"{HERE}\\assets\\claves.json;assets", "--distpath", os.path.join(TMP, "dist"),
          "--workpath", os.path.join(TMP, "work"), "--specpath", TMP, "--paths", HERE, os.path.join(HERE, "app.py")])
 
     step("3/5 Datos iniciales (campeones e iconos, sin datos personales)")

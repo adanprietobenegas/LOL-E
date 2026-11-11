@@ -174,6 +174,8 @@ class GameView:
             pk = ui_opp.picker(ui, host, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 110)
             if pk is not None:
                 pk.pack(fill="x", pady=(0, 8))
+        import ui_claves
+        ui_claves.block(ui, host, cid, self.width - 110)   # claves del campeón (evoluciones, acumulaciones, formas…) en cualquier modo
         if plan.get("mayhem"):
             import ui_mayhem
             self.load_games()

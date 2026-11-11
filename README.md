@@ -29,8 +29,9 @@ No hace falta tener Python ni nada más. Se actualiza solo: al abrirse y cada po
 | `docs/` | Léeme, notas de versión, guía visual, estado y pendientes, capturas |
 | `guide.py`, `ui_guide.py`, `ui_opp.py` | Guía de juego y duelo de línea (Data Dragon) y selector de rival de línea |
 | `ui_vs.py` | Tablero 5 contra 5 de la pantalla de carga |
+| `claves.py`, `ui_claves.py`, `assets/claves.json` | Claves del campeón (evoluciones, acumulaciones, formas, objetos) sobre la build, con el parche en que se verificaron |
 | `itemset.py`, `sounds.py` | Envío de la build al cliente como conjunto de objetos; sonidos por fase |
-| `herramientas/` | Scripts de demo y pruebas de modos de juego; `tests_unitarios.py` (14 pruebas de la lógica, sin cliente ni ventana: `python herramientas/tests_unitarios.py`) |
+| `herramientas/` | Scripts de demo y pruebas de modos de juego; `tests_unitarios.py` (24 pruebas de la lógica, sin cliente ni ventana: `python herramientas/tests_unitarios.py`) |
 
 ## Para desarrolladores: ejecutarlo desde el código
 

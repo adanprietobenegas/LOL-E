@@ -813,6 +813,8 @@ class MyPick(Section):
                            ui.opp_now(), ui.set_opp, ctx["width"] - 110)
         if pk is not None:
             pk.pack(fill="x", pady=(0, 10))
+        import ui_claves
+        ui_claves.block(ui, c, cid, ctx["width"] - 110)
         build_panel(ui, c, cid, lane, r["lane_opp"] or None, ctx["width"] - 110, r.get("enemy_stats")).pack(fill="x")
         import ui_guide
         ui_guide.guide_block(ui, c, cid, r["lane_opp"] or None, lane, ctx["width"])
