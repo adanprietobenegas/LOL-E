@@ -5,7 +5,7 @@
 Abre la ventana en el monitor secundario (-1366,209), recorre las pantallas y guarda un PNG por pantalla (y por página
 de desplazamiento) en herramientas/salida/<carpeta>. No escribe la configuración y deja cache/last_plan.json como estaba.
 """
-import copy, os, random, shutil, sys, time
+import copy, glob, json, os, random, shutil, sys, time
 D = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "salida")
 sys.path.insert(0, D)
@@ -36,6 +36,7 @@ class SinCliente:
 
 conf = l.load_conf()
 conf.update(auto_update=False, auto_install=False, beep=False, animations=False)
+conf.update(json.loads(os.environ.get("LOLE_CONF", "{}")))   # p. ej. {"theme": "light", "scale": 1.3, "compact": true, "color_theme": "Papel"}
 champs = l.load_champions()
 P = l.load_player_data(SinCliente(), l.load_season(champs, conf))
 P["profile"] = {"name": "Jugador", "tag": "EUW", "level": 214, "icon": 29, "puuid": "yo",
@@ -120,6 +121,23 @@ def fin_partida():
     ui.phase("EndOfGame")
 
 
+def analisis_guardado():
+    """Enseña el análisis de la partida guardada más reciente en cache/analysis (no hace falta el cliente)."""
+    fs = sorted(glob.glob(os.path.join(l.CACHE, "analysis", "*.json")))
+    if not fs:
+        return
+    data = l.read_json(fs[-1], None)
+    gid = os.path.basename(fs[-1])[:-5]
+    ui.game_view.load_games()
+    gid = next((x["id"] for x in ui.game_view.games if str(x["id"]) == gid), gid)   # mismo tipo que usa la lista de partidas
+    ui.game_view.gid, ui.game_view.auto_try = gid, 99
+    ui.analysis(gid, data)
+
+
+def abrir_pliegues(v=True):
+    conf["folds"] = {k: v for k in ("dat_src", "dat_formula", "dat_f", "dat_params", "dat_gloss", "hist_filters", "game_roster")}
+
+
 def vista(v):
     ui.set("rec_view", v, redraw=True)
 
@@ -137,10 +155,17 @@ PASOS = [
     ("09_aram", lambda: push(aram, {"id": 450, "group": "ARAM", "kind": "aram"}), 5000),
     ("10_partida_plan", en_partida, 6000),
     ("11_partida_analisis", lambda: (fin_partida(), tab_partida("Análisis")), 5000),
+    ("11b_analisis_guardado", analisis_guardado, 5000),
     ("12_enfrentamiento", lambda: ui.set_page("Enfrentamiento"), 4000),
     ("13_enfrentamiento_rival", lambda: ui.matchup_view.select(157), 4000),
     ("14_historial", lambda: ui.set_page("Historial"), 4000),
     ("15_datos", lambda: ui.set_page("Datos"), 4000),
+    ("17_inicio_modos", lambda: (ui.set_page("Asesor"), ui.idle(l.player_info(P), "Conectado al cliente. Entra en una cola cuando quieras."),
+                                 ui.root.after(900, lambda: ui.idle_secs[2].switch("Modos"))), 3500),
+    ("18_inicio_repertorio", lambda: ui.idle_secs[2].switch("Repertorio"), 3000),
+    ("19_seleccion_contra_rival", lambda: (push(ses), ui.players(team), ui.root.after(2500, lambda: ui.recs.set_tab("Contra rival"))), 6000),
+    ("20_datos_abierto", lambda: (abrir_pliegues(), ui.set_page("Datos"), ui.refresh_current(True)), 5000),
+    ("21_historial_filtros", lambda: (ui.set_page("Historial"), ui.refresh_current(True)), 5000),
     ("16_ajustes", lambda: (ui.set_page("Asesor"), ui.open_dock()), 4500),
 ]
 SOLO = [x for x in os.environ.get("LOLE_SOLO", "").split(",") if x]
@@ -159,6 +184,16 @@ def paginas(name, seguir, n=0):
     cv = ui.body._parent_canvas
     grab(name + ("" if n == 0 else f"_p{n + 1}"))
     a, b = cv.yview()
+    if name.startswith("16") and n < 6:   # Ajustes: se pagina el panel, no el cuerpo
+        try:
+            sc = ui.dock_scroll._parent_canvas
+            a, b = sc.yview()
+            if b < 0.999:
+                sc.yview_moveto(a + (b - a) * 0.9)
+                ui.root.after(900, lambda: paginas(name, seguir, n + 1))
+                return
+        except Exception as e:
+            print("ajustes sin paginar:", repr(e), flush=True)
     if b >= 0.999 or n + 1 >= MAXP or name.startswith("16"):
         cv.yview_moveto(0)
         ui.root.after(200, seguir)

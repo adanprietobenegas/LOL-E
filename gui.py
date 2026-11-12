@@ -777,6 +777,7 @@ class GUI:
     def after_resize(self):
         self._rs = None
         self.layout_main()
+        self.update_link()
         self.root.update_idletasks()  # el ancho del cuerpo debe ser el ya colocado, no el anterior
         if self.view == "select" and self.ctx["r"]:
             self.kit.anim = False
@@ -787,7 +788,13 @@ class GUI:
     # ---------- enlace, pie y volumen ----------
     def update_link(self):
         ok = self.ctx["linked"]
-        self.link_lbl.configure(text="●  Conectado a LoL" if ok else "●  Esperando al cliente",
+        try:   # ventana estrecha o interfaz al 115–130 %: el texto largo no cabía en la cabecera y salía cortado
+            lw = self.root.winfo_width() / self.kit.scale_px()
+        except Exception:
+            lw = 999
+        small = lw < 540
+        txt = ("●  Conectado" if small else "●  Conectado a LoL") if ok else ("●  Sin cliente" if small else "●  Esperando al cliente")
+        self.link_lbl.configure(text="●" if lw < 460 else txt,   # muy estrecho: solo el punto de color (verde conectado, ámbar sin cliente)
                                 text_color=PAL["good"] if ok else PAL["warn"])
 
     def update_footer(self):
@@ -1079,6 +1086,7 @@ class GUI:
         k.clbl(d, "Los cambios se aplican al instante y se guardan solos.", 10, "dim", anchor="w", wraplength=self.note_w(),
                justify="left").pack(anchor="w", padx=22, pady=(2, 0))
         sc = ctk.CTkScrollableFrame(d, fg_color="transparent")
+        self.dock_scroll = sc   # lo usan las capturas de prueba para paginar el panel
         sc.pack(fill="both", expand=True, padx=8, pady=(4, 10))
 
         def section(text):

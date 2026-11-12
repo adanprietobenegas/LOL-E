@@ -262,7 +262,7 @@ class AnalysisView:
             c.pack(side="left", expand=True, fill="x", padx=(0 if i == 0 else 6, 0))
             ui.lbl(c, lb, 9, "dim").pack(anchor="w", padx=12, pady=(8, 0))
             ui.lbl(c, val, 15, col, True, True).pack(anchor="w", padx=12)
-            ui.lbl(c, sub, 8, "dim", anchor="w", wraplength=max(90, (self.gv.width - 120) // 5 - 24), justify="left").pack(anchor="w", padx=12, pady=(0, 8))
+            ui.lbl(c, sub, 8, "dim", anchor="w", wraplength=max(56, (self.gv.width - 120) // 5 - 24), justify="left").pack(anchor="w", padx=12, pady=(0, 8))
 
     # ------------------------------------------------------------ gráficos
     def charts(self, host, a, opp):

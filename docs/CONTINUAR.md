@@ -72,4 +72,23 @@ Sin hacer (propuestas, a decidir por el usuario):
 - Historial: el resumen ocupa la primera pantalla entera en estrecho; las partidas empiezan en la tercera.
 - ARAM: «Mejor opción para ti» con afinidad 24 y miniaturas con 0: decidir si se enseña la cifra cuando es tan baja.
 - Escala de espaciado: definida (`SPACE` en `ui_kit.py`) pero el código existente usa 17 valores y no está migrado.
-- No capturado: tema claro, los looks, escala 115–130 %, modo compacto y el análisis con datos (pide el cliente).
+
+### Segunda pasada (12/11/2026): lo que faltaba por capturar
+
+Revisado también: análisis de una partida guardada, subpestañas del inicio (Modos, Repertorio), «Contra rival»,
+«Datos» desplegado, Ajustes entero, tema claro, interfaz al 130 %, modo compacto, looks Terminal y Papel, y 470 px.
+Variantes: `LOLE_CONF='{"theme":"light","scale":1.3,"compact":true,"color_theme":"Terminal","style":"Brutal"}'`.
+
+Corregido:
+- Cabecera al 115–130 % o en ventana muy estrecha: «Conectado a LoL» salía cortado. Ahora se acorta a «Conectado» /
+  «Sin cliente» y, por debajo de 460 px lógicos, queda solo el punto de color.
+- «Restablecer filtros» cortado en estrecho → «Quitar filtros».
+- Análisis: la quinta ficha de cifras («mitigaste…») se cortaba en estrecho.
+
+Visto y sin defectos: tema claro, compacto, Terminal, Papel, Datos, Ajustes, Modos y Repertorio.
+
+Pendiente de esta pasada:
+- «Contra rival» sin datos repite dos frases que dicen lo mismo (es del punto 2, textos).
+- Al 130 % en 560 px el deslizador de volumen queda reducido a su botón; funciona, pero es poco usable.
+- No capturado: «Perfil completo» de un jugador, Variantes/Situaciones de la build, Arena y Mayhem en selección,
+  ventana ancha con tema claro o looks, y la escala 115 %.

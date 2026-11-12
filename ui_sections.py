@@ -919,7 +919,7 @@ class Recs(Section):
         r2.pack(fill="x", pady=(8, 0))
         for text, key in (("Mi rol", "mi_rol"), ("Mis campeones", "mios"), ("Meta fuerte", "meta")):
             self.toggle(r2, text, key)
-        small_btn(ui, r2, "Restablecer filtros", self.reset_filters, 140).pack(side="right")
+        small_btn(ui, r2, "Quitar filtros" if self.width < 500 else "Restablecer filtros", self.reset_filters, 104 if self.width < 500 else 140).pack(side="right")   # en estrecho (o al 130 %) el texto largo salía cortado
 
     def toggle(self, parent, text, key):
         ui = self.ui
