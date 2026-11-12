@@ -430,18 +430,27 @@ def load_player_data(lcu, season=None):
     gpath = os.path.join(CACHE, "games.json")
     gc = read_json(gpath, {})  # gameId -> {c: campeon, w: victoria, r: rol, o: rival de linea, q: cola, t: fecha, a: aliados}
     dirty = False
+    try:  # tu puuid: con él se localiza tu jugador en cada partida (nunca «el primero de la lista»)
+        P["puuid"] = (lcu.get("/lol-summoner/v1/current-summoner") or {}).get("puuid", "")
+    except Exception:
+        P["puuid"] = ""
+    P["hist_ok"] = False   # si el cliente no entregó las partidas se reintenta (antes un fallo aquí pasaba en silencio)
     try:
         games = lcu.get("/lol-match-history/v1/products/lol/current-summoner/matches?begIndex=0&endIndex=200", timeout=40)
         try:
-            history.save(os.path.join(CACHE, "history.json"), [history.from_game(g) for g in games["games"]["games"]])
+            recs = [history.from_game(g, P["puuid"]) for g in games["games"]["games"]]
+            history.save(os.path.join(CACHE, "history.json"), [r for r in recs if r])
         except Exception:
-            pass
+            log_exc("Guardar el historial")
+        P["hist_ok"] = True
         for g in games["games"]["games"]:
             gid, q = str(g["gameId"]), g.get("queueId")
             e = gc.get(gid)
             if isinstance(e, dict) and ("p" in e or q not in SR_QUEUES):
                 continue
-            me = g["participants"][0]
+            me = history.my_part(g, P["puuid"])
+            if me is None:
+                continue
             t = me.get("timeline", {})
             lane = t.get("lane", "")
             role = "SUPPORT" if lane == "BOTTOM" and t.get("role") == "SUPPORT" else ("" if lane == "NONE" else lane)
@@ -456,8 +465,10 @@ def load_player_data(lcu, season=None):
             gc[gid] = {"c": me["championId"], "w": bool(me["stats"]["win"]), "r": role, "o": opp, "q": q,
                        "t": g.get("gameCreation", 0), "a": allies, "p": mates}
             dirty = True
+    except (urllib.error.URLError, ConnectionError, OSError):
+        pass   # cliente cerrado o aún arrancando: se reintenta
     except Exception:
-        pass
+        log_exc("Leer las partidas del cliente")
     if dirty:
         write_json(gpath, gc)
     hist = sorted((v for v in gc.values() if isinstance(v, dict)), key=lambda v: v["t"])
@@ -970,6 +981,8 @@ def run(conf, champs, ui):
                 except Exception:
                     log_exc("Análisis de la partida")
                     getattr(ui, "analysis", lambda *a: None)(str(cmd[1]), None)
+            if P is not None:  # tu puuid se refresca tras cada lectura (si el cliente aún no lo daba al conectar, llega después)
+                my_puuid = (P.get("profile") or {}).get("puuid") or P.get("puuid") or my_puuid
             if META.pop("dirty", False) and last is not None:
                 last = "_force"  # llego el meta: recalcular
             if lcu is None:
@@ -1076,11 +1089,14 @@ def run(conf, champs, ui):
                     except Exception:
                         pass
                     time.sleep(5); continue
-                if P["games"] == 0 and hist_tries < 6 and time.time() >= next_hist:  # el historial no llego: reintentar
-                    next_hist, hist_tries = time.time() + 40, hist_tries + 1
+                if (not P.get("hist_ok") or not my_puuid) and hist_tries < 12 and time.time() >= next_hist:
+                    # el historial o tu cuenta no llegaron (cliente aún iniciando sesión): reintentar
+                    next_hist, hist_tries = time.time() + 30, hist_tries + 1
                     P = load_player_data(lcu, season)
-                    if P["games"]:
+                    if P.get("hist_ok"):
+                        hist_tries = 0
                         ui.idle(player_info(P), "Historial cargado.")
+                        getattr(ui, "history_updated", lambda: None)()
                 if time.time() >= next_check or force_opgg:  # fuera de seleccion: toca revisar op.gg
                     next_check = time.time() + 300
                     new = maybe_update_opgg(conf, champs, P, force_opgg)

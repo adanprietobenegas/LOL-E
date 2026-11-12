@@ -20,9 +20,26 @@ def _read(path, default):
     return default
 
 
-def from_game(g):
-    """Registro compacto de una partida del cliente (el jugador local es participants[0])."""
-    me = g["participants"][0]
+def my_part(g, puuid=""):
+    """Tu participante en una partida del cliente, o None si no se puede saber con certeza.
+
+    Se busca por tu puuid en `participantIdentities`. La lista de partidas trae un solo participante (tú) y entonces
+    vale ese; el detalle trae los diez, y ahí NUNCA se supone que eres el primero (así salía el campeón de otro)."""
+    parts = g.get("participants") or []
+    if puuid:
+        pid = next((i.get("participantId") for i in g.get("participantIdentities") or []
+                    if (i.get("player") or {}).get("puuid") == puuid), None)
+        hit = next((p for p in parts if p.get("participantId") == pid), None) if pid is not None else None
+        if hit is not None:
+            return hit
+    return parts[0] if len(parts) == 1 else None
+
+
+def from_game(g, puuid=""):
+    """Registro compacto de una partida del cliente; None si no se sabe cuál de los jugadores eres."""
+    me = my_part(g, puuid)
+    if me is None:
+        return None
     st, tl = me.get("stats", {}), me.get("timeline", {})
     lane = tl.get("lane", "")
     role = "SUPPORT" if lane == "BOTTOM" and tl.get("role") == "SUPPORT" else ("" if lane in ("NONE", "") else lane)

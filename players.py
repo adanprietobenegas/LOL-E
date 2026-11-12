@@ -2,6 +2,7 @@
 import time
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
+import history
 
 TIERS_ES = {"IRON": "Hierro", "BRONZE": "Bronce", "SILVER": "Plata", "GOLD": "Oro", "PLATINUM": "Platino",
             "EMERALD": "Esmeralda", "DIAMOND": "Diamante", "MASTER": "Maestro", "GRANDMASTER": "Gran Maestro",
@@ -154,7 +155,9 @@ def fetch_player(lcu, puuid):
         games = lcu.get(f"/lol-match-history/v1/products/lol/{puuid}/matches?begIndex=0&endIndex=20", timeout=20)["games"]["games"]
         rec = []
         for g in games:
-            pa = g["participants"][0]
+            pa = history.my_part(g, puuid)   # por puuid; nunca «el primero» si la lista trajera a los diez
+            if pa is None:
+                continue
             st = pa["stats"]
             rec.append({"c": pa["championId"], "w": bool(st["win"]), "q": g.get("queueId"), "role": _role(pa),
                         "k": st.get("kills", 0), "d": st.get("deaths", 0), "a": st.get("assists", 0),

@@ -408,22 +408,81 @@ def advice(a, opp, champs=None):
 def load(lcu, gid, my_puuid, cache_dir):
     """Análisis de la partida `gid`, guardado en caché; None si el cliente ya no guarda su línea de tiempo."""
     path = os.path.join(cache_dir, "analysis", f"{gid}.json")
+    saved = None
     try:
         saved = json.load(open(path, encoding="utf-8"))
-        if saved.get("v") == VERSION:
-            return saved
+        if saved.get("v") != VERSION:
+            saved = None
     except Exception:
-        pass
+        saved = None
+    if saved and saved.get("sure"):
+        return saved
+    if saved:  # guardado por una versión que podía equivocarse de jugador: se comprueba una vez y se corrige
+        pid = _pid_from_history(saved, cache_dir, gid)
+        if pid is None:
+            try:
+                pid = my_pid_in(lcu.get(f"/lol-match-history/v1/games/{gid}", timeout=20), my_puuid or _my_puuid(lcu))
+            except Exception:
+                pid = None
+        if pid is None:
+            return saved   # no hay con qué contrastarlo (partida antigua y cliente sin el detalle): se deja como estaba
+        set_me(saved, pid)
+        _write(path, saved)
+        return saved
     detail = lcu.get(f"/lol-match-history/v1/games/{gid}", timeout=20)
     tl = lcu.get(f"/lol-match-history/v1/game-timelines/{gid}", timeout=30)
     if not detail or not tl or not tl.get("frames"):
         return None
-    ident = next((i for i in detail["participantIdentities"] if i["player"].get("puuid") == my_puuid), None)
-    my_pid = ident["participantId"] if ident else detail["participants"][0]["participantId"]
+    my_pid = my_pid_in(detail, my_puuid or _my_puuid(lcu))
+    if my_pid is None:   # sin saber quién eres no se analiza: antes se tomaba al primer jugador y salía el campeón de otro
+        return None
     a = compute(detail, tl, my_pid)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    json.dump(a, open(path, "w", encoding="utf-8"))
+    a["sure"] = True
+    _write(path, a)
     return a
+
+
+def my_pid_in(detail, my_puuid):
+    """Tu número de participante en el detalle de una partida (buscado por tu puuid), o None."""
+    if not detail or not my_puuid:
+        return None
+    return next((i.get("participantId") for i in detail.get("participantIdentities") or []
+                 if (i.get("player") or {}).get("puuid") == my_puuid), None)
+
+
+def set_me(a, pid):
+    """Fija quién eres en un análisis ya calculado (lo demás no depende de ello)."""
+    p = a["players"][str(pid)]
+    a.update(me=pid, team=p["team"], win=bool(p["win"]), sure=True)
+    return a
+
+
+def _my_puuid(lcu):
+    try:
+        return (lcu.get("/lol-summoner/v1/current-summoner") or {}).get("puuid", "")
+    except Exception:
+        return ""
+
+
+def _pid_from_history(a, cache_dir, gid):
+    """Tu participante según el historial guardado (campeón y resultado de esa partida), si es inequívoco."""
+    try:
+        e = json.load(open(os.path.join(cache_dir, "history.json"), encoding="utf-8")).get(str(gid))
+    except Exception:
+        e = None
+    if not e or not e.get("c"):
+        return None
+    hit = [p["pid"] for p in a["players"].values() if p["champ"] == e["c"] and bool(p["win"]) == bool(e["w"])
+           and (e.get("k") is None or (p["k"], p["d"], p["a"]) == (e["k"], e["de"], e["a"]))]
+    return hit[0] if len(hit) == 1 else None
+
+
+def _write(path, a):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(a, f)
+    os.replace(tmp, path)
 
 
 # ---- puntos de liga (PL) ganados o perdidos en cada partida clasificatoria ----

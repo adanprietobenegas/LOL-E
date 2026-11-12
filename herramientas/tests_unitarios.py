@@ -287,6 +287,59 @@ class ActualizacionAutomatica(unittest.TestCase):
         self.assertGreater(updater.vtuple("v1.10.0"), updater.vtuple("1.9.9"))
 
 
+class QuienSoyEnLaPartida(unittest.TestCase):
+    """Tu jugador se localiza por tu puuid; nunca «el primero de la lista» (así salió Sona en una partida jugada con Lillia)."""
+
+    def detalle(self):
+        parts = [{"participantId": i + 1, "teamId": 100 if i < 5 else 200, "championId": c,
+                  "stats": {"win": i < 5, "kills": i, "deaths": 1, "assists": 2}, "timeline": {}}
+                 for i, c in enumerate((37, 119, 25, 26, 876, 2, 111, 64, 43, 121))]
+        ids = [{"participantId": i + 1, "player": {"puuid": f"pu{i + 1}"}} for i in range(10)]
+        return {"gameId": 77, "gameDuration": 600, "queueId": 2400, "gameCreation": 5, "participants": parts, "participantIdentities": ids}
+
+    def test_en_el_detalle_no_se_supone_el_primero(self):
+        import history
+        d = self.detalle()
+        self.assertEqual(history.my_part(d, "pu5")["championId"], 876)      # Lillia, no Sona (37)
+        self.assertIsNone(history.my_part(d, ""))                           # sin puuid y con diez jugadores: no se adivina
+        self.assertIsNone(history.from_game(d, "desconocido"))
+        self.assertEqual(history.from_game(d, "pu5")["c"], 876)
+
+    def test_la_lista_de_un_solo_participante_sigue_valiendo(self):
+        import history
+        d = self.detalle()
+        g = {**d, "participants": [d["participants"][4]], "participantIdentities": [d["participantIdentities"][4]]}
+        self.assertEqual(history.from_game(g)["c"], 876)
+        self.assertEqual(history.from_game(g, "otro puuid")["c"], 876)
+
+    def test_el_analisis_no_adivina_y_corrige_los_guardados(self):
+        import analysis, history
+        d, tmp = self.detalle(), tempfile.mkdtemp()
+        tl = {"frames": [{"timestamp": 0, "participantFrames": {}, "events": []}]}
+
+        class Lcu:
+            def __init__(self, puuid): self.puuid = puuid
+            def get(self, path, timeout=0):
+                if "current-summoner" in path: return {"puuid": self.puuid}
+                return tl if "timelines" in path else d
+        self.assertIsNone(analysis.load(Lcu(""), 77, "", tmp))                      # sin saber quién eres: no se analiza
+        self.assertFalse(os.path.exists(os.path.join(tmp, "analysis", "77.json")))   # ni se guarda nada equivocado
+        a = analysis.load(Lcu("pu5"), 77, "", tmp)                                   # el puuid se pide al cliente si falta
+        self.assertEqual((a["me"], analysis.me(a)["champ"], a["sure"]), (5, 876, True))
+        # un análisis guardado por una versión anterior con el jugador equivocado se corrige al abrirlo
+        mal = analysis.compute(d, tl, 1)
+        json.dump(mal, open(os.path.join(tmp, "analysis", "77.json"), "w", encoding="utf-8"))
+        a = analysis.load(Lcu("pu5"), 77, "pu5", tmp)
+        self.assertEqual((a["me"], a["team"], a["win"]), (5, 100, True))
+        # y sin cliente, con el historial guardado (campeón, resultado y K/D/A)
+        json.dump(analysis.compute(d, tl, 1), open(os.path.join(tmp, "analysis", "77.json"), "w", encoding="utf-8"))
+        history.save(os.path.join(tmp, "history.json"), [history.from_game(d, "pu5")])
+
+        class Cerrado:
+            def get(self, *a, **k): raise ConnectionError()
+        self.assertEqual(analysis.load(Cerrado(), 77, "", tmp)["me"], 5)
+
+
 class Versiones(unittest.TestCase):
     def test_la_version_tiene_notas_y_documentacion(self):
         import novedades
