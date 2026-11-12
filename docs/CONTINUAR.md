@@ -11,8 +11,7 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
 
 ## Dónde está
 
-- Versión en `main` e instalada en el PC del usuario: **1.22.1**. Publicada en GitHub: **1.22.0**.
-  La 1.22.1 está construida en `release/` y **espera el visto bueno del usuario para publicarse**.
+- Versión en `main`, instalada en el PC del usuario y publicada en GitHub: **1.22.1** (publicada el 12/11/2026).
 - Pruebas: `python herramientas/tests_unitarios.py` (32, todas pasan).
 - Pendiente de que el usuario confirme en su app que el análisis del ARAM de Lillia ya no muestra Sona.
 
