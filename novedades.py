@@ -10,6 +10,12 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.1", "fecha": "12 de noviembre de 2026", "titulo": "El análisis ya no te confunde con otro jugador", "items": [
+        ("arreglo", "En «Partida > Análisis» podía salir el campeón de otro jugador (por ejemplo, Sona en una partida que jugaste con Lillia). Pasaba cuando LOL-E se abría antes de que el cliente terminara de iniciar sesión: no sabía qué cuenta eras y tomaba al primer jugador de la partida. Ahora tu jugador se busca siempre por tu cuenta; si no se puede saber, la partida no se analiza en vez de adivinar. Los análisis guardados con el jugador equivocado se corrigen solos al abrirlos."),
+        ("arreglo", "Una partida que el cliente entregaba incompleta podía impedir que se guardaran todas las demás en el historial. Ahora se salta solo esa, y si el cliente no entrega las partidas se reintenta y el fallo queda en el registro de errores."),
+        ("mejora", "La actualización automática solo acepta direcciones de GitHub por HTTPS, además de comprobar la huella del instalador como hasta ahora."),
+        ("mejora", "La cola 1740 (Arena) se agrupa con Arena en el historial en vez de salir como «Otros»."),
+    ]},
     {"v": "1.22.0", "fecha": "12 de noviembre de 2026", "titulo": "Temas y looks, Datos aparte y tu tarjeta en la carga", "items": [
         ("nuevo", "Temas de color y estilos: en Ajustes > Apariencia eliges una paleta (Predeterminado, Abisal, Neón medianoche, Brasa, Bosque, Cloud Dancer; cada una con modo oscuro y claro) y un estilo de tarjetas (Plano, Brutal con bordes gruesos y sombra dura, o Cristal con bordes luminosos). Son independientes: cualquier paleta vale con cualquier estilo, y el estilo cambia esquinas, bordes y sombras en toda la app."),
         ("nuevo", "Siete looks con personalidad propia, que no son solo colores: Terminal (todo en monoespaciada, verde fosforito), Papel (serif, crema y titulares subrayados), Blueprint (azul de plano, doble línea y rotulación técnica), Hextech (oro y azul profundo con doble marco), Arcade (neón sobre morado, bordes gruesos y sombra de color), Neón Tokio (doble borde luminoso rosa y cian) y Océano (esquinas muy redondas y verdes azulados). Cada uno trae su tipografía, su forma y su manera de titular las tarjetas."),

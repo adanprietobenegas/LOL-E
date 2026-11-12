@@ -14,7 +14,7 @@ import synergy
 import trends
 from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.22.0"
+APP_NAME, APP_VERSION = "LOL-E", "1.22.1"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -395,7 +395,7 @@ def maybe_update_opgg(conf, champs, P, force=False):
 
 
 QUEUE_GROUPS = [("Solo/Dúo", {420}), ("Flexible", {440}), ("Normales", {400, 430, 490}), ("Modo rápido", {480}),
-                ("ARAM", {450, 720, 2400}), ("Arena", {1700, 1710, 1750}), ("Clash", {700}), ("Clasificatorias de 5", {710})]
+                ("ARAM", {450, 720, 2400}), ("Arena", {1700, 1710, 1740, 1750}), ("Clash", {700}), ("Clasificatorias de 5", {710})]
 MODE_ORDER = [g for g, _ in QUEUE_GROUPS] + ["Otros"]
 
 

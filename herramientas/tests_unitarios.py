@@ -281,6 +281,13 @@ class ActualizacionAutomatica(unittest.TestCase):
         self.assertIn("/VERYSILENT", inspect.getsource(updater.install))
         self.assertTrue(core.DEFAULT_CONF["auto_update"] and core.DEFAULT_CONF["auto_install"])
 
+    def test_solo_github(self):
+        import updater
+        self.assertTrue(updater.safe_url(core.DEFAULT_CONF["update_url"]))
+        self.assertTrue(updater.safe_url("https://objects.githubusercontent.com/x/Instalar.exe"))
+        for mala in ("http://github.com/a/b.exe", "https://github.com.evil.es/a.exe", "https://evil.es/github.com/a.exe", "file:///c:/a.exe", ""):
+            self.assertFalse(updater.safe_url(mala), mala)
+
     def test_comparacion_de_versiones(self):
         import updater
         self.assertGreater(updater.vtuple("1.20.0"), updater.vtuple("1.19.9"))

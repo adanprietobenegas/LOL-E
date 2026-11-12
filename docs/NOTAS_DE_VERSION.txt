@@ -7,6 +7,30 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.1   (12 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Caso real: el análisis de un ARAM jugado con Lillia mostraba Sona. analysis.load tomaba participants[0] del
+    detalle (10 jugadores) cuando my_puuid estaba vacío, y my_puuid solo se leía al conectar (vacío si el cliente
+    aún iniciaba sesión). El resultado erróneo quedaba además guardado en cache/analysis/<id>.json.
+  · history.py: my_part(g, puuid) localiza tu participante por puuid en participantIdentities; solo acepta «el
+    único» cuando la lista trae un participante; con diez y sin puuid devuelve None. from_game(g, puuid) puede
+    devolver None (partida incompleta) y ya no tumba el guardado de las demás.
+  · analysis.py: my_pid_in, set_me y marca "sure". Sin puuid se pide al cliente; si no se sabe quién eres no se
+    analiza ni se guarda. Los análisis antiguos (sin "sure") se contrastan una vez con history.json (campeón,
+    resultado y K/D/A) o con el detalle del cliente y se corrigen en disco. Escritura atómica (.tmp + replace).
+  · lol_advisor.py: load_player_data lee tu puuid (P["puuid"]), marca P["hist_ok"] y registra las excepciones
+    (antes «except: pass»); el bucle refresca my_puuid tras cada lectura y reintenta cada 30 s (hasta 12 veces)
+    si faltan el historial o la cuenta. Cola 1740 en el grupo Arena.
+  · Hipótesis sobre el historial que dejó de guardarse un día en la app instalada: una partida de la lista con
+    «participants» vacío lanzaba IndexError y se perdía en silencio todo el guardado. No reproducido; con el
+    cambio ya no puede bloquear y, si vuelve a fallar, quedará en error.log.
+  · players.py: fetch_player usa history.my_part.
+  · updater.py: safe_url (solo HTTPS y dominios de GitHub) para latest.json y para el instalador; la versión del
+    manifiesto debe ser numérica (va en el nombre del archivo temporal).
+  · Pruebas: 28 → 32 (QuienSoyEnLaPartida, ActualizacionAutomatica.test_solo_github).
+  · Rumbo: docs/HOJA_DE_RUTA.md (nuevo).
+
 VERSIÓN 1.22.0   (12 de noviembre de 2026)
 ---------------------------------------------------------------------
 
