@@ -1110,8 +1110,12 @@ def run(conf, champs, ui):
                         gfr = lcu.get("/lol-gameflow/v1/session") or {}
                         gid_r = (gfr.get("gameData") or {}).get("gameId")
                         ros = players.game_roster(gfr, my_puuid) if gid_r and gid_r != roster_gid else None
+                        if gid_r and gid_r != roster_gid and not ros:
+                            diag(f"Jugadores de la partida {gid_r}: aún sin datos del cliente o sin saber cuál es tu equipo (cuenta {'conocida' if my_puuid else 'DESCONOCIDA'})")
                         if ros:
                             roster_gid = gid_r
+                            diag(f"Jugadores de la partida {gid_r}: {len(ros)} leídos, {sum(1 for x in ros if not x['puuid'])} con perfil oculto, "
+                                 f"{sum(1 for x in ros if not x['cid'])} sin campeón, {sum(1 for x in ros if not x['role'])} sin línea")
                             getattr(ui, "roster", lambda *a: None)(ros)
                             threading.Thread(target=players.fetch_roster, args=(lcu, ros, getattr(ui, "roster_players", lambda d: None), getattr(ui, "roster_progress", None)), daemon=True).start()
                     except (urllib.error.URLError, ConnectionError, OSError):

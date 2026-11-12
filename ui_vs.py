@@ -48,25 +48,32 @@ def badges(p, x, party, mates):
         out.append(("Dúo contigo", "info"))
     if mates and mates[0]:
         g, w = mates
-        out.append((f"Juntos {g}p · {w}V", "good" if w * 2 >= g else "bad"))
+        out.append((f"Juntos {w}V {g - w}D", "good" if w * 2 >= g else "bad"))
     if not p or p.get("error"):
         return out
     st = p.get("stats") or {}
-    pts = (p.get("mastery") or {}).get(x["cid"], 0)
-    if x["cid"]:
+    mast = p.get("mastery") or {}
+    pts = mast.get(x["cid"], 0)
+    if x["cid"] and mast:   # sin la lista de maestrías (el cliente no la dio) no se dice nada: «primera vez» sería inventado
         if pts >= 200000:
             out.append((f"Maestría {pts // 1000}k", "good"))
         elif pts >= 50000:
             out.append((f"Maestría {pts // 1000}k", "info"))
-        elif pts < 1000:
-            out.append(("Primera vez", "warn"))
+        elif pts == 0:
+            out.append(("Primera vez con este campeón", "warn"))
         elif pts < 10000:
-            out.append((f"Poca maestría ({pts // 1000}k)", "warn"))
+            out.append((f"Poca maestría ({max(1, pts // 1000)}k)", "warn"))
+    # cómo le va con ESTE campeón en sus partidas recientes de Grieta (con 4 o más: con menos no dice nada)
+    rec = next((c for c in st.get("champs") or [] if c["c"] == x["cid"] and c["n"] >= 4), None) if x["cid"] else None
+    if rec and rec["w"] / rec["n"] >= .65:
+        out.append((f"Le va bien con él: {rec['w']}V {rec['n'] - rec['w']}D", "good"))
+    elif rec and rec["w"] / rec["n"] <= .3:
+        out.append((f"Le va mal con él: {rec['w']}V {rec['n'] - rec['w']}D", "bad"))
     s = st.get("streak", 0)
     if s >= 3:
-        out.append((f"Racha +{s}", "good"))
+        out.append((f"{s} victorias seguidas", "good"))
     elif s <= -3:
-        out.append((f"Racha {s}", "bad"))
+        out.append((f"{-s} derrotas seguidas", "bad"))
     if st.get("otp") == x["cid"]:
         out.append(("Especialista", "info"))
     roles = p.get("roles") or []
@@ -156,6 +163,23 @@ def collapsible(ui, parent, title, summary, key, build, open_=True):
     return box
 
 
+def lane_slots(team):
+    """Reparte a los jugadores de un equipo en las cinco líneas SIN dejar a nadie fuera: {línea: (jugador, perfil)}.
+    Quien trae línea propia y libre va a ella; quien no la trae, o la trae repetida (pasa con perfiles ocultos y en colas sin
+    posiciones), ocupa la primera línea que quede libre. Antes dos jugadores con la misma línea se pisaban y uno no salía."""
+    out, rest = {}, []
+    for item in team:
+        k = item[0].get("role") or ""
+        if k in LANE_ORDER and k not in out:
+            out[k] = item
+        else:
+            rest.append(item)
+    free = [k for k in LANE_ORDER if k not in out]
+    for n, item in enumerate(rest):
+        out[free.pop(0) if free else f"?{n}"] = item
+    return out
+
+
 class Board:
     def __init__(self, view):
         self.v, self.ui = view, view.ui
@@ -235,8 +259,7 @@ class Board:
     # ---------- las cinco líneas ----------
     def lanes(self, host, mine, theirs):
         ui = self.ui
-        left = {x["role"] or f"?{i}": (x, p) for i, (x, p) in enumerate(mine)}
-        right = {x["role"] or f"?{i}": (x, p) for i, (x, p) in enumerate(theirs)}
+        left, right = lane_slots(mine), lane_slots(theirs)
         keys = [k for k in LANE_ORDER if k in left or k in right] + [k for k in list(left) + list(right) if k not in LANE_ORDER]
         keys = list(dict.fromkeys(keys))
         width = max(self.v.width - 100, MIN_WIDTH - 100)

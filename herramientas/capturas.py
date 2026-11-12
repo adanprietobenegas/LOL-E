@@ -182,6 +182,7 @@ PASOS = [
     ("08_seleccion_bloqueado", lambda: (vista("carrusel"), push(ses, mine=86)), 5000),
     ("09_aram", lambda: push(aram, {"id": 450, "group": "ARAM", "kind": "aram"}), 5000),
     ("10_partida_plan", en_partida, 6000),
+    ("10b_salto_a_jugadores", lambda: getattr(ui.game_view, "jump_roster", lambda: print("sin enlace (ventana ancha)", flush=True))(), 1500),
     ("11_partida_analisis", lambda: (fin_partida(), tab_partida("Análisis")), 5000),
     ("11b_analisis_guardado", analisis_guardado, 5000),
     ("12_enfrentamiento", lambda: ui.set_page("Enfrentamiento"), 4000),
@@ -230,7 +231,7 @@ def paginas(name, seguir, n=0):
                 return
         except Exception as e:
             print("ajustes sin paginar:", repr(e), flush=True)
-    if b >= 0.999 or n + 1 >= MAXP or name.startswith("16"):
+    if b >= 0.999 or n + 1 >= MAXP or name.startswith(("16", "10b")):
         cv.yview_moveto(0)
         ui.root.after(200, seguir)
         return

@@ -97,10 +97,10 @@ class GameView:
         if not ros:
             return
         kind = (plan or {}).get("kind") or ((ctx.get("r") or {}).get("mode") or {}).get("kind") or "sr"
-        if kind != "sr":   # ARAM, Arena, personalizadas…: sin líneas ni rivales directos, el tablero no aporta
-            return
         import ui_vs
-        if self.width >= ui_vs.MIN_WIDTH:   # con sitio: los 10 a la vez, cada línea frente a su rival; plegable para centrarse en la build
+        # ARAM, Arena, personalizadas…: no hay líneas ni rival directo, así que no se usa el tablero enfrentado, pero los jugadores
+        # se enseñan igualmente en lista (antes en esos modos no salía ninguno)
+        if kind == "sr" and self.width >= ui_vs.MIN_WIDTH:   # con sitio: los 10 a la vez, cada línea frente a su rival; plegable para centrarse en la build
             opp = (plan or {}).get("opp")
             summ = "5 contra 5" + (f" · tu rival: {core.name(opp, ui.champs)}" if opp and opp in ui.champs else "")
             def fill(c):
@@ -128,7 +128,7 @@ class GameView:
             ui.lbl(self.host, title, 9, "dim", True, anchor="w").pack(anchor="w", pady=(8, 0))
             for x in grp:
                 a = {"champ": x["cid"], "role": x["role"], "puuid": x["puuid"]}
-                tag = "Tu rival de línea" if team == "enemy" and my_role and x["role"] == my_role and (not opp or x["cid"] == opp) else None
+                tag = "Tu rival de línea" if kind == "sr" and team == "enemy" and my_role and x["role"] == my_role and (not opp or x["cid"] == opp) else None
                 if x["me"]:
                     tag = "Tú"
                 Lobby.row(self, self.host, a, pl.get(x["puuid"]) if x["puuid"] else None, x["puuid"] in party, len(party),
@@ -143,7 +143,7 @@ class GameView:
         has_plan = bool(plan) and plan["cid"] in ui.champs
         # ventana estrecha: la lista de 10 jugadores ocupa tres pantallas, así que con plan va al final (primero tu build y tu rival);
         # en ancho es un tablero plegable y se queda arriba
-        late = has_plan and bool(ctx.get("roster")) and self.width < ui_vs.MIN_WIDTH and (plan.get("kind") or "sr") == "sr"
+        late = has_plan and bool(ctx.get("roster")) and (self.width < ui_vs.MIN_WIDTH or (plan.get("kind") or "sr") != "sr")
         if not late:
             self.roster_block(ctx, plan)
         if not has_plan:
@@ -167,8 +167,10 @@ class GameView:
         if opp and opp in ui.champs:
             sub += f"  ·  contra {core.name(opp, ui.champs)}"
         ui.lbl(txt, sub or "sin línea asignada", 10, "dim").pack(anchor="w")
-        if late:
-            ui.lbl(txt, "Los 10 jugadores de la partida están al final.", 10, "dim").pack(anchor="w")
+        go_roster = None
+        if late:   # enlace que baja hasta ellos: al final de una pantalla larga había quien no los encontraba
+            go_roster = ui.lbl(txt, "▾ Ver los jugadores de la partida (al final)", 10, "info", True)
+            go_roster.pack(anchor="w", pady=(2, 0))
         if lane and plan.get("kind") in (None, "sr") and plan.get("enemies"):
             import ui_opp
             pk = ui_opp.picker(ui, host, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 110)
@@ -198,8 +200,22 @@ class GameView:
         if plan.get("kind") in (None, "sr"):
             self.tips_block(plan, role)
         if late:
-            self.ui.lbl(self.host, "", 4, "dim").pack()
+            mark = self.ui.lbl(self.host, "", 4, "dim")
+            mark.pack()
             self.roster_block(ctx, plan)
+
+            def jump(_e=None):
+                try:
+                    cv = self.gui.body._parent_canvas
+                    self.gui.root.update_idletasks()
+                    total = max(1, (cv.bbox("all") or (0, 0, 0, 1))[3])
+                    y = mark.winfo_rooty() - cv.winfo_rooty() + cv.canvasy(0)
+                    cv.yview_moveto(max(0.0, min(1.0, y / total)))
+                except Exception:
+                    core.log_exc("Bajar a los jugadores")
+            go_roster.configure(cursor="hand2")
+            go_roster.bind("<Button-1>", jump)
+            self.jump_roster = jump
 
     def section(self, title):
         self.ui.lbl(self.host, title, 10, "dim", True, anchor="w").pack(anchor="w", pady=(14, 4))

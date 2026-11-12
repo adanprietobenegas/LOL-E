@@ -119,8 +119,9 @@ class AnalysisView:
         self.nosec = True
         self.hosts, self.folds, self.cur = {}, {}, (a, opp)
         self.header(host, a, opp)
-        self.kpis(host, a, opp)
         adv = analysis.advice(a, opp, ui.champs)
+        self.headline(host, a, adv)
+        self.kpis(host, a, opp)
         ev = self.events(a)
         nb, ng = sum(1 for x in adv if x["tone"] == "bad"), sum(1 for x in adv if x["tone"] == "good")
         if a.get("queue") in analysis.ARAM_QUEUES:
@@ -175,6 +176,13 @@ class AnalysisView:
             ui.lbl(row, "   " + sub, 9, "dim").pack(side="left")
 
     # ------------------------------------------------------------ cabecera: tú contra tu rival
+    def headline(self, host, a, adv):
+        """La conclusión en una frase, antes de las cifras: lo primero que se lee al acabar la partida."""
+        txt = analysis.headline(a, adv)
+        if txt:
+            self.ui.lbl(host, txt, 12, "fg", True, anchor="w", justify="left",
+                        wraplength=max(260, self.gv.width - 110)).pack(anchor="w", pady=(0, 10))
+
     def header(self, host, a, opp):
         ui, gv = self.ui, self.gv
         m = analysis.me(a)

@@ -407,6 +407,28 @@ def advice(a, opp, champs=None):
 
 
 # ------------------------------------------------------------------ carga
+def headline(a, items):
+    """Una frase con la conclusión de la partida, a partir de los mismos datos que los consejos (no añade juicio propio).
+    En una derrota manda lo que más pesó; en una victoria, lo mejor. Vacía si no hay nada destacable."""
+    bad = [x["title"] for x in items or [] if x.get("tone") == "bad"][:2]
+    good = [x["title"] for x in items or [] if x.get("tone") == "good"][:2]
+    if not bad and not good:
+        return ""
+
+    def junta(ts):
+        ts = [t[:1].lower() + t[1:] for t in ts]
+        return " y ".join(ts)
+    if a.get("win"):
+        s = ("Victoria. Lo mejor: " + junta(good) + "." if good else "Victoria, aunque con cosas a mejorar: " + junta(bad) + ".")
+        if good and bad:
+            s += " A mejorar: " + junta(bad[:1]) + "."
+    else:
+        s = ("Derrota. Lo que más pesó: " + junta(bad) + "." if bad else "Derrota, pese a hacerlo bien en: " + junta(good) + ".")
+        if bad and good:
+            s += " Lo mejor: " + junta(good[:1]) + "."
+    return s
+
+
 def load(lcu, gid, my_puuid, cache_dir):
     """Análisis de la partida `gid`, guardado en caché; None si el cliente ya no guarda su línea de tiempo."""
     path = os.path.join(cache_dir, "analysis", f"{gid}.json")

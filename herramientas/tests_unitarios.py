@@ -171,11 +171,26 @@ class TableroCincoContraCinco(unittest.TestCase):
         p = {"mastery": {5: 250000}, "stats": {"streak": 4, "otp": 5, "sr_n": 10}, "roles": ["JUNGLE"], "level": 200, "solo": {"key": "GOLD"}}
         textos = [t for t, _ in ui_vs.badges(p, x, set(), None)]
         self.assertIn("Maestría 250k", textos)
-        self.assertIn("Racha +4", textos)
+        self.assertIn("4 victorias seguidas", textos)
         self.assertIn("Fuera de su línea", textos)
         self.assertEqual(ui_vs.badges(None, x, {"p"}, None), [("Dúo contigo", "info")])
-        nuevo = {"mastery": {}, "stats": {}, "roles": [], "level": 200, "solo": {"key": "GOLD"}}
-        self.assertIn("Primera vez", [t for t, _ in ui_vs.badges(nuevo, x, set(), None)])
+        nuevo = {"mastery": {99: 5000}, "stats": {}, "roles": [], "level": 200, "solo": {"key": "GOLD"}}
+        self.assertIn("Primera vez con este campeón", [t for t, _ in ui_vs.badges(nuevo, x, set(), None)])
+        sin_lista = {"mastery": {}, "stats": {}, "roles": [], "level": 200, "solo": {"key": "GOLD"}}
+        self.assertEqual(ui_vs.badges(sin_lista, x, set(), None), [])            # sin maestrías leídas no se inventa «primera vez»
+        con = {"mastery": {5: 30000}, "stats": {"champs": [{"c": 5, "n": 5, "w": 4, "kda": 3}]}, "roles": [], "level": 200, "solo": {"key": "GOLD"}}
+        self.assertIn("Le va bien con él: 4V 1D", [t for t, _ in ui_vs.badges(con, x, set(), None)])
+        con["stats"]["champs"][0].update(n=3, w=3)                               # con tres partidas no se dice nada
+        self.assertEqual(ui_vs.badges(con, x, set(), None), [])
+        self.assertIn(("Juntos 3V 2D", "good"), ui_vs.badges(None, x, set(), (5, 3)))
+
+    def test_frase_resumen_del_analisis(self):
+        import analysis
+        its = [{"title": "Muertes evitables", "tone": "bad"}, {"title": "Visión baja", "tone": "bad"}, {"title": "Buen farmeo", "tone": "good"}]
+        self.assertEqual(analysis.headline({"win": False}, its), "Derrota. Lo que más pesó: muertes evitables y visión baja. Lo mejor: buen farmeo.")
+        self.assertEqual(analysis.headline({"win": True}, its), "Victoria. Lo mejor: buen farmeo. A mejorar: muertes evitables.")
+        self.assertEqual(analysis.headline({"win": True}, its[:1]), "Victoria, aunque con cosas a mejorar: muertes evitables.")
+        self.assertEqual(analysis.headline({"win": False}, []), "")
 
 
 class ClavesDelCampeon(unittest.TestCase):
@@ -346,6 +361,24 @@ class QuienSoyEnLaPartida(unittest.TestCase):
         class Cerrado:
             def get(self, *a, **k): raise ConnectionError()
         self.assertEqual(analysis.load(Cerrado(), 77, "", tmp)["me"], 5)
+
+
+class NadieSeQuedaFueraDelTablero(unittest.TestCase):
+    def reparto(self, roles):
+        import ui_vs
+        return ui_vs.lane_slots([({"role": r, "cid": i}, None) for i, r in enumerate(roles)])
+
+    def test_cinco_lineas_normales(self):
+        s = self.reparto(["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "SUPPORT"])
+        self.assertEqual([s[k][0]["cid"] for k in ("TOP", "JUNGLE", "MIDDLE", "BOTTOM", "SUPPORT")], [0, 1, 2, 3, 4])
+
+    def test_linea_repetida_o_vacia_no_esconde_a_nadie(self):
+        for roles in (["TOP", "JUNGLE", "JUNGLE", "BOTTOM", "SUPPORT"], ["TOP", "", "MIDDLE", "BOTTOM", ""], ["", "", "", "", ""],
+                      ["JUNGLE"] * 5, ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "SUPPORT", "TOP"]):
+            s = self.reparto(roles)
+            self.assertEqual(sorted(v[0]["cid"] for v in s.values()), list(range(len(roles))), roles)
+        s = self.reparto(["TOP", "JUNGLE", "JUNGLE", "BOTTOM", "SUPPORT"])
+        self.assertEqual((s["JUNGLE"][0]["cid"], s["MIDDLE"][0]["cid"]), (1, 2))   # el repetido ocupa la línea que quedaba libre
 
 
 class HistorialPorCuenta(unittest.TestCase):
