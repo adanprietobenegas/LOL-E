@@ -89,7 +89,11 @@ roster = ([{"team": "ally", "cid": 86, "puuid": "yo", "role": "TOP", "spells": [
           + [{"team": "enemy", "cid": c, "puuid": f"fake{n}", "role": r, "spells": [4, 14], "me": False, "icon": 1 + n}
              for n, (c, r) in ((5, (157, "TOP")), (6, (23, "JUNGLE")), (7, (134, "MIDDLE")), (8, (51, "BOTTOM")), (9, (412, "SUPPORT")))])
 
+if os.environ.get("LOLE_PERFIL"):   # «Tu equipo» desplegado y el perfil completo de un aliado abierto
+    conf["folds"] = {**(conf.get("folds") or {}), "sel_team": True}
 ui = g.GUI(conf, champs)
+if os.environ.get("LOLE_PERFIL"):
+    ui.kit.open_prof = {"fake0"}
 errs = []
 ui.root.report_callback_exception = lambda *a: (errs.append(a[1]), print("ERROR en callback:", repr(a[1]), flush=True))
 _log = l.log_exc
@@ -109,6 +113,7 @@ def push(s, mode=None, mine=0):
 def en_partida():
     ui.ctx["plan"] = {"cid": 86, "role": "TOP", "opp": 157, "opp_auto": 157, "enemies": [157, 23, 134, 51, 412], "allies": [64, 103, 222, 89],
                       "locked": True, "state": "game", "kind": "sr", "group": "", "mayhem": False, "qid": 420}
+    ui.game_view.tab, ui.game_view.sig = "Plan", None
     ui.phase("InProgress"); ui.roster(roster); ui.roster_players({**team, **rivales})
     ui.set_page("Partida")
 
@@ -135,7 +140,30 @@ def analisis_guardado():
 
 
 def abrir_pliegues(v=True):
-    conf["folds"] = {k: v for k in ("dat_src", "dat_formula", "dat_f", "dat_params", "dat_gloss", "hist_filters", "game_roster")}
+    conf.setdefault("folds", {}).update({k: v for k in ("dat_src", "dat_formula", "dat_f", "dat_params", "dat_gloss", "hist_filters", "game_roster")})
+
+
+def pulsar(valor):
+    """Pulsa de verdad el botón «valor» del primer selector segmentado visible que lo tenga (pestañas internas sin API propia)."""
+    import customtkinter as ctk
+    def walk(w):
+        for ch in w.winfo_children():
+            if isinstance(ch, ctk.CTkSegmentedButton) and valor in getattr(ch, "_buttons_dict", {}) and ch.winfo_ismapped():
+                return ch
+            r = walk(ch)
+            if r is not None:
+                return r
+    seg = walk(ui.body)
+    if seg is None and os.environ.get("LOLE_DEBUG"):
+        def dump(w):
+            for ch in w.winfo_children():
+                if isinstance(ch, ctk.CTkSegmentedButton):
+                    print("seg:", list(getattr(ch, "_buttons_dict", {})), ch.winfo_ismapped(), flush=True)
+                dump(ch)
+        dump(ui.root)
+    if seg is None:
+        print("no encuentro el botón", valor, flush=True); errs.append(valor); return
+    seg._buttons_dict[valor].invoke()
 
 
 def vista(v):
@@ -166,6 +194,12 @@ PASOS = [
     ("19_seleccion_contra_rival", lambda: (push(ses), ui.players(team), ui.root.after(2500, lambda: ui.recs.set_tab("Contra rival"))), 6000),
     ("20_datos_abierto", lambda: (abrir_pliegues(), ui.set_page("Datos"), ui.refresh_current(True)), 5000),
     ("21_historial_filtros", lambda: (ui.set_page("Historial"), ui.refresh_current(True)), 5000),
+    ("22_build_variantes", lambda: (en_partida(), ui.root.after(3500, lambda: pulsar("Variantes"))), 7000),
+    ("23_build_situaciones", lambda: pulsar("Situaciones"), 3500),
+    ("24_perfil_completo", lambda: (ui.kit.__dict__.update(open_prof={"fake0"}), conf["folds"].update(lobby=True, sel_team=True, team=True),
+                                    ui.set_page("Asesor"), push(ses), ui.players(team)), 7000),
+    ("25_arena", lambda: push(ses, {"id": 1700, "group": "Arena", "kind": "other"}), 5000),
+    ("26_mayhem", lambda: push(aram, {"id": 2400, "group": "ARAM: Mayhem", "kind": "aram"}, mine=103), 6000),
     ("16_ajustes", lambda: (ui.set_page("Asesor"), ui.open_dock()), 4500),
 ]
 SOLO = [x for x in os.environ.get("LOLE_SOLO", "").split(",") if x]

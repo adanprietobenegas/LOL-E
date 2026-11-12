@@ -256,7 +256,7 @@ def variants(ui, parent, d, champs, cid, width, lane=None, again=None):
     a = core + pick(lambda o: o["games"])
     b = core + pick(lambda o: (o["games"] >= 30, o["wr"]))
     ui.lbl(parent, "BUILDS COMPLETAS", 10, "dim", True, anchor="w").pack(anchor="w", pady=(0, 4))
-    shown = [("Más jugada", a)] + ([("Mayor % de victorias", b)] if b != a else [])
+    shown = [("Más jugada", a)] + ([("Más victorias", b)] if b != a else [])
     for label, ids in shown:
         row = ui.frame(parent)
         row.pack(fill="x", pady=3)
@@ -285,7 +285,7 @@ def variants(ui, parent, d, champs, cid, width, lane=None, again=None):
         if not opts[k]:
             continue
         b0 = _row(ui, parent, label)
-        for n, o in enumerate(sorted(opts[k], key=lambda o: -o["games"])[:3]):
+        for n, o in enumerate(sorted(opts[k], key=lambda o: -o["games"])[:3 if width >= 520 else 2]):   # en estrecho la tercera opción salía cortada
             cell = ui.frame(b0)
             cell.pack(side="left", padx=(0, 14))
             _item(ui, cell, o["id"])
@@ -318,7 +318,7 @@ def situations(ui, parent, d, champs, ens, width):
             pool.append(i)
     ui.lbl(parent, "SEGÚN LA SITUACIÓN", 10, "dim", True, anchor="w").pack(anchor="w", pady=(16, 2))
     if ens:
-        ui.lbl(parent, f"Equipo rival ahora: {ens['ad']} de daño físico, {ens['ap']} de mágico, {ens['tanks']} tanques, control {ctl(ens['cc'])}.",
+        ui.lbl(parent, f"Equipo rival ahora: {ens['ad']} de daño físico, {ens['ap']} de mágico, {ens['tanks']} {'tanque' if ens['tanks'] == 1 else 'tanques'}, control {ctl(ens['cc'])}.",
                9, "dim", anchor="w").pack(anchor="w", pady=(0, 6))
     n = 0
     for title, what, test, now in SITUATIONS:

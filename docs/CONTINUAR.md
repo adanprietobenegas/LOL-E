@@ -90,5 +90,19 @@ Visto y sin defectos: tema claro, compacto, Terminal, Papel, Datos, Ajustes, Mod
 Pendiente de esta pasada:
 - «Contra rival» sin datos repite dos frases que dicen lo mismo (es del punto 2, textos).
 - Al 130 % en 560 px el deslizador de volumen queda reducido a su botón; funciona, pero es poco usable.
-- No capturado: «Perfil completo» de un jugador, Variantes/Situaciones de la build, Arena y Mayhem en selección,
-  ventana ancha con tema claro o looks, y la escala 115 %.
+
+### Tercera pasada (12/11/2026)
+
+Revisado: «Perfil completo» de un jugador (`LOLE_PERFIL=1`), Variantes y Situaciones de la build, Arena y Mayhem en
+selección, ventana ancha con tema claro y con Terminal, análisis y build en ancho, y la escala 115 %.
+
+Corregido:
+- Build › Variantes: «Mayor % de victorias» se montaba sobre los iconos → «Más victorias»; en estrecho la tercera
+  alternativa de cada objeto salía cortada (ahora se enseñan dos).
+- Build › Situaciones: «1 tanques» → «1 tanque».
+- Tablero ancho de jugadores: «Leyendo perfiles… 0 de 10» aunque ya hubiera perfiles leídos; ahora cuenta los que hay.
+
+Sin defectos: perfil completo, Arena, Mayhem, claro y Terminal en ancho, 115 %, análisis en ancho.
+Con esto la auditoría visual queda cerrada salvo las propuestas de estructura de arriba (decisión del usuario).
+Nota de la herramienta: los pasos se ejecutan todos aunque `LOLE_SOLO` limite las capturas; en ancho «no encuentro el
+botón Variantes» es esperado (ahí la build se ve en columnas, sin pestañas).

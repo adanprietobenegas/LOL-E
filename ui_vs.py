@@ -176,7 +176,7 @@ class Board:
         n_load = len([x for x in ros if x["puuid"]])
         v.roster_lbl = None
         if n_load and len(pl) < n_load:
-            v.roster_lbl = ui.lbl(host, f"Leyendo perfiles… 0 de {n_load}", 10, "dim", anchor="w")
+            v.roster_lbl = ui.lbl(host, f"Leyendo perfiles… {len(pl)} de {n_load}", 10, "dim", anchor="w")
             v.roster_lbl.pack(anchor="w", pady=(0, 4))
         mine = [(x, pl.get(x["puuid"])) for x in ros if x["team"] == "ally"]
         theirs = [(x, pl.get(x["puuid"])) for x in ros if x["team"] == "enemy"]
