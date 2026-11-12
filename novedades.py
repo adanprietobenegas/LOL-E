@@ -10,6 +10,10 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.3", "fecha": "12 de noviembre de 2026", "titulo": "La actualización automática ya no falla en silencio", "items": [
+        ("arreglo", "Si la comprobación automática de versiones fallaba (por ejemplo, por un problema pasajero de red o de certificados), LOL-E no decía nada y no volvía a intentarlo hasta 3 horas después. Ahora lo avisa en el pie de la ventana y lo reintenta cada 2 minutos, hasta 5 veces."),
+        ("mejora", "Si Windows aún no tiene el certificado que hace falta para validar GitHub, la descarga se hace con la herramienta del propio sistema, que sí lo consigue. Sigue siendo una conexión segura y el instalador se comprueba por su huella como siempre."),
+    ]},
     {"v": "1.22.2", "fecha": "12 de noviembre de 2026", "titulo": "Repaso visual: lo importante primero y nada cortado", "items": [
         ("mejora", "Selección: los filtros van plegados tras un botón «Filtros» (con lo que hay activo escrito al lado) y las otras opciones del carrusel están justo bajo la imagen, así que la recomendación y sus alternativas caben en la primera pantalla."),
         ("mejora", "Partida, con la ventana estrecha: primero tu campeón, tu rival y la build; los 10 jugadores van al final. Con la ventana ancha sigue el tablero plegable arriba."),

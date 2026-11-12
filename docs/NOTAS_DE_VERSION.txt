@@ -7,6 +7,18 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.3   (12 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Caso real: la app instalada (1.22.1) no pasó sola a la 1.22.2. Causa en esa instalación sin confirmar; al
+    reproducir la comprobación, urllib falló una vez con CERTIFICATE_VERIFY_FAILED (emisor ausente del almacén
+    de Windows) y después funcionó.
+  · gui.py: on_update avisa también en la comprobación automática y reintenta a los 2 minutos (hasta 5 veces);
+    auto_install reintenta igual si falla la descarga. Antes: silencio y 3 horas de espera.
+  · updater.py: _open, _cert_error y _curl. Ante un fallo de certificado, check y download usan
+    %SystemRoot%\System32\curl.exe (valida con el sistema, solo HTTPS); la huella SHA-256 se comprueba igual.
+  · Probadas las dos vías de descarga en desarrollo; no probada la actualización completa desde una app instalada.
+
 VERSIÓN 1.22.2   (12 de noviembre de 2026)
 ---------------------------------------------------------------------
 
