@@ -10,6 +10,18 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.2", "fecha": "12 de noviembre de 2026", "titulo": "Repaso visual: lo importante primero y nada cortado", "items": [
+        ("mejora", "Selección: los filtros van plegados tras un botón «Filtros» (con lo que hay activo escrito al lado) y las otras opciones del carrusel están justo bajo la imagen, así que la recomendación y sus alternativas caben en la primera pantalla."),
+        ("mejora", "Partida, con la ventana estrecha: primero tu campeón, tu rival y la build; los 10 jugadores van al final. Con la ventana ancha sigue el tablero plegable arriba."),
+        ("mejora", "Historial, con la ventana estrecha: «Campeones más jugados y modos» queda plegado y las partidas empiezan en la primera pantalla."),
+        ("mejora", "Una sola escala de letra en toda la app (cinco tamaños en vez de trece): los textos más pequeños crecen un punto y se leen mejor."),
+        ("mejora", "Inicio: con el cliente cerrado, el aviso dice «Abre League of Legends» en vez de «Esperando la selección de campeón»."),
+        ("mejora", "ARAM: la imagen dice «Tu campeón actual» o «Mejor del banquillo para ti», y un campeón sin datos tuyos muestra «—» en vez de un 0."),
+        ("mejora", "El resumen de la recomendación ya no repite la afinidad ni las victorias que se ven al lado."),
+        ("arreglo", "Textos que salían cortados o montados: la cabecera con la interfaz al 115–130 %, «afinidad» en la vista Lista, las variantes de la build, el botón de la build del rival, notas de Ajustes, «Clasificatorias de 5» en el historial y una cifra del análisis."),
+        ("arreglo", "En «Partida», el rango de un jugador desaparecía si tenía varias etiquetas (dúo, partidas juntos), y el contador «Leyendo perfiles» volvía a 0 al repintarse."),
+        ("mejora", "Incluye lo de la 1.22.1, que no llegó a publicarse: el análisis ya no puede confundirte con otro jugador y el historial no se bloquea por una partida incompleta."),
+    ]},
     {"v": "1.22.1", "fecha": "12 de noviembre de 2026", "titulo": "El análisis ya no te confunde con otro jugador", "items": [
         ("arreglo", "En «Partida > Análisis» podía salir el campeón de otro jugador (por ejemplo, Sona en una partida que jugaste con Lillia). Pasaba cuando LOL-E se abría antes de que el cliente terminara de iniciar sesión: no sabía qué cuenta eras y tomaba al primer jugador de la partida. Ahora tu jugador se busca siempre por tu cuenta; si no se puede saber, la partida no se analiza en vez de adivinar. Los análisis guardados con el jugador equivocado se corrigen solos al abrirlos."),
         ("arreglo", "Una partida que el cliente entregaba incompleta podía impedir que se guardaran todas las demás en el historial. Ahora se salta solo esa, y si el cliente no entrega las partidas se reintenta y el fallo queda en el registro de errores."),

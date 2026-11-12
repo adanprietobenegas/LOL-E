@@ -7,6 +7,24 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.2   (12 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Auditoría visual con capturas sin cliente (herramientas/capturas.py: cache/ del proyecto y jugadores
+    inventados; variantes con LOLE_CONF, LOLE_SOLO, LOLE_PAGINAS, LOLE_PERFIL). Detalle en docs/CONTINUAR.md.
+  · ui_kit.py: escala tipográfica única TYPE (10, 12, 14, 17, 22) y tsize(); font() y tkf() ajustan cualquier
+    tamaño al escalón más cercano. autowrap() parte las líneas al ancho real del contenedor. SPACE queda
+    definida pero el espaciado existente no está migrado.
+  · ui_sections.py: WaitCard con título según conexión; filtros de Recs plegados (folds.rec_filters) con
+    resumen; miniaturas del carrusel bajo la imagen; resumen sin afinidad ni «N/M victorias» repetidos;
+    pct_text() y eyebrow() para ARAM; rango de Lobby.row antes que las etiquetas; «Juntos 3V 2D».
+  · ui_game.py: en estrecho y con plan, roster_block va al final. ui_history.py: campeones y modos plegables
+    en estrecho (folds.hist_more). ui_build.py: «Más victorias», dos alternativas por objeto en estrecho.
+  · gui.py: estado de conexión corto en cabeceras estrechas (o solo el punto); notas de Ajustes más estrechas.
+  · ui_vs.py: «Leyendo perfiles» cuenta los perfiles ya leídos. ui_analysis.py: ajuste de línea de las fichas.
+  · No probado en partida real: todo se ha visto con datos guardados y jugadores inventados.
+  · Incluye la 1.22.1, que se construyó pero no se publicó.
+
 VERSIÓN 1.22.1   (12 de noviembre de 2026)
 ---------------------------------------------------------------------
 

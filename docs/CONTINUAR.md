@@ -11,7 +11,8 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
 
 ## Dónde está
 
-- Versión en `main`, instalada en el PC del usuario y publicada en GitHub: **1.22.1** (publicada el 12/11/2026).
+- Versión en `main` y publicada en GitHub: **1.22.2** (12/11/2026; incluye la 1.22.1, que no se publicó).
+  La app instalada del usuario se actualiza sola desde GitHub.
 - Pruebas: `python herramientas/tests_unitarios.py` (32, todas pasan).
 - Pendiente de que el usuario confirme en su app que el análisis del ARAM de Lillia ya no muestra Sona.
 
@@ -55,7 +56,7 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
 Capturas sin cliente de LoL: `python herramientas/capturas.py [ancho] [alto] [carpeta]` (monitor secundario; salen en
 `herramientas/salida/`). Usa `cache/` y jugadores inventados; `LOLE_SOLO=10,13` limita a esas pantallas.
 
-Corregido en `main` (sin subir versión ni reconstruir; el instalador 1.22.1 de `release/` NO lo lleva):
+Corregido (publicado en la 1.22.2):
 - Escala tipográfica única de 5 tamaños (10, 12, 14, 17, 22) en `ui_kit.py` (`TYPE`, `tsize`): `font()` y `tkf()`
   ajustan cualquier tamaño pedido al escalón más cercano. Antes había 13 tamaños distintos.
 - Inicio: sin cliente, el título es «Abre League of Legends» y la pista va debajo (antes se montaba sobre el título).
