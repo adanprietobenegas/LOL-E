@@ -225,7 +225,7 @@ class MatchupView:
         ids = self.matches()
         if self.query:
             if not ids:
-                ui.lbl(self.sugg, "Ningún campeón se llama así.", 11, "dim").pack(anchor="w", pady=4)
+                ui.lbl(self.sugg, "Ningún campeón se llama así. Revisa cómo está escrito o pulsa «Ver todos los campeones».", 11, "dim").pack(anchor="w", pady=4)
                 return
             for cid in ids[:6]:
                 self.sugg_row(cid)

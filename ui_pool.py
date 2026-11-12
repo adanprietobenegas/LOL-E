@@ -82,7 +82,7 @@ class PoolPanel:
         self.cards = {}
         self.header(rows)
         if not rows:
-            ui.lbl(self.root, "Aún no hay campeones con partidas en este ámbito.", 11, "dim", anchor="w").pack(anchor="w", pady=8)
+            ui.lbl(self.root, "Aún no hay campeones con partidas aquí. Prueba «Todos los modos», o juega con LOL-E abierto para que las guarde.", 11, "dim", anchor="w").pack(anchor="w", pady=8)
             return
         body = ui.frame(self.root)
         body.pack(fill="x", pady=(10, 0))

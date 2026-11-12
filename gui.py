@@ -220,15 +220,21 @@ class GUI:
             try:
                 self.handle_event(ev, kind)
             except Exception as e:  # un dato raro no debe dejar la ventana sin actualizarse
-                self.status(f"Aviso: {type(e).__name__}: {e}")
+                self.event_failed(kind, e)
         if self.pending_show is not None and time.time() - self.last_show_t >= 0.6:  # como mucho ~1,5 repintados por segundo
             ev, self.pending_show = self.pending_show, None
             self.last_show_t = time.time()
             try:
                 self.handle_event(ev, "show")
             except Exception as e:
-                self.status(f"Aviso: {type(e).__name__}: {e}")
+                self.event_failed("show", e)
         self.root.after(150, self.poll)
+
+    def event_failed(self, kind, e):
+        """Un fallo al pintar: se guarda en el registro (antes solo pasaba por el pie y se perdía) y se dice dónde mirarlo."""
+        core.log_exc(f"Evento de la ventana «{kind}»")
+        self.status(f"No se pudo actualizar esta pantalla ({type(e).__name__}). Se reintenta con el siguiente cambio; "
+                    "el detalle está en Ajustes › «Abrir el registro de errores».")
 
     pending_show, last_show_t, last_turn = None, 0.0, None
     auto_game = False
@@ -806,7 +812,7 @@ class GUI:
 
     def update_footer(self):
         meta = read_json(core.opgg_path(self.conf), {})
-        age = f"op.gg · actualizado hace {(time.time() - meta['ts']) / 3600:.0f} h" if meta.get("ts") else "op.gg: sin datos todavía"
+        age = f"op.gg · actualizado hace {(time.time() - meta['ts']) / 3600:.0f} h" if meta.get("ts") else "op.gg: sin datos todavía (se leen solos con el cliente de LoL abierto)"
         self.footer.configure(text=f"{self.status_text}     {age}" if self.status_text else age)
 
     def vol_icon(self):

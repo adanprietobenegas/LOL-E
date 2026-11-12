@@ -89,7 +89,10 @@ class AnalysisView:
             self.gui.cmds.put(("analysis", int(gv.gid)))
             a = "cargando"
         if a == "cargando":
-            ui.lbl(host, "Leyendo la línea de tiempo de la partida…", 11, "dim").pack(anchor="w", pady=6)
+            # sin cliente la lectura no puede terminar: se dice, en vez de dejar «Leyendo…» para siempre
+            ui.lbl(host, "Leyendo la línea de tiempo de la partida…" if ctx.get("linked") else
+                   "Para analizar esta partida hace falta el cliente de League of Legends abierto: ábrelo y se leerá sola.",
+                   11, "dim", anchor="w", justify="left", wraplength=max(260, gv.width - 110)).pack(anchor="w", pady=6)
             return
         if a == "no":
             ui.lbl(host, "El cliente ya no guarda la línea de tiempo de esta partida (solo conserva las más recientes) o LoL está cerrado.",

@@ -550,7 +550,7 @@ class SummaryCard(Section):
         ui = self.ui
         top = (self.ctx["info"] or {}).get("mastery_top") or []
         if not top:
-            ui.lbl(parent, "Sin datos de maestría por campeón.", 11, "dim").pack(anchor="w")
+            ui.lbl(parent, "Sin datos de maestría por campeón: abre el cliente de LoL con tu cuenta y se leerán solos.", 11, "dim").pack(anchor="w")
             return
         mx = max(p for _, p in top) or 1
         for cid, pts in top[:6]:
@@ -590,7 +590,7 @@ class SummaryCard(Section):
         modes = (self.ctx["info"] or {}).get("modes") or []
         self.slot = None
         if not modes:
-            ui.lbl(parent, "Aún no hay partidas guardadas por modo.", 11, "dim").pack(anchor="w")
+            ui.lbl(parent, "Aún no hay partidas guardadas por modo. LOL-E guarda las que ve: aparecerán cuando juegues con la app abierta.", 11, "dim").pack(anchor="w")
             return
         self.mode_slots = {}
         for m in modes:
@@ -834,7 +834,7 @@ class BanIdeas(Section):
             return
         c = ui.card(self.box, "Banea a quien te gana en tu línea")
         if not r["ban_ideas"]:
-            ui.lbl(c, "Todavía no hay datos suficientes.", 11, "dim").pack(anchor="w")
+            ui.lbl(c, "Aún no tienes partidas suficientes contra nadie en tu línea para sugerir un baneo. Mira el meta en «Enfrentamiento».", 11, "dim").pack(anchor="w")
             return
         row = ui.frame(c)
         row.pack(anchor="w")
@@ -1269,7 +1269,7 @@ class Recs(Section):
         ui.lbl(self.dyn, why, 9, "dim", anchor="w", justify="left", wraplength=max(260, self.width - 110)).pack(anchor="w", pady=(0, 8))
         if not items:
             if items is not None:
-                ui.lbl(self.dyn, "Ningún campeón cumple los filtros de arriba.", 11, "dim").pack(anchor="w", pady=4)
+                ui.lbl(self.dyn, "Ningún campeón cumple los filtros. Abre «Filtros» y quita alguno.", 11, "dim").pack(anchor="w", pady=4)
             return
         items = items[:n]
         cols = 1 if self.width < 620 else 2 if self.width < 980 else 3
@@ -1467,8 +1467,8 @@ class Recs(Section):
             if lane and lane[1]:
                 self.vs_row(body, opp, lane[1], lane[2], 40)
             else:
-                ui.lbl(body, f"Aún no has jugado con {name(c['cid'], ui.champs)} contra {name(opp, ui.champs)}, "
-                             "así que no hay datos de este enfrentamiento.", 11, "dim", anchor="w", wraplength=400,
+                ui.lbl(body, f"Aún no has jugado con {name(c['cid'], ui.champs)} contra {name(opp, ui.champs)}: no hay datos tuyos de este "
+                             "enfrentamiento. Los de todos los jugadores están en la pestaña «Enfrentamiento».", 11, "dim", anchor="w", wraplength=400,
                        justify="left").pack(anchor="w")
         else:
             ui.lbl(body, "Tu rival de línea todavía no ha elegido campeón.", 11, "dim").pack(anchor="w")
@@ -1477,8 +1477,8 @@ class Recs(Section):
             ui.lbl(body, "CONTRA OTROS RIVALES YA ELEGIDOS", 10, "dim", True).pack(anchor="w", pady=(12, 2))
             for e, g, w in others:
                 self.vs_row(body, e, g, w)
-        elif not (lane and lane[1]):
-            ui.lbl(body, "Sin datos de enfrentamientos con los rivales actuales.", 10, "dim").pack(anchor="w", pady=(8, 0))
+        elif not opp and not (lane and lane[1]):   # con rival de línea ya se ha dicho arriba que no hay datos: no se repite
+            ui.lbl(body, "Tampoco tienes partidas con este campeón contra los rivales ya elegidos.", 10, "dim").pack(anchor="w", pady=(8, 0))
 
     def tab_synergy(self, body, c):
         ui = self.ui
@@ -1523,7 +1523,10 @@ class Recs(Section):
                          f"({'+' if d >= 0 else '−'}{pct_es(abs(d))} puntos)", 10, "dim", anchor="w", wraplength=400,
                    justify="left").pack(anchor="w", pady=(0, 8))
         elif self.kind() == "sr":
-            ui.lbl(body, "Sin datos de meta para este campeón en tu línea (o el meta está desactivado o aún cargando).", 10,
+            why = ("El meta del parche está desactivado: actívalo en «Datos» (botón de arriba)." if not ui.conf.get("meta_enabled", True)
+                   else "El meta del parche aún se está descargando; aparecerá solo en unos segundos." if not core.META.get("data")
+                   else "Este campeón casi no se juega en tu línea este parche: no hay datos de meta fiables.")
+            ui.lbl(body, why, 10,
                    "dim", anchor="w", wraplength=400, justify="left").pack(anchor="w", pady=(0, 8))
         lane = {"TOP": "top", "JUNGLE": "jungle", "MIDDLE": "middle", "BOTTOM": "bottom", "SUPPORT": "support"}.get(self.r.get("role"))
         if self.kind() == "sr" and lane:
@@ -1640,7 +1643,7 @@ class Lobby(Section):
             ui.lbl(line2, "  ·  ".join(x for x in extra if x), 10, "dim").pack(side="left", padx=4)
             profile_toggle(self, box, inner, mid, a, p, qid)
         elif p and p.get("error"):
-            ui.lbl(mid, "No se pudieron leer sus datos.", 10, "dim").pack(anchor="w")
+            ui.lbl(mid, "El cliente no ha entregado sus datos (perfil oculto o sin respuesta).", 10, "dim").pack(anchor="w")
         elif not loaded:
             ui.lbl(mid, "Cargando datos del jugador…", 10, "dim").pack(anchor="w", pady=(4, 0))
 

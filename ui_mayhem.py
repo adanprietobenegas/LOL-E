@@ -179,7 +179,7 @@ def build_block(ui, host, cid, mode_id, width):
                        wraplength=max(200, wrap - 200)).pack(side="left", padx=6)
             rest = [n for n in d["augments"] if n not in known]
             if rest:
-                ui.lbl(box, "Sin casar con el cliente: " + ", ".join(rest), 9, "dim", anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(2, 0))
+                ui.lbl(box, "Mejoras de op.gg que no encuentro en tu cliente (sin icono): " + ", ".join(rest), 9, "dim", anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(2, 0))
         ui.lbl(box, "Orden y listas de op.gg; en Mayhem no publica porcentajes. LOL-E tampoco muestra victorias por mejora (norma de Riot). "
                     "Como cada ronda es de una sola categoría, mira la fila de esa categoría; si no hay ninguna de tu lista, elige por lo que haga tu build.",
                9, "dim", anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(8, 0))

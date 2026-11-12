@@ -108,7 +108,7 @@ class GameView:
                     ui_vs.Board(self).render(c, ctx, plan)
                 except Exception:
                     core.log_exc("Tablero de jugadores")
-                    ui.lbl(c, "No se pudo dibujar el tablero.", 10, "dim").pack(anchor="w")
+                    ui.lbl(c, "No se pudo dibujar el tablero de jugadores. El motivo queda en Ajustes › «Abrir el registro de errores».", 10, "dim").pack(anchor="w")
             ui_vs.collapsible(ui, self.host, "Jugadores de la partida", summ, "game_roster", fill)
             return
         from ui_sections import Lobby

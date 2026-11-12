@@ -46,7 +46,10 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
 
 1. ~~Auditoría visual~~ **hecha el 12/11/2026** (ver «Auditoría visual» abajo). Quedan sus propuestas de estructura,
    que esperan la decisión del usuario.
-2. Textos: «WR» por «% vict.» donde quepa; estados vacíos y de error que digan qué hacer.
+2. ~~Textos~~ **hecho el 12/11/2026** (en `main`, sin publicar: irá en la siguiente versión). «WR» ya no aparecía
+   en ninguna cadena visible. Reescritos los estados vacíos y de error que no decían qué hacer (análisis sin
+   cliente, meta sin datos con su causa, filtros sin resultados, maestría, modos, baneos, buscador, Mayhem, pie de
+   op.gg). Los fallos al pintar ahora se guardan en el registro de errores, no solo pasan por el pie.
 3. Etapa 1 de la hoja de ruta: historial separado por cuenta, registro de diagnóstico, cliente falso para
    probar el flujo cola → selección → partida → fin.
 4. Contenido: etiquetas del tablero de jugadores y conclusiones del análisis posterior.
