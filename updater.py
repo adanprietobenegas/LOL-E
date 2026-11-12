@@ -37,7 +37,7 @@ def _cert_error(e):
 def _curl(url, out=None, timeout=120):
     """Plan B cuando Python no puede validar el certificado (le falta un emisor que Windows aún no ha descargado a su almacén):
     curl.exe de Windows valida con el sistema, que sí lo consigue. Sigue siendo HTTPS verificado, y el instalador se comprueba por su huella."""
-    exe = os.path.join(os.environ.get("SystemRoot", r"C:Windows"), "System32", "curl.exe")
+    exe = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32", "curl.exe")
     cmd = [exe, "-fsSL", "--proto", "=https", "--proto-redir", "=https", "--max-time", str(timeout), "-A", UA["User-Agent"], url]
     if out:
         cmd += ["-o", out]
