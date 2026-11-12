@@ -157,7 +157,7 @@ class AchievementsCard(Section):
 
     def streaks(self):
         try:
-            games = [e for e in history.load_all(os.path.join(core.CACHE, "history.json"), os.path.join(core.CACHE, "games.json"))
+            games = [e for e in history.load_all(history.hpath(core.CACHE), history.gpath(core.CACHE))
                      if not e.get("rm")]
         except Exception:
             return None
@@ -264,7 +264,7 @@ class SummaryCard(Section):
     # ---- datos ----
     def load_hist(self):
         try:
-            self.hist = [e for e in history.load_all(os.path.join(core.CACHE, "history.json"), os.path.join(core.CACHE, "games.json"))
+            self.hist = [e for e in history.load_all(history.hpath(core.CACHE), history.gpath(core.CACHE))
                          if not e.get("rm")]
         except Exception:
             self.hist = []

@@ -7,6 +7,7 @@ import json, math, os, struct, sys, tempfile, unittest, wave
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # cliente_falso.py
 
 import itemset  # noqa: E402
 import lol_advisor as core  # noqa: E402
@@ -345,6 +346,160 @@ class QuienSoyEnLaPartida(unittest.TestCase):
         class Cerrado:
             def get(self, *a, **k): raise ConnectionError()
         self.assertEqual(analysis.load(Cerrado(), 77, "", tmp)["me"], 5)
+
+
+class HistorialPorCuenta(unittest.TestCase):
+    """Dos cuentas en el mismo PC no mezclan partidas, y el historial antiguo (sin dueño) solo lo hereda quien demuestra que es suyo."""
+    def setUp(self):
+        import history
+        self.h, self.tmp = history, tempfile.mkdtemp()
+        self.antes, history.ACCOUNT = history.ACCOUNT, ""
+
+    def tearDown(self):
+        self.h.ACCOUNT = self.antes
+
+    def viejo(self):
+        json.dump({"100": {"id": "100", "t": 1, "c": 1, "w": True}}, open(os.path.join(self.tmp, "history.json"), "w"))
+        json.dump({"100": {"c": 1, "w": True, "t": 1, "q": 420}}, open(os.path.join(self.tmp, "games.json"), "w"))
+
+    def test_sin_cuenta_se_usan_los_archivos_de_siempre(self):
+        self.assertTrue(self.h.hpath(self.tmp).endswith("history.json"))
+        self.assertEqual(self.h.set_account(self.tmp, ""), "")
+        self.assertEqual(self.h.ACCOUNT, "")
+
+    def test_la_cuenta_que_reconoce_sus_partidas_hereda_el_historial(self):
+        self.viejo()
+        self.assertEqual(self.h.set_account(self.tmp, "A", [100, 200]), "migrated")
+        self.assertIn("100", json.load(open(self.h.hpath(self.tmp))))
+        self.assertTrue(os.path.exists(self.h.gpath(self.tmp)))
+        self.assertTrue(os.path.exists(os.path.join(self.tmp, "history.json")))          # el antiguo queda como copia
+        self.assertEqual(self.h.set_account(self.tmp, "A", [100]), "")                    # y no se repite
+        self.assertEqual(self.h.set_account(self.tmp, "B", [100]), "new")                 # otra cuenta ya no lo hereda
+        self.assertFalse(os.path.exists(self.h.hpath(self.tmp)))
+
+    def test_una_cuenta_sin_partidas_en_comun_no_hereda(self):
+        self.viejo()
+        self.assertEqual(self.h.set_account(self.tmp, "B", [555]), "new")
+        self.assertFalse(os.path.exists(self.h.hpath(self.tmp)))
+        self.assertEqual(self.h.set_account(self.tmp, "A", [100]), "migrated")            # la dueña de verdad sí, aunque llegue después
+
+    def test_sin_partidas_del_cliente_no_se_decide_todavia(self):
+        self.viejo()
+        self.assertEqual(self.h.set_account(self.tmp, "A", []), "")
+        self.assertFalse(os.path.exists(os.path.join(self.tmp, "history_owner.json")))
+        self.assertEqual(self.h.set_account(self.tmp, "A", [100]), "migrated")
+
+    def test_al_abrir_sin_cliente_se_recuerda_la_ultima_cuenta(self):
+        self.h.set_account(self.tmp, "A", [1])
+        self.h.ACCOUNT = ""
+        self.assertEqual(self.h.load_account(self.tmp), "A")
+        self.assertTrue(self.h.hpath(self.tmp).endswith("history_A.json"))
+
+    def test_el_identificador_no_puede_salir_de_la_carpeta(self):
+        self.h.set_account(self.tmp, "../..\\x:y", [1])
+        self.assertEqual(os.path.dirname(self.h.hpath(self.tmp)), self.tmp)
+
+
+class FlujoCompleto(unittest.TestCase):
+    """El bucle principal contra un cliente de mentira: cola -> selección -> partida -> fin. No abre ventana ni red."""
+    def setUp(self):
+        import analysis, history, players
+        try:
+            self.champs = core.load_champions()
+        except Exception as e:
+            self.skipTest(f"sin datos de campeones en cache/: {e}")
+        if 86 not in self.champs:
+            self.skipTest("sin datos de campeones en cache/")
+        self.tmp = tempfile.mkdtemp()
+        self.mods = (analysis, history, players)
+        names = {core: ("CACHE", "time", "find_client", "LCU", "start_meta", "maybe_update_opgg", "play_phase", "detect_account", "load_season"),
+                 players: ("fetch_team", "fetch_roster", "lobby_party"), analysis: ("load",), history: ("ACCOUNT",)}
+        self.saved = [(m, n, getattr(m, n)) for m, ns in names.items() for n in ns]
+        self.meta, core.META["data"] = core.META.get("data"), None
+        core._DIAG["last"] = ""
+
+    def tearDown(self):
+        for m, n, v in getattr(self, "saved", []):
+            setattr(m, n, v)
+        if hasattr(self, "saved"):
+            core.META["data"] = self.meta
+
+    def correr(self, fake):
+        import time as real
+        analysis, history, players = self.mods
+        ev = []
+
+        class Reloj:   # el bucle «duerme» sin esperar: cada siesta avanza un paso del guion
+            time, strftime, perf_counter = staticmethod(real.time), staticmethod(real.strftime), staticmethod(real.perf_counter)
+            sleep = staticmethod(fake.dormir)
+
+        class Ventana:
+            def stopped(self): return fake.terminado
+            def poll_cmd(self): return None
+            def __getattr__(self, name): return lambda *a: ev.append((name,) + a)
+        history.ACCOUNT = ""
+        core.CACHE, core.time = self.tmp, Reloj
+        core.find_client, core.LCU = (lambda conf: ("x",)), (lambda *a: fake)
+        core.start_meta = core.play_phase = core.detect_account = lambda *a, **k: None
+        core.maybe_update_opgg, core.load_season = (lambda *a, **k: None), (lambda *a, **k: {})
+        players.fetch_team = lambda lcu, session, emit: ev.append(("fetch_team",))
+        players.fetch_roster = lambda *a, **k: ev.append(("fetch_roster",))
+        players.lobby_party = lambda *a, **k: None
+        analysis.load = lambda lcu, gid, puuid, cache: ev.append(("analysis.load", str(gid), puuid)) or {"gid": gid}
+        conf = core.load_conf()
+        conf["poll_seconds"] = 0
+        core.run(conf, self.champs, Ventana())
+        return ev
+
+    def leer(self, name):
+        p = os.path.join(self.tmp, name)
+        return open(p, encoding="utf-8").read() if os.path.exists(p) else ""
+
+    def test_cola_seleccion_partida_y_fin(self):
+        from cliente_falso import ClienteFalso, YO
+        fake = ClienteFalso()
+        ev = self.correr(fake)
+        self.assertEqual(self.leer("error.log"), "")                                   # ningún fallo registrado por el camino
+        self.assertIn(("link", True), ev)
+        fases = [e[1] for e in ev if e[0] == "phase"]
+        self.assertEqual([f for f in fases if f in ("Matchmaking", "ReadyCheck", "InProgress", "EndOfGame")],
+                         ["Matchmaking", "ReadyCheck", "InProgress", "EndOfGame"])
+        shows = [e[2] for e in ev if e[0] == "show"]
+        self.assertEqual(len(shows), 2)                                                # tu turno y, después, el campeón bloqueado
+        self.assertEqual((shows[0]["turn"], shows[0]["mode"]["kind"], shows[0]["role"]), ("pick", "sr", "TOP"))
+        self.assertTrue(shows[0]["cands"])
+        self.assertEqual((shows[1]["mine"], bool(shows[1]["mine_locked"])), (86, True))
+        self.assertIn(("fetch_team",), ev)
+        ros = [e[1] for e in ev if e[0] == "roster"]
+        self.assertEqual(len(ros), 1)                                                  # los 10 jugadores, una sola vez por partida
+        self.assertEqual((len(ros[0]), ros[0][0]["me"], ros[0][0]["cid"]), (10, True, 86))
+        msgs = [e[2] for e in ev if e[0] == "idle"]
+        self.assertTrue(any("Partida en curso" in m for m in msgs))
+        self.assertTrue(any("Partida terminada" in m for m in msgs))
+        self.assertIn(("analysis.load", "900", YO), ev)                                # se analiza la partida nueva, no la anterior
+        guardadas = json.loads(self.leer(f"history_{YO}.json"))
+        self.assertEqual(sorted(guardadas), ["100", "101", "900"])
+        self.assertEqual(self.leer("history.json"), "")                                # nada va ya al archivo sin dueño
+        d = self.leer("diag.log")
+        for trozo in ("Cliente de LoL encontrado", "Selección de campeón: cola 420, tipo sr", "Fase: ReadyCheck -> ", "Partida terminada: 900"):
+            self.assertIn(trozo, d)
+        self.assertNotIn("Prueba", d)                                                  # sin nombres de jugador
+
+    def test_sin_cuenta_no_se_guarda_nada(self):
+        from cliente_falso import ClienteFalso
+        fake = ClienteFalso(puuid="", guion=["None", "None", "None"])
+        self.correr(fake)
+        self.assertEqual([f for f in os.listdir(self.tmp) if f.startswith(("history", "games"))], [])
+        self.assertIn("cuenta aún desconocida", self.leer("diag.log"))
+
+    def test_dos_cuentas_no_se_mezclan(self):
+        from cliente_falso import ClienteFalso, partida
+        self.correr(ClienteFalso(puuid="cuentaA", guion=["None", "None"]))
+        b = ClienteFalso(puuid="cuentaB", guion=["None", "None"])
+        b.viejas = [partida(500, 54, True, 3_000, puuid="cuentaB")]
+        self.correr(b)
+        self.assertEqual(sorted(json.loads(self.leer("history_cuentaA.json"))), ["100", "101"])
+        self.assertEqual(sorted(json.loads(self.leer("history_cuentaB.json"))), ["500"])
 
 
 class Versiones(unittest.TestCase):

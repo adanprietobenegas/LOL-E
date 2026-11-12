@@ -463,7 +463,7 @@ class GUI:
                 self.kit.runedata = runes.load(CACHE, core.DD_VERSION)
             except Exception:
                 pass
-            used = {i for e in history.load_all(os.path.join(CACHE, "history.json"), os.path.join(CACHE, "games.json"))[:150]
+            used = {i for e in history.load_all(history.hpath(CACHE), history.gpath(CACHE))[:150]
                     for i in (e.get("it") or []) if i}
             d = os.path.join(CACHE, "items")
             os.makedirs(d, exist_ok=True)

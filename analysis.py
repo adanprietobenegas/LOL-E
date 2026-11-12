@@ -10,6 +10,8 @@ sencillos; cada consejo enseña el dato en que se basa.
 """
 import json, os, statistics
 
+import history
+
 VERSION = 5
 SMITE = 11
 MONSTERS = {"DRAGON": "dragón", "BARON_NASHOR": "Barón", "RIFTHERALD": "Heraldo", "HORDE": "larvas del Vacío", "ATAKHAN": "Atakhan"}
@@ -467,7 +469,7 @@ def _my_puuid(lcu):
 def _pid_from_history(a, cache_dir, gid):
     """Tu participante según el historial guardado (campeón y resultado de esa partida), si es inequívoco."""
     try:
-        e = json.load(open(os.path.join(cache_dir, "history.json"), encoding="utf-8")).get(str(gid))
+        e = json.load(open(history.hpath(cache_dir), encoding="utf-8")).get(str(gid))
     except Exception:
         e = None
     if not e or not e.get("c"):

@@ -272,7 +272,7 @@ class GameView:
     # ---- análisis (el dibujo vive en ui_analysis.py) ----
     def load_games(self):
         try:
-            self.games = history.load_all(os.path.join(core.CACHE, "history.json"), os.path.join(core.CACHE, "games.json"))[:30]
+            self.games = history.load_all(history.hpath(core.CACHE), history.gpath(core.CACHE))[:30]
         except Exception:
             self.games = []
         # al terminar una partida nueva se muestra esa, no la que se estaba mirando (antes seguía la anterior)

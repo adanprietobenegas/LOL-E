@@ -14,7 +14,7 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
 - Versión en `main` y publicada en GitHub: **1.22.3** (12/11/2026).
   La app instalada del usuario NO pasó sola de 1.22.1 a 1.22.2 (causa sin confirmar; la 1.22.3 refuerza el
   actualizador). Pendiente: que el usuario instale a mano y confirme que la siguiente versión sí llega sola.
-- Pruebas: `python herramientas/tests_unitarios.py` (32, todas pasan).
+- Pruebas: `python herramientas/tests_unitarios.py` (41, todas pasan).
 - Pendiente de que el usuario confirme en su app que el análisis del ARAM de Lillia ya no muestra Sona.
 
 ## Reglas del usuario
@@ -50,8 +50,7 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
    en ninguna cadena visible. Reescritos los estados vacíos y de error que no decían qué hacer (análisis sin
    cliente, meta sin datos con su causa, filtros sin resultados, maestría, modos, baneos, buscador, Mayhem, pie de
    op.gg). Los fallos al pintar ahora se guardan en el registro de errores, no solo pasan por el pie.
-3. Etapa 1 de la hoja de ruta: historial separado por cuenta, registro de diagnóstico, cliente falso para
-   probar el flujo cola → selección → partida → fin.
+3. ~~Etapa 1~~ **hecha en parte el 12/11/2026** (en `main`, sin publicar). Ver «Etapa 1» abajo.
 4. Contenido: etiquetas del tablero de jugadores y conclusiones del análisis posterior.
 5. Rendimiento del pintado.
 
@@ -115,3 +114,26 @@ Sin defectos: perfil completo, Arena, Mayhem, claro y Terminal en ancho, 115 %, 
 Con esto la auditoría visual queda cerrada salvo las propuestas de estructura de arriba (decisión del usuario).
 Nota de la herramienta: los pasos se ejecutan todos aunque `LOLE_SOLO` limite las capturas; en ancho «no encuentro el
 botón Variantes» es esperado (ahí la build se ve en columnas, sin pestañas).
+
+## Etapa 1 · Confianza en los datos (12/11/2026, en `main`, sin publicar)
+
+Hecho:
+- Historial por cuenta: `history_<puuid>.json` y `games_<puuid>.json` (`history.hpath/gpath`, `history.ACCOUNT`).
+  Los antiguos `history.json`/`games.json` se COPIAN (no se borran) a la primera cuenta cuyas partidas del cliente ya
+  estén en ellos; queda anotado en `history_owner.json`. Otra cuenta empieza vacía. `account.json` recuerda la última
+  cuenta para abrir sin cliente. Sin puuid no se guarda nada (antes iba al archivo común).
+- Registro de diagnóstico `cache/diag.log` (`core.diag`): conexión, cuenta (8 caracteres), fases, selección, fin de
+  partida, lecturas del historial y fallos del bucle. Se parte a ~400 KB. Sus últimas 30 líneas van en «Copiar informe
+  de diagnóstico».
+- Colas desconocidas: se apuntan una vez en el registro (`note_queue`).
+- Cliente falso (`herramientas/cliente_falso.py`) y pruebas del bucle principal: cola → selección → partida → fin,
+  arranque sin cuenta y dos cuentas en la misma carpeta. Las respuestas son inventadas con la forma del cliente
+  real, no grabaciones.
+
+Sin hacer de la etapa 1:
+- Quitar los `except Exception: pass` restantes de `lol_advisor.py` y `players.py`.
+- Versión de esquema en cada JSON guardado (solo la llevan `account.json` y `history_owner.json`).
+- Los análisis guardados (`cache/analysis/<id>.json`) siguen sin separarse por cuenta.
+
+Sin probar: la migración en la app instalada del usuario y el flujo con el cliente real. Antes de publicarlo conviene
+que el usuario lo sepa: es la primera versión que cambia dónde se guarda su historial.

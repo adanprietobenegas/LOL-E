@@ -66,7 +66,7 @@ class HistoryView:
 
     # ---- datos ----
     def reload(self):
-        self.all = history.load_all(os.path.join(core.CACHE, "history.json"), os.path.join(core.CACHE, "games.json"))
+        self.all = history.load_all(history.hpath(core.CACHE), history.gpath(core.CACHE))
         self.loaded = True
 
     def data_changed(self):

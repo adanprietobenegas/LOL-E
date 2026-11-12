@@ -20,6 +20,75 @@ def _read(path, default):
     return default
 
 
+# ---- una carpeta, varias cuentas ----
+# Cada cuenta guarda su historial en history_<puuid>.json y games_<puuid>.json. Los archivos antiguos (history.json y games.json,
+# sin dueño) se copian a la primera cuenta que demuestre que son suyos: alguna de sus partidas del cliente ya está en ellos.
+# No se borran: quedan como copia. Sin cuenta conocida se siguen leyendo los antiguos.
+ACCOUNT = ""
+
+
+def _safe(puuid):
+    return "".join(ch for ch in str(puuid) if ch.isalnum() or ch == "-")[:80]
+
+
+def hpath(cache):
+    return os.path.join(cache, f"history_{_safe(ACCOUNT)}.json" if ACCOUNT else "history.json")
+
+
+def gpath(cache):
+    return os.path.join(cache, f"games_{_safe(ACCOUNT)}.json" if ACCOUNT else "games.json")
+
+
+def _write(path, data):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+    os.replace(tmp, path)
+
+
+def load_account(cache):
+    """Al abrir sin cliente: se usa la última cuenta que se vio, para enseñar su historial y no el de otra."""
+    global ACCOUNT
+    if not ACCOUNT:
+        ACCOUNT = _safe((_read(os.path.join(cache, "account.json"), {}) or {}).get("puuid", ""))
+    return ACCOUNT
+
+
+def set_account(cache, puuid, client_ids=()):
+    """Activa la cuenta `puuid`. Devuelve «migrated» si en este momento heredó los archivos antiguos, «new» si empieza
+    vacía, «» si ya tenía los suyos, si no hay cuenta o si aún no se puede decidir.
+    `client_ids`: ids de las partidas que el cliente acaba de entregar."""
+    global ACCOUNT
+    puuid = _safe(puuid)
+    if not puuid:
+        return ""
+    changed = puuid != ACCOUNT
+    ACCOUNT = puuid
+    try:
+        if changed or not os.path.exists(os.path.join(cache, "account.json")):
+            _write(os.path.join(cache, "account.json"), {"v": 1, "puuid": puuid})
+    except OSError:
+        pass
+    hp, gp = hpath(cache), gpath(cache)
+    if os.path.exists(hp) or os.path.exists(gp):
+        return ""
+    owner_file = os.path.join(cache, "history_owner.json")
+    if (_read(owner_file, {}) or {}).get("puuid"):
+        return "new"   # los antiguos ya son de otra cuenta
+    old_h, old_g = os.path.join(cache, "history.json"), os.path.join(cache, "games.json")
+    legacy = set(_read(old_h, {}) or {}) | set(_read(old_g, {}) or {})
+    if not legacy:
+        return "new"
+    if not ({str(i) for i in client_ids} & legacy):
+        return "new" if client_ids else ""   # sin partidas del cliente aún no se sabe de quién son: se decide más tarde
+    for src, dst in ((old_h, hp), (old_g, gp)):
+        if os.path.exists(src):
+            shutil.copy2(src, dst)
+    _write(owner_file, {"v": 1, "puuid": puuid, "t": int(time.time())})
+    return "migrated"
+
+
 def my_part(g, puuid=""):
     """Tu participante en una partida del cliente, o None si no se puede saber con certeza.
 

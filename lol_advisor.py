@@ -403,6 +403,34 @@ def queue_group(q):
     return next((n for n, qs in QUEUE_GROUPS if q in qs), "Otros")
 
 
+# ---------- Registro de diagnóstico ----------
+_DIAG = {"queues": set(), "last": ""}
+
+
+def diag(msg):
+    """Una línea con fecha en cache/diag.log: qué fue pasando (conexión, cuenta, fases, lecturas). Sin nombres de jugador;
+    las cuentas, solo por los 8 primeros caracteres de su identificador. Se parte al llegar a ~400 KB (queda diag.log.1)."""
+    try:
+        if msg == _DIAG["last"]:
+            return
+        _DIAG["last"] = msg
+        os.makedirs(CACHE, exist_ok=True)
+        path = os.path.join(CACHE, "diag.log")
+        if os.path.exists(path) and os.path.getsize(path) > 400_000:
+            os.replace(path, path + ".1")
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S") + "  " + str(msg) + chr(10))
+    except OSError:
+        pass
+
+
+def note_queue(q):
+    """Una cola que LOL-E no conoce cae en «Otros»: se apunta una vez para poder añadirla (la 1740 pasó desapercibida)."""
+    if q and q not in _DIAG["queues"] and queue_group(q) == "Otros":
+        _DIAG["queues"].add(q)
+        diag(f"Cola desconocida: {q} (se agrupa en «Otros»)")
+
+
 def ally_champs(me, detail):
     """Campeones y puuids de tus compañeros en una partida, a partir del detalle."""
     if not detail:
@@ -427,8 +455,7 @@ def load_player_data(lcu, season=None):
     except Exception:
         pass
     # El cliente solo devuelve las ultimas partidas: las guardamos en disco para acumular historial.
-    gpath = os.path.join(CACHE, "games.json")
-    gc = read_json(gpath, {})  # gameId -> {c: campeon, w: victoria, r: rol, o: rival de linea, q: cola, t: fecha, a: aliados}
+    gc = None  # gameId -> {c: campeon, w: victoria, r: rol, o: rival de linea, q: cola, t: fecha, a: aliados}
     dirty = False
     try:  # tu puuid: con él se localiza tu jugador en cada partida (nunca «el primero de la lista»)
         P["puuid"] = (lcu.get("/lol-summoner/v1/current-summoner") or {}).get("puuid", "")
@@ -436,14 +463,23 @@ def load_player_data(lcu, season=None):
         P["puuid"] = ""
     P["hist_ok"] = False   # si el cliente no entregó las partidas se reintenta (antes un fallo aquí pasaba en silencio)
     try:
+        if not P["puuid"]:
+            # sin saber qué cuenta es no se guarda nada: las partidas irían al archivo de la última cuenta vista (se reintenta)
+            raise ConnectionError("cuenta aún desconocida")
         games = lcu.get("/lol-match-history/v1/products/lol/current-summoner/matches?begIndex=0&endIndex=200", timeout=40)
+        glist = games["games"]["games"]
+        how = history.set_account(CACHE, P["puuid"], [g.get("gameId") for g in glist])   # cada cuenta, su archivo
+        if how:
+            diag(f"Cuenta {P['puuid'][:8]}: " + ("hereda el historial anterior" if how == "migrated" else "historial propio nuevo"))
+        gc = read_json(history.gpath(CACHE), {})
         try:
-            recs = [history.from_game(g, P["puuid"]) for g in games["games"]["games"]]
-            history.save(os.path.join(CACHE, "history.json"), [r for r in recs if r])
+            recs = [history.from_game(g, P["puuid"]) for g in glist]
+            history.save(history.hpath(CACHE), [r for r in recs if r])
+            diag(f"Historial: el cliente entregó {len(glist)} partidas, {sum(1 for r in recs if r)} reconocidas como tuyas")
         except Exception:
             log_exc("Guardar el historial")
         P["hist_ok"] = True
-        for g in games["games"]["games"]:
+        for g in glist:
             gid, q = str(g["gameId"]), g.get("queueId")
             e = gc.get(gid)
             if isinstance(e, dict) and ("p" in e or q not in SR_QUEUES):
@@ -465,15 +501,19 @@ def load_player_data(lcu, season=None):
             gc[gid] = {"c": me["championId"], "w": bool(me["stats"]["win"]), "r": role, "o": opp, "q": q,
                        "t": g.get("gameCreation", 0), "a": allies, "p": mates}
             dirty = True
-    except (urllib.error.URLError, ConnectionError, OSError):
-        pass   # cliente cerrado o aún arrancando: se reintenta
+    except (urllib.error.URLError, ConnectionError, OSError) as e:
+        diag(f"Historial sin leer: {type(e).__name__} {e}")   # cliente cerrado o aún arrancando: se reintenta
     except Exception:
         log_exc("Leer las partidas del cliente")
+    if gc is None:   # no se llegó a leer el cliente: se enseña lo guardado de la cuenta (la de ahora o la última vista)
+        history.set_account(CACHE, P["puuid"])
+        gc = read_json(history.gpath(CACHE), {})
     if dirty:
-        write_json(gpath, gc)
+        write_json(history.gpath(CACHE), gc)
     hist = sorted((v for v in gc.values() if isinstance(v, dict)), key=lambda v: v["t"])
     sr = []
     for e in hist:
+        note_queue(e["q"])
         grp = queue_group(e["q"])
         m = P["modes"].setdefault(grp, [0, 0, []])
         m[0] += 1; m[1] += e["w"]; m[2].append(e["w"])
@@ -990,13 +1030,17 @@ def run(conf, champs, ui):
                 if not found:
                     time.sleep(3); continue
                 lcu = LCU(*found)
+                diag("Cliente de LoL encontrado")
                 ui.status("Conectado. Cargando tus datos…")
                 detect_account(lcu, conf)
                 season = load_season(champs, conf)
                 ui.link(True)
                 P = load_player_data(lcu, season)  # precarga (la primera vez descarga el historial)
                 my_puuid = (P.get("profile") or {}).get("puuid", "")
+                diag(f"Conectado: cuenta {(my_puuid or P.get('puuid') or '?')[:8]}, historial {'leído' if P.get('hist_ok') else 'pendiente'}, "
+                     f"{P.get('games', 0)} partidas de Grieta guardadas")
                 ui.idle(player_info(P), "Conectado al cliente. Entra en una cola cuando quieras.")
+                getattr(ui, "history_updated", lambda: None)()   # puede ser otra cuenta: el historial en pantalla se relee
                 start_meta(conf, P, ui)
             if time.time() >= next_lobby:  # quien va contigo en la sala (duo o grupo)
                 next_lobby = time.time() + 3
@@ -1019,12 +1063,14 @@ def run(conf, champs, ui):
                             play_phase(conf, "found")
                         elif flow in ("GameStart", "InProgress") and last_flow not in ("GameStart", "InProgress", "Reconnect"):
                             play_phase(conf, "start")
+                    diag(f"Fase: {last_flow} -> {flow}")
                     last_flow = flow
                     getattr(ui, "phase", lambda f: None)(flow)
                 if last is not None:
                     last = prev_turn = mode = None
                     prev_locked = False
                     reload_pending = True
+                    diag("Selección terminada" + (": empieza la partida" if in_game else ""))
                     ui.idle(player_info(P), "Partida en curso. LOL-E espera a que acabe." if in_game else "Selección terminada. Esperando la siguiente…")
                 if reload_pending and not in_game:
                     reload_pending = False
@@ -1051,6 +1097,7 @@ def run(conf, champs, ui):
                                 continue
                             if dl:
                                 analysis.save_lp(CACHE, g["gameId"], dl)
+                        diag(f"Partida terminada: {g['gameId']} (cola {g.get('queueId')}), esperas {end_tries}")
                         rank_before, cur_gid, end_tries = None, None, 0
                         getattr(ui, "analysis", lambda *a: None)(str(g["gameId"]), analysis.load(lcu, g["gameId"], my_puuid, CACHE))
                     except (urllib.error.URLError, ConnectionError, OSError):
@@ -1114,6 +1161,8 @@ def run(conf, champs, ui):
                 if last is None:
                     P = load_player_data(lcu, season)
                     mode = detect_mode(lcu)  # la Grieta, ARAM u otro modo: cambia lo que tiene sentido mostrar
+                    diag(f"Selección de campeón: cola {mode['id']}, tipo {mode['kind']}")
+                    note_queue(mode["id"])
                     if mode["kind"] == "sr":
                         threading.Thread(target=players.fetch_team, args=(lcu, session, ui.players), daemon=True).start()
                 last = key
@@ -1130,13 +1179,16 @@ def run(conf, champs, ui):
         except KeyboardInterrupt:
             break
         except (urllib.error.URLError, ConnectionError, OSError):
+            if lcu is not None:
+                diag("Cliente de LoL perdido (cerrado o reiniciando)")
             lcu = None  # el cliente se cerro o reinicio
             ui.link(False)
             ui.status("No encuentro el cliente de LoL. Reintentando…")
             time.sleep(3)
         except Exception as e:  # un fallo puntual no debe tumbar el programa
             log_exc("Bucle principal")
-            ui.status(f"Aviso: {type(e).__name__}: {e}")
+            diag(f"Fallo en el bucle: {type(e).__name__} {e}")
+            ui.status(f"Algo ha fallado al leer el cliente ({type(e).__name__}); se reintenta. El detalle está en Ajustes › «Abrir el registro de errores».")
             time.sleep(2)
 
 
@@ -1308,7 +1360,7 @@ def diagnostics(extra=None):
     home = os.path.expanduser("~")
     md = META.get("data") or {}
     try:
-        n_games = len(history.load_all(os.path.join(CACHE, "history.json"), os.path.join(CACHE, "games.json")))
+        n_games = len(history.load_all(history.hpath(CACHE), history.gpath(CACHE)))
     except Exception:
         n_games = "?"
     try:
@@ -1327,6 +1379,11 @@ def diagnostics(extra=None):
         lines += ["", "Últimos errores:"] + [x.replace(home, "~") for x in tail]
     except OSError:
         lines += ["", "Sin errores registrados."]
+    try:
+        with open(os.path.join(CACHE, "diag.log"), encoding="utf-8", errors="replace") as f:
+            lines += ["", "Últimos pasos:"] + f.read().splitlines()[-30:]
+    except OSError:
+        pass
     return "\n".join(lines)
 
 
@@ -1371,6 +1428,7 @@ def main():
     install_error_hooks()
     migrate_data()
     seed_cache()
+    history.load_account(CACHE)   # sin cliente se enseña el historial de la última cuenta vista
     threading.Thread(target=prune_cache, daemon=True).start()
     try:
         sys.stdout.reconfigure(errors="replace")
