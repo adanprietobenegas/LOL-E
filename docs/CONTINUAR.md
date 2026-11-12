@@ -61,11 +61,11 @@ Corregido en `main` (sin subir versión ni reconstruir; el instalador 1.22.1 de 
 - Inicio: sin cliente, el título es «Abre League of Legends» y la pista va debajo (antes se montaba sobre el título).
 - Textos cortados: «afinidad» en la vista Lista, nota de «Enviar al cliente», botón de build del rival, notas de
   Ajustes, «Clasificatorias de 5» en Historial; el rango de un jugador desaparecía si tenía varias etiquetas.
+- Partida en ventana estrecha: con plan, primero tu campeón, rival y build; los 10 jugadores van al final (en ancho
+  sigue el tablero plegable arriba).
 - «pestaña Datos» → «Datos (botón de arriba)»; «porcentaje» → «% de victorias» en el resumen de la recomendación.
 
 Sin hacer (propuestas, a decidir por el usuario):
-- Partida en ventana estrecha: los 10 jugadores van antes que tu plan (build y rival quedan 3 pantallas abajo).
-  Propuesta: plegar «Jugadores de la partida» como ya se hace en ancho, o poner el plan primero.
 - Selección: filtros (2 filas) antes de la recomendación; plegarlos tras un botón «Filtros» subiría la recomendación.
 - Selección: la afinidad se ve tres veces (anillo, cifra del resumen, miniatura) y «2 de 3» repite la etiqueta «2/3 victorias».
 - Las otras opciones del carrusel (miniaturas) quedan bajo el desglose, fuera de la primera pantalla.

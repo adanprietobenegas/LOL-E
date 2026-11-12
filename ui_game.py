@@ -139,8 +139,14 @@ class GameView:
     def plan_tab(self, ctx):
         ui, host = self.ui, self.host
         plan = ctx.get("plan")
-        self.roster_block(ctx, plan)
-        if not plan or plan["cid"] not in ui.champs:
+        import ui_vs
+        has_plan = bool(plan) and plan["cid"] in ui.champs
+        # ventana estrecha: la lista de 10 jugadores ocupa tres pantallas, así que con plan va al final (primero tu build y tu rival);
+        # en ancho es un tablero plegable y se queda arriba
+        late = has_plan and bool(ctx.get("roster")) and self.width < ui_vs.MIN_WIDTH and (plan.get("kind") or "sr") == "sr"
+        if not late:
+            self.roster_block(ctx, plan)
+        if not has_plan:
             if ctx.get("roster"):
                 return
             ui.lbl(host, "Cuando elijas campeón en una selección, aquí tendrás su build, sus runas, el enfrentamiento y consejos, "
@@ -161,6 +167,8 @@ class GameView:
         if opp and opp in ui.champs:
             sub += f"  ·  contra {core.name(opp, ui.champs)}"
         ui.lbl(txt, sub or "sin línea asignada", 10, "dim").pack(anchor="w")
+        if late:
+            ui.lbl(txt, "Los 10 jugadores de la partida están al final.", 10, "dim").pack(anchor="w")
         if lane and plan.get("kind") in (None, "sr") and plan.get("enemies"):
             import ui_opp
             pk = ui_opp.picker(ui, host, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 110)
@@ -189,6 +197,9 @@ class GameView:
             ui_guide.guide_block(ui, host, cid, opp or None, lane, self.width)
         if plan.get("kind") in (None, "sr"):
             self.tips_block(plan, role)
+        if late:
+            self.ui.lbl(self.host, "", 4, "dim").pack()
+            self.roster_block(ctx, plan)
 
     def section(self, title):
         self.ui.lbl(self.host, title, 10, "dim", True, anchor="w").pack(anchor="w", pady=(14, 4))
