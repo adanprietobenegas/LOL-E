@@ -10,6 +10,13 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.4", "fecha": "12 de noviembre de 2026", "titulo": "Cada cuenta, su historial, y un registro para saber qué pasa", "items": [
+        ("nuevo", "Historial separado por cuenta: si en este PC se juega con más de una cuenta, sus partidas ya no se mezclan. Tu historial de siempre se copia a la primera cuenta que lo reconoce como suyo (los archivos antiguos no se borran)."),
+        ("nuevo", "Registro de diagnóstico: LOL-E apunta qué va pasando (si encuentra el cliente, qué fase detecta, cuántas partidas le entrega). No guarda nombres de jugador. Si algo no te sale, ve a Ajustes y pulsa «Copiar informe de diagnóstico»: ahí van los últimos pasos."),
+        ("mejora", "Los avisos de «no hay datos» y de error dicen ahora qué pasa y qué hacer: el análisis sin el cliente abierto, el meta que aún se descarga o está desactivado, los filtros que lo ocultan todo…"),
+        ("arreglo", "Si una pantalla fallaba al actualizarse, el error pasaba un instante por el pie y se perdía. Ahora queda guardado en el registro de errores."),
+        ("arreglo", "Si el cliente aún no dice qué cuenta eres, LOL-E ya no guarda esas partidas en un archivo común: espera y lo reintenta."),
+    ]},
     {"v": "1.22.3", "fecha": "12 de noviembre de 2026", "titulo": "La actualización automática ya no falla en silencio", "items": [
         ("arreglo", "Si la comprobación automática de versiones fallaba (por ejemplo, por un problema pasajero de red o de certificados), LOL-E no decía nada y no volvía a intentarlo hasta 3 horas después. Ahora lo avisa en el pie de la ventana y lo reintenta cada 2 minutos, hasta 5 veces."),
         ("mejora", "Si Windows aún no tiene el certificado que hace falta para validar GitHub, la descarga se hace con la herramienta del propio sistema, que sí lo consigue. Sigue siendo una conexión segura y el instalador se comprueba por su huella como siempre."),

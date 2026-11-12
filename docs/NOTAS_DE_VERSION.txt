@@ -7,6 +7,23 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.4   (12 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · history.py: ACCOUNT, hpath/gpath (history_<puuid>.json, games_<puuid>.json), load_account y set_account. Los
+    archivos antiguos se copian (no se borran) a la primera cuenta cuyas partidas del cliente ya están en ellos;
+    history_owner.json lo anota y account.json recuerda la última cuenta. Sin puuid no se guarda nada.
+  · lol_advisor.py: diag() escribe cache/diag.log (se parte a ~400 KB) con conexión, cuenta (8 caracteres), fases,
+    selección, fin de partida y lecturas del historial; note_queue() apunta las colas desconocidas; diagnostics()
+    añade los últimos 30 pasos. Los fallos del bucle ya no salen como «Aviso: KeyError».
+  · gui.py: event_failed() registra los fallos al pintar. Textos de estados vacíos y de error reescritos en
+    ui_sections, ui_analysis, ui_views, ui_pool, ui_mayhem y ui_game.
+  · herramientas/cliente_falso.py (cliente de mentira con guion por pasos), demo_falso.py (la app entera contra él,
+    con capturas) y 9 pruebas nuevas: historial por cuenta y el bucle cola → selección → partida → fin.
+  · Caso abierto: a un compañero «no le sale» el Asesor. No reproducido: con el cliente falso la selección se pinta
+    sin errores. Pedirle el informe de diagnóstico de esta versión.
+  · No probado con el cliente real ni la migración en una app instalada.
+
 VERSIÓN 1.22.3   (12 de noviembre de 2026)
 ---------------------------------------------------------------------
 

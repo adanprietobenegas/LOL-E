@@ -11,7 +11,7 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
 
 ## Dónde está
 
-- Versión en `main` y publicada en GitHub: **1.22.3** (12/11/2026).
+- Versión en `main` y publicada en GitHub: **1.22.4** (12/11/2026).
   La app instalada del usuario NO pasó sola de 1.22.1 a 1.22.2 (causa sin confirmar; la 1.22.3 refuerza el
   actualizador). Pendiente: que el usuario instale a mano y confirme que la siguiente versión sí llega sola.
 - Pruebas: `python herramientas/tests_unitarios.py` (41, todas pasan).
@@ -46,11 +46,11 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
 
 1. ~~Auditoría visual~~ **hecha el 12/11/2026** (ver «Auditoría visual» abajo). Quedan sus propuestas de estructura,
    que esperan la decisión del usuario.
-2. ~~Textos~~ **hecho el 12/11/2026** (en `main`, sin publicar: irá en la siguiente versión). «WR» ya no aparecía
+2. ~~Textos~~ **hecho el 12/11/2026** (publicado en la 1.22.4). «WR» ya no aparecía
    en ninguna cadena visible. Reescritos los estados vacíos y de error que no decían qué hacer (análisis sin
    cliente, meta sin datos con su causa, filtros sin resultados, maestría, modos, baneos, buscador, Mayhem, pie de
    op.gg). Los fallos al pintar ahora se guardan en el registro de errores, no solo pasan por el pie.
-3. ~~Etapa 1~~ **hecha en parte el 12/11/2026** (en `main`, sin publicar). Ver «Etapa 1» abajo.
+3. ~~Etapa 1~~ **hecha en parte el 12/11/2026** (publicada en la 1.22.4). Ver «Etapa 1» abajo.
 4. Contenido: etiquetas del tablero de jugadores y conclusiones del análisis posterior.
 5. Rendimiento del pintado.
 
@@ -115,7 +115,7 @@ Con esto la auditoría visual queda cerrada salvo las propuestas de estructura d
 Nota de la herramienta: los pasos se ejecutan todos aunque `LOLE_SOLO` limite las capturas; en ancho «no encuentro el
 botón Variantes» es esperado (ahí la build se ve en columnas, sin pestañas).
 
-## Etapa 1 · Confianza en los datos (12/11/2026, en `main`, sin publicar)
+## Etapa 1 · Confianza en los datos (12/11/2026, publicada en la 1.22.4)
 
 Hecho:
 - Historial por cuenta: `history_<puuid>.json` y `games_<puuid>.json` (`history.hpath/gpath`, `history.ACCOUNT`).
@@ -137,3 +137,10 @@ Sin hacer de la etapa 1:
 
 Sin probar: la migración en la app instalada del usuario y el flujo con el cliente real. Antes de publicarlo conviene
 que el usuario lo sepa: es la primera versión que cambia dónde se guarda su historial.
+
+## Caso abierto: a un compañero «no le sale» el Asesor (12/11/2026)
+
+El usuario lo llamó «la parte del profesor»; se entiende que es la pestaña «Asesor» (sin confirmar). No reproducido:
+`python herramientas/demo_falso.py` recorre cola → selección → partida → fin con la ventana real y no da errores.
+Siguiente paso: que el compañero, ya en la 1.22.4, pulse Ajustes › «Copiar informe de diagnóstico» y lo envíe. Mirar
+si aparece «Cliente de LoL encontrado» (si no, LoL está en otra carpeta o no se localiza) y «Selección de campeón».
