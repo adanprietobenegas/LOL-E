@@ -507,6 +507,9 @@ class GUI:
             except Exception as e:
                 self.installing = False
                 self.status(f"No se ha podido actualizar solo ({e}). Pulsa «Actualizar» cuando quieras.")
+                self.update_fails = getattr(self, "update_fails", 0) + 1
+                if self.update_fails <= 5:   # un fallo de red pasajero no deja la versión antigua hasta la próxima comprobación
+                    self.root.after(120000, lambda: self.auto_install(info))
         threading.Thread(target=go, daemon=True).start()
 
     def check_updates(self, manual):
@@ -522,9 +525,13 @@ class GUI:
 
     def on_update(self, info, err, manual):
         if err:
-            if manual:
-                self.status(f"No se ha podido comprobar si hay actualizaciones: {err}")
+            # también en la comprobación automática: antes fallaba en silencio y no se reintentaba hasta 3 horas después
+            self.status(f"No se ha podido comprobar si hay actualizaciones: {err}")
+            self.update_fails = getattr(self, "update_fails", 0) + 1
+            if not manual and self.update_fails <= 5:
+                self.root.after(120000, lambda: self.check_updates(False))
             return
+        self.update_fails = 0
         if info is None:
             if manual:
                 self.status(f"Estás al día: la versión {APP_VERSION} es la más reciente.")
