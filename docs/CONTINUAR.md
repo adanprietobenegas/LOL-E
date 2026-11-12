@@ -67,11 +67,14 @@ Corregido en `main` (sin subir versión ni reconstruir; el instalador 1.22.1 de 
   los dejas abiertos, `folds.rec_filters`).
 - «pestaña Datos» → «Datos (botón de arriba)»; «porcentaje» → «% de victorias» en el resumen de la recomendación.
 
-Sin hacer (propuestas, a decidir por el usuario):
-- Selección: la afinidad se ve tres veces (anillo, cifra del resumen, miniatura) y «2 de 3» repite la etiqueta «2/3 victorias».
-- Las otras opciones del carrusel (miniaturas) quedan bajo el desglose, fuera de la primera pantalla.
-- Historial: el resumen ocupa la primera pantalla entera en estrecho; las partidas empiezan en la tercera.
-- ARAM: «Mejor opción para ti» con afinidad 24 y miniaturas con 0: decidir si se enseña la cifra cuando es tan baja.
+Propuestas de estructura, aplicadas el 12/11/2026 con criterio propio (el usuario dio vía libre):
+- Selección: las miniaturas de las otras opciones van justo bajo la imagen, antes de las pestañas.
+- Selección › Resumen: fuera la cifra de afinidad repetida (queda en el anillo y la miniatura) y la etiqueta «2/3 victorias».
+- ARAM: la imagen dice «Tu campeón actual» o «Mejor del banquillo para ti»; afinidad 0 (sin datos) se enseña como «—».
+- Historial estrecho: «Campeones más jugados y modos» plegado tras un enlace (`folds.hist_more`); las partidas empiezan
+  en la primera pantalla. En ancho no cambia.
+
+Sin hacer:
 - Escala de espaciado: definida (`SPACE` en `ui_kit.py`) pero el código existente usa 17 valores y no está migrado.
 
 ### Segunda pasada (12/11/2026): lo que faltaba por capturar

@@ -283,7 +283,28 @@ class HistoryView:
         ui.dots(strip, [e["w"] for e in ordered[:20][::-1]]).pack(side="left")
         # campeones más jugados y reparto por modo
         two = ui.frame(self.summary_host)
-        two.pack(fill="x", pady=(12, 0))
+        if self.level >= 1:
+            two.pack(fill="x", pady=(12, 0))
+        else:   # ventana estrecha: campeones y modos plegados, para que las partidas empiecen en la primera pantalla
+            folds = ui.conf.setdefault("folds", {})
+            more = ui.lbl(self.summary_host, "", 10, "info", True, anchor="w")
+            more.pack(anchor="w", padx=4, pady=(10, 0))
+
+            def paint():
+                if folds.get("hist_more"):
+                    more.configure(text="▾ Ocultar campeones y modos")
+                    two.pack(fill="x", pady=(12, 0))
+                else:
+                    more.configure(text="▸ Campeones más jugados y modos")
+                    two.pack_forget()
+
+            def flip(_e=None):
+                folds["hist_more"] = not folds.get("hist_more")
+                core.save_conf(ui.conf)
+                paint()
+            more.configure(cursor="hand2")
+            more.bind("<Button-1>", flip)
+            paint()
         two.columnconfigure(0, weight=1, uniform="two")
         if self.level >= 1:
             two.columnconfigure(1, weight=1, uniform="two")

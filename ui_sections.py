@@ -3,7 +3,7 @@
 Cada sección calcula una clave con los datos que usa; si la clave no cambia, no se toca. Así, cuando llega
 un dato nuevo (un aliado que elige, un jugador que carga…) solo se repinta su parte y no toda la pantalla.
 """
-import json, os, threading, time, tkinter as tk
+import json, os, threading, time, tkinter as tk, re
 from collections import Counter
 
 import customtkinter as ctk
@@ -1017,6 +1017,19 @@ class Recs(Section):
     def pct(self, c):
         return self.ui.pct(c["score"], self.r["pct_scale"])
 
+    def pct_text(self, c):
+        """La afinidad como texto. En ARAM solo sale de tu historial: sin partidas con el campeón no hay dato, y un «0» parecía una mala nota."""
+        if self.kind() == "aram" and self.pct(c) == 0:
+            return "—"
+        return str(self.pct(c))
+
+    def eyebrow(self):
+        if self.sel:
+            return f"Opción {self.sel + 1} de {len(self.vis)}"
+        if self.kind() == "aram":
+            return "Tu campeón actual" if self.vis[0]["cid"] == (self.r or {}).get("mine") else "Mejor del banquillo para ti"
+        return "Mejor opción para ti"
+
     # ---- navegación ----
     def set_view(self, v):
         self.ui.conf["rec_view"] = next((k for k, t in REC_VIEWS.items() if t == v), v.lower())
@@ -1314,18 +1327,17 @@ class Recs(Section):
                           hover_color=PAL["border"], text_color=PAL["fg"], command=lambda d=d: self.go(d)).pack(side=side)
         self.hero_lab = ctk.CTkLabel(row, text="")
         self.hero_lab.pack(side="left", padx=6)
+        self.build_strip()   # las otras opciones van justo bajo la imagen: debajo del desglose quedaban fuera de la primera pantalla
         ui.seg(self.dyn, self.tabs(), self.tab, self.set_tab).pack(fill="x", pady=(10, 8))
         self.info_host = ctk.CTkFrame(self.dyn, fg_color=PAL["card2"], corner_radius=12)
         self.info_host.pack(fill="x")
-        self.build_strip()
         self.hero = None
         self.show_card(fade=False)
 
     def show_card(self, fade):
         """Muestra la tarjeta elegida: fundido de la imagen, página de información en caché y franja actualizada."""
         ui, c = self.ui, self.vis[self.sel]
-        eyebrow = "Mejor opción para ti" if self.sel == 0 else f"Opción {self.sel + 1} de {len(self.vis)}"
-        pil = ui.hero_pil(c["cid"], eyebrow, self.pct(c), self.hero_w)
+        pil = ui.hero_pil(c["cid"], self.eyebrow(), self.pct(c), self.hero_w)
         old, self.hero = self.hero, pil
         self.set_hero(self.hero_lab, old if fade and ui.anim_on() and old is not None and old.size == pil.size else None, pil)
         self.show_page(c)
@@ -1387,7 +1399,7 @@ class Recs(Section):
         """Previsualización inferior: un toque en cualquier campeón salta a su tarjeta."""
         ui = self.ui
         row = ui.frame(self.dyn)
-        row.pack(fill="x", pady=(10, 0))
+        row.pack(fill="x", pady=(8, 0))
         self.strip_row = row
         self.cells = []
         for i, c in enumerate(self.vis):
@@ -1398,7 +1410,7 @@ class Recs(Section):
             inner.pack(padx=4, pady=6)
             icon = ctk.CTkLabel(inner, text="", image=ui.icon(c["cid"], 40))
             icon.pack()
-            num = ui.lbl(inner, str(self.pct(c)), 13, "dim", True, True)
+            num = ui.lbl(inner, self.pct_text(c), 13, "dim", True, True)
             num.pack(pady=(2, 0))
             ui.clickable(cell, lambda i=i: self.pick(i))
             self.cells.append((cell, icon, num, c["cid"]))
@@ -1422,14 +1434,15 @@ class Recs(Section):
         ui.kpi(row, f"{m // 1000}k" if m else "—", "maestría")
         ui.kpi(row, f"{w} de {g}" if g else "—", "victorias")
         ui.kpi(row, f"{w / g:.0%}" if g else "—", "% de victorias")
-        ui.kpi(row, str(self.pct(c)), "afinidad")
+        # (la afinidad no se repite aquí: ya está en el anillo de la imagen y en la miniatura)
         bw = 170 if self.width < 560 else 300 if self.width < 900 else 400
         col = ui.frame(body)
         col.pack()  # sin «fill»: la columna queda centrada y el desglose no se pega al borde izquierdo
-        ui.chips(col, c["why"] or ["encaja con tu rol"], 3 if self.width < 900 else 4)
+        why = [w for w in c["why"] if not re.match(r"^\d+/\d+ victorias( en ARAM)?$", w)]   # ya está arriba como «2 de 3»
+        ui.chips(col, why or ["encaja con tu rol"], 3 if self.width < 900 else 4)
         ui.lbl(col, "DESGLOSE DE LA AFINIDAD", 10, "dim", True).pack(anchor="w", pady=(10, 3))
         breakdown_rows(ui, col, c["parts"], c["score"], self.r["pct_scale"], bw)
-        ui.lbl(col, "La afinidad (0 a 100) es la suma de estos puntos sobre un máximo realista. Los pesos y su explicación están en la "
+        ui.lbl(col, "La afinidad (0 a 100) es la suma de estos puntos sobre un máximo realista. Los pesos y su explicación están "
                     "en «Datos» (botón de arriba).", 9, "dim", anchor="w", wraplength=bw + 150, justify="left").pack(anchor="w", pady=(6, 0))
 
     def vs_row(self, parent, enemy, g, w, size=30):
