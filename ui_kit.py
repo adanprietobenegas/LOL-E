@@ -54,6 +54,28 @@ def tsize(n):
     return min(_STEPS, key=lambda s: (abs(s - n), -s))
 
 
+def _nothing(*a, **k):
+    return None
+
+
+def calm(widget):
+    """Quita a un widget de CustomTkinter el `update_idletasks` que hace cada vez que se dibuja. Esa llamada obliga a Tk a
+    recalcular la ventana ENTERA en ese instante; con pantallas de cientos de widgets eran 100–250 ms por menú o por cada
+    ajuste de la barra de desplazamiento, varias veces por repintado. Sin ella se dibuja igual, en el siguiente ciclo de Tk."""
+    try:
+        widget._canvas.update_idletasks = _nothing
+    except Exception:
+        pass
+    return widget
+
+
+class QuietMenu(ctk.CTkOptionMenu):
+    """Menú desplegable que no fuerza el recálculo de la ventana al dibujarse (ver `calm`)."""
+    def _draw(self, no_color_updates=False):
+        calm(self)
+        super()._draw(no_color_updates)
+
+
 def trim(im):
     """Recorta el marco oscuro del icono de campeón de forma simétrica y proporcional (los iconos miden 128 px, no 120)."""
     w, h = im.size
@@ -395,10 +417,10 @@ class Kit:
             act = tk.Label(head, text=action[0], bg=card, fg=self.hexm(self.acc), font=self.tkf(9, True, False), cursor="hand2")
             act.bind("<Button-1>", lambda e=None: (action[1](), "break")[1])
 
-        def paint_open():
+        def paint_open(animate=True):
             if state["open"]:
                 if state["outer"] is None:
-                    state["outer"] = self.reveal(box, build)
+                    state["outer"] = self.reveal(box, build, animate=animate)
                     state["outer"].pack_configure(padx=12, pady=(8, 6))
                 else:
                     state["outer"].pack(fill="x", padx=12, pady=(8, 6))
@@ -432,11 +454,11 @@ class Kit:
             w.bind("<Leave>", lambda e=None: tint(False))
         box.set_summary = lambda t: sm.configure(text=t)
         if state["open"]:
-            paint_open()
+            paint_open(animate=False)   # ya nace abierta (repintado): sin animación ni recálculo forzado de toda la ventana
         return box
 
     def menu(self, parent, values, current, command, width=130):
-        m = ctk.CTkOptionMenu(parent, values=values, command=command, width=width, height=28, font=self.font(11),
+        m = QuietMenu(parent, values=values, command=command, width=width, height=28, font=self.font(11),
                               dropdown_font=self.font(11), fg_color=PAL["well"], button_color=PAL["edge"],
                               button_hover_color=PAL["border"], text_color=PAL["fg"], dropdown_fg_color=PAL["card2"],
                               dropdown_text_color=PAL["fg"], dropdown_hover_color=PAL["border"])
@@ -689,8 +711,17 @@ class Kit:
     def shard_icon(self, sid, size):
         return self._icon_file("shardicons", sid, f"https://cdn5.lolalytics.com/statmod32/{sid}.webp", size, "webp")
 
-    def reveal(self, parent, build, steps=9):
+    def reveal(self, parent, build, steps=9, animate=True):
         """Crea un panel y lo hace crecer desde cero hasta su alto (si las animaciones están activas)."""
+        if not animate or not self.anim_on():
+            # sin animación no hace falta medir el alto: se evita un update_idletasks, que recalcula la ventana entera y era
+            # lo más caro de cada repintado (medio segundo en la selección y en «Partida»)
+            outer = tk.Frame(parent, bg=self.bg(parent))
+            outer.pack(fill="x")
+            inner = tk.Frame(outer, bg=self.bg(parent))
+            build(inner)
+            inner.pack(fill="x")
+            return outer
         outer = tk.Frame(parent, bg=self.bg(parent), height=1)
         outer.pack(fill="x")
         inner = tk.Frame(outer, bg=self.bg(parent))

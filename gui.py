@@ -14,7 +14,7 @@ import updater
 from lol_advisor import APP_NAME, APP_VERSION, CACHE, DATA_DIR, PRESET_INFO, read_json, save_conf
 from ui_history import HistoryView
 from ui_views import DataView, MatchupView
-from ui_kit import REC_VIEWS, ACCENTS, DISPLAY, Kit, PAL, THEMES, res
+from ui_kit import REC_VIEWS, ACCENTS, DISPLAY, Kit, PAL, THEMES, calm, res
 from ui_game import GameView
 from ui_draft import DraftCard
 from ui_mayhem import AramBuild
@@ -621,6 +621,7 @@ class GUI:
         self.body = ctk.CTkScrollableFrame(self.main, fg_color="transparent", corner_radius=0, scrollbar_button_color=PAL["edge"],
                                            scrollbar_button_hover_color=PAL["border"])
         self.body.pack(fill="both", expand=True, padx=10, pady=(8, 0))
+        calm(getattr(self.body, "_scrollbar", None))   # la barra recalculaba toda la ventana en cada cambio de alto del contenido
         self.footer = k.clbl(self.main, "", 10, "dim", anchor="w")
         self.footer.pack(fill="x", padx=20, pady=(2, 10))
         self.update_link()
@@ -1100,6 +1101,7 @@ class GUI:
                justify="left").pack(anchor="w", padx=22, pady=(2, 0))
         sc = ctk.CTkScrollableFrame(d, fg_color="transparent")
         self.dock_scroll = sc   # lo usan las capturas de prueba para paginar el panel
+        calm(getattr(sc, "_scrollbar", None))
         sc.pack(fill="both", expand=True, padx=8, pady=(4, 10))
 
         def section(text):

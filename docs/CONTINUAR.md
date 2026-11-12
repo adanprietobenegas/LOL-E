@@ -54,7 +54,7 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
    op.gg). Los fallos al pintar ahora se guardan en el registro de errores, no solo pasan por el pie.
 3. ~~Etapa 1~~ **hecha en parte el 12/11/2026** (publicada en la 1.22.4). Ver «Etapa 1» abajo.
 4. ~~Contenido~~ **hecho el 12/11/2026** (publicado en la 1.22.5). Ver «Jugadores de la partida y punto 4» abajo.
-5. Rendimiento del pintado.
+5. ~~Rendimiento del pintado~~ **hecho en parte el 12/11/2026** (en `main`, sin publicar). Ver «Rendimiento» abajo.
 
 ## Auditoría visual (12/11/2026)
 
@@ -161,3 +161,26 @@ Punto 4:
   consejos.
 
 Sin probar en una partida real.
+
+## Rendimiento del pintado (12/11/2026, en `main`, sin publicar)
+
+Medir: `python herramientas/tiempos.py [ancho] [texto]` (mediana de 5 repintados por pantalla; con un texto, saca el
+perfil de las acciones cuyo nombre lo contiene). Ventana de 560 px, sin partida en curso, en el PC del usuario:
+
+| Acción | Antes | Después |
+|---|---|---|
+| Selección: repintar entera | 1360 ms | 1000 ms |
+| Partida: repintar el plan | 1764 ms | 1316 ms |
+| Partida: repintar el análisis | 1793 ms | 967 ms |
+| Enfrentamiento: repintar con rival | 1836 ms | 1336 ms |
+| Inicio, Historial, Datos, Ajustes | 60–420 ms | sin cambio apreciable |
+
+Qué se quitó: recálculos completos de la ventana (`update_idletasks`) que no hacían falta.
+- `Kit.reveal`: las secciones plegables que ya nacen abiertas no se animan ni miden su alto.
+- `ui_kit.QuietMenu` y `calm()`: los menús desplegables y la barra de desplazamiento de CustomTkinter llamaban a
+  `update_idletasks` en cada dibujo.
+
+Lo que queda es el coste real de crear cientos de widgets de CustomTkinter (cada botón y marco dibuja sus formas en un
+lienzo). Bajarlo más pide sustituirlos por widgets ligeros de Tk pantalla a pantalla, o no reconstruir lo que no cambia.
+En la app real la selección se repinta sección a sección, así que el bloqueo percibido es menor que la cifra entera.
+Las medidas son de la ventana de desarrollo, no de una partida real con LoL en marcha (ahí el PC va más justo).
