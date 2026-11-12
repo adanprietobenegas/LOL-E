@@ -22,9 +22,10 @@ VERSIÓN 1.22.1   (12 de noviembre de 2026)
   · lol_advisor.py: load_player_data lee tu puuid (P["puuid"]), marca P["hist_ok"] y registra las excepciones
     (antes «except: pass»); el bucle refresca my_puuid tras cada lectura y reintenta cada 30 s (hasta 12 veces)
     si faltan el historial o la cuenta. Cola 1740 en el grupo Arena.
-  · Hipótesis sobre el historial que dejó de guardarse un día en la app instalada: una partida de la lista con
-    «participants» vacío lanzaba IndexError y se perdía en silencio todo el guardado. No reproducido; con el
-    cambio ya no puede bloquear y, si vuelve a fallar, quedará en error.log.
+  · Falsa alarma durante la revisión: pareció que la app instalada llevaba un día sin guardar history.json. No
+    era así: la sesión de Claude (app empaquetada de Windows) ve una copia virtualizada y antigua de
+    %LOCALAPPDATA%\LOL-E (en Packages\Claude_…\LocalCache\Local\LOL-E), no la carpeta real. Aun así, una partida
+    con «participants» vacío ya no puede tumbar el guardado de las demás.
   · players.py: fetch_player usa history.my_part.
   · updater.py: safe_url (solo HTTPS y dominios de GitHub) para latest.json y para el instalador; la versión del
     manifiesto debe ser numérica (va en el nombre del archivo temporal).
