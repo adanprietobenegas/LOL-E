@@ -200,6 +200,8 @@ PASOS = [
                                     ui.set_page("Asesor"), push(ses), ui.players(team)), 7000),
     ("25_arena", lambda: push(ses, {"id": 1700, "group": "Arena", "kind": "other"}), 5000),
     ("26_mayhem", lambda: push(aram, {"id": 2400, "group": "ARAM: Mayhem", "kind": "aram"}, mine=103), 6000),
+    ("27_filtros_abiertos", lambda: (ui.set_page("Asesor"), push(ses), ui.players(team),
+                                     ui.root.after(2500, lambda: (ui.recs.toggle_filters(), ui.recs.set_filter("clase", "Tanque")))), 6000),
     ("16_ajustes", lambda: (ui.set_page("Asesor"), ui.open_dock()), 4500),
 ]
 SOLO = [x for x in os.environ.get("LOLE_SOLO", "").split(",") if x]

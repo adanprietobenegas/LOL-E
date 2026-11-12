@@ -63,10 +63,11 @@ Corregido en `main` (sin subir versión ni reconstruir; el instalador 1.22.1 de 
   Ajustes, «Clasificatorias de 5» en Historial; el rango de un jugador desaparecía si tenía varias etiquetas.
 - Partida en ventana estrecha: con plan, primero tu campeón, rival y build; los 10 jugadores van al final (en ancho
   sigue el tablero plegable arriba).
+- Selección: los filtros van plegados tras un botón «Filtros» con el resumen de lo activo al lado (se recuerda si
+  los dejas abiertos, `folds.rec_filters`).
 - «pestaña Datos» → «Datos (botón de arriba)»; «porcentaje» → «% de victorias» en el resumen de la recomendación.
 
 Sin hacer (propuestas, a decidir por el usuario):
-- Selección: filtros (2 filas) antes de la recomendación; plegarlos tras un botón «Filtros» subiría la recomendación.
 - Selección: la afinidad se ve tres veces (anillo, cifra del resumen, miniatura) y «2 de 3» repite la etiqueta «2/3 victorias».
 - Las otras opciones del carrusel (miniaturas) quedan bajo el desglose, fuera de la primera pantalla.
 - Historial: el resumen ocupa la primera pantalla entera en estrecho; las partidas empiezan en la tercera.

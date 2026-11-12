@@ -905,8 +905,19 @@ class Recs(Section):
     # ---- filtros ----
     def filter_bar(self, parent):
         ui, f = self.ui, self.ui.conf["filters"]
+        # plegados por defecto: una línea con el botón y lo que hay activo; las dos filas de controles empujaban la recomendación hacia abajo
+        folds = ui.conf.setdefault("folds", {})
+        line = ui.frame(parent)
+        line.pack(fill="x", pady=(0, 8))
+        self.filter_btn = small_btn(ui, line, "", self.toggle_filters, 86)
+        self.filter_btn.pack(side="left")
+        self.filter_sum = ui.lbl(line, "", 10, "dim", anchor="w")
+        self.filter_sum.pack(side="left", padx=(10, 0))
         bar = ui.frame(parent)
-        bar.pack(fill="x", pady=(0, 10))
+        self.filter_box, self.filter_line = bar, line
+        if folds.get("rec_filters"):
+            bar.pack(fill="x", pady=(0, 10))
+        self.paint_filter_line()
         r1 = ui.frame(bar)
         r1.pack(fill="x")
         ui.lbl(r1, "Ordenar", 10, "dim").pack(side="left", padx=(0, 6))
@@ -920,6 +931,34 @@ class Recs(Section):
         for text, key in (("Mi rol", "mi_rol"), ("Mis campeones", "mios"), ("Meta fuerte", "meta")):
             self.toggle(r2, text, key)
         small_btn(ui, r2, "Quitar filtros" if self.width < 500 else "Restablecer filtros", self.reset_filters, 104 if self.width < 500 else 140).pack(side="right")   # en estrecho (o al 130 %) el texto largo salía cortado
+
+    def filter_summary(self):
+        """Lo que está activo, en una línea: el orden y solo los filtros que recortan la lista."""
+        f = self.ui.conf["filters"]
+        parts = [f"orden: {f['orden'].lower()}"]
+        if f["clase"] != "Todas":
+            parts.append(f["clase"].lower())
+        parts += [t for t, k in (("mi rol", "mi_rol"), ("mis campeones", "mios"), ("meta fuerte", "meta")) if f[k]]
+        return "  ·  ".join(parts)
+
+    def paint_filter_line(self):
+        try:
+            opened = bool(self.ui.conf.get("folds", {}).get("rec_filters"))
+            self.filter_btn.configure(text=("▾  " if opened else "▸  ") + "Filtros")
+            self.filter_sum.configure(text=self.filter_summary())
+        except Exception:
+            pass
+
+    def toggle_filters(self):
+        ui = self.ui
+        folds = ui.conf.setdefault("folds", {})
+        folds["rec_filters"] = not folds.get("rec_filters")
+        core.save_conf(ui.conf)
+        if folds["rec_filters"]:
+            self.filter_box.pack(fill="x", pady=(0, 10), after=self.filter_line)
+        else:
+            self.filter_box.pack_forget()
+        self.paint_filter_line()
 
     def toggle(self, parent, text, key):
         ui = self.ui
@@ -944,6 +983,7 @@ class Recs(Section):
 
     def filters_changed(self):
         core.save_conf(self.ui.conf)
+        self.paint_filter_line()
         self.sel = 0
         self.render()
 
@@ -1067,6 +1107,7 @@ class Recs(Section):
         for key, b in self.toggles.items():  # se actualizan en el sitio, sin reconstruir la barra
             on = ui.conf["filters"][key]
             b.configure(fg_color=ui.acc if on else PAL["card2"], text_color=ON_FILL if on else PAL["fg"])
+        self.paint_filter_line()
         self.sel = 0
         self.render()
 
