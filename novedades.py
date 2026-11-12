@@ -10,6 +10,14 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.5", "fecha": "12 de noviembre de 2026", "titulo": "Ahora sí se actualiza sola, y nadie falta en la partida", "items": [
+        ("arreglo", "LOL-E no se actualizaba sola en los PC que la instalaron hace tiempo: tenían guardada vacía la dirección de actualizaciones y ya no buscaban versiones nuevas. Esta versión hay que instalarla a mano una vez; a partir de ella, las siguientes llegan solas."),
+        ("arreglo", "En «Partida», con la ventana ancha, podía faltar uno de los 10 jugadores cuando dos del mismo equipo venían con la misma línea. Ahora salen siempre los 10, cada uno con su campeón."),
+        ("nuevo", "Los jugadores de la partida se enseñan también en ARAM, Arena y personalizadas (antes solo en la Grieta)."),
+        ("mejora", "Con la ventana estrecha, un enlace arriba («Ver los jugadores de la partida») baja directamente hasta ellos."),
+        ("mejora", "Etiquetas de cada jugador más claras: «4 derrotas seguidas», «Le va bien con él: 4V 1D» (solo con 4 partidas o más), y «Primera vez con este campeón» solo cuando de verdad se sabe."),
+        ("nuevo", "Al terminar la partida, el análisis empieza con una frase que resume lo que más pesó y lo mejor."),
+    ]},
     {"v": "1.22.4", "fecha": "12 de noviembre de 2026", "titulo": "Cada cuenta, su historial, y un registro para saber qué pasa", "items": [
         ("nuevo", "Historial separado por cuenta: si en este PC se juega con más de una cuenta, sus partidas ya no se mezclan. Tu historial de siempre se copia a la primera cuenta que lo reconoce como suyo (los archivos antiguos no se borran)."),
         ("nuevo", "Registro de diagnóstico: LOL-E apunta qué va pasando (si encuentra el cliente, qué fase detecta, cuántas partidas le entrega). No guarda nombres de jugador. Si algo no te sale, ve a Ajustes y pulsa «Copiar informe de diagnóstico»: ahí van los últimos pasos."),

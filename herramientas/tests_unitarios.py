@@ -297,6 +297,21 @@ class ActualizacionAutomatica(unittest.TestCase):
         self.assertIn("/VERYSILENT", inspect.getsource(updater.install))
         self.assertTrue(core.DEFAULT_CONF["auto_update"] and core.DEFAULT_CONF["auto_install"])
 
+    def test_una_direccion_guardada_vacia_no_apaga_las_actualizaciones(self):
+        tmp = tempfile.mkdtemp()
+        orig = core.CONF_FILE
+        core.CONF_FILE = os.path.join(tmp, "config.json")
+        try:
+            for guardada in ("", "   ", None):
+                json.dump({"update_url": guardada, "top_n": 7}, open(core.CONF_FILE, "w"))
+                conf = core.load_conf()
+                self.assertEqual(conf["update_url"], core.DEFAULT_CONF["update_url"], repr(guardada))
+                self.assertEqual(conf["top_n"], 7)                     # lo demás guardado se respeta
+            json.dump({"update_url": "https://github.com/otro/repo/releases/latest/download/latest.json"}, open(core.CONF_FILE, "w"))
+            self.assertIn("otro/repo", core.load_conf()["update_url"])  # una dirección propia se respeta
+        finally:
+            core.CONF_FILE = orig
+
     def test_solo_github(self):
         import updater
         self.assertTrue(updater.safe_url(core.DEFAULT_CONF["update_url"]))

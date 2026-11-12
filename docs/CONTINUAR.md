@@ -11,10 +11,12 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
 
 ## Dónde está
 
-- Versión en `main` y publicada en GitHub: **1.22.4** (12/11/2026).
-  La app instalada del usuario NO pasó sola de 1.22.1 a 1.22.2 (causa sin confirmar; la 1.22.3 refuerza el
-  actualizador). Pendiente: que el usuario instale a mano y confirme que la siguiente versión sí llega sola.
-- Pruebas: `python herramientas/tests_unitarios.py` (44, todas pasan).
+- Versión en `main` y publicada en GitHub: **1.22.5** (12/11/2026).
+- **Por qué no se actualizaban los PC antiguos (resuelto en la 1.22.5):** su `config.json` guardaba `"update_url": ""`
+  y eso tapaba la dirección de fábrica; la app nunca buscaba versiones. `load_conf` ya trata el vacío como «la de
+  fábrica». Cada PC con una versión anterior a la 1.22.5 necesita UNA instalación manual; después llegan solas.
+  Pendiente: confirmar, cuando salga la siguiente versión, que la 1.22.5 instalada se actualiza sola.
+- Pruebas: `python herramientas/tests_unitarios.py` (45, todas pasan).
 - Pendiente de que el usuario confirme en su app que el análisis del ARAM de Lillia ya no muestra Sona.
 
 ## Reglas del usuario
@@ -51,7 +53,7 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
    cliente, meta sin datos con su causa, filtros sin resultados, maestría, modos, baneos, buscador, Mayhem, pie de
    op.gg). Los fallos al pintar ahora se guardan en el registro de errores, no solo pasan por el pie.
 3. ~~Etapa 1~~ **hecha en parte el 12/11/2026** (publicada en la 1.22.4). Ver «Etapa 1» abajo.
-4. ~~Contenido~~ **hecho el 12/11/2026** (en `main`, sin publicar). Ver «Jugadores de la partida y punto 4» abajo.
+4. ~~Contenido~~ **hecho el 12/11/2026** (publicado en la 1.22.5). Ver «Jugadores de la partida y punto 4» abajo.
 5. Rendimiento del pintado.
 
 ## Auditoría visual (12/11/2026)
@@ -138,7 +140,7 @@ Sin hacer de la etapa 1:
 Sin probar: la migración en la app instalada del usuario y el flujo con el cliente real. Antes de publicarlo conviene
 que el usuario lo sepa: es la primera versión que cambia dónde se guarda su historial.
 
-## Jugadores de la partida y punto 4 (12/11/2026, en `main`, sin publicar)
+## Jugadores de la partida y punto 4 (12/11/2026, publicado en la 1.22.5)
 
 Aclarado por el usuario: «la parte del profesor» es la sección tipo Porofessor, es decir, los perfiles de los 10
 jugadores en la pestaña «Partida» (no el Asesor). Dos casos reales:

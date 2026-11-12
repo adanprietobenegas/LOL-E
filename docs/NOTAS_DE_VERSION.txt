@@ -7,6 +7,21 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.5   (12 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Causa de que las instalaciones antiguas no se actualizaran: su config.json tenía "update_url": "" (valor de
+    fábrica de las primeras versiones) y load_conf lo ponía por encima de la dirección actual, así que auto_check no
+    hacía nada. Visto en la instalación del usuario (1.22.1). load_conf trata el vacío como «la de fábrica».
+    Esas instalaciones necesitan UNA instalación manual; no hay forma de avisarlas desde fuera.
+  · ui_vs.lane_slots: el tablero ancho ya no pierde jugadores con la línea repetida o vacía. Caso real: faltaba un
+    rival (Lee Sin) en una partida Flexible; causa probable, no confirmada con los datos de esa partida.
+  · ui_game.py: jugadores en lista en todos los modos; enlace que baja hasta ellos en ventana estrecha.
+  · ui_vs.badges: maestría solo si se leyó la lista; rendimiento reciente con el campeón (4+ partidas); textos.
+  · analysis.headline y su línea bajo la cabecera del análisis (también en ARAM).
+  · lol_advisor.py: diag de los jugadores de la partida (leídos, ocultos, sin campeón, sin línea).
+  · No probado en una partida real ni la actualización automática completa desde una app instalada.
+
 VERSIÓN 1.22.4   (12 de noviembre de 2026)
 ---------------------------------------------------------------------
 

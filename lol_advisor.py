@@ -14,7 +14,7 @@ import synergy
 import trends
 from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.22.4"
+APP_NAME, APP_VERSION = "LOL-E", "1.22.5"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -98,6 +98,10 @@ CTX.check_hostname, CTX.verify_mode = False, ssl.CERT_NONE
 def load_conf():
     conf = dict(DEFAULT_CONF)
     conf.update(read_json(CONF_FILE, {}))
+    if not str(conf.get("update_url") or "").strip():
+        # Las primeras versiones guardaban esta dirección vacía (aún no había dónde actualizarse) y ese vacío tapaba para
+        # siempre la dirección de fábrica: la app no volvía a buscar versiones. Para no actualizarse está el interruptor.
+        conf["update_url"] = DEFAULT_CONF["update_url"]
     conf["filters"] = {**DEFAULT_CONF["filters"], **(conf.get("filters") or {})}
     conf["params"] = {**params.DEFAULT_PARAMS, **(conf.get("params") or {})}
     base = PRESETS["equilibrado"]
