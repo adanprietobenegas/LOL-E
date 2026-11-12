@@ -1295,10 +1295,10 @@ class GUI:
         """Ancho para las notas del panel de ajustes: el del panel menos sus márgenes (antes era fijo y cortaba textos)."""
         try:
             if self.dock_dw <= 0:
-                return 300
-            return max(220, int(self.dock_dw / self.kit.scale_px()) - 70)
+                return 270
+            return max(220, int(self.dock_dw / self.kit.scale_px()) - 90)
         except Exception:
-            return 300
+            return 270
 
     def copy_diagnostics(self):
         extra = [f"Interfaz: escala {self.conf['scale']}, tema {self.conf['theme']}, ventana {self.root.winfo_width()}x{self.root.winfo_height()}, "

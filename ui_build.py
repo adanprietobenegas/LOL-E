@@ -440,10 +440,10 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
             go_auto()
     sw = ctk.CTkSwitch(parent, text="Enviar siempre al elegir campeón", variable=var, font=ui.font(10), progress_color=ui.acc, command=toggle)
     sw.pack(anchor="w", pady=(6, 0))
-    ui.lbl(parent, "Crea un conjunto de objetos propio en tu cliente de League («LOL-E · campeón · línea»), y lo copia a la carpeta del juego. "
+    ui.autowrap(ui.lbl(parent, "Crea un conjunto de objetos propio en tu cliente de League («LOL-E · campeón · línea»), y lo copia a la carpeta del juego. "
                    "El juego lo lee al EMPEZAR la partida: envíalo durante la selección de campeón (o activa el envío automático); si lo envías "
                    "con la partida ya cargada, aparecerá en la siguiente. "
-                   "Solo se tocan los conjuntos de LOL-E; los tuyos no.", 9, "dim", anchor="w", justify="left", wraplength=480).pack(anchor="w", pady=(4, 0))
+                   "Solo se tocan los conjuntos de LOL-E; los tuyos no.", 9, "dim", anchor="w", justify="left", wraplength=400), parent).pack(anchor="w", pady=(4, 0))
 
     def go_auto():
         key = (uid, title, tuple((n, tuple(i)) for n, i in blocks))

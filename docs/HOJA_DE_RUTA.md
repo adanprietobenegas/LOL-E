@@ -34,7 +34,8 @@ El estado del día a día sigue en `ESTADO_Y_PENDIENTES.md`.
 ## Etapa 2 · Claridad y legibilidad
 
 - Auditoría visual pendiente, pantalla a pantalla, con capturas reales: qué se ve primero y qué debería verse.
-- Escala tipográfica única (máximo 5 tamaños) y escala de espaciado, aplicadas desde `ui_kit.py`.
+- Hecho (12/11/2026): escala tipográfica única de 5 tamaños desde `ui_kit.py` y auditoría visual con capturas
+  (`herramientas/capturas.py`; resultado en `CONTINUAR.md`). Pendiente: migrar el espaciado a la escala `SPACE`.
 - «% vict.» o «% de victorias» en vez de «WR» donde haya sitio (hoy aparece en unas 60 cadenas).
 - Estados vacíos y de error que digan qué pasa y qué hacer.
 - Decidir el rediseño de navegación (`docs/rediseno/prototipo_v2.html`): barra lateral o pestañas actuales.

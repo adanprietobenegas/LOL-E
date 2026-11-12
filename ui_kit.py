@@ -41,6 +41,19 @@ ON_FILL = ("#ffffff", "#07101a")
 REC_VIEWS = {"carrusel": "Carrusel", "lista": "Lista", "listas": "Por categorías"}   # valor guardado -> texto del botón
 
 
+# Escala tipográfica única: cinco tamaños. Cualquier tamaño que pida una pantalla se ajusta al escalón más cercano
+# (en empate, al mayor), así que toda la app comparte los mismos cinco aunque el código antiguo pida 9, 11, 13, 15…
+TYPE = {"nota": 10, "texto": 12, "subtitulo": 14, "titulo": 17, "cifra": 22}
+_STEPS = sorted(TYPE.values())
+# Escala de espaciado para el código nuevo (márgenes y separaciones); el existente aún no está migrado a ella.
+SPACE = (2, 4, 8, 12, 16, 24)
+
+
+def tsize(n):
+    """Tamaño de la escala más cercano al pedido."""
+    return min(_STEPS, key=lambda s: (abs(s - n), -s))
+
+
 def trim(im):
     """Recorta el marco oscuro del icono de campeón de forma simétrica y proporcional (los iconos miden 128 px, no 120)."""
     w, h = im.size
@@ -229,7 +242,19 @@ class Kit:
         except Exception:
             return 1.0
 
+    def autowrap(self, lab, host, margin=4):
+        """Hace que una etiqueta de Tk parta sus líneas al ancho real de su contenedor (un ancho fijo cortaba textos en ventanas estrechas)."""
+        def fit(e):
+            try:
+                if e.widget is host and lab.winfo_exists():
+                    lab.configure(wraplength=max(120, e.width - margin))
+            except Exception:
+                pass
+        host.bind("<Configure>", fit, add="+")
+        return lab
+
     def tkf(self, size, bold, display):
+        size = tsize(size)
         k = ("tk", size, bold, display)
         if k not in self.fonts:
             self.fonts[k] = tkfont.Font(family=DISPLAY if display else BODY, size=-max(1, round(size * self.scale_px())),
@@ -238,6 +263,7 @@ class Kit:
 
     # ---- widgets base ----
     def font(self, size=12, bold=False, display=False):
+        size = tsize(size)
         k = (size, bold, display)
         if k not in self.fonts:
             self.fonts[k] = ctk.CTkFont(family=DISPLAY if display else BODY, size=size, weight="bold" if bold else "normal")

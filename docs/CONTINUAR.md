@@ -42,10 +42,34 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
 
 ## Siguiente trabajo, por orden
 
-1. Auditoría visual, pantalla a pantalla, con capturas nuevas (las antiguas estaban en una carpeta temporal).
-   Objetivo: qué se ve primero, qué sobra, escala tipográfica y de espaciado únicas en `ui_kit.py`.
+1. ~~Auditoría visual~~ **hecha el 12/11/2026** (ver «Auditoría visual» abajo). Quedan sus propuestas de estructura,
+   que esperan la decisión del usuario.
 2. Textos: «WR» por «% vict.» donde quepa; estados vacíos y de error que digan qué hacer.
 3. Etapa 1 de la hoja de ruta: historial separado por cuenta, registro de diagnóstico, cliente falso para
    probar el flujo cola → selección → partida → fin.
 4. Contenido: etiquetas del tablero de jugadores y conclusiones del análisis posterior.
 5. Rendimiento del pintado.
+
+## Auditoría visual (12/11/2026)
+
+Capturas sin cliente de LoL: `python herramientas/capturas.py [ancho] [alto] [carpeta]` (monitor secundario; salen en
+`herramientas/salida/`). Usa `cache/` y jugadores inventados; `LOLE_SOLO=10,13` limita a esas pantallas.
+
+Corregido en `main` (sin subir versión ni reconstruir; el instalador 1.22.1 de `release/` NO lo lleva):
+- Escala tipográfica única de 5 tamaños (10, 12, 14, 17, 22) en `ui_kit.py` (`TYPE`, `tsize`): `font()` y `tkf()`
+  ajustan cualquier tamaño pedido al escalón más cercano. Antes había 13 tamaños distintos.
+- Inicio: sin cliente, el título es «Abre League of Legends» y la pista va debajo (antes se montaba sobre el título).
+- Textos cortados: «afinidad» en la vista Lista, nota de «Enviar al cliente», botón de build del rival, notas de
+  Ajustes, «Clasificatorias de 5» en Historial; el rango de un jugador desaparecía si tenía varias etiquetas.
+- «pestaña Datos» → «Datos (botón de arriba)»; «porcentaje» → «% de victorias» en el resumen de la recomendación.
+
+Sin hacer (propuestas, a decidir por el usuario):
+- Partida en ventana estrecha: los 10 jugadores van antes que tu plan (build y rival quedan 3 pantallas abajo).
+  Propuesta: plegar «Jugadores de la partida» como ya se hace en ancho, o poner el plan primero.
+- Selección: filtros (2 filas) antes de la recomendación; plegarlos tras un botón «Filtros» subiría la recomendación.
+- Selección: la afinidad se ve tres veces (anillo, cifra del resumen, miniatura) y «2 de 3» repite la etiqueta «2/3 victorias».
+- Las otras opciones del carrusel (miniaturas) quedan bajo el desglose, fuera de la primera pantalla.
+- Historial: el resumen ocupa la primera pantalla entera en estrecho; las partidas empiezan en la tercera.
+- ARAM: «Mejor opción para ti» con afinidad 24 y miniaturas con 0: decidir si se enseña la cifra cuando es tan baja.
+- Escala de espaciado: definida (`SPACE` en `ui_kit.py`) pero el código existente usa 17 valores y no está migrado.
+- No capturado: tema claro, los looks, escala 115–130 %, modo compacto y el análisis con datos (pide el cliente).

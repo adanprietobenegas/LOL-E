@@ -311,7 +311,7 @@ class HistoryView:
             row = ui.frame(right)
             row.pack(fill="x", pady=2)
             wr = mw[name] / g
-            ui.lbl(row, name, 11, "fg", True, width=96, anchor="w").pack(side="left")
+            ui.lbl(row, name, 11, "fg", True, width=150, anchor="w").pack(side="left")   # «Clasificatorias de 5» no cabía en 96
             mini_bar(ui, row, g / modes.most_common(1)[0][1], "good" if wr >= .5 else "bad", 90 if self.level else 60).pack(side="left", padx=(0, 8))
             ui.lbl(row, f"{g}", 10, "dim", width=34, anchor="w").pack(side="left")
             ui.lbl(row, f"{round(wr * 100)} %", 11, "good" if wr >= .5 else "bad", True, width=44, anchor="w").pack(side="left")

@@ -33,7 +33,7 @@ PRESET_INFO = {
     "equilibrado": ("Equilibrado", "Mezcla lo que dominas con lo que necesita tu equipo."),
     "comodo": ("Cómodo", "Prioriza tus campeones con más maestría y victorias."),
     "adaptativo": ("Adaptativo", "Prioriza lo que necesita la composición y los counters."),
-    "personalizado": ("Personalizado", "Tus propios pesos, ajustados en la pestaña «Datos»."),
+    "personalizado": ("Personalizado", "Tus propios pesos, ajustados en «Datos»."),
 }
 DEFAULT_CONF = {
     "lol_path": "",          # carpeta de LoL si no esta en la ruta normal

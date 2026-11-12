@@ -413,7 +413,7 @@ class MatchupView:
             self.res_title.configure(text=f"Qué campeón le gana a {ui.champs[enemy]['name']}" if enemy else "Qué campeón le gana")
         wl = min(self.width - 90, 700)
         if not ui.conf["matchups_enabled"]:
-            ui.lbl(self.host, "Esta fuente está desactivada. Actívala en la pestaña «Datos».", 11, "dim").pack(anchor="w")
+            ui.lbl(self.host, "Esta fuente está desactivada. Actívala en «Datos» (botón de arriba).", 11, "dim").pack(anchor="w")
             return
         if not enemy:
             ui.lbl(self.host, "Todavía no has elegido rival. Escribe su nombre arriba, o elige uno de los recientes.", 11, "dim", anchor="w",
@@ -453,6 +453,8 @@ class MatchupView:
         inner = ui.frame(box)
         inner.pack(fill="x", padx=12, pady=8)
         ui.champ(inner, enemy, 48, False, ui.hexm(ui.acc)).pack(side="left")
+        btns = ui.frame(inner)   # antes que el texto: si no, una línea larga les quitaba el sitio y salían cortados
+        btns.pack(side="right")
         mid = ui.frame(inner)
         mid.pack(side="left", padx=12)
         ui.lbl(mid, "TU RIVAL" + ("  ·  el de tu línea" if not self.enemy else ""), 9, "dim", True, anchor="w").pack(anchor="w")
@@ -475,12 +477,12 @@ class MatchupView:
                 if txt:
                     ui.lbl(mid, "Con " + txt, 9, "dim", anchor="w").pack(anchor="w")
             if g < 5:
-                ui.lbl(mid, "Pocas partidas: tómalo como una pista, no como una regla.", 9, "dim", anchor="w").pack(anchor="w")
+                ui.lbl(mid, "Pocas partidas: es solo una pista.", 9, "dim", anchor="w").pack(anchor="w")
         if self.enemy:
-            small_btn(ui, inner, "Quitar", self.clear_enemy, 64).pack(side="right")
+            small_btn(ui, btns, "Quitar", self.clear_enemy, 64).pack(side="right")
         if lane:
-            small_btn(ui, inner, f"Ver build de {ui.champs[enemy]['name']}" if not self.rival_open else "Ocultar build",
-                      lambda: self.toggle_rival(enemy, lane), 170).pack(side="right", padx=(0, 6))
+            small_btn(ui, btns, "Ver su build" if not self.rival_open else "Ocultar build",   # con el nombre no cabía y salía cortado
+                      lambda: self.toggle_rival(enemy, lane), 96).pack(side="right", padx=(0, 6))
         self.paint_rival(enemy, lane)
 
     def paint_rising(self, lane):

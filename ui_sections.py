@@ -120,12 +120,14 @@ class WaitCard(Section):
         row = ui.frame(c)
         row.pack(fill="x")
         ui.lbl(row, "●", 12, "good" if ctx["linked"] else "warn").pack(side="left", padx=(0, 8))
-        ui.lbl(row, "Esperando la selección de campeón", 13, "fg", True, True).pack(side="left")
-        hint = ("Se activa sola al entrar en la selección." if ctx["linked"]
-                else "1. Abre League of Legends   2. Entra en una cola   3. Esta ventana se activa sola")
-        ui.lbl(row, hint, 10, "dim").pack(side="right")
-        if ctx["msg"] and "Conectado al cliente" not in ctx["msg"]:
-            ui.lbl(c, ctx["msg"], 10, "dim", anchor="w").pack(anchor="w", pady=(4, 0))
+        # el título dice lo que toca hacer ahora; la pista va debajo, en su propia línea (al lado se montaba sobre el título en ventanas estrechas)
+        ui.lbl(row, "Esperando la selección de campeón" if ctx["linked"] else "Abre League of Legends", 13, "fg", True, True).pack(side="left")
+        hint = ("Entra en una cola: esta ventana se activa sola al empezar la selección." if ctx["linked"]
+                else "Después entra en una cola: esta ventana se activa sola al empezar la selección.")
+        ui.autowrap(ui.lbl(c, hint, 10, "dim", anchor="w", justify="left"), c).pack(anchor="w", pady=(4, 0))
+        msg = ctx["msg"] or ""
+        if msg and not any(s in msg for s in ("Conectado al cliente", "Abre el cliente", "Esperando al cliente")):
+            ui.autowrap(ui.lbl(c, msg, 10, "dim", anchor="w", justify="left"), c).pack(anchor="w", pady=(2, 0))
 
 
 class ModesCard(Section):
@@ -1110,15 +1112,15 @@ class Recs(Section):
             inner = ui.frame(row)
             inner.pack(fill="x", padx=12, pady=10)
             ui.champ(inner, c["cid"], 40, False).pack(side="left")
+            right = ui.frame(inner)   # antes que el centro: si no, las etiquetas se comían su sitio y «afinidad» salía cortada
+            right.pack(side="right", anchor="n")
+            ui.lbl(right, str(pct), 22, ui.acc, True, True).pack(anchor="e")
+            ui.lbl(right, "afinidad", 9, "dim").pack(anchor="e")
             mid = ui.frame(inner)
             mid.pack(side="left", fill="x", expand=True, padx=12)
             ui.lbl(mid, f"{i}.  {name(c['cid'], ui.champs)}", 14, "fg", True, True).pack(anchor="w")
             if not compact:
                 ui.chips(mid, c["why"] or ["encaja con tu rol"])
-            right = ui.frame(inner)
-            right.pack(side="right", anchor="n")
-            ui.lbl(right, str(pct), 22, ui.acc, True, True).pack(anchor="e")
-            ui.lbl(right, "afinidad", 9, "dim").pack(anchor="e")
             if not compact:
                 ui.clickable(row, lambda i=i: (self.set_view("carrusel"), self.pick(i - 1)))
 
@@ -1378,7 +1380,7 @@ class Recs(Section):
         g, w, m = c["games"], c["wins"], c["mastery"]
         ui.kpi(row, f"{m // 1000}k" if m else "—", "maestría")
         ui.kpi(row, f"{w} de {g}" if g else "—", "victorias")
-        ui.kpi(row, f"{w / g:.0%}" if g else "—", "porcentaje")
+        ui.kpi(row, f"{w / g:.0%}" if g else "—", "% de victorias")
         ui.kpi(row, str(self.pct(c)), "afinidad")
         bw = 170 if self.width < 560 else 300 if self.width < 900 else 400
         col = ui.frame(body)
@@ -1387,7 +1389,7 @@ class Recs(Section):
         ui.lbl(col, "DESGLOSE DE LA AFINIDAD", 10, "dim", True).pack(anchor="w", pady=(10, 3))
         breakdown_rows(ui, col, c["parts"], c["score"], self.r["pct_scale"], bw)
         ui.lbl(col, "La afinidad (0 a 100) es la suma de estos puntos sobre un máximo realista. Los pesos y su explicación están en la "
-                    "pestaña «Datos».", 9, "dim", anchor="w", wraplength=bw + 150, justify="left").pack(anchor="w", pady=(6, 0))
+                    "en «Datos» (botón de arriba).", 9, "dim", anchor="w", wraplength=bw + 150, justify="left").pack(anchor="w", pady=(6, 0))
 
     def vs_row(self, parent, enemy, g, w, size=30):
         ui = self.ui
@@ -1543,6 +1545,11 @@ class Lobby(Section):
         head.pack(fill="x")
         nm = (p or {}).get("name") or ("Nombre oculto" if not a["puuid"] else "Cargando…")
         ui.lbl(head, nm, 13, "fg", True).pack(side="left")
+        rk = None
+        if p and not p.get("error"):   # el rango se coloca antes que las etiquetas: con varias («Dúo», «Juntos…») se quedaba sin sitio y no salía
+            rk = (p.get("prem") if qid == 710 else None) or p.get("solo") or p.get("flex")   # en las clasificatorias de 5 cuenta su rango de esa cola
+            if rk:
+                ui.lbl(head, f"{rk['tier']} {rk['div']}".strip(), 12, TIER_COLORS.get(rk["key"], "fg"), True, True).pack(side="right", padx=(6, 0))
         if ROLES_ES.get(a["role"]):
             ui.chip(head, ROLES_ES[a["role"]], "dim").pack(side="left", padx=(8, 0))
         if tag:
@@ -1551,12 +1558,9 @@ class Lobby(Section):
             ui.chip(head, "Dúo contigo" if party_n == 1 else "Tu grupo", "info").pack(side="left", padx=(6, 0))
         if mates and mates[0]:
             g, w = mates
-            ui.chip(head, f"Juntos: {partidas(g)} · {w}V {g - w}D", "good" if w * 2 >= g else "bad").pack(side="left", padx=(6, 0))
+            ui.chip(head, f"Juntos {w}V {g - w}D", "good" if w * 2 >= g else "bad").pack(side="left", padx=(6, 0))
         if p and not p.get("error"):
-            rk = (p.get("prem") if qid == 710 else None) or p.get("solo") or p.get("flex")   # en las clasificatorias de 5 cuenta su rango de esa cola
-            if rk:
-                ui.lbl(head, f"{rk['tier']} {rk['div']}".strip(), 12, TIER_COLORS.get(rk["key"], "fg"), True, True).pack(side="right")
-            elif len(p.get("recent", [])) < 4:
+            if not rk and len(p.get("recent", [])) < 4:
                 ui.chip(head, "Sin rango ni historial", "warn").pack(side="right")
             line = ui.frame(mid)
             line.pack(fill="x", pady=(5, 0))
