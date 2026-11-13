@@ -21,6 +21,9 @@ import gui as g
 import ui_sections
 
 g.save_conf = l.save_conf = ui_sections.core.save_conf = lambda c: None
+if os.environ.get("LOLE_VIGILA"):   # si el recorrido pasa de estos segundos, vuelca dónde está cada hilo (un cuelgue deja así su causa)
+    import faulthandler
+    faulthandler.dump_traceback_later(int(os.environ["LOLE_VIGILA"]), exit=False, file=sys.stderr)
 PLAN = os.path.join(l.CACHE, "last_plan.json")
 PLAN_BAK = PLAN + ".captura"
 if os.path.exists(PLAN):
@@ -252,6 +255,7 @@ def correr(i=0):
         ui.root.after(300, ui.close)
         return
     name, fn, wait = PASOS[i]
+    print(">> paso", name, flush=True)
     try:
         fn()
     except Exception as e:

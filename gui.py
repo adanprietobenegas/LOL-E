@@ -3,7 +3,7 @@
 Las pantallas están formadas por secciones independientes (ui_sections.py) que solo se repintan cuando cambian
 sus propios datos; las imágenes y utilidades comunes viven en ui_kit.py.
 """
-import copy, os, queue, shutil, threading, time, tkinter as tk, tkinter.messagebox as messagebox
+import copy, gc, os, queue, shutil, threading, time, tkinter as tk, tkinter.messagebox as messagebox
 from concurrent.futures import ThreadPoolExecutor
 
 import customtkinter as ctk
@@ -80,6 +80,8 @@ class GUI:
         if plan and plan.get("cid") in champs:
             plan["state"], plan["locked"] = "done", True
             self.ctx["plan"] = plan
+        gc.disable()                      # (ver gc_tick)
+        self.root.after(5000, self.gc_tick)
         self.root.after(200, self.poll)
         self.root.after(500, self.tick)
         self.root.after(1500, self.ensure_normal)
@@ -431,6 +433,22 @@ class GUI:
         if self.view == "select" and self.ctx["session"]:
             self.turn.tick(self.ctx)
         self.root.after(500, self.tick)
+
+    # ---- el recolector de basura, solo en el hilo de la ventana ----
+    # Los objetos de Tkinter (fuentes, variables, imágenes) llaman a Tk al destruirse. Si el recolector de basura de Python los
+    # destruye desde OTRO hilo mientras la ventana está esperando a ese hilo (p. ej. dentro de Thread.start(), que espera a que el hilo
+    # nuevo arranque), Tk deja al hilo esperando a la ventana y la ventana al hilo: interbloqueo y ventana congelada para siempre.
+    # Se vio de forma reproducible en el recorrido de pantallas al pedir una build de Mayhem (pila: Font.__del__ dentro del arranque de
+    # un hilo). Por eso el recolector automático se apaga y se ejecuta aquí, en el hilo principal.
+    def gc_tick(self):
+        if not self.running:
+            return
+        self._gc_n = getattr(self, "_gc_n", 0) + 1
+        try:
+            gc.collect(2 if self._gc_n % 12 == 0 else 1)   # cada 5 s la generación joven; cada minuto, todo
+        except Exception:
+            pass
+        self.root.after(5000, self.gc_tick)
 
     def _prefetch(self):
         d = os.path.join(CACHE, "icons")

@@ -141,6 +141,16 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
   `Select-String -Path "$env:LOCALAPPDATA\LOL-E\cache\live_samples\*","$env:LOCALAPPDATA\LOL-E\cache\last_session.json" -Pattern '"(summonerName|riotId|gameName|puuid)":\s*"[^"]+"' | Measure-Object`
   (debe dar Count 0).
 
+## Interbloqueo de la ventana por el recolector de basura (13/11/2026, en `main`, SIN publicar → 1.22.11)
+
+El recorrido de pantallas de `comprobar_todo.py` se colgó (3 de 3 veces con tuberías; con salida a archivo pasaba). El vigilante
+(`LOLE_VIGILA=200` en `capturas.py` vuelca la pila de cada hilo tras N segundos) mostró la causa, que es un fallo REAL de la app:
+el hilo de la ventana esperaba en `Thread.start()` (pedir la build de Mayhem) a que arrancase el hilo nuevo, y ese hilo, al arrancar,
+disparó el recolector de basura, que ejecutó `tkinter.font.Font.__del__`: llamada a Tk desde otro hilo, que Tk deja esperando al hilo de
+la ventana → interbloqueo, ventana congelada para siempre. Puede ocurrir en la app real siempre que la ventana arranque un hilo.
+Arreglo: `GUI.__init__` hace `gc.disable()` y `GUI.gc_tick` recolecta en el hilo principal (generación joven cada 5 s, todo cada minuto).
+Tras el arreglo: dos recorridos con tuberías en 170 s y la comprobación completa en verde. Lección: ante un cuelgue de Tk, volcar las pilas.
+
 ## Repertorio con pestaña propia (13/11/2026, en `main`, SIN publicar → 1.22.11)
 
 El usuario dijo que el Repertorio le gustaba pero estaba «bastante oculto»: era un segmento de la tarjeta «Rango y logros · Modos ·
