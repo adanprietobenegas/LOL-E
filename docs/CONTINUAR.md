@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.22.11). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.22.12). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -22,7 +22,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 2. Estado (actualizar al terminar cada conversación)
 
-**Publicado en GitHub: 1.22.11** (13/11/2026; la 1.22.10 fue la anterior). La actualización automática funciona (el usuario pasó solo de 1.22.5 a 1.22.9).
+**Publicado en GitHub: 1.22.12** (13/11/2026; la 1.22.11 fue la anterior). La actualización automática funciona (el usuario pasó solo de 1.22.5 a 1.22.9).
 
 **Incluido en la 1.22.11** (publicada; `python herramientas/estado.py` muestra si hay algo nuevo sin publicar):
 - **Pestaña Repertorio propia**, entre Enfrentamiento e Historial (antes estaba escondida en la tarjeta de logros del inicio). Ctrl+1…6;
@@ -51,7 +51,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
   desconocida que luego aparece (el reloj del test avanza ~40 s por paso), y las sesiones raras que antes comprobaba `test_modes.py` (que
   necesitaba el cliente real). Construcción diferida de los controles de filtros (ahorra ~30 ms por repintado de la selección, medido a/b).
 
-**En `main` sin publicar** (candidata a 1.22.12):
+**Incluido en la 1.22.12** (publicada):
 - **Fuentes externas más robustas**: si Lolalytics no responde, la build y el meta usan lo último guardado y lo dicen («No se pudo actualizar ahora…»); si la página cambió de formato, el mensaje lo explica en vez de decir que no hay build. 4 pruebas con red simulada (`BuildSinRed`, `MetaSinRed`).
 - **«Qué aprender» en Repertorio** (`learn.py`): si una línea que juegas mucho depende de un solo campeón, propone un segundo de los que tienes con buena tasa en el parche. Solo sale con 8+ partidas en la línea; probado con datos de ejemplo (captura 18).
 - **Ficha «Tus PL guardados»** en Rango y logros del inicio: línea de PL acumulados por partida clasificatoria (`analysis.lp_series` sobre `lp.json`); solo se ve con 3+ partidas con dato. Probado con una serie de ejemplo (captura 17b).
@@ -151,7 +151,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 8. Siguiente trabajo
 
-Ver `docs/PLAN_DE_FUTURO.md` (prioridades, esfuerzo y dependencias). Lo inmediato es: publicar la 1.22.11 si el usuario lo confirma, ver el bloque en
+Ver `docs/PLAN_DE_FUTURO.md` (prioridades, esfuerzo y dependencias). Lo inmediato es: ver el bloque en
 vivo en una partida real, y las decisiones pendientes del usuario de la sección 2.
 
 ## 9. Registro de actualizaciones de este documento
@@ -160,6 +160,6 @@ vivo en una partida real, y las decisiones pendientes del usuario de la sección
 - 13/11/2026 (noche, 2): partida en vivo ampliada (rival directo), comparación con tu media, corrección del cierre tras esquivar, escenarios del bucle; plan y
   estado al día.
 - 13/11/2026 (noche): reorganizado en capas (este archivo + `PLAN_DE_FUTURO.md` + `HISTORIAL_DE_SESIONES.md` + `herramientas/estado.py`); añadidas pruebas de
-  frescura de documentos. Estado: 1.22.10 publicada; en main sin publicar Repertorio con pestaña, corrección del interbloqueo y partida en vivo.
+  frescura de documentos. Estado: 1.22.12 publicada.
 - 13/11/2026 (tarde): 1.22.5 a 1.22.10 publicadas (actualizador, certificados, regla de líneas v2, recálculo de partidas antiguas). Ver el historial.
 - 12/11/2026: auditoría visual, textos, etapa 1 (historial por cuenta, diagnóstico, cliente falso), rendimiento. Ver el historial.

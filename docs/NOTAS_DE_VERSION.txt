@@ -7,6 +7,15 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.12   (13 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · analysis.lp_series + ui_sections.SummaryCard.d_lp: ficha y gráfico de PL acumulados (clasificatorias con variación en lp.json, 3+ partidas).
+  · learn.py + ui_pool.PoolPanel.learn_card: «Qué aprender» (línea con 8+ partidas y ≥70 % en un campeón; candidatos que posees con wr > media+0,5,
+    uso ≥ 1 % y 3000+ partidas en el meta). Probado con datos de ejemplo, no con historial real.
+  · builds.load / meta.load: sin red usan lo guardado (campo «stale»); builds avisa si la página cambió de formato. Pruebas con red simulada.
+  · 109 pruebas + comprobar_todo en verde.
+
 VERSIÓN 1.22.11   (13 de noviembre de 2026)
 ---------------------------------------------------------------------
 

@@ -10,6 +10,12 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.12", "fecha": "13 de noviembre de 2026", "titulo": "Tus PL en un gráfico, «Qué aprender» y datos que no desaparecen sin red", "items": [
+        ("nuevo", "En el inicio, «Rango y logros» tiene una ficha «Tus PL guardados»: al pulsarla ves tus PL acumulados partida a partida en clasificatorias. Solo cuentan las partidas que LOL-E vio con la app abierta."),
+        ("nuevo", "En Repertorio, «Qué aprender»: si una línea que juegas mucho depende de un solo campeón, te propone un segundo de los que ya tienes, con buena tasa de victoria en el parche."),
+        ("mejora", "Si Lolalytics no responde, la build y el meta usan lo último que se guardó (y lo dicen) en vez de quedarse vacíos."),
+        ("mejora", "Si Lolalytics cambia el formato de su página, el aviso lo explica y te manda al informe de diagnóstico, en vez de decir que no hay build."),
+    ]},
     {"v": "1.22.11", "fecha": "13 de noviembre de 2026", "titulo": "Partida en vivo, Repertorio visible y un arreglo del congelado", "items": [
         ("nuevo", "En «Partida», durante la partida, un bloque EN VIVO con el marcador, los objetivos y los 10 jugadores (nivel, bajas, farmeo, objetos y oro en objetos), una lectura de los objetos rivales (tipo de daño y defensas) y cómo vas frente a tu rival directo. Se repinta solo cada ~10 s y se puede apagar en Ajustes."),
         ("nuevo", "En ese bloque, tu siguiente objeto de la build de la web y cuánto oro te falta, restando los componentes que ya llevas."),
