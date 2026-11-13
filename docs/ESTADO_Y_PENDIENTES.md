@@ -1,3 +1,6 @@
+> **OBSOLETO desde el 13/11/2026.** El estado vigente está en `docs/CONTINUAR.md`, el rumbo en `docs/PLAN_DE_FUTURO.md` y el detalle
+> cronológico en `docs/HISTORIAL_DE_SESIONES.md`. Lo que sigue es el estado de las primeras versiones, conservado solo como referencia histórica.
+
 # LOL-E · Estado del proyecto y pendientes
 
 Actualizado el 11/11/2026. Versión: **1.22.0** (1.18.0, 1.18.1 y 1.19.0 publicadas el 10/11/2026; la 1.20.0, con los 10 jugadores de la pantalla de carga y las actualizaciones automáticas, publicada e instalada el 11/11/2026; la 1.21.0, con las claves del campeón, publicada el 11/11/2026; la 1.22.0, con temas, looks y Datos aparte, construida el 12/11/2026 pendiente de publicar)

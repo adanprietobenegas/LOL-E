@@ -738,6 +738,31 @@ class PrivacidadDeLosDatosGuardados(unittest.TestCase):
                     self.assertRegex(m.group(1), r"(lcu|self)\.base")
 
 
+class Documentacion(unittest.TestCase):
+    """El punto de partida de las conversaciones nuevas (docs/CONTINUAR.md) no puede quedarse atrás: estas pruebas fallan si no se actualiza."""
+    def leer(self, nombre):
+        return open(os.path.join(ROOT, "docs", nombre), encoding="utf-8").read()
+
+    def test_continuar_menciona_la_version_del_codigo(self):
+        self.assertIn(core.APP_VERSION, self.leer("CONTINUAR.md"),
+                      f"docs/CONTINUAR.md no menciona la versión {core.APP_VERSION}: actualiza su sección «Estado» y su registro")
+
+    def test_todas_las_herramientas_estan_en_la_tabla(self):
+        txt = self.leer("CONTINUAR.md")
+        for f in sorted(os.listdir(os.path.join(ROOT, "herramientas"))):
+            if f.endswith(".py") and not f.startswith("_"):
+                self.assertIn(f, txt, f"herramientas/{f} no aparece en docs/CONTINUAR.md (sección «Herramientas»)")
+
+    def test_los_documentos_de_contexto_existen_y_tienen_fecha(self):
+        for nombre in ("CONTINUAR.md", "PLAN_DE_FUTURO.md", "HISTORIAL_DE_SESIONES.md"):
+            self.assertTrue(os.path.exists(os.path.join(ROOT, "docs", nombre)), nombre)
+        self.assertRegex(self.leer("CONTINUAR.md"), r"Última actualización: \d{1,2}/\d{1,2}/\d{4}")
+        self.assertRegex(self.leer("PLAN_DE_FUTURO.md"), r"Actualizado el \d{1,2}/\d{1,2}/\d{4}")
+
+    def test_el_estado_dice_que_version_esta_publicada(self):
+        self.assertRegex(self.leer("CONTINUAR.md"), r"Publicado en GitHub: \*{0,2}\d+\.\d+\.\d+")
+
+
 class PartidaEnVivo(unittest.TestCase):
     def setUp(self):
         try:

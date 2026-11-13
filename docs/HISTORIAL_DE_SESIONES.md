@@ -173,3 +173,120 @@ Quedaron 40 entradas (en varios archivos) sin línea hasta que el cliente las vu
 ventana de 200 partidas se quedan sin línea.
 Incertidumbre: los valores de `roleBoundItem` son observados, no documentados; por eso se exige que la etiqueta sea
 JUNGLE antes de reinterpretarla y, sin más pistas, la línea queda vacía.
+
+# Sesión del 13/11/2026 (tarde y noche): detalle de lo hecho tras la 1.22.8
+
+(Movido desde CONTINUAR.md el 13/11/2026 para que ese documento quede corto. Orden cronológico; lo vigente está resumido en CONTINUAR.md.)
+
+### Hecho el 13/11 después de publicar la 1.22.8 (en `main`, sin publicar)
+
+- **Rival elegido a mano**: antes solo cambiaba la build y la guía; las puntuaciones y el orden de las recomendaciones
+  seguían calculándose contra el rival automático. Ahora `gui.set_opp` guarda la elección en `conf["_opp"]` (clave con
+  «_»: no se escribe en config.json) y pide `recalc`; `_advise` la usa como `lane_opp` y conserva aparte
+  `lane_opp_auto`. Comprobado con la app real contra el cliente falso (`LOLE_RIVAL=1 python herramientas/demo_falso.py 5 rival`):
+  Malphite pasa de 9,09 a 10,89 puntos con el motivo «contra Tryndamere: 3/3»; 3 pruebas nuevas.
+- **Privacidad de lo guardado** (esquema 2 → 3): `last_session.json` y `live_samples/` ya no llevan nombres ni
+  identificadores (`core.scrub`), se limpian los existentes, las muestras caducan a 14 días y una prueba comprueba que la
+  conexión sin verificar certificado solo va a 127.0.0.1. Queda a propósito el campo `p` (puuid de compañeros) de
+  `games_<cuenta>.json`, que sostiene «Juntos 3V 2D». 4 pruebas nuevas.
+- **Puerta previa a publicar** (`herramientas/comprobar_todo.py`): nació de un error real. Un cambio mío en `ui_build.py` pasaba
+  las pruebas pero fallaba al pintar la build; solo lo vio una captura. Ahora el recorrido de pantallas es parte de la puerta
+  (`capturas.py` devuelve código 1 si hay errores; `LOLE_SINFOTO=1` recorre sin guardar imágenes) y se comprobó que falla
+  si se inyecta ese mismo error.
+- **Certificados** (ver «Lo que se sabe del cliente»): arreglo de fondo, sin publicar. Lo ideal es que vaya en la 1.22.9: es el
+  único cambio pendiente que puede arreglar fallos de red a otras personas. Comprobado: op.gg y GitHub fallaban y ahora van;
+  el paquete construido incluye `certifi/cacert.pem`. Sin probar ejecutando el `.exe` construido.
+- **Parche de la build**: `builds.patch_of` lee «Patch 16.22» de la página de Lolalytics (26.22 en numeración pública) y
+  `builds.load` guarda `patch` y `read` con la build; la nota de fuente dice «parche 26.22, leída hoy» y avisa si el
+  parche es anterior al del juego (`ui_build.source_note`). Las builds guardadas antes no lo traen: solo muestran la fuente.
+  Error cazado por las capturas: en `ui_build.render()` el nombre `core` es una lista local, no el módulo; usar
+  funciones de módulo (`current_patch()`).
+- No se pudo ampliar la validación del objeto de rol: el cliente se cerró. `validar_lineas.py` queda listo para
+  cuando esté abierto; solo con eso se podría usar el objeto de rol también en las partidas con línea «NONE»
+  (8 de las 55 de Grieta del usuario quedan sin línea).
+
+### Revisión con la 1.22.9 en el PC del usuario (13/11/2026, 17:20)
+
+- Se actualizó sola de la 1.22.6 a la 1.22.9 (`diag.log`: «arranca» ×2) y aplicó las migraciones de esquema 1→2→3 y de
+  privacidad; «Partida 8041219712: la línea pasa de ? a TOP» (Renekton) en la instalación real.
+- Ventana real capturada con `PrintWindow` (la captura de pantalla normal sacaba lo que tapaba la ventana): nivel 901, los tres
+  rangos con PL y V/D, maestría 1.307 y las últimas 5 partidas coinciden con el cliente.
+- **Hallazgo**: el cliente entregó 20 partidas aunque se le pidieron 200 (antes daba 200), así que solo 13 de las 61 de Grieta
+  se recalcularon con la regla de líneas; 48 quedaron pendientes. El detalle por id sí funciona para partidas antiguas.
+  Arreglo en `main` (SIN publicar): `lol_advisor._refresh_old_games` las recalcula con su detalle (60 por lectura, las más
+  recientes primero). Con el cliente real, sobre una copia: 46 de 46 recalculadas, 18 con otra línea, 0 pendientes.
+  Hace falta publicarlo (1.22.10) para que llegue a la instalación del usuario; esperar a que no esté en cola ni en partida
+  (la actualización automática instala en «Lobby»).
+- **Partida real revisada (Flexible 440, 17:26–17:59)**: el `diag.log` de la instalación muestra el ciclo entero con el cliente real
+  (Lobby → Matchmaking → ReadyCheck → selección → InProgress con «10 leídos, 0 con perfil oculto, 0 sin campeón, 0 sin línea» →
+  PreEndOfGame → «Partida terminada» → EndOfGame → None). Quedó guardada: Seraphine, apoyo, victoria, 1/6/14; el análisis
+  coincide con el historial; ningún error nuevo. En el momento de la partida el cliente sí entregó 200 partidas.
+- **Hallazgo grande: la etiqueta de línea del cliente falla mucho.** En esa partida, 4 de 10 jugadores mal etiquetados (Jax
+  «jungla», Fizz «top», Nami «bot», Jhin «mid»); `find_opponent` daba «nadie» para el apoyo. En 30 partidas / 60 equipos:
+  solo 14 equipos con los cinco puestos distintos según el cliente (29 equipos con 2 junglas y 0 toplane). Se vio que el
+  objeto de rol reparte bien: 1206 mid (44 casos), 1209 jungla con Aplastar (50), 1220/1221 top, 1208/2055 apoyo, y las botas
+  (3006, 3008, 3009, 3020, 3047, 3158) el tirador (42 de 44). Con la regla nueva: **55 de 60 equipos completos**.
+  `history.role_of` (objeto de rol > botas con etiqueta BOTTOM/MIDDLE > Aplastar > etiqueta) y `history.team_roles` (completa un
+  equipo por eliminación); `find_opponent` las usa; `ROLE_V = 2`, así que las partidas guardadas con la regla v1 se recalculan
+  (las que el cliente lista al conectar; el resto con `_refresh_old_games`). Comprobado con el cliente real: TODO BIEN, 0 pendientes.
+  `python herramientas/validar_lineas.py 30` reproduce la medida (necesita el cliente abierto y en reposo).
+- **Lo anterior se publicó en la 1.22.10** (recalcular partidas antiguas por su detalle + regla de líneas v2).
+  Antes de publicar: `python herramientas/publicar.py --sin-probar "..."` y esperar a que el usuario no esté en cola ni en partida.
+- Privacidad: desde mi vista no se puede verificar `last_session.json` ni parte de `live_samples/` (la carpeta de datos que ve
+  la sesión mezcla copias antiguas); el usuario puede comprobarlo con el comando de PowerShell de abajo.
+  `Select-String -Path "$env:LOCALAPPDATA\LOL-E\cache\live_samples\*","$env:LOCALAPPDATA\LOL-E\cache\last_session.json" -Pattern '"(summonerName|riotId|gameName|puuid)":\s*"[^"]+"' | Measure-Object`
+  (debe dar Count 0).
+
+### Interbloqueo de la ventana por el recolector de basura (13/11/2026, en `main`, SIN publicar → 1.22.11)
+
+El recorrido de pantallas de `comprobar_todo.py` se colgó (3 de 3 veces con tuberías; con salida a archivo pasaba). El vigilante
+(`LOLE_VIGILA=200` en `capturas.py` vuelca la pila de cada hilo tras N segundos) mostró la causa, que es un fallo REAL de la app:
+el hilo de la ventana esperaba en `Thread.start()` (pedir la build de Mayhem) a que arrancase el hilo nuevo, y ese hilo, al arrancar,
+disparó el recolector de basura, que ejecutó `tkinter.font.Font.__del__`: llamada a Tk desde otro hilo, que Tk deja esperando al hilo de
+la ventana → interbloqueo, ventana congelada para siempre. Puede ocurrir en la app real siempre que la ventana arranque un hilo.
+Arreglo: `GUI.__init__` hace `gc.disable()` y `GUI.gc_tick` recolecta en el hilo principal (generación joven cada 5 s, todo cada minuto).
+Tras el arreglo: dos recorridos con tuberías en 170 s y la comprobación completa en verde. Lección: ante un cuelgue de Tk, volcar las pilas.
+
+### Repertorio con pestaña propia (13/11/2026, en `main`, SIN publicar → 1.22.11)
+
+El usuario dijo que el Repertorio le gustaba pero estaba «bastante oculto»: era un segmento de la tarjeta «Rango y logros · Modos ·
+Repertorio» al final de la pantalla de inicio (hay que bajar, pulsar un segmento pequeño, y no existía durante la selección ni la
+partida). Ahora es la pestaña **Repertorio** entre Enfrentamiento e Historial (`ui_pool.PoolView`, `gui.pool_view`); la tarjeta de
+inicio conserva «Rango y logros» y «Modos». Ctrl+1…6 (Asesor, Partida, Enfrentamiento, Repertorio, Historial, Datos: el Historial
+pasa de Ctrl+4 a Ctrl+5); «Al abrir» en Ajustes ofrece también Repertorio e Historial; LEEME actualizado. Comprobado a 470, 560 y
+1340 px (caben las cinco pestañas; en ancho se ve la tabla con el detalle al lado, como estaba diseñado). No cambia el resto de
+la navegación: el rediseño completo (`docs/rediseno/prototipo_v2.html`) sigue sin hacerse hasta que el usuario lo revise.
+Al subir la versión, añadir la entrada en `novedades.py` y `NOTAS_DE_VERSION.txt`.
+
+### Estado de lo pendiente (13/11/2026, tras publicar la 1.22.10)
+
+Hecho y sin nada sin subir. Lo que queda NO se puede cerrar sin el usuario o sin otra partida:
+1. **La instalación del usuario aún corre la 1.22.9** (el `diag.log` termina en la partida de las 17:59). La app mira
+   actualizaciones al abrir y cada 3 h: basta con cerrarla y abrirla fuera de cola. Después comprobar en su `diag.log`:
+   «--- LOL-E 1.22.10 arranca ---», «Partidas antiguas recalculadas con su detalle…» y que `games_<cuenta>.json` tiene todas las
+   partidas de Grieta con `rv: 2` (el comando de la sesión del 13/11 lo cuenta). Y que el Historial/Repertorio ya no tienen toplanes como jungla.
+2. **Selección de campeón y pestaña «Partida» con los 10 jugadores en directo** con el cliente real: solo se vieron en el registro
+   y en los datos guardados, no en pantalla. Ver la ventana con `PrintWindow` (ver la sesión) mientras el usuario juega.
+3. **Compañero a quien «no le salen» los jugadores**: sin reproducir; pedirle su informe de diagnóstico (Ajustes).
+4. Decisiones del usuario: espaciado único; rendimiento del pintado (menos widgets por pantalla).
+5. Etapa 3 que pide partidas: datos en vivo del puerto 2999, antigüedad de otros datos.
+El cliente simulado ya devuelve el detalle de la Grieta con la forma real (etiquetas mal puestas, objetos de rol, Aplastar), así que las
+pruebas del bucle cubren la línea y el rival de línea.
+
+### Siguiente trabajo, por orden
+
+1. **Publicar lo acumulado** (rival a mano, privacidad de lo guardado —esquema 3—, parche de la build) como 1.22.9 si el usuario lo
+   confirma; al subir la versión, escribir las notas en `novedades.py` y `NOTAS_DE_VERSION.txt`. Que el usuario mire en su Historial y su Repertorio que
+   ya no hay toplanes como jungla, y en su próxima partida que salen los 10 jugadores y que el Historial suma la nueva.
+2. **Probar una partida completa con el cliente real** (lo único que queda sin ver): cola, selección, carga, partida
+   y fin. Lo más útil: que el usuario juegue con LOL-E abierto y después pasar `prueba_cliente_real.py` y mirar
+   `cache/diag.log` de su instalación (pedirle el informe de diagnóstico).
+3. **Compañero a quien «no le salen» los jugadores de la partida**: sin reproducir. Pedirle el informe de diagnóstico
+   con la 1.22.5 o posterior; la línea «Jugadores de la partida …» dice cuántos se leyeron y cuántos con perfil oculto.
+4. **Rendimiento del pintado** (hecho en parte, ver el historial): repintar una sección cuesta ~300 ms por el
+   recálculo de toda la página que hace Tk; bajarlo pide menos widgets por pantalla. `tiempos.py 560 "solo"`.
+5. **Espaciado único**: `SPACE` está definido en `ui_kit.py` pero el código usa 17 valores distintos. Es una decisión
+   estética: enseñar al usuario un antes/después antes de migrar.
+6. **Cliente falso con respuestas grabadas de una partida real** en vez de inventadas.
+7. **Etapa 3 de la hoja de ruta** (más valor en partida): datos en vivo del puerto 2999, resumen de una frase al terminar,
+   recalcular recomendaciones al elegir rival a mano, antigüedad visible de los datos de build y meta.
