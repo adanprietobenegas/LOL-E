@@ -34,7 +34,7 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
 
 | # | Qué | Impacto | Esfuerzo | Riesgo | Validar |
 |---|---|---|---|---|---|
-| 1.1 | **«Puedes comprar…»**: con tu oro actual (`activePlayer.currentGold`) y tu build recomendada, decir qué componente/objeto puedes comprar ya y cuándo conviene volver a base | A | S | b | Contra la API en vivo en una partida; prueba con muestras inventadas |
+| 1.1 | ~~**«Puedes comprar…»**~~ HECHO en `main` (`shopping.py`): siguiente objeto de tu build y lo que te falta restando componentes. Falta verlo en una partida real y, si interesa, avisar con sonido cuando ya puedas comprarlo | A | S | b | Una partida real |
 | 1.2 | **Siguiente objeto según lo que llevan los rivales**: cruzar `live.itemization` con tu build y las «Situaciones» (armadura/RM, heridas graves, penetración) y proponer UN cambio concreto, no una lista | A | M | m | Partidas reales; que el consejo cambie con la partida |
 | 1.3 | **Temporizadores de objetivos** (dragón, barón, heraldo, inhibidores) a partir de los eventos. **Verificar los tiempos de reaparición del parche actual antes de mostrarlos**; mostrarlos como «estimado» | A | M | m | Comparar con el reloj del juego en 2–3 partidas |
 | 1.4 | ~~**Resumen de la partida al terminar, comparado contigo**~~ HECHO en `main` (KDA y farmeo frente a tu media con ese campeón). Falta, si interesa: más cifras (daño, visión) | M | S | b | Con partidas guardadas |

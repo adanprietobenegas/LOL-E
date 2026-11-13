@@ -35,6 +35,10 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
   cliente simulado; NO visto aún con una partida real** (los nombres de los eventos de dragón/barón/heraldo y quién los mata son según la
   documentación de la API; las muestras reales que tenía el usuario eran de Mayhem y no los traen).
 
+- **«Siguiente objeto de tu build» en el bloque en vivo** (`shopping.py`, `ui_live.buy_hint`): con tu oro y lo que llevas, cuál es el siguiente objeto de tu
+  build de la web y cuánto te falta restando los componentes que ya tienes (recetas de Data Dragon: `items.py` pasa al esquema 4 y añade `from`; sin red conserva el
+  esquema anterior y esta frase no sale). Probado con la build real de Lolalytics y el catálogo real; solo con datos en vivo inventados.
+- **El pie de la ventana** ya no se queda en «Conectado. Cargando tus datos…» una vez cargados los datos.
 - **Corrección del cierre de partidas tras ESQUIVAR** (hallazgo de un escenario nuevo del cliente simulado): al acabar una selección sin que
   empezara partida, el motor daba por terminada la partida ANTERIOR (decía «Partida terminada», la reanalizaba, esperaba hasta 8 veces si
   el rango no se había movido y guardaba «0 PL» para ella, pudiendo pisar su variación real). Ahora `played` distingue esquivar de jugar, el
@@ -61,6 +65,9 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
   pantalla de inicio). Atajos: Ctrl+1…6.»
 - nuevo: «En directo, en Partida: marcador, torres, dragones y heraldos, y los cinco rivales con su nivel, bajas, farmeo, objetos y oro en
   objetos, con una lectura de qué daño llevan y cuánta defensa acumulan. Se puede desactivar en Ajustes.»
+- nuevo: «En el bloque en vivo, tu siguiente objeto de la build con lo que te falta de oro (restando los componentes que ya llevas) y cómo vas frente a tu rival directo.»
+- nuevo: «Al terminar la partida, tu KDA y tu farmeo frente a tu media con ese campeón.»
+- arreglo: «Si esquivabas una partida, LOL-E daba por terminada la anterior (la reanalizaba, esperaba y podía borrar su variación de PL). Ya no.»
 - arreglo: «Corregido un fallo raro que podía dejar la ventana congelada para siempre (un objeto de la interfaz se destruía desde otro
   hilo mientras la ventana esperaba a ese hilo).»
 
@@ -144,6 +151,7 @@ vivo en una partida real, y las decisiones pendientes del usuario de la sección
 
 ## 9. Registro de actualizaciones de este documento
 
+- 13/11/2026 (noche, 3): «Siguiente objeto» en vivo (`shopping.py`), pie sin «Cargando…», demo ARAM en `comprobar_todo`.
 - 13/11/2026 (noche, 2): partida en vivo ampliada (rival directo), comparación con tu media, corrección del cierre tras esquivar, escenarios del bucle; plan y
   estado al día.
 - 13/11/2026 (noche): reorganizado en capas (este archivo + `PLAN_DE_FUTURO.md` + `HISTORIAL_DE_SESIONES.md` + `herramientas/estado.py`); añadidas pruebas de

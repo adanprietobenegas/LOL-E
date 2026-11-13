@@ -523,6 +523,9 @@ class FlujoCompleto(unittest.TestCase):
         self.assertEqual(len(ros), 1)                                                  # los 10 jugadores, una sola vez por partida
         self.assertEqual((len(ros[0]), ros[0][0]["me"], ros[0][0]["cid"]), (10, True, 86))
         msgs = [e[2] for e in ev if e[0] == "idle"]
+        estados = [e[1] for e in ev if e[0] == "status"]
+        self.assertIn("Conectado. Cargando tus datos…", estados)
+        self.assertEqual(estados[estados.index("Conectado. Cargando tus datos…") + 1:][:1], [""])     # y deja de decirlo en cuanto llegan
         self.assertTrue(any("Partida en curso" in m for m in msgs))
         self.assertTrue(any("Partida terminada" in m for m in msgs))
         self.assertIn(("analysis.load", "900", YO), ev)                                # se analiza la partida nueva, no la anterior
@@ -846,6 +849,54 @@ class TuPartidaFrenteATuMedia(unittest.TestCase):
         r = analysis.vs_average(hoy, [self.g(i, 147, 2, 4, 6, q=450) for i in range(1, 5)])
         self.assertIsNone(r["cspm"])
         self.assertEqual(len(analysis.average_lines(r, "Seraphine")), 1)
+
+
+class PuedesComprar(unittest.TestCase):
+    CAT = {11: {"g": 500, "n": "Hoja A", "from": [], "t": []}, 12: {"g": 300, "n": "Gema B", "from": [], "t": []},
+           21: {"g": 1500, "n": "Objeto C", "from": [11, 12], "t": []},            # montar C cuesta 700 más sus componentes
+           31: {"g": 3000, "n": "Objeto D", "from": [21, 11], "t": []},            # montar D cuesta 1000 más C y otra Hoja A
+           41: {"g": 900, "n": "Botas", "from": [], "t": ["Boots"]}, 51: {"g": 400, "n": "X", "from": [], "t": []},
+           52: {"g": 400, "n": "Y", "from": [], "t": []}, 53: {"g": 400, "n": "Z", "from": [], "t": []}}
+
+    def setUp(self):
+        import shopping
+        self.s = shopping
+
+    def test_arbol_de_la_receta(self):
+        self.assertEqual(self.s.recipe_tree(31, self.CAT), {21, 11, 12})
+        self.assertEqual(self.s.recipe_tree(11, self.CAT), set())
+        self.assertEqual(self.s.recipe_tree(999, self.CAT), set())
+
+    def test_lo_que_te_falta_resta_los_componentes_que_ya_llevas(self):
+        r = lambda i, inv: self.s.remaining_cost(i, self.CAT, inv)
+        self.assertEqual(r(21, []), 1500)
+        self.assertEqual(r(21, [11]), 700 + 300)                 # llevas la Hoja A: faltan el montaje y la Gema B
+        self.assertEqual(r(21, [11, 12]), 700)                   # llevas los dos componentes: solo el montaje
+        self.assertEqual(r(21, [21]), 0)                         # ya lo llevas
+        self.assertEqual(r(31, [11]), 1000 + (700 + 300) + 500)  # una sola Hoja A cubre una sola vez: la otra se paga
+        self.assertEqual(r(31, [11, 11, 12]), 1000 + 700)        # con dos Hojas A y la Gema B
+        self.assertIsNone(r(999, []))                            # un objeto que no está en el catálogo: no se inventa un precio
+
+    def test_orden_de_compra_de_la_build(self):
+        build = {"core": [11, 41, 21], "i4": [31, 51], "i5": [52], "i6": [], "start": [1054]}
+        botas = lambda i: i == 41
+        self.assertEqual(self.s.build_order(build, botas), [11, 41, 21, 31, 52])        # principal, botas, resto, primera opción de cada hueco
+        self.assertEqual(self.s.build_order({"core": [11, 21]}, botas), [11, 21])        # sin botas
+        self.assertEqual(self.s.build_order({}, botas), [])
+
+    def test_siguiente_compra(self):
+        orden = [21, 41, 31]
+        res = self.s.next_purchase(orden, [11], 2000, self.CAT)
+        self.assertEqual((res["id"], res["remaining"], res["affordable"], res["missing"], res["partial"]), (21, 1000, True, 0, [11]))
+        res = self.s.next_purchase(orden, [11], 600, self.CAT)
+        self.assertEqual((res["affordable"], res["missing"]), (False, 400))
+        self.assertEqual(self.s.describe(res, self.CAT), "Siguiente objeto de tu build: Objeto C. Te faltan 400 de oro (ya llevas Hoja A).")
+        self.assertIn("ya puedes comprarlo (1000 de oro)", self.s.describe(self.s.next_purchase(orden, [11], 2000, self.CAT), self.CAT))
+        self.assertEqual(self.s.next_purchase(orden, [21], 100, self.CAT)["id"], 41)      # C ya lo llevas: toca el calzado
+        self.assertEqual(self.s.next_purchase(orden, [31], 100, self.CAT)["id"], 41)      # D contiene C: C cuenta como hecho, siguen las botas
+        self.assertIsNone(self.s.next_purchase(orden, [31, 41], 100, self.CAT))           # todo comprado (o mejorado): nada que proponer
+        self.assertIsNone(self.s.next_purchase([999], [], 100, self.CAT))                 # precio desconocido: no opina
+        self.assertIsNone(self.s.next_purchase([], [11], 100, self.CAT))
 
 
 class Documentacion(unittest.TestCase):

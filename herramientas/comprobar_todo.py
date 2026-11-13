@@ -6,8 +6,8 @@ Ejecuta, en este orden, y se para al primer fallo:
   1. las pruebas unitarias,
   2. un recorrido por TODAS las pantallas con la ventana real (a 560 y a 1340 px de ancho), sin guardar imágenes:
      cualquier error al pintar, de la ventana o registrado, cuenta como fallo,
-  3. la app entera (ventana + bucle principal) contra el cliente falso: cola, selección, partida y fin.
-Tarda unos 5 minutos y abre la ventana en el monitor secundario. Con una partida en curso se niega a empezar.
+  3. la app entera (ventana + bucle principal) contra el cliente falso: cola, selección, partida y fin; en la Grieta y en ARAM (con datos en vivo).
+Tarda unos 10 minutos y abre la ventana en el monitor secundario. Con una partida en curso se niega a empezar.
 """
 import os, subprocess, subprocess as sp, sys, time
 D = os.path.dirname(os.path.abspath(__file__))
@@ -39,5 +39,7 @@ for ancho in (560, 1340):
     paso(f"Todas las pantallas a {ancho} px", [PY, os.path.join(D, "capturas.py"), str(ancho), "730", f"comprobacion_{ancho}"],
          {"LOLE_SINFOTO": "1", "LOLE_PAGINAS": "2"}, bien=lambda s: "errores: 0" in s)
 paso("La app entera contra el cliente falso", [PY, os.path.join(D, "demo_falso.py"), "5", "comprobacion_demo"],
+     bien=lambda s: "errores de ventana: 0 | registro de errores: vacío" in s and "Partida terminada" in s)
+paso("La app entera contra el cliente falso, en ARAM", [PY, os.path.join(D, "demo_falso.py"), "5", "comprobacion_demo_aram"], {"LOLE_MODO": "aram"},
      bien=lambda s: "errores de ventana: 0 | registro de errores: vacío" in s and "Partida terminada" in s)
 print("\nTODO BIEN: se puede publicar (si el usuario lo confirma).")

@@ -1207,6 +1207,7 @@ def run(conf, champs, ui):
                 diag(f"Conectado: cuenta {(my_puuid or P.get('puuid') or '?')[:8]}, historial {'leído' if P.get('hist_ok') else 'pendiente'}, "
                      f"{P.get('games', 0)} partidas de Grieta guardadas")
                 ui.idle(player_info(P), "Conectado al cliente. Entra en una cola cuando quieras.")
+                ui.status("" if P.get("hist_ok") else "Conectado. El historial aún no ha llegado; se vuelve a pedir solo.")   # «Cargando tus datos…» ya no es verdad
                 getattr(ui, "history_updated", lambda: None)()   # puede ser otra cuenta: el historial en pantalla se relee
                 start_meta(conf, P, ui)
             if time.time() >= next_lobby:  # quien va contigo en la sala (duo o grupo)
@@ -1412,7 +1413,8 @@ class ConsoleUI:
         return None
 
     def status(self, text):
-        print(paint(text, "d"))
+        if text:
+            print(paint(text, "d"))
 
     def _clear(self):
         os.system("cls" if os.name == "nt" else "clear")

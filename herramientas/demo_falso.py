@@ -41,7 +41,9 @@ if RIVAL:
     cliente_falso.SELECCION["theirTeam"][1]["championId"] = 23
     json.dump({str(900 + i): {"c": 54, "w": True, "r": "TOP", "o": 23, "q": 420, "t": 1000 + i, "a": [], "p": [], "rv": history.ROLE_V} for i in range(3)},
               open(os.path.join(TMP, "games_yo-puuid-0001.json"), "w"))
-fake = ClienteFalso()
+fake = ClienteFalso(modo=os.environ.get("LOLE_MODO", "sr"))   # LOLE_MODO=aram | arena
+import augments, cliente_falso as _cf
+augments.fetch_live = lambda: _cf.live_sample() if fake.fase == "InProgress" else None   # la API en vivo del juego solo existe en partida
 t0 = time.time()
 guion = ["None"] + GUION   # un paso de reposo al principio para ver el inicio
 fake.guion = guion

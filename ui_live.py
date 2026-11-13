@@ -5,7 +5,10 @@ Los datos salen de la API local del juego y son los mismos que ves en la tabla d
 """
 import customtkinter as ctk
 
+import builds
 import live
+import lol_advisor as core
+import shopping
 from ui_build import _item
 from ui_kit import PAL
 
@@ -23,7 +26,32 @@ def _rows(snap):
     return mine, other, titles, mine_t, other_t, bool(me)
 
 
-def paint(ui, host, snap, width, opp_cid=0):
+LANES = {"TOP": "top", "JUNGLE": "jungle", "MIDDLE": "middle", "BOTTOM": "bottom", "SUPPORT": "support"}
+
+
+def buy_hint(ui, snap, plan):
+    """(frase, id del objeto) con tu siguiente compra según tu build de la web y lo que llevas, o None si no se puede saber (sin plan de la
+    Grieta, build aún sin cargar, catálogo sin recetas, nada que proponer)."""
+    try:
+        if not plan or not plan.get("cid") or plan.get("kind") not in (None, "sr") or plan["cid"] not in ui.champs:
+            return None
+        lane = LANES.get(plan.get("role") or "")
+        yo = next((p for p in snap["players"] if p["me"]), None)
+        if not lane or not yo or not ui.items:
+            return None
+        opp = plan.get("opp") or 0
+        st = builds.peek(builds.request(core.CACHE, ui.champs[plan["cid"]], lane, ui.champs[opp] if opp in ui.champs else None))
+        if st[0] != "ok":
+            return None
+        order = shopping.build_order(st[1].get("items") or {}, lambda i: "Boots" in (ui.items.get(i) or {}).get("t", []))
+        res = shopping.next_purchase(order, yo["items"], int(snap.get("gold") or 0), ui.items)
+        return (shopping.describe(res, ui.items), res["id"]) if res else None
+    except Exception:
+        core.log_exc("Siguiente compra")
+        return None
+
+
+def paint(ui, host, snap, width, opp_cid=0, plan=None):
     ui.clear(host)
     mine, other, (t_mine, t_other), k_mine, k_other, known = _rows(snap)
     c_mine = ui.hexm(PAL["good"]) if known else NEUTRAL
@@ -59,6 +87,12 @@ def paint(ui, host, snap, width, opp_cid=0):
         for p in rows:
             _player(ui, parent, p, color, width, bool(opp_cid) and p["cid"] == opp_cid and p["team"] != next((q["team"] for q in snap["players"] if q["me"]), ""))
 
+    hint = buy_hint(ui, snap, plan)
+    if hint:
+        fila = ui.frame(box)
+        fila.pack(fill="x", pady=(8, 0))
+        _item(ui, fila, hint[1], 26)
+        ui.lbl(fila, hint[0], 11, "fg", True, anchor="w", justify="left", wraplength=max(220, width - 150)).pack(side="left", padx=6)
     pareja = live.duel(snap, opp_cid)
     if pareja:   # tu rival directo (el de tu línea, o el que elegiste a mano): cómo vas frente a él
         ui.lbl(box, live.duel_line(*pareja, ui.champs.get(opp_cid, {}).get("name", "")), 11, "fg", anchor="w", justify="left",

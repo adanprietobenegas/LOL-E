@@ -2,6 +2,7 @@
 import json, os, urllib.request
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; LOL-E)"}
+SCHEMA = 4   # 4: añade «from» (la receta de cada objeto, con repetición)
 
 
 def load(cache_dir, version):
@@ -9,18 +10,25 @@ def load(cache_dir, version):
     path = os.path.join(cache_dir, "items.json")
     try:
         saved = json.load(open(path, encoding="utf-8"))
-        if saved.get("version") == version and saved.get("items") and saved.get("schema") == 3:
+        if saved.get("version") == version and saved.get("items") and saved.get("schema") == SCHEMA:
             return {int(k): v for k, v in saved["items"].items()}
     except Exception:
-        pass
-    req = urllib.request.Request(f"https://ddragon.leagueoflegends.com/cdn/{version}/data/es_ES/item.json", headers=UA)
-    with urllib.request.urlopen(req, timeout=25) as r:
-        data = json.loads(r.read().decode("utf8"))["data"]
+        saved = None
+    try:
+        req = urllib.request.Request(f"https://ddragon.leagueoflegends.com/cdn/{version}/data/es_ES/item.json", headers=UA)
+        with urllib.request.urlopen(req, timeout=25) as r:
+            data = json.loads(r.read().decode("utf8"))["data"]
+    except Exception:
+        # sin red: lo guardado de este mismo parche sirve aunque sea de un esquema anterior (sin recetas: «Puedes comprar» no opinará)
+        if isinstance(saved, dict) and saved.get("version") == version and saved.get("items"):
+            return {int(k): v for k, v in saved["items"].items()}
+        raise
     items = {int(k): {"n": v.get("name", ""), "g": (v.get("gold") or {}).get("total", 0), "d": v.get("plaintext", ""),
                       "i": (v.get("image") or {}).get("full", f"{k}.png"), "t": v.get("tags") or [], "into": [int(x) for x in v.get("into", [])],
-                      "depth": v.get("depth"), "x": _effects(v.get("description", ""))} for k, v in data.items()}
+                      "from": [int(x) for x in v.get("from", [])], "depth": v.get("depth"), "x": _effects(v.get("description", ""))}
+             for k, v in data.items()}
     os.makedirs(cache_dir, exist_ok=True)
-    json.dump({"version": version, "schema": 3, "items": items}, open(path, "w", encoding="utf-8"))
+    json.dump({"version": version, "schema": SCHEMA, "items": items}, open(path, "w", encoding="utf-8"))
     return items
 
 

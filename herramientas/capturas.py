@@ -191,6 +191,7 @@ PASOS = [
     ("10b_salto_a_jugadores", lambda: getattr(ui.game_view, "jump_roster", lambda: print("sin enlace (ventana ancha)", flush=True))(), 1500),
     ("10c_partida_en_vivo", lambda: (ui.ctx["plan"].__setitem__("opp", next(c for c, v in champs.items() if v["name"] == "Darius")),   # tu rival de línea: el de la muestra
                                      ui.live(__import__("live").summarize(__import__("cliente_falso").live_sample(), champs))), 3000),
+    ("10d_vivo_compra", lambda: ui.live(__import__("live").summarize(__import__("cliente_falso").live_sample(), champs)), 3500),   # 2.ª lectura: ya con la build cargada
     ("11_partida_analisis", lambda: (fin_partida(), tab_partida("Análisis")), 5000),
     ("11b_analisis_guardado", analisis_guardado, 5000),
     ("12_enfrentamiento", lambda: ui.set_page("Enfrentamiento"), 4000),
