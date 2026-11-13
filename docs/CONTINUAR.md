@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.22.12). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.22.13). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -22,7 +22,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 2. Estado (actualizar al terminar cada conversación)
 
-**Publicado en GitHub: 1.22.12** (13/11/2026; la 1.22.11 fue la anterior). La actualización automática funciona (el usuario pasó solo de 1.22.5 a 1.22.9).
+**Publicado en GitHub: 1.22.13** (13/11/2026; la 1.22.12 fue la anterior). La actualización automática funciona (el usuario pasó solo de 1.22.5 a 1.22.9).
 
 **Incluido en la 1.22.11** (publicada; `python herramientas/estado.py` muestra si hay algo nuevo sin publicar):
 - **Pestaña Repertorio propia**, entre Enfrentamiento e Historial (antes estaba escondida en la tarjeta de logros del inicio). Ctrl+1…6;
@@ -56,7 +56,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 - **«Qué aprender» en Repertorio** (`learn.py`): si una línea que juegas mucho depende de un solo campeón, propone un segundo de los que tienes con buena tasa en el parche. Solo sale con 8+ partidas en la línea; probado con datos de ejemplo (captura 18).
 - **Ficha «Tus PL guardados»** en Rango y logros del inicio: línea de PL acumulados por partida clasificatoria (`analysis.lp_series` sobre `lp.json`); solo se ve con 3+ partidas con dato. Probado con una serie de ejemplo (captura 17b).
 
-**En `main` sin publicar** (candidata a 1.22.13):
+**Incluido en la 1.22.13** (publicada):
 - **Remake en el bucle** (`history.is_remake`, escenario `remake` del cliente simulado): al acabar una partida anulada no se espera hasta 64 s a un cambio de PL que no llegará ni se guarda una variación de 0.
 - **Tu partida frente a tu media, con daño y visión por minuto** (`analysis.vs_average`: `dpm`, `vpm`; la visión solo en la Grieta).
 - **Revisión del código** (`code-review` alto sobre lo acumulado tras la 1.22.12): corregidos 9 hallazgos. La reserva sin red solo se usa si encaja (misma región en tendencias, mismo rango en el meta); una build obsoleta se reintenta cada 5 min; la marca «últimos datos guardados» se ve en la build de ARAM y en las botas de op.gg (las tendencias obsoletas no avisan en pantalla); las medias por minuto cuentan los ceros reales.
@@ -168,6 +168,6 @@ vivo en una partida real, y las decisiones pendientes del usuario de la sección
 - 13/11/2026 (noche, 2): partida en vivo ampliada (rival directo), comparación con tu media, corrección del cierre tras esquivar, escenarios del bucle; plan y
   estado al día.
 - 13/11/2026 (noche): reorganizado en capas (este archivo + `PLAN_DE_FUTURO.md` + `HISTORIAL_DE_SESIONES.md` + `herramientas/estado.py`); añadidas pruebas de
-  frescura de documentos. Estado: 1.22.12 publicada.
+  frescura de documentos. Estado: 1.22.13 publicada.
 - 13/11/2026 (tarde): 1.22.5 a 1.22.10 publicadas (actualizador, certificados, regla de líneas v2, recálculo de partidas antiguas). Ver el historial.
 - 12/11/2026: auditoría visual, textos, etapa 1 (historial por cuenta, diagnóstico, cliente falso), rendimiento. Ver el historial.

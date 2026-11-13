@@ -10,6 +10,15 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.13", "fecha": "13 de noviembre de 2026", "titulo": "Un objeto contra tus rivales, aviso de compra y datos que aguantan sin red", "items": [
+        ("nuevo", "En el bloque en vivo, un objeto concreto de tu build contra lo que llevan los rivales (penetración si acumulan armadura o resistencia mágica; si no, defensa contra su tipo de daño). Orientativo."),
+        ("nuevo", "Un sonido suave, una vez por objeto, cuando tu oro ya llega para el siguiente de tu build. Se apaga en Ajustes («Aviso al poder comprar el siguiente objeto») o con los avisos sonoros."),
+        ("mejora", "Al terminar la partida, tu daño y tu visión por minuto frente a tu media (la visión solo en la Grieta)."),
+        ("mejora", "Sin red, la build, el meta, las builds de op.gg y las tendencias usan lo último guardado y lo avisan; el meta y las tendencias solo si son de tu rango y tu región. Una build obsoleta se reintenta sola cada 5 minutos."),
+        ("mejora", "El informe de diagnóstico de Ajustes incluye más datos (esquema, partidas con línea antigua, PL guardados, edad del meta y ajustes) y la nota explica qué enviar."),
+        ("arreglo", "Las partidas anuladas por remake ya no hacen esperar un cambio de PL que no llega ni guardan una variación falsa."),
+        ("arreglo", "Si Lolalytics cambia el formato de su página, el aviso lo explica; el puesto de op.gg ya no se borra si la página deja de traerlo."),
+    ]},
     {"v": "1.22.12", "fecha": "13 de noviembre de 2026", "titulo": "Tus PL en un gráfico, «Qué aprender» y datos que no desaparecen sin red", "items": [
         ("nuevo", "En el inicio, «Rango y logros» tiene una ficha «Tus PL guardados»: al pulsarla ves tus PL acumulados partida a partida en clasificatorias. Solo cuentan las partidas que LOL-E vio con la app abierta."),
         ("nuevo", "En Repertorio, «Qué aprender»: si una línea que juegas mucho depende de un solo campeón, te propone un segundo de los que ya tienes, con buena tasa de victoria en el parche."),

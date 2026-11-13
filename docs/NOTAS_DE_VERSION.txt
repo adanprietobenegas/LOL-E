@@ -7,6 +7,15 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.13   (13 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · shopping.counter_item / candidate_pool + ui_live.counter_hint (helper común _my_build): objeto contra los rivales; GUI.buy_alert (ajuste buy_alert).
+  · analysis.vs_average: dpm y vpm (los ceros reales cuentan). history.is_remake + escenario remake del cliente simulado.
+  · Reserva sin red (campo «stale»): builds (reintento cada 5 min), meta (mismo rango), op.gg builds, tendencias (misma región).
+  · meta._fetch valida la escala de la tasa de victoria; el puesto de op.gg se conserva. health_lines en el diagnóstico.
+  · Revisión de código alta sobre todo lo acumulado: 9 hallazgos corregidos. 123 pruebas + comprobar_todo en verde.
+
 VERSIÓN 1.22.12   (13 de noviembre de 2026)
 ---------------------------------------------------------------------
 
