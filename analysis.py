@@ -436,10 +436,17 @@ def vs_average(game, games, min_games=3):
     def cspm(rows):
         mins = sum(g["d"] / 60 for g in rows if g.get("d") and g.get("cs") is not None)
         return sum(g["cs"] for g in rows if g.get("d") and g.get("cs") is not None) / mins if mins else None
+    def permin(rows, key):
+        ok = [g for g in rows if g.get("d") and g.get(key)]
+        mins = sum(g["d"] / 60 for g in ok)
+        return sum(g[key] for g in ok) / mins if mins else None
     cs_this = cspm([game]) if _mode_key(game.get("q")) != "aram" else None
     cs_avg = cspm(pool) if cs_this is not None else None
+    dp_this, dp_avg = permin([game], "dm"), permin(pool, "dm")
+    vs_this, vs_avg = (permin([game], "v"), permin(pool, "v")) if _mode_key(game.get("q")) == "sr" else (None, None)   # la visión solo cuenta en la Grieta
     return {"scope": scope, "n": len(pool), "kda": (kda([game]), kda(pool)),
-            "cspm": (cs_this, cs_avg) if cs_this is not None and cs_avg else None, "wins": (sum(1 for g in pool if g.get("w")), len(pool))}
+            "cspm": (cs_this, cs_avg) if cs_this is not None and cs_avg else None, "wins": (sum(1 for g in pool if g.get("w")), len(pool)),
+            "dpm": (dp_this, dp_avg) if dp_this and dp_avg else None, "vpm": (vs_this, vs_avg) if vs_this and vs_avg else None}
 
 
 def average_lines(cmp, champ_name=""):
@@ -458,6 +465,12 @@ def average_lines(cmp, champ_name=""):
     if cmp.get("cspm"):
         ce, cm = cmp["cspm"]
         out.append((f"Farmeo {fmt(ce)} cs/min frente a {fmt(cm)}.", tono(ce, cm)))
+    if cmp.get("dpm"):
+        de, dm = cmp["dpm"]
+        out.append((f"Daño a campeones {round(de)} por minuto frente a {round(dm)}.", tono(de, dm)))
+    if cmp.get("vpm"):
+        ve, vm = cmp["vpm"]
+        out.append((f"Visión {fmt(ve)} por minuto frente a {fmt(vm)}.", tono(ve, vm)))
     return out
 
 

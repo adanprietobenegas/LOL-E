@@ -996,6 +996,21 @@ class TuPartidaFrenteATuMedia(unittest.TestCase):
         legacy = [{"id": str(i), "c": 147, "q": 420, "k": None} for i in range(9)]            # partidas guardadas sin K/D/A: no cuentan
         self.assertIsNone(analysis.vs_average(hoy, legacy))
 
+    def test_dano_y_vision_por_minuto(self):
+        import analysis
+        hoy = self.g(100, 147, 8, 2, 8, d=1800, dm=30000, v=60)                              # 1000 de daño y 2 de visión por minuto
+        previas = [self.g(i, 147, 2, 4, 6, d=1800, dm=18000, v=30) for i in range(1, 5)]    # 600 y 1
+        r = analysis.vs_average(hoy, previas)
+        self.assertAlmostEqual(r["dpm"][0], 1000); self.assertAlmostEqual(r["dpm"][1], 600)
+        self.assertAlmostEqual(r["vpm"][0], 2); self.assertAlmostEqual(r["vpm"][1], 1)
+        lineas = dict((t.split()[0], tono) for t, tono in analysis.average_lines(r, "Seraphine"))
+        self.assertEqual((lineas["Daño"], lineas["Visión"]), ("good", "good"))
+        self.assertIn("Daño a campeones 1000 por minuto frente a 600.", [t for t, _ in analysis.average_lines(r, "X")])
+        arena = analysis.vs_average(self.g(100, 147, 8, 2, 8, q=1700, dm=30000, v=60), [self.g(i, 147, 2, 4, 6, q=1700, dm=18000, v=30) for i in range(1, 5)])
+        self.assertIsNone(arena["vpm"])                                                      # la visión no se compara en Arena ni ARAM
+        self.assertIsNotNone(arena["dpm"])
+        self.assertIsNone(analysis.vs_average(self.g(100, 147, 8, 2, 8), previas)["dpm"])    # sin daño guardado en la partida: no se inventa
+
     def test_aram_no_compara_el_farmeo(self):
         import analysis
         hoy = self.g(100, 147, 8, 2, 8, q=450)
