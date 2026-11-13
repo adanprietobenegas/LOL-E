@@ -55,7 +55,7 @@ class GameView:
         plan = ctx.get("plan") or {}
         sig = (ui.epoch, self.width // 80, self.tab, self.gid, plan.get("cid"), plan.get("opp"), plan.get("state"),
                tuple(plan.get("enemies") or ()), str(self.data.get(self.gid))[:20], self.opp.get(self.gid), self.all_moments, str(self.vs.get((plan.get("opp"), plan.get("role"))))[:20],
-               len(ctx.get("roster") or ()), len(ctx.get("roster_pl") or {}))
+               len(ctx.get("roster") or ()), len(ctx.get("roster_pl") or {}), bool(ctx.get("live")))
         if sig == self.sig and not force:
             return
         self.sig = sig
@@ -136,9 +136,36 @@ class GameView:
         ui.lbl(self.host, "Rango y partidas recientes salen del cliente de cada jugador. Un rango oculto o sin partidas se marca como tal.", 9, "dim",
                anchor="w", justify="left", wraplength=max(260, self.width - 110)).pack(anchor="w", pady=(6, 10))
 
+    def on_live(self, ctx):
+        """Llegó un resumen nuevo de la partida en vivo: se repinta SOLO su bloque (la pestaña entera cuesta más de un segundo).
+        La primera vez, o si no se está en el plan, se hace el refresco completo."""
+        box = getattr(self, "live_host", None)
+        try:
+            if self.tab == "Plan" and box is not None and box.winfo_exists() and ctx.get("live"):
+                import ui_live
+                ui_live.paint(self.ui, box, ctx["live"], self.width)
+                return
+        except Exception:
+            core.log_exc("Bloque en vivo")
+        self.sig = None
+        self.refresh(ctx, True)
+
+    def live_block(self, ctx):
+        self.live_host = None
+        if not ctx.get("live"):
+            return
+        try:
+            import ui_live
+            self.live_host = self.ui.frame(self.host)
+            self.live_host.pack(fill="x", pady=(0, 8))
+            ui_live.paint(self.ui, self.live_host, ctx["live"], self.width)
+        except Exception:
+            core.log_exc("Bloque en vivo")
+
     def plan_tab(self, ctx):
         ui, host = self.ui, self.host
         plan = ctx.get("plan")
+        self.live_block(ctx)
         import ui_vs
         has_plan = bool(plan) and plan["cid"] in ui.champs
         # ventana estrecha: la lista de 10 jugadores ocupa tres pantallas, así que con plan va al final (primero tu build y tu rival);

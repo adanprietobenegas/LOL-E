@@ -67,6 +67,11 @@ def main():
     vista("carrusel"); pump()
     en_partida(); pump(4000)
     medir("partida: repintar el plan", lambda: ui.game_view.refresh(ui.make_ctx(), True))
+    import live as _live
+    from cliente_falso import live_sample
+    ui.ctx["live"] = _live.summarize(live_sample(), champs); ui.game_view.sig = None; ui.game_view.refresh(ui.make_ctx(), True); pump(2500)
+    medir("partida: repintar solo el bloque en vivo", lambda: ui.game_view.on_live(ui.make_ctx()))
+    ui.ctx["live"] = None
     analisis_guardado(); tab_partida("Análisis"); pump(3000)
     medir("partida: repintar el análisis", lambda: ui.game_view.refresh(ui.make_ctx(), True))
     medir("ir a Enfrentamiento", lambda: ui.set_page("Enfrentamiento"), antes=lambda: ui.set_page("Asesor"))
@@ -76,6 +81,13 @@ def main():
     medir("historial: repintar entero", lambda: ui.history_view.refresh(ui.make_ctx(), True))
     medir("ir a Datos", lambda: ui.set_page("Datos"), antes=lambda: ui.set_page("Asesor"))
     medir("abrir Ajustes", ui.open_dock, veces=3, antes=lambda: (ui.close_dock(), pump(900)))
+    import gc
+    gc.collect()
+    for gen in (1, 2):
+        ts = []
+        for _ in range(5):
+            t = time.perf_counter(); gc.collect(gen); ts.append((time.perf_counter() - t) * 1000)
+        print(f"recolector: gc.collect({gen}) mediana {statistics.median(ts):.0f} ms   peor {max(ts):.0f} ms", flush=True)
     print("errores:", len(errs), flush=True)
     ui.close()
 

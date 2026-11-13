@@ -153,15 +153,25 @@ def find_augments(obj, path_=""):
     return out
 
 
-def live_probe(conf):
-    """Mira la API de partida en vivo (127.0.0.1:2999, solo existe durante la partida) y guarda qué trae sobre mejoras.
-    Escribe cache/live_probe.json con las claves que encuentre; devuelve la lista de mejoras detectadas (puede estar vacía)."""
+def fetch_live():
+    """Lo que devuelve la API de partida en vivo del juego (127.0.0.1:2999, solo existe durante la partida), o None si no responde.
+    Es el ÚNICO sitio donde se lee ese puerto: usa un contexto sin verificar certificado porque el juego usa uno propio, y por eso
+    la dirección está fija en este archivo (una prueba lo comprueba)."""
     import ssl, urllib.request
     try:
         ctx = ssl._create_unverified_context()
         with urllib.request.urlopen("https://127.0.0.1:2999/liveclientdata/allgamedata", context=ctx, timeout=3) as r:
-            d = json.load(r)
+            return json.load(r)
     except Exception:
+        return None
+
+
+def live_probe(conf, d=None):
+    """Mira la API de partida en vivo y guarda qué trae sobre mejoras (`d` es la muestra ya leída; si no, la pide).
+    Escribe cache/live_probe.json con las claves que encuentre; devuelve la lista de mejoras detectadas (puede estar vacía)."""
+    if d is None:
+        d = fetch_live()
+    if d is None:
         return None
     found = find_augments(d)
     try:   # muestras completas de lo que devuelve la API (hasta 6 por partida, una cada ~3 min de juego) para poder analizarlas después

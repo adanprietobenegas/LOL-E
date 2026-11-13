@@ -123,3 +123,33 @@ class ClienteFalso:
         return None   # lo demás (retos, honor, sala…) el cliente real también puede no darlo
 
     post = put = get
+
+
+def live_sample(t=916.0):
+    """Lo que devuelve la API local del juego (puerto 2999, /liveclientdata/allgamedata) en una partida de la Grieta, con datos
+    INVENTADOS y la estructura real. Tú eres Garen (ORDER, toplane)."""
+    def it(i, price, slot, count=1, consumable=False):
+        return {"itemID": i, "count": count, "price": price, "slot": slot, "consumable": consumable}
+    def pl(champ, team, pos, lvl, k, d, a, cs, items, dead=False, resp=0.0, me=False):
+        return {"championName": champ, "rawChampionName": "game_character_displayname_" + champ, "team": team, "level": lvl, "isDead": dead,
+                "respawnTimer": resp, "scores": {"kills": k, "deaths": d, "assists": a, "creepScore": cs, "wardScore": 0.0}, "position": pos,
+                "riotId": "Yo#EUW" if me else champ + "#EUW", "summonerName": "Yo" if me else champ, "items": items}
+    return {"gameData": {"gameMode": "CLASSIC", "gameTime": t, "mapName": "Map11"},
+            "activePlayer": {"currentGold": 433.5, "summonerName": "Yo", "riotId": "Yo#EUW"},
+            "allPlayers": [
+                pl("Garen", "ORDER", "TOP", 13, 4, 2, 3, 121, [it(3068, 2700, 0), it(3047, 1100, 1), it(3036, 1300, 2), it(2003, 50, 3, 3, True)], me=True),
+                pl("LeeSin", "ORDER", "JUNGLE", 12, 5, 3, 6, 98, [it(6692, 3000, 0), it(3111, 1100, 1)]),
+                pl("Ahri", "ORDER", "MIDDLE", 13, 6, 1, 4, 140, [it(6655, 3000, 0), it(3020, 1100, 1), it(1058, 850, 2)]),
+                pl("Jinx", "ORDER", "BOTTOM", 12, 3, 4, 5, 150, [it(3031, 3400, 0), it(3006, 1100, 1)]),
+                pl("Thresh", "ORDER", "UTILITY", 10, 0, 5, 12, 20, [it(3190, 2200, 0), it(3117, 1000, 1)]),
+                pl("Darius", "CHAOS", "TOP", 13, 6, 3, 2, 130, [it(6630, 3300, 0), it(3047, 1100, 1), it(1037, 1300, 2)]),
+                pl("Khazix", "CHAOS", "JUNGLE", 14, 9, 2, 3, 105, [it(6693, 3000, 0), it(3158, 950, 1), it(1055, 450, 2)]),
+                pl("Syndra", "CHAOS", "MIDDLE", 13, 4, 4, 6, 135, [it(6655, 3000, 0), it(3020, 1100, 1)], dead=True, resp=17.5),
+                pl("Caitlyn", "CHAOS", "BOTTOM", 12, 5, 2, 3, 160, [it(3031, 3400, 0), it(3006, 1100, 1), it(1038, 1300, 2)]),
+                pl("Leona", "CHAOS", "UTILITY", 10, 1, 5, 9, 18, [it(3190, 2200, 0), it(3047, 1100, 1)])],
+            "events": {"Events": [
+                {"EventID": 0, "EventName": "GameStart", "EventTime": 0.0},
+                {"EventID": 1, "EventName": "TurretKilled", "EventTime": 700.0, "TurretKilled": "Turret_T2_L_03_A", "KillerName": "Yo"},
+                {"EventID": 2, "EventName": "TurretKilled", "EventTime": 800.0, "TurretKilled": "Turret_T1_C_05_A", "KillerName": "Khazix"},
+                {"EventID": 3, "EventName": "DragonKill", "EventTime": 850.0, "DragonType": "Earth", "KillerName": "Khazix", "Stolen": "False"},
+                {"EventID": 4, "EventName": "HeraldKill", "EventTime": 900.0, "KillerName": "LeeSin", "Stolen": "False"}]}}

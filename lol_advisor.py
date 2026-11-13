@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import analysis
 import history
+import live
 import matchups
 import meta as metamod
 import params
@@ -63,6 +64,7 @@ DEFAULT_CONF = {
     "tab": "asesor",
     "start_tab": "ultima",   # ultima | asesor | enfrentamiento | repertorio | historial | datos
     "animations": True,
+    "live_enabled": True,    # durante la partida: marcador, objetos y estado de los 10 jugadores (API local del juego)
     "filters": {"orden": "Afinidad", "clase": "Todas", "mi_rol": True, "mios": False, "meta": False},
     "opgg_enabled": True,    # actualiza tus stats de temporada y matchups desde op.gg
     "opgg_auto": True,       # toma tu Riot ID y region del cliente de LoL
@@ -1287,14 +1289,22 @@ def run(conf, champs, ui):
                     except Exception:
                         log_exc("Jugadores de la partida")
                 if in_game:
-                    try:  # ARAM: Mayhem: la API de partida en vivo puede decir qué mejoras llevas (se guarda lo que traiga para poder mejorarlo)
-                        if mayhem_live and time.time() >= next_probe:
-                            next_probe = time.time() + 20
-                            got = augments.live_probe(conf)
-                            if got:
-                                getattr(ui, "live_augments", lambda f: None)(augments.flat_live([v for _, v in got]))
+                    try:  # API de partida en vivo del juego: marcador, objetos y estado de los 10 jugadores (y, en Mayhem, tus mejoras)
+                        if time.time() >= next_probe:
+                            live_on = conf.get("live_enabled", True)
+                            snap = augments.fetch_live() if (live_on or mayhem_live) else None
+                            next_probe = time.time() + (10 if live_on else 20)
+                            if snap:
+                                if live_on:
+                                    summary = live.summarize(snap, champs)
+                                    if summary:
+                                        getattr(ui, "live", lambda d: None)(summary)
+                                if mayhem_live:   # se guarda lo que traiga para poder mejorarlo
+                                    got = augments.live_probe(conf, snap)
+                                    if got:
+                                        getattr(ui, "live_augments", lambda f: None)(augments.flat_live([v for _, v in got]))
                     except Exception:
-                        soft_fail("Leer las mejoras en vivo")
+                        soft_fail("Leer los datos de la partida en vivo")
                     try:  # id de la partida en curso: luego se espera a que el cliente la liste en el historial
                         gfs = (lcu.get("/lol-gameflow/v1/session") or {}).get("gameData", {})
                         cur_gid = gfs.get("gameId") or cur_gid

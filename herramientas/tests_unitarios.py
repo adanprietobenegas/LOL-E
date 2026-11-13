@@ -538,6 +538,35 @@ class FlujoCompleto(unittest.TestCase):
             self.assertIn(trozo, d)
         self.assertNotIn("Prueba", d)                                                  # sin nombres de jugador
 
+    def test_en_partida_el_motor_lee_la_api_en_vivo_y_manda_el_resumen(self):
+        import augments
+        from cliente_falso import ClienteFalso, live_sample
+        original, llamadas = augments.fetch_live, []
+        augments.fetch_live = lambda: llamadas.append(1) or live_sample()
+        try:
+            ev = self.correr(ClienteFalso())
+        finally:
+            augments.fetch_live = original
+        vivos = [e[1] for e in ev if e[0] == "live"]
+        self.assertTrue(vivos and llamadas)                                  # se pidió durante la partida y se mandó a la ventana
+        self.assertEqual((len(vivos[0]["players"]), vivos[0]["me_team"], vivos[0]["teams"]["CHAOS"]["towers"]), (10, "ORDER", 1))
+        self.assertLessEqual(len(llamadas), 3)                               # no se pide en cada vuelta del bucle (cada ~10 s)
+        self.assertEqual(self.leer("error.log"), "")
+
+    def test_con_los_datos_en_vivo_desactivados_no_se_manda_nada(self):
+        import augments
+        from cliente_falso import ClienteFalso, live_sample
+        original, llamadas = augments.fetch_live, []
+        augments.fetch_live = lambda: llamadas.append(1) or live_sample()
+        conf0 = core.load_conf
+        core.load_conf = lambda: {**conf0(), "live_enabled": False}
+        try:
+            ev = self.correr(ClienteFalso())
+        finally:
+            augments.fetch_live, core.load_conf = original, conf0
+        self.assertFalse([e for e in ev if e[0] == "live"])
+        self.assertFalse(llamadas)                                           # y ni se lee el puerto salvo en Mayhem
+
     def test_sin_cuenta_no_se_guarda_nada(self):
         from cliente_falso import ClienteFalso
         fake = ClienteFalso(puuid="", guion=["None", "None", "None"])
@@ -707,6 +736,59 @@ class PrivacidadDeLosDatosGuardados(unittest.TestCase):
             for m in re.finditer(r"Request\(([^,)]+)", src):
                 if "context=" in src[m.start():m.start() + 400] and "CTX" in src[m.start():m.start() + 400]:
                     self.assertRegex(m.group(1), r"(lcu|self)\.base")
+
+
+class PartidaEnVivo(unittest.TestCase):
+    def setUp(self):
+        try:
+            self.champs = core.load_champions()
+        except Exception as e:
+            self.skipTest(f"sin datos de campeones en cache/: {e}")
+        import live
+        from cliente_falso import live_sample
+        self.live, self.d = live, live_sample()
+
+    def test_resumen_de_una_muestra(self):
+        r = self.live.summarize(self.d, self.champs)
+        self.assertEqual((len(r["players"]), r["t"], r["mode"], r["gold"], r["me_team"]), (10, 916.0, "CLASSIC", 433, "ORDER"))
+        self.assertTrue(all(p["cid"] for p in r["players"]), [p["name"] for p in r["players"] if not p["cid"]])   # los 10 campeones se reconocen
+        yo = next(p for p in r["players"] if p["me"])
+        self.assertEqual((self.champs[yo["cid"]]["name"], yo["team"], yo["level"], (yo["k"], yo["d"], yo["a"]), yo["cs"]), ("Garen", "ORDER", 13, (4, 2, 3), 121))
+        self.assertEqual(yo["value"], 2700 + 1100 + 1300)                    # sin el consumible (pociones)
+        self.assertEqual(yo["items"], [3068, 3047, 3036, 2003])               # en el orden de sus casillas
+        self.assertEqual(sum(1 for p in r["players"] if p["me"]), 1)
+        self.assertEqual([p["name"] for p in r["players"][:5]], ["Garen", "LeeSin", "Ahri", "Jinx", "Thresh"])   # por equipo y por línea
+        self.assertTrue(all("names" not in p for p in r["players"]))          # nada de nombres en el resumen
+        sy = next(p for p in r["players"] if p["name"] == "Syndra")
+        self.assertEqual((sy["dead"], sy["respawn"]), (True, 17.5))
+
+    def test_marcador_y_objetivos_por_equipo(self):
+        t = self.live.summarize(self.d, self.champs)["teams"]
+        self.assertEqual((t["ORDER"]["kills"], t["CHAOS"]["kills"]), (4 + 5 + 6 + 3 + 0, 6 + 9 + 4 + 5 + 1))
+        self.assertEqual(t["ORDER"]["value"], (2700 + 1100 + 1300) + (3000 + 1100) + (3000 + 1100 + 850) + (3400 + 1100) + (2200 + 1000))
+        self.assertEqual((t["ORDER"]["towers"], t["CHAOS"]["towers"]), (1, 1))   # la T2 que cae la tumba ORDER; la T1, CHAOS
+        self.assertEqual((t["CHAOS"]["dragons"], t["ORDER"]["heralds"], t["ORDER"]["barons"]), (1, 1, 0))   # por el equipo de quien lo mata
+
+    def test_lectura_de_los_objetos_rivales(self):
+        db = {3031: {"t": ["CriticalStrike", "Damage"], "g": 3400}, 6655: {"t": ["SpellDamage", "Mana"], "g": 3000},
+              3047: {"t": ["Armor", "Boots"], "g": 1100}, 3068: {"t": ["Health", "Armor"], "g": 2700}, 3190: {"t": ["Health", "SpellBlock", "Armor"], "g": 2200},
+              2003: {"t": ["Consumable"], "g": 50}, 3340: {"t": ["Trinket"], "g": 0}}
+        eq = [{"items": [3031, 3047, 2003]}, {"items": [3031, 3068]}, {"items": [6655, 3340]}]
+        m = self.live.itemization(eq, db)
+        self.assertEqual(m, {"ad": 6800, "ap": 3000, "armor": 3800, "mr": 0})        # sin consumibles ni baliza
+        self.assertEqual(self.live.reading(m), ["Su daño, según sus objetos: 69 % físico · 31 % mágico.",
+                                                "Acumulan armadura: la penetración de armadura rinde más que el daño bruto."])
+        self.assertEqual(self.live.reading({"ad": 900, "ap": 500, "armor": 700, "mr": 100}), [])   # con poco oro no se opina
+        self.assertIn("resistencia mágica", self.live.reading({"ad": 0, "ap": 0, "armor": 500, "mr": 3000})[0])
+        self.assertIn("por igual", self.live.reading({"ad": 0, "ap": 0, "armor": 2000, "mr": 1500})[0])
+        self.assertEqual(self.live.itemization([{"items": [999999]}], db), {"ad": 0, "ap": 0, "armor": 0, "mr": 0})   # objeto desconocido
+
+    def test_datos_incompletos_no_rompen(self):
+        self.assertIsNone(self.live.summarize({}, self.champs))
+        self.assertIsNone(self.live.summarize({"allPlayers": []}, self.champs))
+        r = self.live.summarize({"allPlayers": [{"championName": "Nadie", "team": "ORDER"}]}, self.champs)
+        self.assertEqual((r["players"][0]["cid"], r["players"][0]["items"], r["players"][0]["value"], r["me_team"], r["t"]), (0, [], 0, "", 0.0))
+        self.assertEqual((self.live.clock(872.4), self.live.clock(-5), self.live.money(12345)), ("14:32", "0:00", "12,3k"))
 
 
 class RivalElegidoAMano(unittest.TestCase):

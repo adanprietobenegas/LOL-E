@@ -359,6 +359,8 @@ class GUI:
                     self.kit.anim = False
                 elif kind == "idle":
                     self.ctx.update(info=ev[1], msg=ev[2], players={})
+                    if ev[2] and "Partida en curso" not in ev[2]:
+                        self.ctx["live"] = None   # fuera de la partida el marcador en vivo ya no vale
                     self.advisor = "idle"
                     self.apply_window()  # fuera de la selección se comporta como cualquier otra ventana (Alt+Tab)
                     self.kit.anim = True
@@ -384,6 +386,10 @@ class GUI:
                     self.ctx["roster_pl"] = ev[1]
                     if self.view == "game":
                         self.game_view.refresh(self.make_ctx(), True)
+                elif kind == "live":
+                    self.ctx["live"] = ev[1]
+                    if self.view == "game":
+                        self.game_view.on_live(self.make_ctx())
                 elif kind == "live_aug":
                     self.ctx["live_aug"] = ev[1]
                     if self.view == "game":
@@ -1185,6 +1191,8 @@ class GUI:
             lambda v: self.set("topmost_mode", tops[v], redraw=False))
         note("«En la selección»: solo mientras eliges campeón; el resto del tiempo se comporta como cualquier ventana (Alt+Tab).")
         switch("Modo compacto (solo turno y lo recomendado)", "compact")
+        switch("Datos en vivo durante la partida", "live_enabled")
+        note("En «Partida», marcador, objetos y estado de los 10 jugadores. Lee la API local del propio juego (la de la tabla de puntuación); no toca la partida.")
 
         section("Al abrir")
         starts = {"Última usada": "ultima", "Asesor": "asesor", "Enfrentamiento": "enfrentamiento", "Repertorio": "repertorio", "Historial": "historial", "Datos": "datos"}
@@ -1327,6 +1335,10 @@ class GUI:
 
     def live_augments(self, found):
         self.q.put(("live_aug", found))
+
+    def live(self, summary):
+        """Resumen de la partida en vivo (live.summarize), leído por el motor cada ~10 s durante la partida."""
+        self.q.put(("live", summary))
 
     def show_notes(self):
         """Ventana de novedades (la misma que sale al abrir una versión nueva)."""
