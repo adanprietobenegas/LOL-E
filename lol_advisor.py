@@ -406,7 +406,8 @@ def maybe_update_opgg(conf, champs, P, force=False):
         c, m = parse_opgg(html)
         if len(c) < 5:
             raise ValueError("la pagina no trajo datos (perfil no encontrado o web cambiada)")
-        write_json(path, {"ts": time.time(), "games": P["games"], "champs": c, "matchups": m, "ladder": parse_ladder(html)})
+        # si la página ya no trae el puesto (formato cambiado), se conserva el último conocido en vez de borrarlo
+        write_json(path, {"ts": time.time(), "games": P["games"], "champs": c, "matchups": m, "ladder": parse_ladder(html) or meta.get("ladder")})
         OPGG_MSG = f"op.gg actualizado: {len(c)} campeones y {len(m)} enfrentamientos"
         return load_season(champs, conf)
     except Exception as e:

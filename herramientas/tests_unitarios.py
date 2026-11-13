@@ -830,6 +830,47 @@ class Op_ggSinRed(unittest.TestCase):
             self.assertTrue(trends.load(d, "16.21")["stale"])
 
 
+class PuestoOpgg(unittest.TestCase):
+    def test_si_la_pagina_pierde_el_puesto_se_conserva_el_ultimo(self):
+        import json, tempfile, time
+        from unittest import mock
+        import lol_advisor as l
+        tmp = tempfile.mkdtemp()
+        conf = {"opgg_name": "N", "opgg_tag": "T", "opgg_region": "euw", "opgg_enabled": True, "opgg_update_hours": 0, "opgg_update_games": 0}
+        champs = "".join('{"id":%d,"play":10,"win":5,"lose":5,"match_up_stats":[]}' % i for i in range(1, 7))
+        con = champs + 'Ladder Rank <span class="x">1,000</span> (12.5% of top)'
+        sin = champs
+        old_cache, old_try = l.CACHE, l._opgg_last_try
+        l.CACHE = tmp
+        try:
+            for html, esperado in ((con, {"rank": 1000, "top": 12.5}), (sin, {"rank": 1000, "top": 12.5})):
+                l._opgg_last_try = 0
+                with mock.patch.object(l, "fetch_opgg", return_value=html):
+                    l.maybe_update_opgg(conf, {}, {"games": 5}, force=True)
+                self.assertEqual(json.load(open(l.opgg_path(conf)))["ladder"], esperado)
+        finally:
+            l.CACHE, l._opgg_last_try = old_cache, old_try
+
+
+class MetaFormato(unittest.TestCase):
+    def prueba(self, wr):
+        import io, json
+        from unittest import mock
+        import meta
+        cuerpo = json.dumps({"avgWr": 50, "cid": {str(i): {"wr": wr, "pr": 1, "br": 1, "games": 500, "lane": "top"} for i in range(1, 8)}}).encode()
+        r = mock.MagicMock()
+        r.__enter__.return_value.read.return_value = cuerpo
+        with mock.patch("meta.urllib.request.urlopen", return_value=r):
+            return meta._fetch("16.21", "top", "gold_plus")
+
+    def test_tasas_en_porcentaje_se_aceptan_y_otras_escalas_se_rechazan(self):
+        self.assertEqual(len(self.prueba(51.5)[0]), 7)
+        with self.assertRaises(ValueError):
+            self.prueba(0.515)                      # la web pasó a fracciones
+        with self.assertRaises(ValueError):
+            self.prueba(515)                        # o a décimas de punto
+
+
 class ParcheDeLaBuild(unittest.TestCase):
     def test_el_parche_se_lee_de_la_pagina(self):
         import builds

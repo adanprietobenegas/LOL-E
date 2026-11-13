@@ -19,6 +19,10 @@ def _fetch(patch, lane, tier):
     rows = d.get("cid") or {}
     out = {k: {"wr": v["wr"], "pr": v["pr"], "br": v["br"], "games": v["games"], "d": v.get("avgWrDelta", 0)}
            for k, v in rows.items() if isinstance(v, dict) and v.get("games", 0) >= 200 and v.get("lane", lane) == lane}
+    if out:   # validador de forma: la tasa de victoria debe estar en porcentaje (≈ 50). Si la web cambia de escala o de campo, mejor fallar y usar lo guardado
+        wrs = sorted(v["wr"] for v in out.values())
+        if not isinstance(wrs[0], (int, float)) or not 35 <= wrs[len(wrs) // 2] <= 65:
+            raise ValueError("el formato del meta ha cambiado (tasas de victoria fuera de rango)")
     return out, d.get("avgWr", 50)
 
 
