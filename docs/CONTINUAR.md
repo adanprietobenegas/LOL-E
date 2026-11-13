@@ -11,9 +11,9 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 
 ## Dónde está (13/11/2026)
 
-- **Publicada en GitHub: 1.22.7.** En `main` y construida en `release/`: **1.22.8**, con el arreglo de las líneas
-  (Renekton figuraba como jungla). **Pendiente de que el usuario diga «publica 1.22.8».**
-- Pruebas: `python herramientas/tests_unitarios.py` → 54, todas pasan. Con LoL abierto y fuera de partida:
+- **Publicada en GitHub: 1.22.8** (13/11/2026): el arreglo de las líneas (Renekton figuraba como jungla).
+  En `main`, SIN publicar: elegir el rival de línea a mano ahora recalcula también las puntuaciones (ver abajo).
+- Pruebas: `python herramientas/tests_unitarios.py` → 57, todas pasan. Con LoL abierto y fuera de partida:
   `python herramientas/prueba_cliente_real.py` (solo lectura, sobre una copia temporal) → TODO BIEN con la 1.22.8.
 - La actualización automática funciona: el usuario confirmó que su 1.22.5 pasó sola a la 1.22.6. Cualquier PC con una
   versión anterior a la 1.22.5 necesita instalar a mano UNA vez (tenía guardada vacía la dirección de actualizaciones).
@@ -56,11 +56,12 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 
 | Herramienta | Para qué |
 |---|---|
-| `tests_unitarios.py` | 54 pruebas sin ventana ni cliente (incluye el bucle principal contra el cliente falso) |
+| `tests_unitarios.py` | 57 pruebas sin ventana ni cliente (incluye el bucle principal contra el cliente falso) |
 | `prueba_cliente_real.py` | Lectura de solo lectura contra el cliente REAL (cuenta, historial, migración, líneas, perfil) |
 | `capturas.py [ancho] [alto] [carpeta]` | Capturas de todas las pantallas sin cliente; `LOLE_SOLO`, `LOLE_PAGINAS`, `LOLE_CONF`, `LOLE_PERFIL` |
 | `demo_falso.py` | La app entera (ventana + bucle) contra el cliente falso, con una captura por fase |
 | `tiempos.py [ancho] [texto]` | Mide y perfila el pintado de cada pantalla |
+| `validar_lineas.py [n]` | Con el cliente abierto: cruza etiqueta de línea, Aplastar y objeto de rol en n partidas (valida `history.role_of`) |
 | `cliente_falso.py` | Cliente de mentira con guion por pasos (lo usan las pruebas y la demo) |
 
 ## Lo que se sabe del cliente de LoL (cosas que costaron descubrir)
@@ -74,9 +75,20 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 - `cache/diag.log` (conexión, cuenta, fases, lecturas) y `cache/error.log` son lo primero que pedir a quien diga que
   «no le sale» algo: Ajustes › «Copiar informe de diagnóstico».
 
+## Hecho el 13/11 después de publicar la 1.22.8 (en `main`, sin publicar)
+
+- **Rival elegido a mano**: antes solo cambiaba la build y la guía; las puntuaciones y el orden de las recomendaciones
+  seguían calculándose contra el rival automático. Ahora `gui.set_opp` guarda la elección en `conf["_opp"]` (clave con
+  «_»: no se escribe en config.json) y pide `recalc`; `_advise` la usa como `lane_opp` y conserva aparte
+  `lane_opp_auto`. Comprobado con la app real contra el cliente falso (`LOLE_RIVAL=1 python herramientas/demo_falso.py 5 rival`):
+  Malphite pasa de 9,09 a 10,89 puntos con el motivo «contra Tryndamere: 3/3»; 3 pruebas nuevas.
+- No se pudo ampliar la validación del objeto de rol: el cliente se cerró. `validar_lineas.py` queda listo para
+  cuando esté abierto; solo con eso se podría usar el objeto de rol también en las partidas con línea «NONE»
+  (8 de las 55 de Grieta del usuario quedan sin línea).
+
 ## Siguiente trabajo, por orden
 
-1. **Publicar la 1.22.8** si el usuario lo confirma. Después, que el usuario mire en su Historial y su Repertorio que
+1. **Publicar lo acumulado** (rival a mano) como 1.22.9 si el usuario lo confirma. Que el usuario mire en su Historial y su Repertorio que
    ya no hay toplanes como jungla, y en su próxima partida que salen los 10 jugadores y que el Historial suma la nueva.
 2. **Probar una partida completa con el cliente real** (lo único que queda sin ver): cola, selección, carga, partida
    y fin. Lo más útil: que el usuario juegue con LOL-E abierto y después pasar `prueba_cliente_real.py` y mirar

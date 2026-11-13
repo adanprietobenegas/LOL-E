@@ -48,7 +48,7 @@ El estado del día a día sigue en `ESTADO_Y_PENDIENTES.md`.
 - Tablero de jugadores: fuera de su rol habitual, primera vez con el campeón, racha, dúos. Con umbrales
   prudentes para no etiquetar con 3 partidas.
 - Resumen de una frase al terminar cada partida.
-- Recalcular las recomendaciones cuando eliges el rival a mano.
+- Hecho (13/11/2026, sin publicar): recalcular las recomendaciones cuando eliges el rival a mano.
 - Antigüedad visible de cada dato de build y meta (parche en que se leyó).
 
 ## Etapa 4 · Mantenimiento

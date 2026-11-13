@@ -1243,7 +1243,18 @@ class GUI:
                    "de tu cliente; nunca interviene en la partida.", 10, "dim", wraplength=self.note_w(), justify="left").pack(
             anchor="w", padx=14, pady=(0, 10))
 
-    opp_choice = 0  # rival de línea elegido a mano (0 = el que se deduce solo)
+    _opp_choice = 0  # rival de línea elegido a mano (0 = el que se deduce solo)
+
+    @property
+    def opp_choice(self):
+        return self._opp_choice
+
+    @opp_choice.setter
+    def opp_choice(self, v):
+        """También se lo cuenta al motor (conf["_opp"], que no se guarda): las puntuaciones de la selección se calculan contra él."""
+        self._opp_choice = v or 0
+        self.conf["_opp"] = self._opp_choice
+
 
     def apply_opp(self, r):
         """Aplica a la selección actual el rival de línea elegido a mano; si ya no está entre los rivales, se descarta."""
@@ -1262,6 +1273,7 @@ class GUI:
         if self.advisor == "select" and r:
             self.apply_opp(r)
             self.update_plan(r)
+            self.cmds.put("recalc")   # el motor vuelve a puntuar contra este rival; lo nuevo llega en ~1 s y repinta la selección
         elif plan:
             plan["opp"] = self.opp_choice or plan.get("opp_auto") or 0
             try:

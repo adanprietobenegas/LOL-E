@@ -550,6 +550,52 @@ class FlujoCompleto(unittest.TestCase):
         self.assertEqual(sorted(json.loads(self.leer("history_cuentaB.json"))), ["500"])
 
 
+class RivalElegidoAMano(unittest.TestCase):
+    """Elegir a mano el rival de línea cambia también las puntuaciones, no solo la build."""
+    def setUp(self):
+        try:
+            self.champs = core.load_champions()
+        except Exception as e:
+            self.skipTest(f"sin datos de campeones en cache/: {e}")
+        from cliente_falso import ClienteFalso, SELECCION
+        import copy
+        self.s = copy.deepcopy(SELECCION)
+        self.s["theirTeam"][1]["championId"] = 23          # el rival de la línea de arriba es Yasuo (157); Tryndamere (23) va de jungla
+        self.P = core.load_player_data(ClienteFalso(), {})
+        self.conf = core.load_conf()
+        self.conf.pop("_opp", None)
+
+    def cand(self, r, cid):
+        return next(c for c in r["cands"] if c["cid"] == cid)
+
+    def test_el_rival_elegido_cambia_la_puntuacion_y_se_puede_soltar(self):
+        self.P["matchups"][(54, 23)] = [8, 8]               # con Malphite siempre has ganado a Tryndamere
+        base = core.advise(self.s, self.champs, self.P, self.conf)
+        self.assertEqual((base["lane_opp"], base["lane_opp_auto"]), (157, 157))
+        self.assertNotIn("contra Tryndamere", " ".join(self.cand(base, 54)["why"]))
+        self.conf["_opp"] = 23
+        r = core.advise(self.s, self.champs, self.P, self.conf)
+        self.assertEqual((r["lane_opp"], r["lane_opp_auto"]), (23, 157))     # el automático se conserva aparte
+        self.assertIn("contra Tryndamere: 8/8", " ".join(self.cand(r, 54)["why"]))
+        self.assertGreater(self.cand(r, 54)["score"], self.cand(base, 54)["score"])
+        self.conf["_opp"] = 0                                                # «Auto»: vuelve a lo de antes
+        self.assertEqual(self.cand(core.advise(self.s, self.champs, self.P, self.conf), 54)["score"], self.cand(base, 54)["score"])
+
+    def test_un_rival_que_ya_no_esta_se_ignora(self):
+        self.conf["_opp"] = 999
+        self.assertEqual(core.advise(self.s, self.champs, self.P, self.conf)["lane_opp"], 157)
+
+    def test_la_eleccion_no_se_guarda_en_la_configuracion(self):
+        tmp, orig = tempfile.mkdtemp(), core.CONF_FILE
+        core.CONF_FILE, core.DATA_DIR = os.path.join(tmp, "config.json"), tmp
+        try:
+            self.conf["_opp"] = 23
+            core.save_conf(self.conf)
+            self.assertNotIn("_opp", json.load(open(core.CONF_FILE)))
+        finally:
+            core.CONF_FILE, core.DATA_DIR = orig, os.path.dirname(orig)
+
+
 class LineaQueJugaste(unittest.TestCase):
     """Caso real: Renekton aparecía como «jungla» en el historial. El cliente etiquetó JUNGLE a los dos jugadores de un equipo
     (Renekton y Master Yi) y a ninguno como TOP; solo Master Yi llevaba Aplastar."""

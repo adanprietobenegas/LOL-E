@@ -927,6 +927,10 @@ def _advise(session, champs, P, conf, mode):
     enemies = [p["championId"] for p in session["theirTeam"] if p["championId"]]
     lane_opp = next((p["championId"] for p in session["theirTeam"]
                      if p["championId"] and role and norm_role(p.get("assignedPosition")) == role), 0)
+    auto_opp = lane_opp   # el que se deduce solo, por la posición asignada
+    forced = conf.get("_opp") or 0   # rival elegido a mano en la ventana (clave con «_»: no se guarda en config.json)
+    if forced and forced in enemies:
+        lane_opp = forced   # las puntuaciones («contra tu rival», afinidad, orden) se calculan contra ese
     bans = [b for b in session["bans"]["myTeamBans"] + session["bans"]["theirTeamBans"] if b]
     taken = set(allies) | set(enemies) | set(bans)
     if mode["kind"] == "other":  # Arena, Swiftplay...: no tiene sentido recomendar nada
@@ -975,7 +979,9 @@ def _advise(session, champs, P, conf, mode):
                       "lane": (lane_opp, *P["matchups"].get((cid, lane_opp), [0, 0])) if lane_opp else None,
                       "vs": [(e, *P["matchups"][(cid, e)]) for e in enemies if (cid, e) in P["matchups"]],
                       "build": build_tips(champs[cid], ens, als)})
-    return _result(session, champs, P, conf, mode, role, allies, enemies, lane_opp, bans, taken, cands, ens, als)
+    res = _result(session, champs, P, conf, mode, role, allies, enemies, lane_opp, bans, taken, cands, ens, als)
+    res["lane_opp_auto"] = auto_opp   # la ventana lo necesita para ofrecer «Auto» aunque estés viendo otro rival
+    return res
 
 
 def name(cid, champs):

@@ -35,6 +35,12 @@ try:
 except Exception as e:
     print("sin meta:", e, flush=True)
 
+RIVAL = bool(os.environ.get("LOLE_RIVAL"))   # prueba del rival elegido a mano: Tryndamere (23) en la jungla rival y 3 victorias tuyas con Malphite contra él
+if RIVAL:
+    import cliente_falso, json
+    cliente_falso.SELECCION["theirTeam"][1]["championId"] = 23
+    json.dump({str(900 + i): {"c": 54, "w": True, "r": "TOP", "o": 23, "q": 420, "t": 1000 + i, "a": [], "p": [], "rv": history.ROLE_V} for i in range(3)},
+              open(os.path.join(TMP, "games_yo-puuid-0001.json"), "w"))
 fake = ClienteFalso()
 t0 = time.time()
 guion = ["None"] + GUION   # un paso de reposo al principio para ver el inicio
@@ -63,6 +69,16 @@ def grab(name):
     print("capturada", name, "| vista:", ui.view, "| página:", ui.page, flush=True)
 
 
+def malphite():
+    r = ui.ctx.get("r") or {}
+    c = next((x for x in r.get("cands", []) if x["cid"] == 54), None)
+    return (r.get("lane_opp"), r.get("lane_opp_auto"), c and c["score"], c and [w for w in c["why"] if w.startswith("contra")])
+
+
+if RIVAL:
+    ui.root.after(int(4.9 * PASO * 1000), lambda: print("ANTES   (rival, auto, puntos de Malphite, motivo):", malphite(), flush=True))
+    ui.root.after(int(5.0 * PASO * 1000), lambda: ui.set_opp(23))
+    ui.root.after(int(5.0 * PASO * 1000) + 3500, lambda: print("DESPUÉS (rival, auto, puntos de Malphite, motivo):", malphite(), flush=True))
 for i, fase in enumerate(guion):
     ui.root.after(int((i + 0.8) * PASO * 1000), lambda i=i, fase=fase: grab(f"{i:02d}_{fase}"))
 ui.root.after(int((len(guion) + 0.3) * PASO * 1000), ui.close)
