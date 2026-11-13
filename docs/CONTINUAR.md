@@ -51,6 +51,9 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
   desconocida que luego aparece (el reloj del test avanza ~40 s por paso), y las sesiones raras que antes comprobaba `test_modes.py` (que
   necesitaba el cliente real). Construcción diferida de los controles de filtros (ahorra ~30 ms por repintado de la selección, medido a/b).
 
+**En `main` sin publicar** (candidata a 1.22.12):
+- **Ficha «Tus PL guardados»** en Rango y logros del inicio: línea de PL acumulados por partida clasificatoria (`analysis.lp_series` sobre `lp.json`); solo se ve con 3+ partidas con dato. Probado con una serie de ejemplo (captura 17b).
+
 ***Pendiente de ver en la realidad*** (no se puede cerrar sin el usuario o sin otra partida):
 1. La instalación del usuario corría la 1.22.9 el 13/11 a las 17:59: basta con cerrar y abrir LOL-E fuera de cola para pasar a la
    1.22.10. Después, en su `diag.log` debe aparecer «Partidas antiguas recalculadas con su detalle…», y su Historial/Repertorio no deben
