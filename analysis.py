@@ -407,6 +407,60 @@ def advice(a, opp, champs=None):
 
 
 # ------------------------------------------------------------------ carga
+SR_QUEUES = {400, 420, 430, 440, 480, 490, 700, 710}   # las de la Grieta (la misma lista que lol_advisor.SR_QUEUES)
+
+
+def _mode_key(q):
+    return "aram" if q in ARAM_QUEUES else "sr" if q in SR_QUEUES else q
+
+
+def vs_average(game, games, min_games=3):
+    """Compara UNA partida tuya con tu media. `game` y `games` son registros de history.py (c campeón, q cola, k/de/a, cs, d duración,
+    rm rehecha). La media es con ese campeón si hay al menos `min_games` partidas más con él; si no, con las demás del mismo modo.
+    Devuelve {scope: «champ»|«mode», n, kda: (esta, media), cspm: (esta, media)|None, wins: (victorias, n)} o None si no hay con qué
+    comparar. KDA = (bajas + asistencias) / max(1, muertes), con la media sobre la suma de todas (no la media de cocientes)."""
+    if not game or game.get("k") is None:
+        return None
+    otras = [g for g in games or [] if g.get("id") != game.get("id") and g.get("k") is not None and not g.get("rm")]
+    mismas = [g for g in otras if g.get("c") == game.get("c") and _mode_key(g.get("q")) == _mode_key(game.get("q"))]
+    if len(mismas) >= min_games:
+        pool, scope = mismas, "champ"
+    else:
+        pool, scope = [g for g in otras if _mode_key(g.get("q")) == _mode_key(game.get("q"))], "mode"
+        if len(pool) < min_games:
+            return None
+
+    def kda(rows):
+        return (sum(g["k"] + g["a"] for g in rows)) / max(1, sum(g["de"] for g in rows))
+
+    def cspm(rows):
+        mins = sum(g["d"] / 60 for g in rows if g.get("d") and g.get("cs") is not None)
+        return sum(g["cs"] for g in rows if g.get("d") and g.get("cs") is not None) / mins if mins else None
+    cs_this = cspm([game]) if _mode_key(game.get("q")) != "aram" else None
+    cs_avg = cspm(pool) if cs_this is not None else None
+    return {"scope": scope, "n": len(pool), "kda": (kda([game]), kda(pool)),
+            "cspm": (cs_this, cs_avg) if cs_this is not None and cs_avg else None, "wins": (sum(1 for g in pool if g.get("w")), len(pool))}
+
+
+def average_lines(cmp, champ_name=""):
+    """Frases (texto, tono «good»/«bad»/«dim») a partir de `vs_average`. Solo marca bueno o malo si se aleja un 25 % o más de tu media."""
+    if not cmp:
+        return []
+    donde = f"con {champ_name} ({cmp['n']} partidas)" if cmp["scope"] == "champ" and champ_name else f"en este modo ({cmp['n']} partidas)"
+
+    def tono(esta, media):
+        return "good" if esta >= media * 1.25 else "bad" if esta <= media * 0.75 else "dim"
+
+    def fmt(x):
+        return f"{x:.1f}".replace(".", ",")
+    ke, km = cmp["kda"]
+    out = [(f"KDA {fmt(ke)} frente a tu media de {fmt(km)} {donde}.", tono(ke, km))]
+    if cmp.get("cspm"):
+        ce, cm = cmp["cspm"]
+        out.append((f"Farmeo {fmt(ce)} cs/min frente a {fmt(cm)}.", tono(ce, cm)))
+    return out
+
+
 def headline(a, items):
     """Una frase con la conclusión de la partida, a partir de los mismos datos que los consejos (no añade juicio propio).
     En una derrota manda lo que más pesó; en una victoria, lo mejor. Vacía si no hay nada destacable."""

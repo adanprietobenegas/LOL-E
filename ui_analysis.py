@@ -6,6 +6,7 @@ import tkinter as tk
 import customtkinter as ctk
 
 import analysis
+import history
 import lol_advisor as core
 from ui_history import fecha
 from ui_kit import PAL
@@ -121,6 +122,7 @@ class AnalysisView:
         self.header(host, a, opp)
         adv = analysis.advice(a, opp, ui.champs)
         self.headline(host, a, adv)
+        self.media(host, a)
         self.kpis(host, a, opp)
         ev = self.events(a)
         nb, ng = sum(1 for x in adv if x["tone"] == "bad"), sum(1 for x in adv if x["tone"] == "good")
@@ -182,6 +184,17 @@ class AnalysisView:
         if txt:
             self.ui.lbl(host, txt, 12, "fg", True, anchor="w", justify="left",
                         wraplength=max(260, self.gv.width - 110)).pack(anchor="w", pady=(0, 10))
+
+    def media(self, host, a):
+        """Tu partida frente a tu media (con ese campeón si hay partidas suficientes): una o dos líneas bajo el titular."""
+        try:
+            todas = history.load_all(history.hpath(core.CACHE), history.gpath(core.CACHE))
+            este = next((g for g in todas if str(g["id"]) == str(self.gv.gid)), None)
+            nombre = self.ui.champs.get((este or {}).get("c"), {}).get("name", "")
+            for txt, tono in analysis.average_lines(analysis.vs_average(este, todas), nombre):
+                self.ui.lbl(host, txt, 11, tono, anchor="w", justify="left", wraplength=max(260, self.gv.width - 110)).pack(anchor="w", pady=(0, 3))
+        except Exception:
+            core.log_exc("Tu partida frente a tu media")
 
     def header(self, host, a, opp):
         ui, gv = self.ui, self.gv

@@ -738,6 +738,50 @@ class PrivacidadDeLosDatosGuardados(unittest.TestCase):
                     self.assertRegex(m.group(1), r"(lcu|self)\.base")
 
 
+class TuPartidaFrenteATuMedia(unittest.TestCase):
+    @staticmethod
+    def g(i, c, k, de, a, cs=150, d=1800, q=420, w=True, **extra):
+        return {"id": str(i), "c": c, "q": q, "k": k, "de": de, "a": a, "cs": cs, "d": d, "w": w, **extra}
+
+    def test_con_ese_campeon_si_hay_partidas_suficientes(self):
+        import analysis
+        hoy = self.g(100, 147, 1, 6, 14, cs=30, d=1700)                                     # Seraphine, 15/6 de KDA 2,5
+        previas = [self.g(i, 147, 2, 4, 6, cs=24, d=1800) for i in range(1, 5)] + [self.g(50, 86, 9, 1, 1, cs=300)]
+        r = analysis.vs_average(hoy, previas + [hoy])
+        self.assertEqual((r["scope"], r["n"], r["wins"]), ("champ", 4, (4, 4)))              # solo las 4 de Seraphine; la de Garen no cuenta
+        self.assertAlmostEqual(r["kda"][0], 15 / 6)
+        self.assertAlmostEqual(r["kda"][1], (4 * 8) / 16)                                    # (suma de K+A) / suma de muertes, no media de cocientes
+        self.assertAlmostEqual(r["cspm"][0], 30 / (1700 / 60))
+        lineas = analysis.average_lines(r, "Seraphine")
+        self.assertEqual(lineas[0], ("KDA 2,5 frente a tu media de 2,0 con Seraphine (4 partidas).", "good"))    # +25 %
+        self.assertEqual(lineas[1][1], "dim" if abs(r["cspm"][0] / r["cspm"][1] - 1) < .25 else lineas[1][1])
+
+    def test_sin_partidas_con_ese_campeon_se_compara_con_el_modo(self):
+        import analysis
+        hoy = self.g(100, 147, 8, 2, 8)
+        previas = [self.g(i, 86, 2, 4, 6) for i in range(1, 6)] + [self.g(20, 86, 9, 1, 1, q=450)]    # una de ARAM: otro modo
+        r = analysis.vs_average(hoy, previas)
+        self.assertEqual((r["scope"], r["n"]), ("mode", 5))
+        self.assertIn("en este modo (5 partidas)", analysis.average_lines(r, "Seraphine")[0][0])
+
+    def test_no_se_compara_sin_datos_o_con_registros_antiguos(self):
+        import analysis
+        hoy = self.g(100, 147, 8, 2, 8)
+        self.assertIsNone(analysis.vs_average(hoy, [hoy]))                                   # nada con qué comparar
+        self.assertIsNone(analysis.vs_average(hoy, [hoy, self.g(1, 86, 1, 1, 1), self.g(2, 86, 1, 1, 1)]))   # solo 2: poco
+        self.assertIsNone(analysis.vs_average({"id": "1", "c": 1, "q": 420, "k": None}, []))   # un registro antiguo sin K/D/A
+        self.assertEqual(analysis.average_lines(None, "X"), [])
+        legacy = [{"id": str(i), "c": 147, "q": 420, "k": None} for i in range(9)]            # partidas guardadas sin K/D/A: no cuentan
+        self.assertIsNone(analysis.vs_average(hoy, legacy))
+
+    def test_aram_no_compara_el_farmeo(self):
+        import analysis
+        hoy = self.g(100, 147, 8, 2, 8, q=450)
+        r = analysis.vs_average(hoy, [self.g(i, 147, 2, 4, 6, q=450) for i in range(1, 5)])
+        self.assertIsNone(r["cspm"])
+        self.assertEqual(len(analysis.average_lines(r, "Seraphine")), 1)
+
+
 class Documentacion(unittest.TestCase):
     """El punto de partida de las conversaciones nuevas (docs/CONTINUAR.md) no puede quedarse atrás: estas pruebas fallan si no se actualiza."""
     def leer(self, nombre):

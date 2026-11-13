@@ -41,6 +41,7 @@ def body(an, host, a):
     header(an, host, a)
     adv = analysis.advice(a, None, ui.champs)
     an.headline(host, a, adv)
+    an.media(host, a)
     awards(an, host, a)
     an.kpis(host, a, None)
     ui.fold(host, "Lo más interesante de la partida", lambda p: an.advice(p, a, None, adv), f"{len(adv)} datos", "an_advice", True)
