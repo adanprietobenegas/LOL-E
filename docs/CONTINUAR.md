@@ -11,11 +11,11 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
 
 ## Dónde está
 
-- Versión en `main` y publicada en GitHub: **1.22.6** (13/11/2026).
+- Versión en `main` y publicada en GitHub: **1.22.7** (13/11/2026).
 - **Por qué no se actualizaban los PC antiguos (resuelto en la 1.22.5):** su `config.json` guardaba `"update_url": ""`
   y eso tapaba la dirección de fábrica; la app nunca buscaba versiones. `load_conf` ya trata el vacío como «la de
   fábrica». Cada PC con una versión anterior a la 1.22.5 necesita UNA instalación manual; después llegan solas.
-  Pendiente: confirmar que una 1.22.5 instalada pasa sola a la 1.22.6 (preguntar al usuario).
+  CONFIRMADO el 13/11/2026: una 1.22.5 instalada pasó sola a la 1.22.6.
 - Pruebas: `python herramientas/tests_unitarios.py` (48, todas pasan).
 - Pendiente de que el usuario confirme en su app que el análisis del ARAM de Lillia ya no muestra Sona.
 
@@ -200,14 +200,12 @@ partidas entregadas y reconocidas como suyas, historial antiguo (220) heredado s
 182 maestrías y lectura de un jugador correctos, sin fallos registrados.
 
 Hallazgo: al recién abrir el cliente, `owned-champions-minimal` contestó vacío en la primera lectura (0 campeones) y
-después 257. Con la lista vacía la app trata todos los campeones como tuyos. Arreglado en `main` (sin publicar): se
+después 257. Con la lista vacía la app trata todos los campeones como tuyos. Arreglado y publicado en la 1.22.7: se
 apunta en el diagnóstico y el bucle reintenta cada 30 s hasta 12 veces mientras `owned` esté vacío.
 Sigue sin probar el flujo de una partida completa con el cliente real.
 
 ## Pendiente inmediato
 
-1. Preguntar al usuario si su app pasó sola de la 1.22.5 a la 1.22.6 (el ejecutable instalado cambió el 12/11 a las
-   21:16, así que instaló algo a mano; no se sabe qué versión).
-2. Rendimiento: repintar una sola sección pequeña cuesta ~300 ms aunque construirla sean 36 ms; el resto es el
+1. Rendimiento: repintar una sola sección pequeña cuesta ~300 ms aunque construirla sean 36 ms; el resto es el
    recálculo y redibujado de toda la página que hace Tk. Pide menos widgets por pantalla, no retoques.
    `python herramientas/tiempos.py 560 "solo"` da el desglose por sección.

@@ -10,6 +10,10 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.7", "fecha": "13 de noviembre de 2026", "titulo": "Tus campeones, también al abrir el cliente", "items": [
+        ("arreglo", "Si abrías LOL-E justo cuando el cliente de LoL acababa de arrancar, la lista de campeones que tienes podía llegar vacía y LOL-E contaba todos como tuyos: «Mis campeones» y «Los que tengo» no filtraban nada. Ahora lo detecta, lo apunta en el registro de diagnóstico y lo vuelve a pedir cada 30 segundos hasta que llega."),
+        ("mejora", "Comprobado con tu cliente real de LoL: cuenta, historial (también el que ya tenías guardado), perfil, maestrías y lectura de un jugador."),
+    ]},
     {"v": "1.22.6", "fecha": "13 de noviembre de 2026", "titulo": "Más ágil y con los fallos a la vista", "items": [
         ("mejora", "Las pantallas más cargadas se pintan entre un 25 y un 45 % más rápido: la selección, el plan y el análisis de «Partida» y el «Enfrentamiento» con rival. Medido en una ventana de pruebas; con LoL en marcha la mejora puede notarse distinto."),
         ("arreglo", "Diecisiete lecturas del cliente que fallaban sin decir nada (maestrías, perfil, rango, retos, datos de otros jugadores…) ahora dejan rastro: si el cliente no responde, en el registro de diagnóstico; si es un fallo de LOL-E, en el registro de errores."),

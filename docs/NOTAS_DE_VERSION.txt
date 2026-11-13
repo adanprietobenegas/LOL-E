@@ -7,6 +7,16 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.7   (13 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Hallazgo de herramientas/prueba_cliente_real.py contra el cliente real: tras abrir LoL, la primera lectura de
+    /lol-champions/v1/owned-champions-minimal vino vacía y la siguiente dio 257. Con P["owned"] vacío, la app trata todos
+    los campeones como del jugador. load_player_data lo apunta en diag.log y el bucle reintenta cada 30 s (hasta 12
+    veces) mientras owned esté vacío.
+  · Confirmado por el usuario: una 1.22.5 instalada pasó sola a la 1.22.6 (el arreglo de update_url vacío funciona).
+  · No probado el flujo de una partida completa con el cliente real.
+
 VERSIÓN 1.22.6   (13 de noviembre de 2026)
 ---------------------------------------------------------------------
 
