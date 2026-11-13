@@ -52,6 +52,7 @@ def load(cache_dir, patch, force=False, region="all"):
     «region» es tu servidor (euw, na…) o «all»; las regiones líderes se comparan siempre."""
     region = region if region in REGIONS else "all"
     path = os.path.join(cache_dir, "trends.json")
+    saved = None
     try:
         saved = json.load(open(path, encoding="utf-8"))
         if not force and saved.get("v") == VERSION and saved["patch"] == patch and saved.get("region") == region and time.time() - saved["ts"] < TTL:
@@ -79,6 +80,8 @@ def load(cache_dir, patch, force=False, region="all"):
             rows[cid] = {"g": c.get("g", 0), "pr": c.get("pr", 0.0), "wr": c.get("wr", 0.0), "gp": o.get("g", 0), "pp": o.get("pr", 0.0), "r": reg}
         lanes[ln] = rows
     if not any(lanes.values()):
+        if saved and saved.get("v") == VERSION and saved.get("lanes"):   # sin red: las últimas tendencias guardadas, marcadas
+            return {**saved, "stale": True}
         raise RuntimeError("sin datos de tendencias")
     data = {"v": VERSION, "ts": time.time(), "patch": patch, "prev": prev, "region": region, "lanes": lanes}
     os.makedirs(cache_dir, exist_ok=True)

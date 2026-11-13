@@ -52,7 +52,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
   necesitaba el cliente real). Construcción diferida de los controles de filtros (ahorra ~30 ms por repintado de la selección, medido a/b).
 
 **Incluido en la 1.22.12** (publicada):
-- **Fuentes externas más robustas**: si Lolalytics no responde, la build y el meta usan lo último guardado y lo dicen («No se pudo actualizar ahora…»); si la página cambió de formato, el mensaje lo explica en vez de decir que no hay build. 4 pruebas con red simulada (`BuildSinRed`, `MetaSinRed`).
+- **Fuentes externas más robustas**: si Lolalytics no responde, la build y el meta usan lo último guardado y lo dicen («No se pudo actualizar ahora…»); si la página cambió de formato, el mensaje lo explica en vez de decir que no hay build. Lo mismo para las builds de op.gg y las tendencias. Pruebas con red simulada (`BuildSinRed`, `MetaSinRed`, `Op_ggSinRed`).
 - **«Qué aprender» en Repertorio** (`learn.py`): si una línea que juegas mucho depende de un solo campeón, propone un segundo de los que tienes con buena tasa en el parche. Solo sale con 8+ partidas en la línea; probado con datos de ejemplo (captura 18).
 - **Ficha «Tus PL guardados»** en Rango y logros del inicio: línea de PL acumulados por partida clasificatoria (`analysis.lp_series` sobre `lp.json`); solo se ve con 3+ partidas con dato. Probado con una serie de ejemplo (captura 17b).
 

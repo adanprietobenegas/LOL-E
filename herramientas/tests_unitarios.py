@@ -806,6 +806,30 @@ class InformeDeDiagnostico(unittest.TestCase):
         self.assertNotIn(os.path.expanduser("~") + os.sep + "Documents", txt.replace("\\", os.sep))   # las rutas personales se abrevian con ~
 
 
+class Op_ggSinRed(unittest.TestCase):
+    def test_sin_red_se_usa_lo_guardado_y_se_marca(self):
+        import json, os, tempfile, time
+        from unittest import mock
+        import opgg_builds, aram_builds, trends, matchups
+        d = tempfile.mkdtemp()
+        champ = {"icon": "Garen", "name": "Garen"}
+        os.makedirs(os.path.join(d, "builds"))
+        for mod, nombre, arg in ((opgg_builds, f"opgg_{matchups.slug(champ)}_top.json", "top"), (aram_builds, f"mode_aram_{matchups.slug(champ)}.json", "aram")):
+            json.dump({"ts": time.time() - 99 * 86400, "data": {"v": 1, "core": [1], "boots": [2]}}, open(os.path.join(d, "builds", nombre), "w"))
+            with mock.patch.object(mod, "_fetch", side_effect=OSError("sin red")):
+                r = mod.load(d, champ, arg)
+            self.assertTrue(r["stale"])
+            with mock.patch.object(mod, "_fetch", return_value="<html>otro formato</html>"):
+                self.assertTrue(mod.load(d, champ, arg)["stale"])                 # la página cambió y ya no se sabe leer: también lo guardado
+        vacio = tempfile.mkdtemp()
+        with mock.patch.object(opgg_builds, "_fetch", side_effect=OSError("sin red")):
+            with self.assertRaises(OSError):
+                opgg_builds.load(vacio, champ, "top")                              # sin nada guardado sigue fallando
+        json.dump({"v": trends.VERSION, "ts": time.time() - 99 * 3600, "patch": "16.20", "region": "all", "lanes": {"top": {"1": {"g": 5}}}}, open(os.path.join(d, "trends.json"), "w"))
+        with mock.patch.object(trends, "_fetch", return_value={}):
+            self.assertTrue(trends.load(d, "16.21")["stale"])
+
+
 class ParcheDeLaBuild(unittest.TestCase):
     def test_el_parche_se_lee_de_la_pagina(self):
         import builds

@@ -68,14 +68,23 @@ def _fetch(champ, lane):
 
 def load(cache_dir, champ, lane, force=False):
     path = os.path.join(cache_dir, "builds", f"opgg_{matchups.slug(champ)}_{lane}.json")
+    old = None
     try:
         saved = json.load(open(path, encoding="utf-8"))
+        old = saved["data"]
         if not force and time.time() - saved["ts"] < TTL:
-            return saved["data"]
+            return old
     except Exception:
         pass
-    data = parse(_fetch(champ, lane))
+    try:
+        data = parse(_fetch(champ, lane))
+    except Exception:
+        if old:   # sin red o la fuente falla: mejor lo último guardado (marcado) que nada
+            return {**old, "stale": True}
+        raise
     if not data:
+        if old:
+            return {**old, "stale": True}
         raise RuntimeError("op.gg no tiene todavía esta build.")
     os.makedirs(os.path.dirname(path), exist_ok=True)
     json.dump({"ts": time.time(), "data": data}, open(path, "w", encoding="utf-8"))
