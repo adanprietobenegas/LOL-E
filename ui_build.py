@@ -560,7 +560,7 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
                 if n3:
                     ui.lbl(b, "→", 12, "dim").pack(side="left", padx=(2, 0))
                     _item(ui, b, n3)
-            ui.lbl(b, "  según op.gg (Lolalytics no las incluye en esta build)", 9, "dim").pack(side="left")
+            ui.lbl(b, "  según op.gg (Lolalytics no las incluye en esta build)" + (" · últimos datos guardados" if ost[1].get("stale") else ""), 9, "dim").pack(side="left")
         else:
             ui.lbl(b, "Sin datos de botas para esta build.", 10, "dim").pack(side="left")
     core = [i for i in (it.get("core") or []) if not is_boots(ui, i)]

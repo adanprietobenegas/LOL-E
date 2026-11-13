@@ -871,6 +871,54 @@ class MetaFormato(unittest.TestCase):
             self.prueba(515)                        # o a décimas de punto
 
 
+class ReservaSoloSiEncaja(unittest.TestCase):
+    def test_tendencias_de_otra_region_y_meta_de_otro_rango_no_sirven_de_reserva(self):
+        import json, os, tempfile, time
+        from unittest import mock
+        import meta, trends
+        d = tempfile.mkdtemp()
+        json.dump({"v": trends.VERSION, "ts": time.time() - 99 * 3600, "patch": "16.20", "region": "euw", "lanes": {"top": {"1": {"g": 5}}}}, open(os.path.join(d, "trends.json"), "w"))
+        with mock.patch.object(trends, "_fetch", return_value={}):
+            with self.assertRaises(RuntimeError):
+                trends.load(d, "16.21", region="na")                 # lo guardado es de euw: no se enseña como si fuera de na
+            self.assertTrue(trends.load(d, "16.21", region="euw")["stale"])
+        json.dump({"ts": time.time() - 99 * 3600, "patch": "16.20", "current": "16.20", "tier": "silver_plus", "avg": {"top": 50},
+                   "lanes": {"top": {"10": {"wr": 51.0, "pr": 1, "br": 1, "games": 500, "d": 0}}}}, open(os.path.join(d, "meta.json"), "w"))
+        with mock.patch("meta.urllib.request.urlopen", side_effect=OSError("sin red")):
+            with self.assertRaises(RuntimeError):
+                meta.load(d, "16.21.1", "gold_plus")                 # lo guardado es de Plata+: no sirve para Oro+
+
+    def test_build_obsoleta_se_reintenta_pasado_un_rato(self):
+        import time
+        from unittest import mock
+        import builds
+        llamadas = []
+        def load(*a, **k):
+            llamadas.append(1)
+            return {"stale": True} if len(llamadas) == 1 else {"ok": 1}
+        champ = {"icon": "Zed", "name": "Zed"}
+        with mock.patch.object(builds, "load", load):
+            key = builds.request("x", champ, "mid")
+            for _ in range(50):
+                if builds.peek(key)[0] != "loading": break
+                time.sleep(.02)
+            self.assertTrue(builds.peek(key)[1]["stale"])
+            builds.request("x", champ, "mid")                          # antes de 5 min: no se vuelve a pedir
+            time.sleep(.1); self.assertEqual(len(llamadas), 1)
+            builds._stale_at[key] = time.time() - builds.STALE_RETRY - 1
+            builds.request("x", champ, "mid")                          # pasado el plazo: se reintenta y llega lo bueno
+            for _ in range(50):
+                if not builds.peek(key)[1].get("stale"): break
+                time.sleep(.02)
+            self.assertEqual(builds.peek(key)[1], {"ok": 1})
+
+    def test_un_cero_real_cuenta_en_la_media_por_minuto(self):
+        import analysis
+        g = lambda i, v: {"id": str(i), "c": 1, "q": 420, "k": 1, "de": 1, "a": 1, "cs": 10, "d": 1800, "dm": 1000, "v": v, "w": True}
+        r = analysis.vs_average(g(100, 30), [g(1, 0), g(2, 0), g(3, 30)])
+        self.assertAlmostEqual(r["vpm"][1], 30 / 90)                  # (0+0+30) puntos en 90 minutos: los ceros cuentan
+
+
 class ParcheDeLaBuild(unittest.TestCase):
     def test_el_parche_se_lee_de_la_pagina(self):
         import builds

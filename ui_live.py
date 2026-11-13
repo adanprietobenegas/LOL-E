@@ -29,21 +29,41 @@ def _rows(snap):
 LANES = {"TOP": "top", "JUNGLE": "jungle", "MIDDLE": "middle", "BOTTOM": "bottom", "SUPPORT": "support"}
 
 
+def _my_build(ui, snap, plan):
+    """(tú en el resumen, build de la web de tu campeón en tu línea) o None si no se puede saber: sin plan de la Grieta, sin catálogo de objetos,
+    sin saber quién eres o build aún sin cargar. Lo comparten la siguiente compra y el objeto contra los rivales."""
+    if not plan or not plan.get("cid") or plan.get("kind") not in (None, "sr") or plan["cid"] not in ui.champs or not ui.items:
+        return None
+    lane = LANES.get(plan.get("role") or "")
+    yo = next((p for p in snap["players"] if p["me"]), None)
+    if not lane or not yo:
+        return None
+    opp = plan.get("opp") or 0
+    st = builds.peek(builds.request(core.CACHE, ui.champs[plan["cid"]], lane, ui.champs[opp] if opp in ui.champs else None))
+    return (yo, st[1]) if st[0] == "ok" else None
+
+
+_memo = {"snap": None, "opp": None, "val": None}   # la misma lectura se consulta dos veces (aviso sonoro y pintado): se calcula una
+
+
 def buy_hint(ui, snap, plan):
-    """(frase, id del objeto) con tu siguiente compra según tu build de la web y lo que llevas, o None si no se puede saber (sin plan de la
-    Grieta, build aún sin cargar, catálogo sin recetas, nada que proponer)."""
+    if _memo["snap"] is snap and _memo["opp"] == (plan or {}).get("opp") and _memo["val"]:
+        return _memo["val"]
+    val = _buy_hint(ui, snap, plan)
+    if val:   # un None (build aún sin cargar) no se recuerda: se reintenta en la siguiente consulta
+        _memo.update(snap=snap, opp=(plan or {}).get("opp"), val=val)
+    return val
+
+
+def _buy_hint(ui, snap, plan):
+    """(frase, id del objeto, ¿puedes pagarlo ya?) con tu siguiente compra según tu build de la web y lo que llevas, o None si no se puede saber
+    (sin plan de la Grieta, build aún sin cargar, catálogo sin recetas, nada que proponer)."""
     try:
-        if not plan or not plan.get("cid") or plan.get("kind") not in (None, "sr") or plan["cid"] not in ui.champs:
+        mine = _my_build(ui, snap, plan)
+        if not mine:
             return None
-        lane = LANES.get(plan.get("role") or "")
-        yo = next((p for p in snap["players"] if p["me"]), None)
-        if not lane or not yo or not ui.items:
-            return None
-        opp = plan.get("opp") or 0
-        st = builds.peek(builds.request(core.CACHE, ui.champs[plan["cid"]], lane, ui.champs[opp] if opp in ui.champs else None))
-        if st[0] != "ok":
-            return None
-        order = shopping.build_order(st[1].get("items") or {}, lambda i: "Boots" in (ui.items.get(i) or {}).get("t", []))
+        yo, st = mine
+        order = shopping.build_order(st.get("items") or {}, lambda i: "Boots" in (ui.items.get(i) or {}).get("t", []))
         res = shopping.next_purchase(order, yo["items"], int(snap.get("gold") or 0), ui.items)
         return (shopping.describe(res, ui.items), res["id"], res["affordable"]) if res else None
     except Exception:
@@ -54,17 +74,11 @@ def buy_hint(ui, snap, plan):
 def counter_hint(ui, snap, plan, other):
     """(frase, id) con UN objeto contra lo que llevan los rivales (de los que más se compran con tu campeón), o None. Ver shopping.counter_item."""
     try:
-        if not plan or not plan.get("cid") or plan.get("kind") not in (None, "sr") or plan["cid"] not in ui.champs or not ui.items:
+        mine = _my_build(ui, snap, plan)
+        if not mine:
             return None
-        lane = LANES.get(plan.get("role") or "")
-        yo = next((p for p in snap["players"] if p["me"]), None)
-        if not lane or not yo:
-            return None
-        opp = plan.get("opp") or 0
-        st = builds.peek(builds.request(core.CACHE, ui.champs[plan["cid"]], lane, ui.champs[opp] if opp in ui.champs else None))
-        if st[0] != "ok":
-            return None
-        res = shopping.counter_item(live.itemization(other, ui.items), shopping.candidate_pool(ui.items, st[1]), ui.items, yo["items"])
+        yo, st = mine
+        res = shopping.counter_item(live.itemization(other, ui.items), shopping.candidate_pool(ui.items, st), ui.items, yo["items"])
         return (f"{res['why']} Opción de tu build: {ui.items[res['id']]['n']}.", res["id"]) if res else None
     except Exception:
         core.log_exc("Objeto contra los rivales")

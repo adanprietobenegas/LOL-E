@@ -80,7 +80,7 @@ def load(cache_dir, patch, force=False, region="all"):
             rows[cid] = {"g": c.get("g", 0), "pr": c.get("pr", 0.0), "wr": c.get("wr", 0.0), "gp": o.get("g", 0), "pp": o.get("pr", 0.0), "r": reg}
         lanes[ln] = rows
     if not any(lanes.values()):
-        if saved and saved.get("v") == VERSION and saved.get("lanes"):   # sin red: las últimas tendencias guardadas, marcadas
+        if saved and saved.get("v") == VERSION and saved.get("lanes") and saved.get("region") == region:   # sin red: las últimas tendencias guardadas, marcadas
             return {**saved, "stale": True}
         raise RuntimeError("sin datos de tendencias")
     data = {"v": VERSION, "ts": time.time(), "patch": patch, "prev": prev, "region": region, "lanes": lanes}

@@ -1549,7 +1549,7 @@ def prune_cache(days=21):
             pass
 
 
-def health_lines():
+def health_lines(games=None):
     """Estado de los datos para el informe de diagnóstico: esquema, partidas con la línea sin recalcular, PL guardados, edad del meta y builds en
     caché. Solo cifras: ningún nombre ni identificador."""
     out = []
@@ -1559,7 +1559,8 @@ def health_lines():
     except Exception:
         pass
     try:
-        games = history.load_all(history.hpath(CACHE), history.gpath(CACHE))
+        if games is None:
+            games = history.load_all(history.hpath(CACHE), history.gpath(CACHE))
         sr = [g for g in games if g.get("q") in (400, 420, 430, 440, 490)]
         old = [g for g in sr if g.get("rv") != history.ROLE_V]
         sin = [g for g in sr if not g.get("r")]
@@ -1591,9 +1592,10 @@ def diagnostics(extra=None):
     home = os.path.expanduser("~")
     md = META.get("data") or {}
     try:
-        n_games = len(history.load_all(history.hpath(CACHE), history.gpath(CACHE)))
+        all_games = history.load_all(history.hpath(CACHE), history.gpath(CACHE))
+        n_games = len(all_games)
     except Exception:
-        n_games = "?"
+        all_games, n_games = None, "?"
     try:
         size = sum(os.path.getsize(os.path.join(r, f)) for r, _, fs in os.walk(CACHE) for f in fs) / 1e6
     except Exception:
@@ -1602,7 +1604,7 @@ def diagnostics(extra=None):
              f"Windows: {platform.platform()}  ·  Python {platform.python_version()}",
              f"Datos: parche de datos {DD_VERSION or '?'}, meta {md.get('patch', 'sin cargar')} ({md.get('tier', '-')}), "
              f"{n_games} partidas guardadas, caché {size:.1f} MB"]
-    lines += health_lines()
+    lines += health_lines(all_games)
     if extra:
         lines += extra
     try:

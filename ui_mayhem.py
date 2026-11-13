@@ -132,6 +132,8 @@ def build_block(ui, host, cid, mode_id, width):
         ui.clear(box)
         title = "BUILD SUGERIDA PARA " + ("ARAM: MAYHEM" if mayhem else "ARAM") + " · op.gg"
         ui.lbl(box, title, 10, "dim", True, anchor="w").pack(anchor="w", pady=(0, 4))
+        if st[0] == "ok" and st[1].get("stale"):
+            ui.lbl(box, "No se pudo actualizar ahora: son los últimos datos guardados.", 9, "warn", anchor="w").pack(anchor="w", pady=(0, 4))
         if st[0] == "loading":
             ui.lbl(box, "Cargando la build…", 10, "dim").pack(anchor="w")
             state["n"] += 1

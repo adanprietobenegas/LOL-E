@@ -153,18 +153,28 @@ def load(cache_dir, champ, lane, enemy=None, force=False):
     raise RuntimeError("Lolalytics no tiene todavía una build de este campeón en esa línea." if last is None else f"No se pudo leer la build ({type(last).__name__}).")
 
 
+STALE_RETRY = 300
+_stale_at = {}
+
+
 def request(cache_dir, champ, lane, enemy=None):
     """Pide la build en segundo plano. Devuelve la clave para consultar con peek()."""
     key = (matchups.slug(champ), lane, matchups.slug(enemy) if enemy else "")
     with _lock:
         st = _state.get(key)
-        if st and (st[0] == "loading" or (st[0] == "ok")):
+        retry = bool(st and st[0] == "ok" and st[1].get("stale") and time.time() - _stale_at.get(key, 0) > STALE_RETRY)   # datos viejos por un corte: se reintenta cada 5 min
+        if st and (st[0] == "loading" or (st[0] == "ok" and not retry)):
             return key
-        _state[key] = ("loading",)
+        if retry:
+            _stale_at[key] = time.time()   # se sigue enseñando lo guardado mientras se reintenta
+        else:
+            _state[key] = ("loading",)
 
     def go():
         try:
             d = load(cache_dir, champ, lane, enemy)
+            if d.get("stale"):
+                _stale_at[key] = time.time()
             _state[key] = ("ok", d)
         except Exception as e:
             _state[key] = ("error", str(e) if isinstance(e, RuntimeError) else f"No se pudo leer la build ({type(e).__name__}).")

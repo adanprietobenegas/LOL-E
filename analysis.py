@@ -437,7 +437,7 @@ def vs_average(game, games, min_games=3):
         mins = sum(g["d"] / 60 for g in rows if g.get("d") and g.get("cs") is not None)
         return sum(g["cs"] for g in rows if g.get("d") and g.get("cs") is not None) / mins if mins else None
     def permin(rows, key):
-        ok = [g for g in rows if g.get("d") and g.get(key)]
+        ok = [g for g in rows if g.get("d") and g.get(key) is not None]   # un 0 real cuenta; solo se excluyen los registros antiguos sin el dato
         mins = sum(g["d"] / 60 for g in ok)
         return sum(g[key] for g in ok) / mins if mins else None
     cs_this = cspm([game]) if _mode_key(game.get("q")) != "aram" else None

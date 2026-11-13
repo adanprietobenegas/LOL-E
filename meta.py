@@ -20,8 +20,11 @@ def _fetch(patch, lane, tier):
     out = {k: {"wr": v["wr"], "pr": v["pr"], "br": v["br"], "games": v["games"], "d": v.get("avgWrDelta", 0)}
            for k, v in rows.items() if isinstance(v, dict) and v.get("games", 0) >= 200 and v.get("lane", lane) == lane}
     if out:   # validador de forma: la tasa de victoria debe estar en porcentaje (≈ 50). Si la web cambia de escala o de campo, mejor fallar y usar lo guardado
-        wrs = sorted(v["wr"] for v in out.values())
-        if not isinstance(wrs[0], (int, float)) or not 35 <= wrs[len(wrs) // 2] <= 65:
+        wrs = [v["wr"] for v in out.values()]
+        if not all(isinstance(w, (int, float)) for w in wrs):
+            raise ValueError("el formato del meta ha cambiado (tasas de victoria no numéricas)")
+        wrs.sort()
+        if not 35 <= wrs[len(wrs) // 2] <= 65:
             raise ValueError("el formato del meta ha cambiado (tasas de victoria fuera de rango)")
     return out, d.get("avgWr", 50)
 
@@ -69,7 +72,7 @@ def load(cache_dir, version, tier, force=False):
                 return _ints(data)
             except Exception as e:
                 last_err = e
-    if saved and saved.get("lanes"):   # sin red o la fuente falla: mejor el último meta guardado (de otro día o de otro parche) que ninguno
+    if saved and saved.get("lanes") and saved.get("tier") in (tier, "emerald_plus", "all"):   # sin red o la fuente falla: mejor el último meta guardado (de otro día o de otro parche, pero del mismo rango) que ninguno
         saved["stale"] = True
         return _ints(saved)
     raise RuntimeError(f"sin datos de meta ({last_err})")
