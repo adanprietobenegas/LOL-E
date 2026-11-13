@@ -785,6 +785,15 @@ class MetaSinRed(unittest.TestCase):
                 meta.load(tempfile.mkdtemp(), "16.21.1", "gold_plus")  # sin nada guardado sigue fallando con claridad
 
 
+class InformeDeDiagnostico(unittest.TestCase):
+    def test_incluye_el_estado_de_los_datos_sin_rutas_personales(self):
+        import lol_advisor as l
+        txt = l.diagnostics(["Ajustes: x=sí"])
+        for k in ("Esquema de datos", "Partidas de la Grieta", "Ajustes: x=sí"):
+            self.assertIn(k, txt)
+        self.assertNotIn(os.path.expanduser("~") + os.sep + "Documents", txt.replace("\\", os.sep))   # las rutas personales se abrevian con ~
+
+
 class ParcheDeLaBuild(unittest.TestCase):
     def test_el_parche_se_lee_de_la_pagina(self):
         import builds

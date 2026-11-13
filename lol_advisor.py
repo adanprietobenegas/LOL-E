@@ -1544,6 +1544,42 @@ def prune_cache(days=21):
             pass
 
 
+def health_lines():
+    """Estado de los datos para el informe de diagnóstico: esquema, partidas con la línea sin recalcular, PL guardados, edad del meta y builds en
+    caché. Solo cifras: ningún nombre ni identificador."""
+    out = []
+    try:
+        sv = read_json(os.path.join(CACHE, "schema.json"), None)
+        out.append(f"Esquema de datos: {sv.get('v') if isinstance(sv, dict) else 'sin escribir'} (esta app usa el {SCHEMA})")
+    except Exception:
+        pass
+    try:
+        games = history.load_all(history.hpath(CACHE), history.gpath(CACHE))
+        sr = [g for g in games if g.get("q") in (400, 420, 430, 440, 490)]
+        old = [g for g in sr if g.get("rv") != history.ROLE_V]
+        sin = [g for g in sr if not g.get("r")]
+        out.append(f"Partidas de la Grieta: {len(sr)} (con la línea de una regla antigua: {len(old)}; sin línea: {len(sin)})")
+    except Exception:
+        pass
+    try:
+        lp = read_json(os.path.join(CACHE, "lp.json"), {})
+        out.append(f"Variaciones de PL guardadas: {len(lp) if isinstance(lp, dict) else '?'}")
+    except Exception:
+        pass
+    try:
+        ts = (read_json(os.path.join(CACHE, "meta.json"), {}) or {}).get("ts")
+        if ts:
+            out.append(f"Meta guardado hace {int((time.time() - ts) // 3600)} h")
+        bd = os.path.join(CACHE, "builds")
+        if os.path.isdir(bd):
+            fs = [os.path.join(bd, f) for f in os.listdir(bd) if f.endswith(".json")]
+            if fs:
+                out.append(f"Builds en caché: {len(fs)} (la más antigua, de hace {int((time.time() - min(os.path.getmtime(f) for f in fs)) // 86400)} días)")
+    except Exception:
+        pass
+    return out
+
+
 def diagnostics(extra=None):
     """Informe corto para pedir ayuda: versión, sistema, estado de los datos y últimos errores. Sin nombres ni partidas."""
     import platform
@@ -1561,6 +1597,7 @@ def diagnostics(extra=None):
              f"Windows: {platform.platform()}  ·  Python {platform.python_version()}",
              f"Datos: parche de datos {DD_VERSION or '?'}, meta {md.get('patch', 'sin cargar')} ({md.get('tier', '-')}), "
              f"{n_games} partidas guardadas, caché {size:.1f} MB"]
+    lines += health_lines()
     if extra:
         lines += extra
     try:

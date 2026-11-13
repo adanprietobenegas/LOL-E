@@ -56,6 +56,9 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 - **«Qué aprender» en Repertorio** (`learn.py`): si una línea que juegas mucho depende de un solo campeón, propone un segundo de los que tienes con buena tasa en el parche. Solo sale con 8+ partidas en la línea; probado con datos de ejemplo (captura 18).
 - **Ficha «Tus PL guardados»** en Rango y logros del inicio: línea de PL acumulados por partida clasificatoria (`analysis.lp_series` sobre `lp.json`); solo se ve con 3+ partidas con dato. Probado con una serie de ejemplo (captura 17b).
 
+**En `main` sin publicar** (candidata a 1.22.13):
+- **Informe de diagnóstico más completo** (`health_lines` y los ajustes relevantes en `copy_diagnostics`): esquema de datos, partidas de la Grieta con línea de regla antigua o sin línea, PL guardados, edad del meta y de las builds.
+
 ***Pendiente de ver en la realidad*** (no se puede cerrar sin el usuario o sin otra partida):
 1. La instalación del usuario corría la 1.22.9 el 13/11 a las 17:59: basta con cerrar y abrir LOL-E fuera de cola para pasar a la
    1.22.10. Después, en su `diag.log` debe aparecer «Partidas antiguas recalculadas con su detalle…», y su Historial/Repertorio no deben

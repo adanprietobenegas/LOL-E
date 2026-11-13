@@ -1372,7 +1372,9 @@ class GUI:
 
     def copy_diagnostics(self):
         extra = [f"Interfaz: escala {self.conf['scale']}, tema {self.conf['theme']}, ventana {self.root.winfo_width()}x{self.root.winfo_height()}, "
-                 f"Windows {self.win_scale():.2f}x"]
+                 f"Windows {self.win_scale():.2f}x",
+                 "Ajustes: " + ", ".join(f"{k}={'sí' if self.conf.get(k, d) else 'no'}" for k, d in
+                                          (("live_enabled", True), ("meta_enabled", True), ("auto_update", True), ("auto_install", True), ("animations", True), ("beep", True)))]
         txt = core.diagnostics(extra)
         self.root.clipboard_clear()
         self.root.clipboard_append(txt)
