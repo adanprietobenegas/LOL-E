@@ -21,32 +21,69 @@ def _read(path, default):
 
 
 # ---- la línea que jugaste ----
-# La etiqueta de línea del cliente (timeline.lane) es una estimación suya y falla: etiqueta como «JUNGLE» a quien juega
-# TOP y puede dejar a un equipo con dos jungleros y ningún toplane (visto en partidas reales: de 16 «Jungla» solo 5 llevaban
-# Aplastar). Quien juega jungla lleva SIEMPRE Aplastar, así que esa es la señal. De paso, el cliente da el objeto de rol
-# (stats.roleBoundItem): 1220 y 1221 salen en todas las partidas de toplane, 1209 en las de jungla y 1208/2055 en las de apoyo.
-# Son valores observados, no documentados por Riot: por eso se exige coherencia con la etiqueta antes de fiarse de ellos.
+# La etiqueta de línea del cliente (timeline.lane) es una estimación suya y falla MUCHO: etiqueta «JUNGLE» a quien juega TOP, deja
+# equipos con dos jungleros y ningún toplane, llama «TOP» a un mid, «BOTTOM» a un apoyo y «MIDDLE» a un tirador (en una partida real
+# fallaron 4 de los 10 jugadores; de las 16 «Jungla» de las partidas del usuario solo 5 llevaban Aplastar). Dos señales sí son fiables:
+#   · quien juega jungla lleva SIEMPRE Aplastar (hechizo 11);
+#   · el objeto de rol del cliente (stats.roleBoundItem): 1220 y 1221 = top, 1209 = jungla, 1206 = mid, 1208 y 2055 = apoyo.
+#     En esa misma partida real repartieron bien los cinco puestos de los dos equipos, y en las partidas con línea «NONE» dan
+#     campeones coherentes (Fiora 1220, Hwei 1206, Illaoi 1221). El tirador lleva unas botas como objeto de rol (BOOT_ITEMS: en 30
+#     partidas reales, 42 de 44 tiradores). Son valores OBSERVADOS, no documentados por Riot; si algo no cuadra, la línea sale de la
+#     etiqueta o por eliminación dentro del equipo (team_roles) o queda vacía.
 SMITE = 11
-ROLE_V = 1   # versión de esta regla; las partidas guardadas con otra se recalculan (ver lol_advisor.load_player_data)
-TOP_ITEMS, JUNGLE_ITEMS, SUPPORT_ITEMS = {1220, 1221}, {1209}, {1208, 2055}
+ROLE_V = 2   # versión de esta regla; las partidas guardadas con otra se recalculan (lol_advisor.load_player_data y _refresh_old_games)
+ITEM_ROLE = {1220: "TOP", 1221: "TOP", 1209: "JUNGLE", 1206: "MIDDLE", 1208: "SUPPORT", 2055: "SUPPORT"}
+BOOT_ITEMS = {3006, 3008, 3009, 3020, 3047, 3158}   # objeto de rol del tirador (solo se usa con etiqueta BOTTOM o MIDDLE)
+TOP_ITEMS = {i for i, r in ITEM_ROLE.items() if r == "TOP"}
+JUNGLE_ITEMS = {i for i, r in ITEM_ROLE.items() if r == "JUNGLE"}
+SUPPORT_ITEMS = {i for i, r in ITEM_ROLE.items() if r == "SUPPORT"}
+LINES = ("TOP", "JUNGLE", "MIDDLE", "BOTTOM", "SUPPORT")
+
+
+def _by_item(p):
+    return ITEM_ROLE.get((p.get("stats") or {}).get("roleBoundItem") or 0, "")
 
 
 def role_of(p):
     """Línea de un participante: «TOP», «JUNGLE», «MIDDLE», «BOTTOM», «SUPPORT» o «» si no se sabe (un dato equivocado es
-    peor que ninguno)."""
+    peor que ninguno). Manda el objeto de rol; sin él, Aplastar; sin él, la etiqueta del cliente salvo la de jungla."""
+    por_objeto = _by_item(p)
+    if por_objeto:
+        return por_objeto
     t = p.get("timeline") or {}
     lane, role = t.get("lane") or "", t.get("role") or ""
-    item = (p.get("stats") or {}).get("roleBoundItem") or 0
-    smite = SMITE in (p.get("spell1Id"), p.get("spell2Id"))
-    if role == "SUPPORT" and item in SUPPORT_ITEMS:
-        return "SUPPORT"
+    if (p.get("stats") or {}).get("roleBoundItem") in BOOT_ITEMS and lane in ("BOTTOM", "MIDDLE"):
+        return "BOTTOM"                                # tirador (el cliente llega a llamarlo «MIDDLE»: Jhin con DUO)
+    if SMITE in (p.get("spell1Id"), p.get("spell2Id")) and lane in ("JUNGLE", "NONE", ""):
+        return "JUNGLE"
     if lane == "JUNGLE":
-        if smite or item in JUNGLE_ITEMS:
-            return "JUNGLE"
-        return "TOP" if item in TOP_ITEMS else ""     # sin Aplastar no es jungla; sin más pistas, no se adivina
+        return ""                                      # «jungla» sin Aplastar ni objeto de jungla: no se adivina
     if lane == "BOTTOM":
         return "SUPPORT" if role == "SUPPORT" else "BOTTOM"
     return "" if lane in ("", "NONE") else lane
+
+
+def team_roles(parts):
+    """{participantId: línea} de los jugadores de UN equipo (normalmente cinco). Lo seguro (objeto de rol o Aplastar) manda; una
+    línea que solo viene de la etiqueta y ya tiene dueño seguro se descarta; y si queda un solo jugador sin línea y una sola línea
+    sin jugador (el tirador, que no tiene objeto de rol), se le asigna esa. Si no, queda sin línea."""
+    seguros, dudosos = {}, {}
+    for p in parts:
+        r = role_of(p)
+        firme = bool(_by_item(p)) or (r == "JUNGLE")
+        (seguros if firme else dudosos)[p.get("participantId")] = r
+    tomadas = set(seguros.values())
+    cuenta = {}
+    for r in dudosos.values():
+        cuenta[r] = cuenta.get(r, 0) + 1
+    for pid, r in list(dudosos.items()):
+        if r and (r in tomadas or cuenta[r] > 1):        # la etiqueta choca con otro jugador: no se fía
+            dudosos[pid] = ""
+    faltan = [x for x in LINES if x not in tomadas and x not in dudosos.values()]
+    sin = [pid for pid, r in dudosos.items() if not r]
+    if len(sin) == 1 and len(faltan) == 1:
+        dudosos[sin[0]] = faltan[0]
+    return {**seguros, **dudosos}
 
 
 # ---- una carpeta, varias cuentas ----

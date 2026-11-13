@@ -768,7 +768,7 @@ class LineaQueJugaste(unittest.TestCase):
     def test_sin_pistas_no_se_adivina(self):
         import history
         self.assertEqual(history.role_of(self.p(1, "JUNGLE", "NONE", 4, 14, 0)), "")        # sin Aplastar ni objeto de rol
-        self.assertEqual(history.role_of(self.p(1, "JUNGLE", "NONE", 4, 14, 1206)), "")     # objeto de otra línea: tampoco
+        self.assertEqual(history.role_of(self.p(1, "JUNGLE", "NONE", 4, 14, 1206)), "MIDDLE")  # el objeto de rol manda sobre la etiqueta
         self.assertEqual(history.role_of(self.p(1, "NONE", "NONE", 4, 14, 0)), "")
         self.assertEqual(history.role_of({}), "")
 
@@ -780,6 +780,47 @@ class LineaQueJugaste(unittest.TestCase):
         self.assertEqual(history.role_of(self.p(1, "BOTTOM", "SUPPORT", 4, 3, 2055)), "SUPPORT")
         self.assertEqual(history.role_of(self.p(1, "MIDDLE", "SUPPORT", 4, 3, 1208)), "SUPPORT")   # apoyo que el cliente puso en mid
         self.assertEqual(history.role_of(self.p(1, "JUNGLE", "NONE", 11, 4, 0)), "JUNGLE")         # jungla sin objeto de rol
+
+    def test_una_partida_real_donde_el_cliente_se_equivoca_en_4_de_10(self):
+        """Partida real (campeones y datos del cliente, sin nombres): etiquetas del cliente con Jax «jungla», Fizz «top», Nami «bot» y
+        Jhin «mid». Los objetos de rol y Aplastar reparten bien los cinco puestos de cada equipo."""
+        import history
+
+        def j(pid, team, champ, lane, role, item, smite=False):
+            return {"participantId": pid, "teamId": team, "championId": champ, "spell1Id": 11 if smite else 4, "spell2Id": 7,
+                    "stats": {"roleBoundItem": item}, "timeline": {"lane": lane, "role": role}}
+        mio = [j(1, 100, 15, "BOTTOM", "CARRY", 3006), j(2, 100, 147, "BOTTOM", "SUPPORT", 2055), j(3, 100, 24, "JUNGLE", "NONE", 1220),
+               j(4, 100, 98, "JUNGLE", "NONE", 1209, True), j(5, 100, 105, "TOP", "SOLO", 1206)]
+        rival = [j(6, 200, 267, "BOTTOM", "SOLO", 2055), j(7, 200, 238, "JUNGLE", "NONE", 1209, True), j(8, 200, 101, "MIDDLE", "DUO", 1206),
+                 j(9, 200, 202, "MIDDLE", "DUO", 3009), j(10, 200, 48, "TOP", "SOLO", 1220)]
+        self.assertEqual(history.team_roles(mio), {1: "BOTTOM", 2: "SUPPORT", 3: "TOP", 4: "JUNGLE", 5: "MIDDLE"})
+        self.assertEqual(history.team_roles(rival), {6: "SUPPORT", 7: "JUNGLE", 8: "MIDDLE", 9: "BOTTOM", 10: "TOP"})   # Jhin: botas + etiqueta MIDDLE
+        self.assertEqual(history.role_of(rival[3]), "BOTTOM")
+        self.assertEqual(history.role_of(self.p(1, "NONE", "SUPPORT", 4, 7, 3006)), "")           # botas con etiqueta NONE: no se interpreta
+        d = {"participants": mio + rival}
+        self.assertEqual(core.find_opponent(mio[1], d), 267)    # tu apoyo (Seraphine) contra su apoyo (Nami): antes salía «nadie»
+        self.assertEqual(core.find_opponent(mio[0], d), 202)    # tu tirador contra su tirador (Jhin)
+        self.assertEqual(core.find_opponent(mio[2], d), 48)     # tu toplane (Jax, «jungla» para el cliente) contra Trundle
+        self.assertEqual(core.find_opponent(mio[4], d), 101)    # tu mid (Fizz, «top» para el cliente) contra Xerath
+
+    def test_partidas_con_linea_none_se_reconocen_por_el_objeto_o_aplastar(self):
+        import history
+        self.assertEqual(history.role_of(self.p(1, "NONE", "SUPPORT", 4, 7, 1220)), "TOP")              # Fiora
+        self.assertEqual(history.role_of(self.p(1, "NONE", "SUPPORT", 4, 7, 1206)), "MIDDLE")           # Hwei
+        self.assertEqual(history.role_of(self.p(1, "NONE", "DUO", 4, 7, 1221)), "TOP")                  # Illaoi
+        self.assertEqual(history.role_of(self.p(1, "NONE", "SUPPORT", 11, 4, 0)), "JUNGLE")             # Jarvan IV con Aplastar
+        for item in (1202, 1001, 1200):                                                                 # objetos sin significado conocido
+            self.assertEqual(history.role_of(self.p(1, "NONE", "SUPPORT", 4, 7, item)), "")
+
+    def test_team_roles_no_inventa_si_falta_informacion(self):
+        import history
+
+        def j(pid, lane, item, smite=False):
+            return {"participantId": pid, "teamId": 100, "championId": pid, "spell1Id": 11 if smite else 4, "spell2Id": 7,
+                    "stats": {"roleBoundItem": item}, "timeline": {"lane": lane, "role": "NONE"}}
+        r = history.team_roles([j(1, "TOP", 1220), j(2, "NONE", 0), j(3, "NONE", 0)])     # dos sin pistas y dos líneas libres
+        self.assertEqual((r[1], r[2], r[3]), ("TOP", "", ""))
+        self.assertEqual(history.team_roles([]), {})
 
     def test_el_rival_de_linea_ya_no_es_el_jungla(self):
         d = {"participants": [self.p(58, "JUNGLE", "NONE", 4, 14, 1220, 200), self.p(11, "JUNGLE", "NONE", 11, 4, 1209, 200),

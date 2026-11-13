@@ -278,11 +278,17 @@ class LCU:
 
 def find_opponent(me, detail):
     """Campeon rival en tu misma linea, a partir del detalle de la partida."""
-    mine = history.role_of(me)
-    if not detail or not mine:
+    if not detail:
         return 0
-    rivals = [q for q in detail.get("participants", []) if q.get("teamId") != me.get("teamId") and history.role_of(q) == mine]
-    return rivals[0]["championId"] if len(rivals) == 1 else 0   # con dos candidatos no se adivina cuál es
+    parts = detail.get("participants", [])
+    mias = history.team_roles([q for q in parts if q.get("teamId") == me.get("teamId")])
+    mine = mias.get(me.get("participantId")) or history.role_of(me)
+    if not mine:
+        return 0
+    rival = [q for q in parts if q.get("teamId") != me.get("teamId")]
+    rr = history.team_roles(rival)
+    cand = [q for q in rival if rr.get(q.get("participantId")) == mine]
+    return cand[0]["championId"] if len(cand) == 1 else 0   # con dos candidatos no se adivina cuál es
 
 
 def load_season_seed(champs):

@@ -45,6 +45,20 @@ for g in sr:
         nuevo = history.role_of(p)
         if crudo != nuevo:
             cambia[(crudo or "-", nuevo or "-")] += 1
+# ¿Cuántos equipos quedan con los CINCO puestos distintos? (lo normal en una partida de Grieta)
+completos = collections.Counter()
+for g in sr:
+    d = lcu.get(f"/lol-match-history/v1/games/{g['gameId']}")
+    if not d:
+        continue
+    for team in (100, 200):
+        ps = [p for p in d["participants"] if p["teamId"] == team]
+        crudo = ["SUPPORT" if p["timeline"]["lane"] == "BOTTOM" and p["timeline"]["role"] == "SUPPORT" else ("" if p["timeline"]["lane"] in ("", "NONE") else p["timeline"]["lane"]) for p in ps]
+        nuevo = list(history.team_roles(ps).values())
+        completos["equipos"] += 1
+        completos["etiqueta del cliente"] += len(set(crudo)) == 5 and "" not in crudo
+        completos["regla nueva"] += len(set(nuevo)) == 5 and "" not in nuevo
+print("equipos con los cinco puestos distintos:", dict(completos))
 print(f"{n} jugadores de {len(sr)} partidas de Grieta")
 print("equipos por (nº JUNGLE, nº TOP) según el cliente:", dict(equipos))
 print("líneas que cambian con la regla nueva (cliente -> nueva):", dict(cambia))

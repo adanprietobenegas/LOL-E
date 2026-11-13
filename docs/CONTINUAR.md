@@ -13,7 +13,7 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 
 - **Publicada en GitHub: 1.22.9** (13/11/2026): rival a mano, certificados raíz, parche de la build y privacidad de lo guardado.
   Pendiente: revisarla en una partida real con el usuario (flujo cola → selección → partida → fin).
-- Pruebas: `python herramientas/tests_unitarios.py` → 68, todas pasan. Con LoL abierto y fuera de partida:
+- Pruebas: `python herramientas/tests_unitarios.py` → 71, todas pasan. Con LoL abierto y fuera de partida:
   `python herramientas/prueba_cliente_real.py` (solo lectura, sobre una copia temporal) → TODO BIEN con la 1.22.8.
 - La actualización automática funciona: el usuario confirmó que su 1.22.5 pasó sola a la 1.22.6. Cualquier PC con una
   versión anterior a la 1.22.5 necesita instalar a mano UNA vez (tenía guardada vacía la dirección de actualizaciones).
@@ -57,7 +57,7 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 | Herramienta | Para qué |
 |---|---|
 | `comprobar_todo.py` | **Antes de publicar** (~7 min, sin cliente): pruebas + recorrido de TODAS las pantallas a 560 y 1340 px + la app entera contra el cliente falso; falla ante cualquier error al pintar |
-| `tests_unitarios.py` | 68 pruebas sin ventana ni cliente (incluye el bucle principal contra el cliente falso) |
+| `tests_unitarios.py` | 71 pruebas sin ventana ni cliente (incluye el bucle principal contra el cliente falso) |
 | `prueba_cliente_real.py` | Lectura de solo lectura contra el cliente REAL (cuenta, historial, migración, líneas, perfil) |
 | `capturas.py [ancho] [alto] [carpeta]` | Capturas de todas las pantallas sin cliente; `LOLE_SOLO`, `LOLE_PAGINAS`, `LOLE_CONF`, `LOLE_PERFIL` |
 | `demo_falso.py` | La app entera (ventana + bucle) contra el cliente falso, con una captura por fase |
@@ -121,7 +121,25 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
   recientes primero). Con el cliente real, sobre una copia: 46 de 46 recalculadas, 18 con otra línea, 0 pendientes.
   Hace falta publicarlo (1.22.10) para que llegue a la instalación del usuario; esperar a que no esté en cola ni en partida
   (la actualización automática instala en «Lobby»).
-- Pendiente de esta revisión: seguir una partida completa con el cliente real y revisar `diag.log` al acabar.
+- **Partida real revisada (Flexible 440, 17:26–17:59)**: el `diag.log` de la instalación muestra el ciclo entero con el cliente real
+  (Lobby → Matchmaking → ReadyCheck → selección → InProgress con «10 leídos, 0 con perfil oculto, 0 sin campeón, 0 sin línea» →
+  PreEndOfGame → «Partida terminada» → EndOfGame → None). Quedó guardada: Seraphine, apoyo, victoria, 1/6/14; el análisis
+  coincide con el historial; ningún error nuevo. En el momento de la partida el cliente sí entregó 200 partidas.
+- **Hallazgo grande: la etiqueta de línea del cliente falla mucho.** En esa partida, 4 de 10 jugadores mal etiquetados (Jax
+  «jungla», Fizz «top», Nami «bot», Jhin «mid»); `find_opponent` daba «nadie» para el apoyo. En 30 partidas / 60 equipos:
+  solo 14 equipos con los cinco puestos distintos según el cliente (29 equipos con 2 junglas y 0 toplane). Se vio que el
+  objeto de rol reparte bien: 1206 mid (44 casos), 1209 jungla con Aplastar (50), 1220/1221 top, 1208/2055 apoyo, y las botas
+  (3006, 3008, 3009, 3020, 3047, 3158) el tirador (42 de 44). Con la regla nueva: **55 de 60 equipos completos**.
+  `history.role_of` (objeto de rol > botas con etiqueta BOTTOM/MIDDLE > Aplastar > etiqueta) y `history.team_roles` (completa un
+  equipo por eliminación); `find_opponent` las usa; `ROLE_V = 2`, así que las partidas guardadas con la regla v1 se recalculan
+  (las que el cliente lista al conectar; el resto con `_refresh_old_games`). Comprobado con el cliente real: TODO BIEN, 0 pendientes.
+  `python herramientas/validar_lineas.py 30` reproduce la medida (necesita el cliente abierto y en reposo).
+- **Todo lo anterior está en `main` SIN PUBLICAR → 1.22.10** (recalcular partidas antiguas por su detalle + regla de líneas v2).
+  Antes de publicar: `python herramientas/publicar.py --sin-probar "..."` y esperar a que el usuario no esté en cola ni en partida.
+- Privacidad: desde mi vista no se puede verificar `last_session.json` ni parte de `live_samples/` (la carpeta de datos que ve
+  la sesión mezcla copias antiguas); el usuario puede comprobarlo con el comando de PowerShell de abajo.
+  `Select-String -Path "$env:LOCALAPPDATA\LOL-E\cache\live_samples\*","$env:LOCALAPPDATA\LOL-E\cache\last_session.json" -Pattern '"(summonerName|riotId|gameName|puuid)":\s*"[^"]+"' | Measure-Object`
+  (debe dar Count 0).
 
 ## Siguiente trabajo, por orden
 
