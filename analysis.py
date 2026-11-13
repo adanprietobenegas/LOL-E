@@ -609,6 +609,28 @@ def save_lp(cache_dir, gid, data):
     os.replace(tmp, _lp_path(cache_dir))
 
 
+def lp_series(cache_dir, games, queues=(420, 440)):
+    """Tendencia de PL: para las partidas clasificatorias con variación guardada (`lp.json`), en orden cronológico, los PL acumulados desde
+    la primera. `games`: lista de partidas del historial (cualquier orden). Devuelve {"pts": [{t, cum, d, w, tier}], "total", "n"} o None
+    si hay menos de 3 partidas con dato: con menos no hay tendencia que enseñar."""
+    try:
+        lp = json.load(open(_lp_path(cache_dir), encoding="utf-8"))
+    except Exception:
+        return None
+    rows = []
+    for e in sorted(games, key=lambda e: e.get("t", 0)):
+        v = lp.get(str(e.get("id")))
+        if e.get("q") in queues and not e.get("rm") and isinstance(v, dict) and isinstance(v.get("d"), (int, float)):
+            rows.append((e, v))
+    if len(rows) < 3:
+        return None
+    pts, cum = [], 0
+    for e, v in rows:
+        cum += int(v["d"])
+        pts.append({"t": e["t"], "cum": cum, "d": int(v["d"]), "w": bool(e["w"]), "tier": v.get("tier", "")})
+    return {"pts": pts, "total": cum, "n": len(pts)}
+
+
 def lp_for(cache_dir, gid):
     try:
         return json.load(open(_lp_path(cache_dir), encoding="utf-8")).get(str(gid))

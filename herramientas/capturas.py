@@ -47,6 +47,13 @@ P["profile"] = {"name": "Jugador", "tag": "EUW", "level": 214, "icon": 29, "puui
                 "flex": {"key": "SILVER", "tier": "Plata", "div": "I", "lp": 12, "w": 9, "l": 7, "wr": 9 / 16}, "prem": None, "extra": {}}
 P["rank"], P["record"], P["puuid"] = "Oro II · 47 PL", "58V · 51D · 53%", "yo"
 l.META["data"] = meta.load(l.CACHE, l.DD_VERSION or "16.21.1", meta.tier_for("GOLD"))
+import analysis
+_cum, _pts = 0, []   # una serie de PL de ejemplo (el cache del proyecto no tiene lp.json): la tarjeta «Tus PL guardados» sale en el inicio
+for _i, _d in enumerate([18, -17, 19, 20, -16, -19, 17, 21, -18, 16, 19, -15, 20, 18, -17, 19]):
+    _cum += _d
+    _pts.append({"t": 1700000000000 + _i * 86400000, "cum": _cum, "d": _d, "w": _d > 0, "tier": "GOLD II"})
+analysis.lp_series = lambda *a, **k: {"pts": _pts, "total": _cum, "n": len(_pts)}
+
 
 
 def jugador(n, nombre, tier, cids, wr, rol):
@@ -200,6 +207,8 @@ PASOS = [
     ("15_datos", lambda: ui.set_page("Datos"), 4000),
     ("17_inicio_modos", lambda: (ui.set_page("Asesor"), ui.idle(l.player_info(P), "Conectado al cliente. Entra en una cola cuando quieras."),
                                  ui.root.after(900, lambda: ui.idle_secs[2].switch("Modos"))), 3500),
+    ("17b_inicio_pl", lambda: (ui.set_page("Asesor"), ui.idle(l.player_info(P), "Conectado al cliente. Entra en una cola cuando quieras."),
+                               ui.root.after(900, lambda: (ui.idle_secs[2].switch("Rango y logros"), ui.root.after(400, lambda: ui.idle_secs[2].toggle("lp"))))), 3500),   # la ficha «Tus PL guardados» abierta (gráfico)
     ("18_repertorio", lambda: ui.set_page("Repertorio"), 4500),
     ("18b_repertorio_detalle", lambda: (ui.pool_view.panel.__setattr__("dtab", "Partidas"), ui.pool_view.panel.render()), 3000),
     ("19_seleccion_contra_rival", lambda: (push(ses), ui.players(team), ui.root.after(2500, lambda: ui.recs.set_tab("Contra rival"))), 6000),

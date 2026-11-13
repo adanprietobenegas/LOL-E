@@ -899,6 +899,21 @@ class PuedesComprar(unittest.TestCase):
         self.assertIsNone(self.s.next_purchase([], [11], 100, self.CAT))
 
 
+class TendenciaDePL(unittest.TestCase):
+    def test_serie_acumulada_solo_con_clasificatorias_y_dato(self):
+        import analysis, json, tempfile
+        d = tempfile.mkdtemp()
+        lp = {"1": {"d": 18, "now": 18, "tier": "GOLD II"}, "2": {"d": -17}, "3": {"d": 20}, "4": {"d": 99}, "5": {"d": 5}, "6": {"d": 0}}
+        json.dump(lp, open(d + "/lp.json", "w"))
+        g = lambda i, t, q=420, w=True, rm=False: {"id": str(i), "t": t, "q": q, "w": w, "rm": rm}
+        games = [g(3, 30), g(1, 10), g(2, 20, w=False), g(4, 40, q=450), g(5, 50, rm=True), g(7, 60), g(6, 25)]   # 4: ARAM, 5: remake, 7: sin dato
+        s = analysis.lp_series(d, games)
+        self.assertEqual([p["cum"] for p in s["pts"]], [18, 1, 1, 21])        # cronológico: 1, 2, 6 (0 PL), 3
+        self.assertEqual((s["total"], s["n"]), (21, 4))
+        self.assertIsNone(analysis.lp_series(d, games[:2]))                   # menos de 3 partidas con dato: no hay tendencia
+        self.assertIsNone(analysis.lp_series(tempfile.mkdtemp(), games))      # sin lp.json
+
+
 class Documentacion(unittest.TestCase):
     """El punto de partida de las conversaciones nuevas (docs/CONTINUAR.md) no puede quedarse atrás: estas pruebas fallan si no se actualiza."""
     def leer(self, nombre):
