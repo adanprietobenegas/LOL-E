@@ -18,7 +18,13 @@ found = l.find_client(l.load_conf())
 if not found:
     print("El cliente de League of Legends no está abierto.")
     sys.exit(2)
+import urllib.error
 lcu = l.LCU(*found)
+try:
+    lcu.get("/lol-gameflow/v1/gameflow-phase")
+except (urllib.error.URLError, ConnectionError, OSError):
+    print("El cliente de League of Legends no responde (puede que se haya cerrado hace poco): ábrelo y vuelve a probar.")
+    sys.exit(2)
 cuantas = int(sys.argv[1]) if len(sys.argv) > 1 else 30
 gs = lcu.get("/lol-match-history/v1/products/lol/current-summoner/matches?begIndex=0&endIndex=200", timeout=40)["games"]["games"]
 sr = [g for g in gs if g["queueId"] in l.SR_QUEUES][:cuantas]

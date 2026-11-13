@@ -162,6 +162,9 @@ def pulsar(valor):
                 dump(ch)
         dump(ui.root)
     if seg is None:
+        if W >= 960:   # con ventana ancha la build se ve en columnas, sin pestañas «Variantes» / «Situaciones»: no es un fallo
+            print("(sin pestañas a este ancho:", valor + ")", flush=True)
+            return
         print("no encuentro el botón", valor, flush=True); errs.append(valor); return
     seg._buttons_dict[valor].invoke()
 
@@ -210,6 +213,9 @@ MAXP = int(os.environ.get("LOLE_PAGINAS", "4"))
 
 
 def grab(name):
+    if os.environ.get("LOLE_SINFOTO"):   # solo recorrer las pantallas (lo usa comprobar_todo.py): sin guardar imágenes
+        ui.root.update_idletasks()
+        return
     ui.root.update_idletasks()
     x, y, w, h = ui.root.winfo_rootx(), ui.root.winfo_rooty(), ui.root.winfo_width(), ui.root.winfo_height()
     ImageGrab.grab(bbox=(x, y, x + w, y + h), all_screens=True).save(os.path.join(OUT, name + ".png"))
@@ -261,3 +267,5 @@ try:
 finally:
     if os.path.exists(PLAN_BAK):
         shutil.move(PLAN_BAK, PLAN)
+if errs:
+    sys.exit(1)   # el código de salida distingue «recorrido limpio» de «hubo errores»

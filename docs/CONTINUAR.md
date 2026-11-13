@@ -45,7 +45,7 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 ## Publicar una versión
 
 1. Subir `APP_VERSION` en `lol_advisor.py`, entrada arriba en `novedades.py` y en `docs/NOTAS_DE_VERSION.txt`.
-2. Sin partida en curso: `python build_release.py` y después las pruebas (una comprueba que `release/latest.json`
+2. `python herramientas/comprobar_todo.py` (debe acabar en «TODO BIEN»). Después, sin partida en curso: `python build_release.py` y después las pruebas (una comprueba que `release/latest.json`
    coincide con la versión).
 3. Commit y push. Con el sí del usuario:
    `gh release create vX.Y.Z "release\Instalar-LOL-E-X.Y.Z.exe" "release\LOL-E-X.Y.Z.zip" "release\latest.json" --title "LOL-E X.Y.Z" --notes "…" --target main`
@@ -56,6 +56,7 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 
 | Herramienta | Para qué |
 |---|---|
+| `comprobar_todo.py` | **Antes de publicar** (~7 min, sin cliente): pruebas + recorrido de TODAS las pantallas a 560 y 1340 px + la app entera contra el cliente falso; falla ante cualquier error al pintar |
 | `tests_unitarios.py` | 63 pruebas sin ventana ni cliente (incluye el bucle principal contra el cliente falso) |
 | `prueba_cliente_real.py` | Lectura de solo lectura contra el cliente REAL (cuenta, historial, migración, líneas, perfil) |
 | `capturas.py [ancho] [alto] [carpeta]` | Capturas de todas las pantallas sin cliente; `LOLE_SOLO`, `LOLE_PAGINAS`, `LOLE_CONF`, `LOLE_PERFIL` |
@@ -86,6 +87,10 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
   identificadores (`core.scrub`), se limpian los existentes, las muestras caducan a 14 días y una prueba comprueba que la
   conexión sin verificar certificado solo va a 127.0.0.1. Queda a propósito el campo `p` (puuid de compañeros) de
   `games_<cuenta>.json`, que sostiene «Juntos 3V 2D». 4 pruebas nuevas.
+- **Puerta previa a publicar** (`herramientas/comprobar_todo.py`): nació de un error real. Un cambio mío en `ui_build.py` pasaba
+  las pruebas pero fallaba al pintar la build; solo lo vio una captura. Ahora el recorrido de pantallas es parte de la puerta
+  (`capturas.py` devuelve código 1 si hay errores; `LOLE_SINFOTO=1` recorre sin guardar imágenes) y se comprobó que falla
+  si se inyecta ese mismo error.
 - **Parche de la build**: `builds.patch_of` lee «Patch 16.22» de la página de Lolalytics (26.22 en numeración pública) y
   `builds.load` guarda `patch` y `read` con la build; la nota de fuente dice «parche 26.22, leída hoy» y avisa si el
   parche es anterior al del juego (`ui_build.source_note`). Las builds guardadas antes no lo traen: solo muestran la fuente.

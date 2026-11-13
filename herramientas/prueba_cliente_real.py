@@ -37,7 +37,13 @@ found = core.find_client(conf)
 if not found:
     print("El cliente de League of Legends no está abierto: no hay nada que probar.")
     sys.exit(2)
+import urllib.error
 lcu = core.LCU(*found)
+try:
+    lcu.get("/lol-gameflow/v1/gameflow-phase")
+except (urllib.error.URLError, ConnectionError, OSError):
+    print("El cliente de League of Legends no responde (puede que se haya cerrado hace poco): ábrelo y vuelve a probar.")
+    sys.exit(2)
 print("Cliente encontrado. Fase:", lcu.get("/lol-gameflow/v1/gameflow-phase"))
 champs = core.load_champions()
 legacy = len(core.read_json(os.path.join(TMP, "history.json"), {}) or {})
