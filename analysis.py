@@ -600,6 +600,9 @@ def save_lp(cache_dir, gid, data):
         cur = json.load(open(_lp_path(cache_dir), encoding="utf-8"))
     except Exception:
         cur = {}
+    old = cur.get(str(gid))
+    if old and old.get("d") and not data.get("d"):
+        return   # nunca se sustituye una variación real por un 0 (el rango aún no se había actualizado, o no se movió)
     cur[str(gid)] = data
     tmp = _lp_path(cache_dir) + ".tmp"
     json.dump(cur, open(tmp, "w", encoding="utf-8"))

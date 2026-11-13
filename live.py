@@ -137,3 +137,23 @@ def reading(m, minimum=2500):
         else:
             out.append("Acumulan armadura y resistencia mágica por igual.")
     return out
+
+
+def duel(snap, opp_cid):
+    """(tú, tu rival directo) a partir del resumen y del campeón rival de tu línea; None si falta alguno de los dos."""
+    yo = next((p for p in snap.get("players", []) if p["me"]), None)
+    if not yo or not opp_cid:
+        return None
+    rival = next((p for p in snap["players"] if p["cid"] == opp_cid and p["team"] != yo["team"]), None)
+    return (yo, rival) if rival else None
+
+
+def duel_line(yo, rival, name=""):
+    """Una frase con cómo vas frente a tu rival directo: nivel, objetos y marcador. Solo opina de los objetos si la diferencia es clara
+    (15 % o más y al menos 500 de oro): con menos, es ruido."""
+    txt = (f"Tu rival directo{', ' + name if name else ''}: nivel {rival['level']} (tú {yo['level']}) · objetos {money(rival['value'])} "
+           f"(tú {money(yo['value'])}) · {rival['k']}/{rival['d']}/{rival['a']}.")
+    dif = rival["value"] - yo["value"]
+    if abs(dif) >= 500 and abs(dif) >= 0.15 * max(1, yo["value"], rival["value"]):
+        txt += " Va por delante en objetos." if dif > 0 else " Vas por delante en objetos."
+    return txt

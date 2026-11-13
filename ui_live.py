@@ -23,7 +23,7 @@ def _rows(snap):
     return mine, other, titles, mine_t, other_t, bool(me)
 
 
-def paint(ui, host, snap, width):
+def paint(ui, host, snap, width, opp_cid=0):
     ui.clear(host)
     mine, other, (t_mine, t_other), k_mine, k_other, known = _rows(snap)
     c_mine = ui.hexm(PAL["good"]) if known else NEUTRAL
@@ -57,8 +57,12 @@ def paint(ui, host, snap, width):
 
     def players(parent, rows, color):
         for p in rows:
-            _player(ui, parent, p, color, width)
+            _player(ui, parent, p, color, width, bool(opp_cid) and p["cid"] == opp_cid and p["team"] != next((q["team"] for q in snap["players"] if q["me"]), ""))
 
+    pareja = live.duel(snap, opp_cid)
+    if pareja:   # tu rival directo (el de tu línea, o el que elegiste a mano): cómo vas frente a él
+        ui.lbl(box, live.duel_line(*pareja, ui.champs.get(opp_cid, {}).get("name", "")), 11, "fg", anchor="w", justify="left",
+               wraplength=max(240, width - 110)).pack(anchor="w", pady=(6, 0))
     frases = live.reading(live.itemization(other, ui.items or {}))
     if frases:
         ui.lbl(box, " ".join(frases) + "  (orientativo)", 10, "dim", anchor="w", justify="left",
@@ -69,7 +73,7 @@ def paint(ui, host, snap, width):
     ui.fold(box, t_mine.capitalize(), lambda c: players(c, mine, c_mine), summary, "live_mine", False)
 
 
-def _player(ui, parent, p, color, width):
+def _player(ui, parent, p, color, width, rival=False):
     row = ui.frame(parent)
     row.pack(fill="x", pady=2)
     if p["cid"] in ui.champs:
@@ -84,7 +88,7 @@ def _player(ui, parent, p, color, width):
     mid = ui.frame(row)
     mid.pack(side="left", fill="x", expand=True, padx=8)
     name = ui.champs.get(p["cid"], {}).get("name") or p["name"]
-    ui.lbl(mid, name + ("  (tú)" if p["me"] else ""), 11, "dim" if p["dead"] else "fg", True, anchor="w").pack(anchor="w")
+    ui.lbl(mid, name + ("  (tú)" if p["me"] else "  · tu rival" if rival else ""), 11, "dim" if p["dead"] else "fg", True, anchor="w").pack(anchor="w")
     ui.lbl(mid, f"Nv {p['level']}  ·  {p['k']}/{p['d']}/{p['a']}  ·  {p['cs']} cs", 10, "dim", anchor="w").pack(anchor="w")
     items = ui.frame(row if width >= 760 else parent)
     if width >= 760:

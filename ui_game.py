@@ -143,7 +143,7 @@ class GameView:
         try:
             if self.tab == "Plan" and box is not None and box.winfo_exists() and ctx.get("live"):
                 import ui_live
-                ui_live.paint(self.ui, box, ctx["live"], self.width)
+                ui_live.paint(self.ui, box, ctx["live"], self.width, (ctx.get("plan") or {}).get("opp") or 0)
                 return
         except Exception:
             core.log_exc("Bloque en vivo")
@@ -158,7 +158,7 @@ class GameView:
             import ui_live
             self.live_host = self.ui.frame(self.host)
             self.live_host.pack(fill="x", pady=(0, 8))
-            ui_live.paint(self.ui, self.live_host, ctx["live"], self.width)
+            ui_live.paint(self.ui, self.live_host, ctx["live"], self.width, (ctx.get("plan") or {}).get("opp") or 0)
         except Exception:
             core.log_exc("Bloque en vivo")
 

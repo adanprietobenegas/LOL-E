@@ -1158,6 +1158,7 @@ def run(conf, champs, ui):
     prev_locked = False
     force_opgg = False
     reload_pending = False
+    played = False   # ¿ha empezado de verdad una partida desde la última selección? (si no, se esquivó o se canceló: no hay nada que cerrar)
     rank_before, cur_gid, end_tries = None, None, 0
     import augments   # (aquí dentro: augments importa este módulo)
     mayhem_live, next_probe = False, 0.0
@@ -1223,6 +1224,8 @@ def run(conf, champs, ui):
                 except Exception:
                     flow = None
                 in_game = flow in ("InProgress", "GameStart", "Reconnect")  # con la partida en marcha no se toca nada: el PC es del juego
+                if in_game:
+                    played = True
                 if flow != last_flow:
                     if last_flow != "_":  # sonidos por fase (no al conectar con el cliente a medias)
                         if flow == "ReadyCheck":
@@ -1238,7 +1241,12 @@ def run(conf, champs, ui):
                     reload_pending = True
                     diag("Selección terminada" + (": empieza la partida" if in_game else ""))
                     ui.idle(player_info(P), "Partida en curso. LOL-E espera a que acabe." if in_game else "Selección terminada. Esperando la siguiente…")
-                if reload_pending and not in_game:
+                if reload_pending and not in_game and flow != "ChampSelect" and not played:
+                    # la selección acabó y NO empezó ninguna partida (esquivada o cancelada). Antes se daba por terminada la partida ANTERIOR:
+                    # «Partida terminada», se reanalizaba y, si el rango no se había movido, se esperaba hasta 8 veces y se guardaba «0 PL» para ella
+                    reload_pending = False
+                    diag("La selección acabó sin empezar partida (esquivada o cancelada): no se analiza nada")
+                if reload_pending and not in_game and flow != "ChampSelect" and played:
                     reload_pending = False
                     if rank_before is None:
                         rank_before = {k: (P.get("profile") or {}).get(k) for k in ("solo", "flex", "prem")}
@@ -1264,7 +1272,7 @@ def run(conf, champs, ui):
                             if dl:
                                 analysis.save_lp(CACHE, g["gameId"], dl)
                         diag(f"Partida terminada: {g['gameId']} (cola {g.get('queueId')}), esperas {end_tries}")
-                        rank_before, cur_gid, end_tries = None, None, 0
+                        rank_before, cur_gid, end_tries, played = None, None, 0, False
                         getattr(ui, "analysis", lambda *a: None)(str(g["gameId"]), analysis.load(lcu, g["gameId"], my_puuid, CACHE))
                     except (urllib.error.URLError, ConnectionError, OSError):
                         raise
@@ -1337,6 +1345,7 @@ def run(conf, champs, ui):
                               session["timer"]["phase"], session.get("actions")], sort_keys=True)
             if key != last:
                 if last is None:
+                    played = False   # selección nueva
                     P = load_player_data(lcu, season)
                     mode = detect_mode(lcu)  # la Grieta, ARAM u otro modo: cambia lo que tiene sentido mostrar
                     diag(f"Selección de campeón: cola {mode['id']}, tipo {mode['kind']}")

@@ -567,6 +567,60 @@ class FlujoCompleto(unittest.TestCase):
         self.assertFalse([e for e in ev if e[0] == "live"])
         self.assertFalse(llamadas)                                           # y ni se lee el puerto salvo en Mayhem
 
+    def test_esquivar_la_partida_no_guarda_ni_analiza_nada(self):
+        from cliente_falso import ClienteFalso
+        ev = self.correr(ClienteFalso(guion=["None", "Matchmaking", "ReadyCheck", "ChampSelect", "ChampSelect", "None", "None"]))
+        self.assertEqual(self.leer("error.log"), "")
+        self.assertTrue([e for e in ev if e[0] == "show"])                              # la selección se llegó a enseñar
+        self.assertTrue(any("Selección terminada" in e[2] for e in ev if e[0] == "idle"))
+        self.assertFalse([e for e in ev if e[0] in ("roster", "analysis.load")])        # no hubo partida: ni jugadores ni análisis
+        self.assertNotIn("Partida terminada", self.leer("diag.log"))
+        self.assertEqual(sorted(json.loads(self.leer("history_" + __import__("cliente_falso").YO + ".json"))), ["100", "101"])
+
+    def test_save_lp_no_pisa_una_variacion_real_con_un_cero(self):
+        import analysis
+        tmp = tempfile.mkdtemp()
+        analysis.save_lp(tmp, 101, {"d": 17, "now": 57, "tier": "Oro II", "move": ""})
+        analysis.save_lp(tmp, 101, {"d": 0, "now": 57, "tier": "Oro II", "move": ""})          # el rango aún no se había actualizado
+        self.assertEqual(analysis.lp_for(tmp, 101)["d"], 17)
+        analysis.save_lp(tmp, 101, {"d": -20, "now": 37, "tier": "Oro II", "move": ""})        # una variación distinta de cero sí sustituye
+        self.assertEqual(analysis.lp_for(tmp, 101)["d"], -20)
+        analysis.save_lp(tmp, 102, {"d": 0, "now": 37, "tier": "Oro II", "move": ""})          # y un 0 en una partida nueva sí se guarda
+        self.assertEqual(analysis.lp_for(tmp, 102)["d"], 0)
+
+    def test_el_cliente_se_cae_en_plena_seleccion_y_vuelve(self):
+        from cliente_falso import ClienteFalso
+        ev = self.correr(ClienteFalso(guion=["None", "ChampSelect", "ChampSelect", "ChampSelect", "ChampSelect", "None", "None"], caidas={2}))
+        enlaces = [e[1] for e in ev if e[0] == "link"]
+        self.assertEqual(enlaces[:3], [True, False, True])                              # conectado, caído, y de nuevo conectado
+        self.assertEqual(self.leer("error.log"), "")                                    # una caída no es un fallo del programa
+        d = self.leer("diag.log")
+        self.assertIn("Cliente de LoL perdido", d)
+        self.assertGreaterEqual(d.count("Cliente de LoL encontrado"), 2)
+        self.assertGreaterEqual(len([e for e in ev if e[0] == "show"]), 2)              # y la selección se vuelve a enseñar al recuperarlo
+
+    def test_aram_y_arena_no_rompen_el_bucle(self):
+        from cliente_falso import ClienteFalso
+        for modo, tipo in (("aram", "aram"), ("arena", "other")):
+            ev = self.correr(ClienteFalso(modo=modo, guion=["None", "ChampSelect", "ChampSelect", "InProgress", "InProgress", "EndOfGame", "None", "None"]))
+            self.assertEqual(self.leer("error.log"), "", modo)
+            shows = [e[2] for e in ev if e[0] == "show"]
+            self.assertTrue(shows, modo)
+            self.assertEqual(shows[0]["mode"]["kind"], tipo, modo)
+            if modo == "aram":
+                self.assertTrue(shows[0]["cands"])                                      # hay campeones del banquillo que recomendar
+            else:
+                self.assertEqual(shows[0]["cands"], [])                                 # en Arena no se recomienda nada
+            self.assertIn("Partida terminada", self.leer("diag.log"), modo)
+
+    def test_reconectar_a_una_partida_en_curso(self):
+        from cliente_falso import ClienteFalso
+        ev = self.correr(ClienteFalso(guion=["None", "ChampSelect", "InProgress", "Reconnect", "InProgress", "EndOfGame", "None", "None"]))
+        self.assertEqual(self.leer("error.log"), "")
+        fases = [e[1] for e in ev if e[0] == "phase"]
+        self.assertIn("Reconnect", fases)
+        self.assertEqual(len([e for e in ev if e[0] == "roster"]), 1)                   # los 10 jugadores se leen una sola vez, no por reconexión
+
     def test_sin_cuenta_no_se_guarda_nada(self):
         from cliente_falso import ClienteFalso
         fake = ClienteFalso(puuid="", guion=["None", "None", "None"])
@@ -851,6 +905,22 @@ class PartidaEnVivo(unittest.TestCase):
         self.assertIn("resistencia mágica", self.live.reading({"ad": 0, "ap": 0, "armor": 500, "mr": 3000})[0])
         self.assertIn("por igual", self.live.reading({"ad": 0, "ap": 0, "armor": 2000, "mr": 1500})[0])
         self.assertEqual(self.live.itemization([{"items": [999999]}], db), {"ad": 0, "ap": 0, "armor": 0, "mr": 0})   # objeto desconocido
+
+    def test_tu_rival_directo(self):
+        r = self.live.summarize(self.d, self.champs)
+        garen = next(p for p in r["players"] if p["me"])
+        darius = next(p for p in r["players"] if p["name"] == "Darius")
+        yo, rival = self.live.duel(r, darius["cid"])
+        self.assertEqual((yo["name"], rival["name"]), ("Garen", "Darius"))
+        self.assertIsNone(self.live.duel(r, garen["cid"]))                       # el propio campeón no es «tu rival» (es de tu equipo)
+        self.assertIsNone(self.live.duel(r, 0))
+        self.assertIsNone(self.live.duel({"players": []}, darius["cid"]))
+        txt = self.live.duel_line(yo, rival, "Darius")
+        self.assertEqual(txt, "Tu rival directo, Darius: nivel 13 (tú 13) · objetos 5,7k (tú 5,1k) · 6/3/2.")   # 600 de diferencia (10 %): no se opina
+        self.assertIn("Va por delante en objetos.", self.live.duel_line({**yo, "value": 4000}, {**rival, "value": 5700}, "Darius"))
+        parejo = self.live.duel_line({**yo, "value": 5000}, {**rival, "value": 5300}, "Darius")
+        self.assertNotIn("por delante", parejo)                                   # 300 de diferencia: ruido
+        self.assertIn("Vas por delante", self.live.duel_line({**yo, "value": 8000}, {**rival, "value": 5000}))
 
     def test_datos_incompletos_no_rompen(self):
         self.assertIsNone(self.live.summarize({}, self.champs))

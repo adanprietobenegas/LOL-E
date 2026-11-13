@@ -56,9 +56,20 @@ SELECCION = {
 }
 
 
+ARAM_SELECCION = {
+    "localPlayerCellId": 0,
+    "myTeam": [{"cellId": 0, "championId": 103}, {"cellId": 1, "championId": 64}, {"cellId": 2, "championId": 222}],
+    "theirTeam": [], "benchChampions": [{"championId": 1}, {"championId": 51}, {"championId": 69}],
+    "bans": {"myTeamBans": [], "theirTeamBans": []}, "timer": {"phase": "BAN_PICK", "adjustedTimeLeftInPhase": 40000, "totalTimeInPhase": 60000},
+    "actions": []}
+COLAS = {"sr": {"id": 420, "gameMode": "CLASSIC"}, "aram": {"id": 450, "gameMode": "ARAM"}, "arena": {"id": 1700, "gameMode": "CHERRY"}}
+
+
 class ClienteFalso:
-    def __init__(self, puuid=YO, guion=GUION, partida_nueva=900):
+    def __init__(self, puuid=YO, guion=GUION, partida_nueva=900, modo="sr", caidas=()):
+        """modo: «sr» (Grieta), «aram» o «arena». caidas: números de paso del guion en los que el cliente «no responde» (se cae y vuelve)."""
         self.puuid, self.guion, self.paso, self.nueva = puuid, list(guion), 0, partida_nueva
+        self.modo, self.caidas = modo, set(caidas)
         self.pedidas = []
         self.viejas = [partida(100, 103, True, 1_000), partida(101, 86, False, 2_000)]
         self.detalles = {}   # gameId -> detalle de la Grieta (los 10 jugadores); lo demás devuelve None, como el cliente con una partida que ya no tiene
@@ -82,10 +93,14 @@ class ClienteFalso:
 
     def get(self, path, timeout=None):
         self.pedidas.append(path)
+        if self.paso in self.caidas:
+            raise ConnectionError("el cliente se ha cerrado")
         f = self.fase
         if path == "/lol-champ-select/v1/session":
             if f != "ChampSelect":
                 return None
+            if self.modo != "sr":
+                return copy.deepcopy(ARAM_SELECCION)
             s = copy.deepcopy(SELECCION)
             if self.guion[: self.paso + 1].count("ChampSelect") > 1:   # segundo paso: ya has bloqueado a Garen
                 s["myTeam"][0]["championId"] = 86
@@ -94,7 +109,7 @@ class ClienteFalso:
         if path == "/lol-gameflow/v1/gameflow-phase":
             return f
         if path == "/lol-gameflow/v1/session":
-            gd = {"queue": {"id": 420, "gameMode": "CLASSIC"}, "isCustomGame": False}
+            gd = {"queue": dict(COLAS[self.modo]), "isCustomGame": False}
             if f == "InProgress":
                 gd.update(gameId=self.nueva,
                           teamOne=[{"puuid": YO, "championId": 86, "selectedPosition": "TOP"}] +
