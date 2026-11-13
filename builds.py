@@ -31,6 +31,12 @@ def _sel(tag):
     return "grayscale" not in tag
 
 
+def patch_of(html):
+    """Parche del que son los datos de la página («Patch 16.22» en su texto), con la numeración pública (26.22); «» si no aparece."""
+    m = re.search(r"Patch (\d{1,2})\.(\d{1,2})\b", re.sub(r"<!--.*?-->", "", html, flags=re.S))
+    return f"{int(m.group(1)) + 10}.{m.group(2)}" if m else ""
+
+
 def parse(html):
     """{runes:{keystone, primary[3], secondary[2], shards[]}, spells[2], skills[], items:{start, core, i4, i5, i6}} o None."""
     h = re.sub(r"<!--.*?-->", "", html, flags=re.S)
@@ -117,7 +123,10 @@ def load(cache_dir, champ, lane, enemy=None, force=False):
         try:
             req = urllib.request.Request(url(champ, lane, enemy, tier), headers=UA)
             with urllib.request.urlopen(req, timeout=40) as r:
-                data = parse(r.read().decode("utf8", "replace"))
+                page = r.read().decode("utf8", "replace")
+                data = parse(page)
+                if data:
+                    data["patch"], data["read"] = patch_of(page), time.time()   # de qué parche son los datos y cuándo se leyeron
             if data and enemy and ((data.get("stats") or {}).get("core") or {}).get("games", 10 ** 6) < MIN_VS:
                 data = None  # muy pocas partidas contra ese rival: es mejor la build general que una cifra sin respaldo
             if data:

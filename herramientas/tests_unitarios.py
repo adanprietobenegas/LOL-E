@@ -550,6 +550,33 @@ class FlujoCompleto(unittest.TestCase):
         self.assertEqual(sorted(json.loads(self.leer("history_cuentaB.json"))), ["500"])
 
 
+class ParcheDeLaBuild(unittest.TestCase):
+    def test_el_parche_se_lee_de_la_pagina(self):
+        import builds
+        self.assertEqual(builds.patch_of("<head>... Patch 16.22 are found on LoLalytics.</head>"), "26.22")
+        self.assertEqual(builds.patch_of("<!-- Patch 15.1 -->sin parche visible"), "")        # un comentario no cuenta
+        self.assertEqual(builds.patch_of("Patch 16.3 más texto"), "26.3")
+        self.assertEqual(builds.patch_of("nada"), "")
+
+    def test_nota_de_procedencia(self):
+        import ui_build
+        ahora = 1_800_000_000
+        d = {"patch": "26.22", "read": ahora - 3 * 86400}
+        self.assertEqual(ui_build.source_note(d, "26.22", ahora), "Fuente: Lolalytics (build más jugada, parche 26.22, leída hace 3 días).")
+        self.assertIn("parche anterior al actual (26.23)", ui_build.source_note(d, "26.23", ahora))
+        self.assertIn("leída hoy", ui_build.source_note({"patch": "26.22", "read": ahora - 600}, "26.22", ahora))
+        self.assertIn("leída ayer", ui_build.source_note({"read": ahora - 90000}, "", ahora))
+        # una build guardada por una versión anterior (sin parche ni fecha) sigue mostrando solo la fuente, sin inventar nada
+        self.assertEqual(ui_build.source_note({}, "26.22", ahora), "Fuente: Lolalytics (build más jugada).")
+        antes, core.DD_VERSION = core.DD_VERSION, "16.22.1"
+        try:
+            self.assertEqual(ui_build.current_patch(), "26.22")
+            core.DD_VERSION = ""
+            self.assertEqual(ui_build.current_patch(), "")
+        finally:
+            core.DD_VERSION = antes
+
+
 class PrivacidadDeLosDatosGuardados(unittest.TestCase):
     def test_scrub_vacia_solo_las_claves_que_identifican(self):
         d = {"myTeam": [{"cellId": 1, "championId": 54, "puuid": "abc", "gameName": "Fulano", "tagLine": "EUW", "summonerId": 7}],

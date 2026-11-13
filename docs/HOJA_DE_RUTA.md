@@ -49,7 +49,8 @@ El estado del día a día sigue en `ESTADO_Y_PENDIENTES.md`.
   prudentes para no etiquetar con 3 partidas.
 - Resumen de una frase al terminar cada partida.
 - Hecho (13/11/2026, sin publicar): recalcular las recomendaciones cuando eliges el rival a mano.
-- Antigüedad visible de cada dato de build y meta (parche en que se leyó).
+- Hecho (13/11/2026, sin publicar): antigüedad visible de la build (parche de sus datos y cuándo se leyó, con aviso si es de un
+  parche anterior). El meta ya enseñaba su parche y avisa cuando el actual aún no tiene datos.
 
 ## Etapa 4 · Mantenimiento
 

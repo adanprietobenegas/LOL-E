@@ -14,6 +14,28 @@ CACHE_DIR = core.CACHE   # (en render() «core» es una lista de objetos)
 SKILLS = {"q": "Q", "w": "W", "e": "E", "r": "R"}
 
 
+def current_patch():
+    """Parche del juego instalado, con la numeración pública (26.22). A nivel de módulo porque en render() «core» es otra cosa."""
+    return core.metamod.public_patch(core.DD_VERSION) if core.DD_VERSION else ""
+
+
+def source_note(d, current="", now=None):
+    """Nota de procedencia de una build: la fuente, el parche de sus datos y cuándo se leyeron. Si el parche es anterior al
+    que tiene el juego, lo dice (cuando cambia el parche, la web tarda en tener datos nuevos). Sin parche no inventa ninguno."""
+    import time as _t
+    now = now or _t.time()
+    partes = []
+    if d.get("patch"):
+        partes.append(f"parche {d['patch']}")
+    if d.get("read"):
+        dias = int((now - d["read"]) // 86400)
+        partes.append("leída hoy" if dias <= 0 else "leída ayer" if dias == 1 else f"leída hace {dias} días")
+    txt = "Fuente: Lolalytics (build más jugada" + (", " + ", ".join(partes) if partes else "") + ")."
+    if d.get("patch") and current and d["patch"] != current:
+        txt += f" Es de un parche anterior al actual ({current}): puede haber cambiado."
+    return txt
+
+
 def _ph(ui, parent, size):
     return ctk.CTkFrame(parent, width=size, height=size, corner_radius=6, fg_color=PAL["card2"], border_width=1, border_color=PAL["border"])
 
@@ -569,5 +591,5 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
         notes.append("Sin datos suficientes de este enfrentamiento: se muestra la build general de la línea.")
     if d.get("tier") == "all":
         notes.append("Pocos datos en tu rango: se usan los de todos los rangos.")
-    notes.append("Fuente: Lolalytics (build más jugada). Pasa el ratón por un icono para ver su descripción.")
+    notes.append(source_note(d, current_patch()) + " Pasa el ratón por un icono para ver su descripción.")
     ui.lbl(parent, " ".join(notes), 9, "dim", anchor="w", justify="left", wraplength=max(200, width - 20)).pack(anchor="w", pady=(6, 0))
