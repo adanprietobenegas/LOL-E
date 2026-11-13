@@ -128,6 +128,8 @@ def main():
         print("   bien")
 
     print("4. Construcción")
+    if "League of Legends.exe" in sh("tasklist").stdout:   # la comprobación dura minutos: se vuelve a mirar justo antes de construir
+        parar("ha empezado una partida mientras se comprobaba: no se construye nada hasta que acabe (vuelve a lanzar el comando)")
     r = subprocess.run([sys.executable, os.path.join(ROOT, "build_release.py")], cwd=ROOT, encoding="utf-8", errors="replace",
                        capture_output=True, env={**os.environ, "PYTHONIOENCODING": "utf-8"})
     if r.returncode != 0:

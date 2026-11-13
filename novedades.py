@@ -10,6 +10,12 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.9", "fecha": "13 de noviembre de 2026", "titulo": "Recomendaciones contra tu rival, descargas más fiables y menos datos de otros", "items": [
+        ("mejora", "Si eliges a mano tu rival de línea, las recomendaciones se recalculan contra él (puntuación, «contra tu rival» y orden), no solo la build y la guía. «Auto» vuelve al rival que se deduce solo."),
+        ("arreglo", "En algunos PC con Windows, las descargas de builds, meta, iconos u op.gg fallaban por un certificado de seguridad que Windows aún no tenía y LOL-E no avisaba. Ahora LOL-E lleva sus propios certificados raíz además de los de Windows; la conexión se verifica igual de estricta."),
+        ("mejora", "La build indica de qué parche son sus datos y cuándo se leyeron («parche 26.22, leída hoy») y avisa si son de un parche anterior al del juego."),
+        ("mejora", "LOL-E ya no guarda nombres ni identificadores de tus compañeros y rivales en sus archivos de depuración (la última selección y las muestras de la partida en vivo). Lo que había se limpia solo al actualizar, y las muestras caducan a las dos semanas."),
+    ]},
     {"v": "1.22.8", "fecha": "13 de noviembre de 2026", "titulo": "Tu línea, bien contada", "items": [
         ("arreglo", "Partidas de toplane que salían como «Jungla» en el Historial y el Repertorio (por ejemplo, Renekton). El cliente de LoL a veces etiqueta como jungla a quien juega arriba, y LOL-E se fiaba de esa etiqueta. En tus datos, de 16 partidas marcadas como jungla solo 5 lo eran. Ahora la jungla se reconoce por llevar Aplastar, que es lo que de verdad la distingue."),
         ("arreglo", "El mismo fallo falseaba «tu rival de línea» en las partidas pasadas (podía salir el jungla enemigo en vez del toplane) y la línea habitual que se ve de otros jugadores."),

@@ -7,6 +7,22 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.9   (13 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Rival de línea elegido a mano: gui.set_opp guarda conf["_opp"] (clave con «_», no se escribe en config.json) y pide
+    «recalc»; _advise lo usa como lane_opp y conserva aparte lane_opp_auto. 3 pruebas.
+  · Certificados: lol_advisor.install_certs() (al arrancar) suma los de certifi a los del sistema
+    (ssl._create_default_https_context). Visto: op.gg falla con el almacén de Windows y funciona con certifi; GitHub falla a
+    ratos. certifi en requirements.txt y --collect-data certifi en build_release.py. CTX (cliente de LoL, sin verificar)
+    no cambia y una prueba fija que solo se usa contra 127.0.0.1.
+  · Privacidad: core.scrub vacía las claves de identidad (IDENTITY_KEYS) de last_session.json y live_samples/*; migración de
+    esquema 2 -> 3 (_scrub_3) limpia lo existente; prune_cache borra live_samples de más de 14 días.
+  · Build: builds.patch_of lee «Patch 16.22» de la página (26.22 público); builds.load guarda patch y read; ui_build.source_note
+    lo muestra y avisa si es anterior al del juego. Las builds guardadas antes no lo traen.
+  · Herramientas (no afectan a la app): comprobar_todo.py, publicar.py, validar_lineas.py, demo_falso.py LOLE_RIVAL.
+  · No probado todavía con el cliente real: una partida completa. Versión de revisión en directo con el usuario.
+
 VERSIÓN 1.22.8   (13 de noviembre de 2026)
 ---------------------------------------------------------------------
 
