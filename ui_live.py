@@ -45,7 +45,7 @@ def buy_hint(ui, snap, plan):
             return None
         order = shopping.build_order(st[1].get("items") or {}, lambda i: "Boots" in (ui.items.get(i) or {}).get("t", []))
         res = shopping.next_purchase(order, yo["items"], int(snap.get("gold") or 0), ui.items)
-        return (shopping.describe(res, ui.items), res["id"]) if res else None
+        return (shopping.describe(res, ui.items), res["id"], res["affordable"]) if res else None
     except Exception:
         core.log_exc("Siguiente compra")
         return None

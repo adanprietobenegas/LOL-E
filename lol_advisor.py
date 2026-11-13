@@ -64,6 +64,7 @@ DEFAULT_CONF = {
     "tab": "asesor",
     "start_tab": "ultima",   # ultima | asesor | enfrentamiento | repertorio | historial | datos
     "animations": True,
+    "buy_alert": True,       # suena un aviso suave al poder pagar el siguiente objeto de tu build (con los avisos sonoros activados)
     "live_enabled": True,    # durante la partida: marcador, objetos y estado de los 10 jugadores (API local del juego)
     "filters": {"orden": "Afinidad", "clase": "Todas", "mi_rol": True, "mios": False, "meta": False},
     "opgg_enabled": True,    # actualiza tus stats de temporada y matchups desde op.gg

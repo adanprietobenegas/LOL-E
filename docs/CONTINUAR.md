@@ -59,6 +59,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 **En `main` sin publicar** (candidata a 1.22.13):
 - **Remake en el bucle** (`history.is_remake`, escenario `remake` del cliente simulado): al acabar una partida anulada no se espera hasta 64 s a un cambio de PL que no llegará ni se guarda una variación de 0.
 - **Tu partida frente a tu media, con daño y visión por minuto** (`analysis.vs_average`: `dpm`, `vpm`; la visión solo en la Grieta).
+- **Aviso sonoro al poder comprar** el siguiente objeto de tu build (`GUI.buy_alert`, ajuste `buy_alert`, una vez por objeto; usa «Avisos sonoros»). Nota del botón de diagnóstico con la guía de qué enviar.
 - **Objeto contra los rivales** en el bloque en vivo (`shopping.counter_item`, `ui_live.counter_hint`): un solo objeto de tu cantera (penetración si acumulan defensa; si no, armadura o RM contra su daño dominante). Solo datos en vivo inventados; captura 10d.
 - **Informe de diagnóstico más completo** (`health_lines` y los ajustes relevantes en `copy_diagnostics`): esquema de datos, partidas de la Grieta con línea de regla antigua o sin línea, PL guardados, edad del meta y de las builds.
 

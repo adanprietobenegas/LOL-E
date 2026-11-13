@@ -34,7 +34,7 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
 
 | # | Qué | Impacto | Esfuerzo | Riesgo | Validar |
 |---|---|---|---|---|---|
-| 1.1 | ~~**«Puedes comprar…»**~~ HECHO en `main` (`shopping.py`): siguiente objeto de tu build y lo que te falta restando componentes. Falta verlo en una partida real y, si interesa, avisar con sonido cuando ya puedas comprarlo | A | S | b | Una partida real |
+| 1.1 | ~~**«Puedes comprar…»**~~ HECHO en `main` (`shopping.py`): siguiente objeto de tu build y lo que te falta restando componentes. Falta verlo en una partida real y el aviso con sonido al poder comprarlo ya está (`GUI.buy_alert`, ajuste `buy_alert`) | A | S | b | Una partida real |
 | 1.2 | ~~**Objeto según lo que llevan los rivales**~~ HECHO en `main` sin publicar (`shopping.counter_item`, línea en el bloque en vivo): UN objeto de la cantera de tu campeón, penetración si acumulan una defensa o defensa contra su daño dominante; solo con 2.500+ de oro rival. Falta verlo en partida real y ligarlo a «Situaciones» (heridas graves, tenacidad) | A | M | m | Partidas reales; que el consejo cambie con la partida |
 | 1.3 | **Temporizadores de objetivos** (dragón, barón, heraldo, inhibidores) a partir de los eventos. **Verificar los tiempos de reaparición del parche actual antes de mostrarlos**; mostrarlos como «estimado» | A | M | m | Comparar con el reloj del juego en 2–3 partidas |
 | 1.4 | ~~**Resumen de la partida al terminar, comparado contigo**~~ HECHO en `main` (KDA y farmeo frente a tu media con ese campeón). Daño por minuto y visión por minuto añadidos en `main` (visión solo en la Grieta) | M | S | b | Con partidas guardadas |
@@ -54,7 +54,7 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
 | 2.5 | **Rediseño de navegación** (`docs/rediseno/prototipo_v2.html`). El usuario decide; ya se hizo el cambio puntual del Repertorio | M | L | m | Prototipo revisado por el usuario antes de tocar código |
 | 2.6 | **Instalador firmado** (certificado de firma de código) o, al menos, reputación en SmartScreen: hoy algunos antivirus protestan | M | M | b | Instalar en un PC limpio |
 | 2.7 | **Cliente falso: más casos del bucle**. HECHO en `main`: esquivar, caída del cliente, ARAM/Arena, reconexión, cuenta desconocida, sesiones raras (encontró un fallo real al esquivar). HECHO también el remake (`history.is_remake`: no se espera un cambio de PL que no llegará ni se guarda variación). Falta: cola de dos fases, respuestas grabadas y anonimizadas a mano | B | M | b | Pruebas del bucle |
-| 2.8 | ~~**Informe de diagnóstico con un clic** más completo~~ HECHO en `main` sin publicar (`lol_advisor.health_lines`: esquema, partidas con línea de regla antigua o sin línea, PL guardados, edad del meta y de las builds, ajustes relevantes). Falta, si hace falta, una guía de «qué enviar» para los compañeros | M | S | b | Un compañero lo usa |
+| 2.8 | ~~**Informe de diagnóstico con un clic** más completo~~ HECHO en `main` sin publicar (`lol_advisor.health_lines`: esquema, partidas con línea de regla antigua o sin línea, PL guardados, edad del meta y de las builds, ajustes relevantes). Guía de «qué enviar» en la nota del botón (Ajustes) | M | S | b | Un compañero lo usa |
 
 ## P3 · Ideas a explorar (sin prometer)
 

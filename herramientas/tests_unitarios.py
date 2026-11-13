@@ -1151,6 +1151,26 @@ class ObjetoContraLosRivales(unittest.TestCase):
         self.assertIsNone(self.s.counter_item({"ad": 7000, "ap": 1000, "armor": 0, "mr": 0}, [5], self.CAT, []))                   # nada en tu cantera sirve
 
 
+class AvisoDeCompra(unittest.TestCase):
+    def test_suena_una_vez_por_objeto_y_solo_si_esta_activado(self):
+        from unittest import mock
+        import gui, sounds, ui_live
+        class Falso:
+            conf = {"beep": True, "buy_alert": True, "volume": 0.5}
+            ctx = {"plan": {}}
+        g = Falso()
+        veces = []
+        pistas = iter([("a", 5, False), ("a", 5, True), ("a", 5, True), ("b", 7, True), None])
+        with mock.patch.object(sounds, "play_alert", lambda s, v: veces.append((s, v))), mock.patch.object(ui_live, "buy_hint", lambda *a: next(pistas)):
+            for _ in range(5):
+                gui.GUI.buy_alert(g, {})
+            self.assertEqual(veces, [("Cristal", 0.5), ("Cristal", 0.5)])          # objeto 5 una vez (al poder pagarlo) y objeto 7 otra
+            g.conf["buy_alert"] = False
+            pistas = iter([("c", 9, True)])
+            gui.GUI.buy_alert(g, {})
+            self.assertEqual(len(veces), 2)                                           # desactivado: silencio
+
+
 class Documentacion(unittest.TestCase):
     """El punto de partida de las conversaciones nuevas (docs/CONTINUAR.md) no puede quedarse atrás: estas pruebas fallan si no se actualiza."""
     def leer(self, nombre):

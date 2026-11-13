@@ -361,6 +361,7 @@ class GUI:
                     self.ctx.update(info=ev[1], msg=ev[2], players={})
                     if ev[2] and "Partida en curso" not in ev[2]:
                         self.ctx["live"] = None   # fuera de la partida el marcador en vivo ya no vale
+                        self.buy_notified = set()
                     self.advisor = "idle"
                     self.apply_window()  # fuera de la selección se comporta como cualquier otra ventana (Alt+Tab)
                     self.kit.anim = True
@@ -388,6 +389,7 @@ class GUI:
                         self.game_view.refresh(self.make_ctx(), True)
                 elif kind == "live":
                     self.ctx["live"] = ev[1]
+                    self.buy_alert(ev[1])
                     if self.view == "game":
                         self.game_view.on_live(self.make_ctx())
                 elif kind == "live_aug":
@@ -1193,6 +1195,8 @@ class GUI:
         switch("Modo compacto (solo turno y lo recomendado)", "compact")
         switch("Datos en vivo durante la partida", "live_enabled")
         note("En «Partida», marcador, objetos y estado de los 10 jugadores. Lee la API local del propio juego (la de la tabla de puntuación); no toca la partida.")
+        switch("Aviso al poder comprar el siguiente objeto", "buy_alert")
+        note("Un sonido suave, una vez por objeto, cuando tu oro ya llega para el siguiente de tu build. Necesita los avisos sonoros y los datos en vivo.")
 
         section("Al abrir")
         starts = {"Última usada": "ultima", "Asesor": "asesor", "Enfrentamiento": "enfrentamiento", "Repertorio": "repertorio", "Historial": "historial", "Datos": "datos"}
@@ -1263,7 +1267,7 @@ class GUI:
         button("Ver novedades", self.show_notes)
         note("Qué ha cambiado en cada versión.")
         button("Copiar informe de diagnóstico", self.copy_diagnostics)
-        note("Para pedir ayuda: copia versión, sistema, estado de los datos y últimos errores (sin tu nombre ni tus partidas) y pégalo en el mensaje.")
+        note("Para pedir ayuda: pulsa el botón, pega el texto en tu mensaje y cuenta en una frase qué esperabas ver y qué viste. Incluye versión, sistema, estado de los datos y últimos errores (sin tu nombre ni tus partidas).")
         button("Abrir el registro de errores", lambda: self.open_log())
         button("Restablecer todos los ajustes", self.reset_settings)
         note("No borra tu historial ni tus datos; LOL-E se cierra para aplicarlo.")
@@ -1336,6 +1340,22 @@ class GUI:
     def live_augments(self, found):
         self.q.put(("live_aug", found))
 
+    def buy_alert(self, snap):
+        """Suena un aviso suave UNA vez por objeto cuando ya puedes pagar el siguiente de tu build (solo con los avisos sonoros y este aviso activados)."""
+        if not self.conf.get("beep", True) or not self.conf.get("buy_alert", True):
+            return
+        try:
+            import sounds, ui_live
+            hint = ui_live.buy_hint(self, snap, self.ctx.get("plan"))
+            done = getattr(self, "buy_notified", None)
+            if done is None:
+                done = self.buy_notified = set()
+            if hint and hint[2] and hint[1] not in done:
+                done.add(hint[1])
+                sounds.play_alert("Cristal", self.conf.get("volume", 0.7))
+        except Exception:
+            core.log_exc("Aviso de compra")
+
     def live(self, summary):
         """Resumen de la partida en vivo (live.summarize), leído por el motor cada ~10 s durante la partida."""
         self.q.put(("live", summary))
@@ -1374,7 +1394,7 @@ class GUI:
         extra = [f"Interfaz: escala {self.conf['scale']}, tema {self.conf['theme']}, ventana {self.root.winfo_width()}x{self.root.winfo_height()}, "
                  f"Windows {self.win_scale():.2f}x",
                  "Ajustes: " + ", ".join(f"{k}={'sí' if self.conf.get(k, d) else 'no'}" for k, d in
-                                          (("live_enabled", True), ("meta_enabled", True), ("auto_update", True), ("auto_install", True), ("animations", True), ("beep", True)))]
+                                          (("live_enabled", True), ("buy_alert", True), ("meta_enabled", True), ("auto_update", True), ("auto_install", True), ("animations", True), ("beep", True)))]
         txt = core.diagnostics(extra)
         self.root.clipboard_clear()
         self.root.clipboard_append(txt)
