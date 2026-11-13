@@ -11,8 +11,8 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 
 ## Dónde está (13/11/2026)
 
-- **Publicada en GitHub: 1.22.8** (13/11/2026): el arreglo de las líneas (Renekton figuraba como jungla).
-  En `main`, SIN publicar: elegir el rival de línea a mano ahora recalcula también las puntuaciones (ver abajo).
+- **Publicada en GitHub: 1.22.9** (13/11/2026): rival a mano, certificados raíz, parche de la build y privacidad de lo guardado.
+  Pendiente: revisarla en una partida real con el usuario (flujo cola → selección → partida → fin).
 - Pruebas: `python herramientas/tests_unitarios.py` → 67, todas pasan. Con LoL abierto y fuera de partida:
   `python herramientas/prueba_cliente_real.py` (solo lectura, sobre una copia temporal) → TODO BIEN con la 1.22.8.
 - La actualización automática funciona: el usuario confirmó que su 1.22.5 pasó sola a la 1.22.6. Cualquier PC con una
