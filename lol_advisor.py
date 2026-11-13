@@ -494,6 +494,8 @@ def load_player_data(lcu, season=None):
         soft_fail("Leer tus maestrías")
     try:
         P["owned"] = {c["id"] for c in lcu.get("/lol-champions/v1/owned-champions-minimal") or []}
+        if not P["owned"]:   # recién abierto, el cliente contesta vacío un rato (visto en una prueba real): se reintenta
+            diag("Campeones en propiedad: el cliente aún no los da; hasta que lleguen se cuentan todos como tuyos")
     except Exception:
         soft_fail("Leer tus campeones")
     # El cliente solo devuelve las ultimas partidas: las guardamos en disco para acumular historial.
@@ -1182,11 +1184,11 @@ def run(conf, champs, ui):
                     except Exception:
                         soft_fail("Leer la partida en curso")
                     time.sleep(5); continue
-                if (not P.get("hist_ok") or not my_puuid) and hist_tries < 12 and time.time() >= next_hist:
-                    # el historial o tu cuenta no llegaron (cliente aún iniciando sesión): reintentar
+                if (not P.get("hist_ok") or not my_puuid or not P.get("owned")) and hist_tries < 12 and time.time() >= next_hist:
+                    # el historial, tu cuenta o tus campeones no llegaron (cliente aún iniciando sesión): reintentar
                     next_hist, hist_tries = time.time() + 30, hist_tries + 1
                     P = load_player_data(lcu, season)
-                    if P.get("hist_ok"):
+                    if P.get("hist_ok") and P.get("owned"):
                         hist_tries = 0
                         ui.idle(player_info(P), "Historial cargado.")
                         getattr(ui, "history_updated", lambda: None)()

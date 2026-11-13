@@ -193,14 +193,21 @@ lienzo). Bajarlo más pide sustituirlos por widgets ligeros de Tk pantalla a pan
 En la app real la selección se repinta sección a sección, así que el bloqueo percibido es menor que la cifra entera.
 Las medidas son de la ventana de desarrollo, no de una partida real con LoL en marcha (ahí el PC va más justo).
 
-## Pendiente inmediato (13/11/2026)
+## Prueba contra el cliente real (13/11/2026)
 
-1. **Prueba contra el cliente real, sin ejecutar todavía** (el cliente estaba cerrado):
-   `python herramientas/prueba_cliente_real.py`, con LoL abierto y fuera de partida. Es de solo lectura y trabaja sobre
-   una copia temporal. Comprueba cuenta, historial por cuenta y su herencia, perfil, maestrías, lectura de un jugador
-   y que no quede ningún fallo registrado. Es lo primero que hay que lanzar en la próxima conversación.
-2. Preguntar al usuario si su app pasó sola de la 1.22.5 a la 1.22.6 (el ejecutable instalado cambió el 12/11 a las
+`python herramientas/prueba_cliente_real.py` con LoL abierto y fuera de partida: TODO BIEN. Cuenta reconocida, 200
+partidas entregadas y reconocidas como suyas, historial antiguo (220) heredado sin pérdidas (233 al final), perfil,
+182 maestrías y lectura de un jugador correctos, sin fallos registrados.
+
+Hallazgo: al recién abrir el cliente, `owned-champions-minimal` contestó vacío en la primera lectura (0 campeones) y
+después 257. Con la lista vacía la app trata todos los campeones como tuyos. Arreglado en `main` (sin publicar): se
+apunta en el diagnóstico y el bucle reintenta cada 30 s hasta 12 veces mientras `owned` esté vacío.
+Sigue sin probar el flujo de una partida completa con el cliente real.
+
+## Pendiente inmediato
+
+1. Preguntar al usuario si su app pasó sola de la 1.22.5 a la 1.22.6 (el ejecutable instalado cambió el 12/11 a las
    21:16, así que instaló algo a mano; no se sabe qué versión).
-3. Rendimiento, hallazgo del 13/11: repintar una sola sección pequeña cuesta ~300 ms aunque construirla sean 36 ms; el
-   resto es el recálculo y redibujado de toda la página que hace Tk ante cualquier cambio de tamaño. No se arregla con
-   retoques: pide menos widgets por pantalla. `python herramientas/tiempos.py 560 "solo"` da el desglose por sección.
+2. Rendimiento: repintar una sola sección pequeña cuesta ~300 ms aunque construirla sean 36 ms; el resto es el
+   recálculo y redibujado de toda la página que hace Tk. Pide menos widgets por pantalla, no retoques.
+   `python herramientas/tiempos.py 560 "solo"` da el desglose por sección.
