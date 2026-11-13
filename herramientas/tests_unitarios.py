@@ -527,6 +527,11 @@ class FlujoCompleto(unittest.TestCase):
         self.assertIn(("analysis.load", "900", YO), ev)                                # se analiza la partida nueva, no la anterior
         guardadas = json.loads(self.leer(f"history_{YO}.json"))
         self.assertEqual(sorted(guardadas), ["100", "101", "900"])
+        # la partida nueva se guarda con la línea y el rival bien aunque el cliente etiquete mal («JUNGLE» a tu toplane y al rival)
+        self.assertEqual(guardadas["900"]["r"], "TOP")
+        g900 = json.loads(self.leer(f"games_{YO}.json"))["900"]
+        self.assertEqual((g900["r"], g900["o"], g900["rv"]), ("TOP", 157, 2))      # rival: Yasuo, su toplane (también etiquetado «JUNGLE»)
+        self.assertEqual((sorted(g900["p"]), len(g900["a"])), (["a1", "a2", "a3", "a4"], 4))   # y quiénes jugaron contigo
         self.assertEqual(self.leer("history.json"), "")                                # nada va ya al archivo sin dueño
         d = self.leer("diag.log")
         for trozo in ("Cliente de LoL encontrado", "Selección de campeón: cola 420, tipo sr", "Fase: ReadyCheck -> ", "Partida terminada: 900"):

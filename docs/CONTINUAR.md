@@ -141,6 +141,21 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
   `Select-String -Path "$env:LOCALAPPDATA\LOL-E\cache\live_samples\*","$env:LOCALAPPDATA\LOL-E\cache\last_session.json" -Pattern '"(summonerName|riotId|gameName|puuid)":\s*"[^"]+"' | Measure-Object`
   (debe dar Count 0).
 
+## Estado de lo pendiente (13/11/2026, tras publicar la 1.22.10)
+
+Hecho y sin nada sin subir. Lo que queda NO se puede cerrar sin el usuario o sin otra partida:
+1. **La instalación del usuario aún corre la 1.22.9** (el `diag.log` termina en la partida de las 17:59). La app mira
+   actualizaciones al abrir y cada 3 h: basta con cerrarla y abrirla fuera de cola. Después comprobar en su `diag.log`:
+   «--- LOL-E 1.22.10 arranca ---», «Partidas antiguas recalculadas con su detalle…» y que `games_<cuenta>.json` tiene todas las
+   partidas de Grieta con `rv: 2` (el comando de la sesión del 13/11 lo cuenta). Y que el Historial/Repertorio ya no tienen toplanes como jungla.
+2. **Selección de campeón y pestaña «Partida» con los 10 jugadores en directo** con el cliente real: solo se vieron en el registro
+   y en los datos guardados, no en pantalla. Ver la ventana con `PrintWindow` (ver la sesión) mientras el usuario juega.
+3. **Compañero a quien «no le salen» los jugadores**: sin reproducir; pedirle su informe de diagnóstico (Ajustes).
+4. Decisiones del usuario: espaciado único; rendimiento del pintado (menos widgets por pantalla).
+5. Etapa 3 que pide partidas: datos en vivo del puerto 2999, antigüedad de otros datos.
+El cliente simulado ya devuelve el detalle de la Grieta con la forma real (etiquetas mal puestas, objetos de rol, Aplastar), así que las
+pruebas del bucle cubren la línea y el rival de línea.
+
 ## Siguiente trabajo, por orden
 
 1. **Publicar lo acumulado** (rival a mano, privacidad de lo guardado —esquema 3—, parche de la build) como 1.22.9 si el usuario lo
