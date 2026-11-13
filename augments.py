@@ -175,7 +175,7 @@ def live_probe(conf):
             st["buckets"].add(b)
             os.makedirs(path("live_samples"), exist_ok=True)
             with open(path(os.path.join("live_samples", f"allgamedata_{int(gt)}s.json")), "w", encoding="utf-8") as f:
-                json.dump(d, f, ensure_ascii=False)
+                json.dump(core.scrub(d), f, ensure_ascii=False)   # sin los nombres de los 10 jugadores: solo interesa la forma de los datos
     except Exception:
         pass
     try:

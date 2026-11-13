@@ -438,6 +438,35 @@ def soft_fail(where):
 players.on_fail = soft_fail
 
 # ---------- Versión de los datos guardados ----------
+# Claves con las que el cliente de LoL (y su API en vivo) identifican a una persona. Lo que se guarda solo para depurar
+# no las necesita: se vacían antes de escribir (ver scrub).
+IDENTITY_KEYS = {"puuid", "gameName", "tagLine", "summonerName", "summonerInternalName", "summonerId", "accountId",
+                 "obfuscatedPuuid", "obfuscatedSummonerId", "riotId", "riotIdGameName", "riotIdTagLine", "displayName"}
+
+
+def scrub(obj):
+    """Copia de `obj` (diccionarios y listas anidados) con vacíos los valores de las claves que identifican a alguien."""
+    if isinstance(obj, dict):
+        return {k: ("" if k in IDENTITY_KEYS else scrub(v)) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [scrub(v) for v in obj]
+    return obj
+
+
+def _scrub_3(cache):
+    """Esquema 2 -> 3: la última selección (last_session.json) y las muestras de la partida en vivo guardaban los nombres e
+    identificadores de tus compañeros y rivales. Solo sirven para depurar: se limpian los que ya hay."""
+    files = [os.path.join(cache, "last_session.json")] + [os.path.join(cache, "live_samples", f)
+                                                          for f in (os.listdir(os.path.join(cache, "live_samples")) if os.path.isdir(os.path.join(cache, "live_samples")) else [])]
+    n = 0
+    for p in files:
+        d = read_json(p, None) if p.endswith(".json") else None
+        if d is not None:
+            write_json(p, scrub(d))
+            n += 1
+    diag(f"Migración de privacidad: {n} archivos de depuración sin nombres ni identificadores")
+
+
 def _roles_1(cache):
     """Esquema 1 -> 2: las partidas guardadas como «JUNGLE» con la regla antigua (la etiqueta cruda del cliente) no son de fiar:
     solo 5 de 16 lo eran en los datos reales. Se dejan sin línea ni rival, y las que el cliente aún entrega (sus últimas 200)
@@ -462,8 +491,8 @@ def _roles_1(cache):
     diag(f"Migración de líneas: {n} partidas marcadas como jungla sin comprobar quedan sin línea hasta recalcularse")
 
 
-SCHEMA = 2   # sube cuando cambie la forma de algún archivo de cache/; MIGRATIONS[n] lleva los datos de la versión n a la n+1
-MIGRATIONS = {1: _roles_1}
+SCHEMA = 3   # sube cuando cambie la forma de algún archivo de cache/; MIGRATIONS[n] lleva los datos de la versión n a la n+1
+MIGRATIONS = {1: _roles_1, 2: _scrub_3}
 
 
 def check_schema():
@@ -1243,7 +1272,7 @@ def run(conf, champs, ui):
                     if mode["kind"] == "sr":
                         threading.Thread(target=players.fetch_team, args=(lcu, session, ui.players), daemon=True).start()
                 last = key
-                write_json(os.path.join(CACHE, "last_session.json"), session)  # para depurar
+                write_json(os.path.join(CACHE, "last_session.json"), scrub(session))  # para depurar, sin nombres ni identificadores de nadie
                 r = advise(session, champs, P, conf, mode)
                 r["party"] = list(party)
                 ui.show(session, r)
@@ -1419,8 +1448,8 @@ def single_instance():
 
 def prune_cache(days=21):
     """Borra de la caché lo que lleva semanas sin usarse (builds y enfrentamientos de parches viejos)."""
-    limit = time.time() - days * 86400
-    for sub in ("builds", "matchups"):
+    for sub, dias in (("builds", days), ("matchups", days), ("live_samples", 14)):   # las muestras en vivo, solo dos semanas
+        limit = time.time() - dias * 86400
         d = os.path.join(CACHE, sub)
         try:
             for f in os.listdir(d):

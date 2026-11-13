@@ -13,7 +13,7 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 
 - **Publicada en GitHub: 1.22.8** (13/11/2026): el arreglo de las líneas (Renekton figuraba como jungla).
   En `main`, SIN publicar: elegir el rival de línea a mano ahora recalcula también las puntuaciones (ver abajo).
-- Pruebas: `python herramientas/tests_unitarios.py` → 57, todas pasan. Con LoL abierto y fuera de partida:
+- Pruebas: `python herramientas/tests_unitarios.py` → 61, todas pasan. Con LoL abierto y fuera de partida:
   `python herramientas/prueba_cliente_real.py` (solo lectura, sobre una copia temporal) → TODO BIEN con la 1.22.8.
 - La actualización automática funciona: el usuario confirmó que su 1.22.5 pasó sola a la 1.22.6. Cualquier PC con una
   versión anterior a la 1.22.5 necesita instalar a mano UNA vez (tenía guardada vacía la dirección de actualizaciones).
@@ -56,7 +56,7 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 
 | Herramienta | Para qué |
 |---|---|
-| `tests_unitarios.py` | 57 pruebas sin ventana ni cliente (incluye el bucle principal contra el cliente falso) |
+| `tests_unitarios.py` | 61 pruebas sin ventana ni cliente (incluye el bucle principal contra el cliente falso) |
 | `prueba_cliente_real.py` | Lectura de solo lectura contra el cliente REAL (cuenta, historial, migración, líneas, perfil) |
 | `capturas.py [ancho] [alto] [carpeta]` | Capturas de todas las pantallas sin cliente; `LOLE_SOLO`, `LOLE_PAGINAS`, `LOLE_CONF`, `LOLE_PERFIL` |
 | `demo_falso.py` | La app entera (ventana + bucle) contra el cliente falso, con una captura por fase |
@@ -82,6 +82,10 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
   «_»: no se escribe en config.json) y pide `recalc`; `_advise` la usa como `lane_opp` y conserva aparte
   `lane_opp_auto`. Comprobado con la app real contra el cliente falso (`LOLE_RIVAL=1 python herramientas/demo_falso.py 5 rival`):
   Malphite pasa de 9,09 a 10,89 puntos con el motivo «contra Tryndamere: 3/3»; 3 pruebas nuevas.
+- **Privacidad de lo guardado** (esquema 2 → 3): `last_session.json` y `live_samples/` ya no llevan nombres ni
+  identificadores (`core.scrub`), se limpian los existentes, las muestras caducan a 14 días y una prueba comprueba que la
+  conexión sin verificar certificado solo va a 127.0.0.1. Queda a propósito el campo `p` (puuid de compañeros) de
+  `games_<cuenta>.json`, que sostiene «Juntos 3V 2D». 4 pruebas nuevas.
 - No se pudo ampliar la validación del objeto de rol: el cliente se cerró. `validar_lineas.py` queda listo para
   cuando esté abierto; solo con eso se podría usar el objeto de rol también en las partidas con línea «NONE»
   (8 de las 55 de Grieta del usuario quedan sin línea).

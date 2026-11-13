@@ -3,7 +3,7 @@
 Cubren sonidos por fase, conjunto de objetos (formato y archivo del juego), numeración de huecos de objeto (las botas no cuentan),
 selector de rival y coherencia de versión/notas. Las pruebas con ventana y datos simulados siguen en herramientas/test_modes.py y demo_live.py.
 """
-import json, math, os, struct, sys, tempfile, unittest, wave
+import json, math, os, struct, sys, tempfile, time, unittest, wave
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -548,6 +548,68 @@ class FlujoCompleto(unittest.TestCase):
         self.correr(b)
         self.assertEqual(sorted(json.loads(self.leer("history_cuentaA.json"))), ["100", "101"])
         self.assertEqual(sorted(json.loads(self.leer("history_cuentaB.json"))), ["500"])
+
+
+class PrivacidadDeLosDatosGuardados(unittest.TestCase):
+    def test_scrub_vacia_solo_las_claves_que_identifican(self):
+        d = {"myTeam": [{"cellId": 1, "championId": 54, "puuid": "abc", "gameName": "Fulano", "tagLine": "EUW", "summonerId": 7}],
+             "allPlayers": [{"championName": "Malphite", "riotId": "Fulano#EUW", "summonerName": "Fulano", "items": [1, 2]}], "n": 3}
+        s = core.scrub(d)
+        self.assertEqual(s["myTeam"][0], {"cellId": 1, "championId": 54, "puuid": "", "gameName": "", "tagLine": "", "summonerId": ""})
+        self.assertEqual(s["allPlayers"][0], {"championName": "Malphite", "riotId": "", "summonerName": "", "items": [1, 2]})
+        self.assertEqual(d["myTeam"][0]["gameName"], "Fulano")          # el original no se toca
+        self.assertNotIn("Fulano", json.dumps(s))
+
+    def test_la_migracion_limpia_lo_ya_guardado(self):
+        tmp = tempfile.mkdtemp()
+        os.makedirs(os.path.join(tmp, "live_samples"))
+        json.dump({"myTeam": [{"puuid": "abc", "gameName": "Fulano"}]}, open(os.path.join(tmp, "last_session.json"), "w"))
+        json.dump({"allPlayers": [{"summonerName": "Mengano", "riotId": "Mengano#1"}]}, open(os.path.join(tmp, "live_samples", "a.json"), "w"))
+        core._DIAG["last"], antes = "", core.CACHE
+        core.CACHE = tmp
+        try:
+            core._scrub_3(tmp)
+        finally:
+            core.CACHE = antes
+        for f in ("last_session.json", os.path.join("live_samples", "a.json")):
+            t = open(os.path.join(tmp, f), encoding="utf-8").read()
+            self.assertNotIn("Fulano", t); self.assertNotIn("Mengano", t); self.assertNotIn("abc", t)
+
+    def test_las_muestras_en_vivo_viejas_se_borran(self):
+        tmp, antes = tempfile.mkdtemp(), core.CACHE
+        os.makedirs(os.path.join(tmp, "live_samples"))
+        viejo, nuevo = os.path.join(tmp, "live_samples", "v.json"), os.path.join(tmp, "live_samples", "n.json")
+        for f in (viejo, nuevo):
+            open(f, "w").write("{}")
+        hace = time.time() - 20 * 86400
+        os.utime(viejo, (hace, hace))
+        core.CACHE = tmp
+        try:
+            core.prune_cache()
+        finally:
+            core.CACHE = antes
+        self.assertFalse(os.path.exists(viejo))
+        self.assertTrue(os.path.exists(nuevo))
+
+    def test_la_conexion_sin_verificar_certificado_solo_va_al_equipo_local(self):
+        """El cliente de LoL usa un certificado propio, así que se acepta sin verificar; eso solo es admisible si la
+        dirección es siempre 127.0.0.1. Cualquier otro uso de esa excepción haría fallar esta prueba."""
+        import re
+        self.assertTrue(core.LCU(2999, "x").base.startswith("https://127.0.0.1:"))
+        permitidos = {"lol_advisor.py", "augments.py"}      # CTX sin verificar (LCU) y el sondeo del puerto 2999
+        for f in sorted(os.listdir(ROOT)):
+            if not f.endswith(".py"):
+                continue
+            src = open(os.path.join(ROOT, f), encoding="utf-8").read()
+            if re.search(r"CERT_NONE|_create_unverified_context", src):
+                self.assertIn(f, permitidos, f"{f} desactiva la verificación de certificado")
+        aug = open(os.path.join(ROOT, "augments.py"), encoding="utf-8").read()
+        self.assertEqual(re.findall(r'urlopen\(\s*"([^"]+)"', aug), ["https://127.0.0.1:2999/liveclientdata/allgamedata"])
+        for f in ("itemset.py", "lol_advisor.py"):       # los demás usuarios de CTX construyen la dirección con lcu.base / self.base
+            src = open(os.path.join(ROOT, f), encoding="utf-8").read()
+            for m in re.finditer(r"Request\(([^,)]+)", src):
+                if "context=" in src[m.start():m.start() + 400] and "CTX" in src[m.start():m.start() + 400]:
+                    self.assertRegex(m.group(1), r"(lcu|self)\.base")
 
 
 class RivalElegidoAMano(unittest.TestCase):

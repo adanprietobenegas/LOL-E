@@ -61,8 +61,11 @@ El estado del día a día sigue en `ESTADO_Y_PENDIENTES.md`.
 ## Seguridad y privacidad
 
 - Hecho: el actualizador solo acepta GitHub por HTTPS y comprueba la huella SHA-256 del instalador.
-- Pendiente: revisar qué se guarda en disco de otros jugadores (`last_session.json`, `live_samples/`) y borrarlo
-  pasado un tiempo; revisar que la conexión sin verificación de certificado solo se use contra el cliente local.
+- Hecho (13/11/2026, sin publicar): `last_session.json` y `live_samples/` se escriben sin nombres ni identificadores
+  (`core.scrub`), lo ya guardado se limpia con la migración de esquema 2 → 3 y las muestras en vivo caducan a las dos
+  semanas. Una prueba fija que la verificación de certificado solo se desactiva para `127.0.0.1` (el cliente de LoL y
+  su puerto 2999). Se deja a propósito: los identificadores de compañeros en `games_<cuenta>.json` (campo `p`), que son
+  los que permiten «Juntos 3V 2D»; son identificadores, no nombres, y no salen de tu PC.
 
 ## Qué no hacer
 
