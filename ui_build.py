@@ -31,6 +31,8 @@ def source_note(d, current="", now=None):
         dias = int((now - d["read"]) // 86400)
         partes.append("leída hoy" if dias <= 0 else "leída ayer" if dias == 1 else f"leída hace {dias} días")
     txt = "Fuente: Lolalytics (build más jugada" + (", " + ", ".join(partes) if partes else "") + ")."
+    if d.get("stale"):
+        txt += " No se pudo actualizar ahora: son los últimos datos guardados."
     if d.get("patch") and current and d["patch"] != current:
         txt += f" Es de un parche anterior al actual ({current}): puede haber cambiado."
     return txt

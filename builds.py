@@ -112,19 +112,24 @@ def _path(cache_dir, champ, lane, enemy):
 
 def load(cache_dir, champ, lane, enemy=None, force=False):
     path = _path(cache_dir, champ, lane, enemy)
+    old = None
     try:
         saved = json.load(open(path, encoding="utf-8"))
-        if not force and time.time() - saved["ts"] < TTL and saved["data"].get("v") == 3:
-            return saved["data"]
+        if saved["data"].get("v") == 3:
+            old = saved["data"]
+        if not force and old and time.time() - saved["ts"] < TTL:
+            return old
     except Exception:
         pass
-    last = None
+    last, changed = None, False
     for tier in (None, "all"):  # primero tu rango; si no hay datos suficientes, todos los rangos
         try:
             req = urllib.request.Request(url(champ, lane, enemy, tier), headers=UA)
             with urllib.request.urlopen(req, timeout=40) as r:
                 page = r.read().decode("utf8", "replace")
                 data = parse(page)
+                if not data and len(page) > 5000 and "Primary Runes" not in page:
+                    changed = True   # la página llegó entera pero ya no tiene la estructura que sabemos leer
                 if data:
                     data["patch"], data["read"] = patch_of(page), time.time()   # de qué parche son los datos y cuándo se leyeron
             if data and enemy and ((data.get("stats") or {}).get("core") or {}).get("games", 10 ** 6) < MIN_VS:
@@ -137,10 +142,14 @@ def load(cache_dir, champ, lane, enemy=None, force=False):
                 return data
         except Exception as e:
             last = e
+    if old and not enemy:   # no se pudo actualizar: mejor lo último que se guardó (con su antigüedad en la nota de procedencia) que nada
+        return {**old, "stale": True}
     if enemy:  # sin datos del enfrentamiento concreto: la build general de la línea
         d = load(cache_dir, champ, lane, None, force)
         if d:
             return {**d, "vs": False, "vs_missing": True}
+    if changed:
+        raise RuntimeError("Lolalytics ha cambiado el formato de su página y LOL-E ya no sabe leerla. Envía el informe de diagnóstico (Ajustes) para que se arregle.")
     raise RuntimeError("Lolalytics no tiene todavía una build de este campeón en esa línea." if last is None else f"No se pudo leer la build ({type(last).__name__}).")
 
 

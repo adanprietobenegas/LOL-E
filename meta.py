@@ -41,6 +41,7 @@ def load(cache_dir, version, tier, force=False):
     """Devuelve {'patch','tier','avg':{línea:media},'lanes':{línea:{id_campeón:{wr,pr,br,games,d}}}} o lanza una excepción."""
     major, minor = (version.split(".") + ["0"])[:2]
     path = os.path.join(cache_dir, "meta.json")
+    saved = None
     try:
         saved = json.load(open(path, encoding="utf-8"))
         cur = f"{major}.{minor}"
@@ -64,6 +65,9 @@ def load(cache_dir, version, tier, force=False):
                 return _ints(data)
             except Exception as e:
                 last_err = e
+    if saved and saved.get("lanes"):   # sin red o la fuente falla: mejor el último meta guardado (de otro día o de otro parche) que ninguno
+        saved["stale"] = True
+        return _ints(saved)
     raise RuntimeError(f"sin datos de meta ({last_err})")
 
 

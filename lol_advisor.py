@@ -1137,7 +1137,8 @@ def start_meta(conf, P, ui, force=False):
             d = META["data"]
             stale = d.get("current", d["patch"]) != d["patch"]
             ui.status(f"Meta del parche {metamod.public_patch(d['patch'])} cargado ({metamod.TIER_NAMES.get(d['tier'], d['tier'])})"
-                      + (f"; el {metamod.public_patch(d['current'])} aún no tiene datos" if stale else ""))
+                      + (f"; el {metamod.public_patch(d['current'])} aún no tiene datos" if stale else "")
+                      + ("; no se pudo actualizar, son los últimos guardados" if d.get("stale") else ""))
             try:
                 TRENDS["data"] = trends.load(CACHE, d["patch"], force, (conf.get("opgg_region") or "").lower())
                 META["dirty"] = True

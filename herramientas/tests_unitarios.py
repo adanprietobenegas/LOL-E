@@ -718,6 +718,73 @@ class PreparacionDeLaPublicacion(unittest.TestCase):
         self.assertTrue(any("no apunta al instalador" in m for m in publicar.problemas_de_artefactos(rel, "1.0.0")))
 
 
+GAREN = {"icon": "Garen", "name": "Garen"}
+
+
+class BuildSinRed(unittest.TestCase):
+    def setUp(self):
+        import builds, tempfile
+        self.b, self.d = builds, tempfile.mkdtemp()
+
+    def guardada(self, edad):
+        import json, os, time
+        p = self.b._path(self.d, GAREN, "top", None)
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        json.dump({"ts": time.time() - edad, "data": {"v": 3, "runes": {"keystone": 1}, "items": {"core": [1]}, "patch": "26.21"}}, open(p, "w"))
+
+    def pagina(self, texto):
+        import io
+        from unittest import mock
+        r = mock.MagicMock()
+        r.__enter__.return_value.read.return_value = texto.encode()
+        return mock.patch("builds.urllib.request.urlopen", return_value=r)
+
+    def test_sin_red_se_usa_lo_guardado_con_su_marca(self):
+        from unittest import mock
+        self.guardada(self.b.TTL + 100)
+        with mock.patch("builds.urllib.request.urlopen", side_effect=OSError("sin red")):
+            d = self.b.load(self.d, GAREN, "top")
+        self.assertTrue(d["stale"])
+        self.assertEqual(d["patch"], "26.21")
+        import ui_build
+        self.assertIn("últimos datos guardados", ui_build.source_note(d))
+
+    def test_sin_red_ni_guardado_el_error_es_claro(self):
+        from unittest import mock
+        with mock.patch("builds.urllib.request.urlopen", side_effect=OSError("sin red")):
+            with self.assertRaises(RuntimeError) as cm:
+                self.b.load(self.d, GAREN, "top")
+        self.assertIn("No se pudo leer", str(cm.exception))
+
+    def test_pagina_con_otro_formato_se_avisa(self):
+        self.guardada(self.b.TTL + 100)
+        with self.pagina("<html>" + "x" * 6000 + "</html>"):
+            d = self.b.load(self.d, GAREN, "top")          # hay guardado: se usa, pero marcado
+        self.assertTrue(d.get("stale"))
+        import shutil, tempfile
+        vacio = tempfile.mkdtemp()
+        with self.pagina("<html>" + "x" * 6000 + "</html>"):
+            with self.assertRaises(RuntimeError) as cm:
+                self.b.load(vacio, GAREN, "top")
+        self.assertIn("cambiado el formato", str(cm.exception))
+
+
+class MetaSinRed(unittest.TestCase):
+    def test_sin_red_se_usa_el_ultimo_meta_guardado(self):
+        import json, os, tempfile, time
+        from unittest import mock
+        import meta
+        d = tempfile.mkdtemp()
+        json.dump({"ts": time.time() - 99 * 3600, "patch": "16.20", "current": "16.20", "tier": "gold_plus", "avg": {"top": 50},
+                   "lanes": {"top": {"10": {"wr": 51.0, "pr": 1, "br": 1, "games": 500, "d": 0}}}}, open(os.path.join(d, "meta.json"), "w"))
+        with mock.patch("meta.urllib.request.urlopen", side_effect=OSError("sin red")):
+            m = meta.load(d, "16.21.1", "gold_plus")
+            self.assertTrue(m["stale"])
+            self.assertIn(10, m["lanes"]["top"])                       # claves convertidas a entero como siempre
+            with self.assertRaises(RuntimeError):
+                meta.load(tempfile.mkdtemp(), "16.21.1", "gold_plus")  # sin nada guardado sigue fallando con claridad
+
+
 class ParcheDeLaBuild(unittest.TestCase):
     def test_el_parche_se_lee_de_la_pagina(self):
         import builds
