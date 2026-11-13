@@ -9,6 +9,7 @@ from collections import Counter
 import customtkinter as ctk
 
 import history
+import learn
 import lol_advisor as core
 from ui_build import build_panel
 from ui_history import fecha, mode_of
@@ -81,6 +82,8 @@ class PoolPanel:
         self.narrow = width < 640
         self.cards = {}
         self.header(rows)
+        if rows:
+            self.learn_card()
         if not rows:
             ui.lbl(self.root, "Aún no hay campeones con partidas aquí. Prueba «Todos los modos», o juega con LOL-E abierto para que las guarde.", 11, "dim", anchor="w").pack(anchor="w", pady=8)
             return
@@ -288,6 +291,35 @@ class PoolPanel:
 
     def section(self, p, text):
         self.ui.lbl(p, text, 9, "dim", True, anchor="w").pack(anchor="w", pady=(12, 4))
+
+    def learn_card(self):
+        """«Qué aprender»: si una línea que juegas mucho depende de un solo campeón, propone un segundo de los que ya tienes (ver learn.py)."""
+        ui, info = self.ui, self.ctx["info"] or {}
+        try:
+            items = learn.advice(self.hist, core.META.get("data"), set(info.get("owned") or []), {int(k): v for k, v in (info.get("mastery_all") or {}).items()})
+        except Exception:
+            core.log_exc("Qué aprender")
+            return
+        items = [it for it in items if it["main"] in ui.champs]
+        if not items:
+            return
+        nm = lambda c: core.name(c, ui.champs)
+        box = ctk.CTkFrame(self.root, fg_color=PAL["card2"], corner_radius=12)
+        box.pack(fill="x", pady=(10, 0))
+        inner = ui.frame(box)
+        inner.pack(fill="x", padx=14, pady=10)
+        ui.lbl(inner, "QUÉ APRENDER", 9, "dim", True, anchor="w").pack(anchor="w")
+        for it in items:
+            ui.lbl(inner, f"{ROLES_ES.get(it['role'], it['role'])}: " + learn.line(it, nm), 11, "fg", anchor="w", justify="left",
+                   wraplength=min(self.ctx["width"] - 120, 740)).pack(anchor="w", pady=(6, 3))
+            row = ui.frame(inner)
+            row.pack(anchor="w")
+            for cid, wr in it["cands"]:
+                cell = ui.frame(row)
+                cell.pack(side="left", padx=(0, 12))
+                ui.champ(cell, cid, 30, False).pack(side="left")
+                ui.lbl(cell, f" {nm(cid)} · {es(wr)} %", 10, "good", True).pack(side="left")
+        ui.lbl(inner, "Tasas de victoria del parche en esa línea (Lolalytics) para tu rango y superiores; son orientativas.", 9, "dim", anchor="w").pack(anchor="w", pady=(6, 0))
 
     def d_summary(self, p, r):
         ui = self.ui

@@ -53,6 +53,8 @@ for _i, _d in enumerate([18, -17, 19, 20, -16, -19, 17, 21, -18, 16, 19, -15, 20
     _cum += _d
     _pts.append({"t": 1700000000000 + _i * 86400000, "cum": _cum, "d": _d, "w": _d > 0, "tier": "GOLD II"})
 analysis.lp_series = lambda *a, **k: {"pts": _pts, "total": _cum, "n": len(_pts)}
+import learn   # «Qué aprender» de ejemplo (el cache del proyecto no tiene partidas con línea)
+learn.advice = lambda *a, **k: [{"role": "TOP", "n": 14, "main": 86, "main_g": 12, "main_wr": .58, "cands": [(122, 53.4), (875, 52.9), (54, 52.1)]}]
 
 
 

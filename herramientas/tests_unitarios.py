@@ -914,6 +914,41 @@ class TendenciaDePL(unittest.TestCase):
         self.assertIsNone(analysis.lp_series(tempfile.mkdtemp(), games))      # sin lp.json
 
 
+class QueAprender(unittest.TestCase):
+    META = {"avg": {"top": 50.0, "jungle": 50.0, "middle": 50.0, "bottom": 50.0, "support": 50.0},
+            "lanes": {"top": {10: {"wr": 52.0, "pr": 3.0, "games": 9000}, 11: {"wr": 54.0, "pr": 2.0, "games": 9000}, 12: {"wr": 49.0, "pr": 5.0, "games": 9000},
+                              13: {"wr": 56.0, "pr": 0.2, "games": 9000}, 14: {"wr": 55.0, "pr": 4.0, "games": 100}, 1: {"wr": 53.0, "pr": 4.0, "games": 9000}},
+                      "support": {20: {"wr": 53.0, "pr": 3.0, "games": 9000}}}}
+
+    def partidas(self, rol, cids, q=420):
+        return [{"c": c, "r": rol, "q": q, "w": i % 2 == 0, "rm": False} for i, c in enumerate(cids)]
+
+    def test_aconseja_cuando_una_linea_depende_de_un_campeon(self):
+        import learn
+        g = self.partidas("TOP", [1] * 9 + [10] * 1)
+        r = learn.advice(g, self.META, owned={10, 11, 12, 13, 14, 1}, mastery={10: 5000})
+        self.assertEqual(len(r), 1)
+        it = r[0]
+        self.assertEqual((it["role"], it["n"], it["main"], it["main_g"]), ("TOP", 10, 1, 9))
+        # 10 se jugó una vez (no cuenta como «jugado»), pero lo conoces (maestría) y va primero; 12 no supera la media; 13 es una rareza; 14 tiene poca muestra
+        self.assertEqual([c for c, _ in it["cands"]], [10, 11])
+        self.assertIn("9 de 10", learn.line(it, lambda c: f"C{c}"))
+
+    def test_no_aconseja_sin_motivo(self):
+        import learn
+        repartido = self.partidas("TOP", [1, 10, 1, 10, 11, 1, 10, 11, 1, 10])                      # ninguno pasa del 70 %
+        self.assertEqual(learn.advice(repartido, self.META, owned={1, 10, 11}), [])
+        self.assertEqual(learn.advice(self.partidas("TOP", [1] * 5), self.META), [])               # pocas partidas
+        self.assertEqual(learn.advice(self.partidas("TOP", [1] * 12, q=450), self.META), [])       # ARAM no tiene líneas
+        self.assertEqual(learn.advice(self.partidas("TOP", [1] * 12), None), [])                   # sin meta no se inventa
+        self.assertEqual(learn.advice(self.partidas("TOP", [1] * 12), self.META, owned={1}), [])   # nada que proponer que tengas
+
+    def test_solo_campeones_que_posees_y_apoyo_del_cliente(self):
+        import learn
+        r = learn.advice(self.partidas("UTILITY", [5] * 10), self.META, owned={20})
+        self.assertEqual((r[0]["role"], [c for c, _ in r[0]["cands"]]), ("SUPPORT", [20]))
+
+
 class Documentacion(unittest.TestCase):
     """El punto de partida de las conversaciones nuevas (docs/CONTINUAR.md) no puede quedarse atrás: estas pruebas fallan si no se actualiza."""
     def leer(self, nombre):
