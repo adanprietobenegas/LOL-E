@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.8", "fecha": "13 de noviembre de 2026", "titulo": "Tu línea, bien contada", "items": [
+        ("arreglo", "Partidas de toplane que salían como «Jungla» en el Historial y el Repertorio (por ejemplo, Renekton). El cliente de LoL a veces etiqueta como jungla a quien juega arriba, y LOL-E se fiaba de esa etiqueta. En tus datos, de 16 partidas marcadas como jungla solo 5 lo eran. Ahora la jungla se reconoce por llevar Aplastar, que es lo que de verdad la distingue."),
+        ("arreglo", "El mismo fallo falseaba «tu rival de línea» en las partidas pasadas (podía salir el jungla enemigo en vez del toplane) y la línea habitual que se ve de otros jugadores."),
+        ("mejora", "Las partidas que el cliente aún guarda (las últimas 200) se corrigen solas al conectar. Las más antiguas que figuraban como jungla se quedan sin línea en vez de con una equivocada: mejor ninguna que una falsa."),
+    ]},
     {"v": "1.22.7", "fecha": "13 de noviembre de 2026", "titulo": "Tus campeones, también al abrir el cliente", "items": [
         ("arreglo", "Si abrías LOL-E justo cuando el cliente de LoL acababa de arrancar, la lista de campeones que tienes podía llegar vacía y LOL-E contaba todos como tuyos: «Mis campeones» y «Los que tengo» no filtraban nada. Ahora lo detecta, lo apunta en el registro de diagnóstico y lo vuelve a pedir cada 30 segundos hasta que llega."),
         ("mejora", "Comprobado con tu cliente real de LoL: cuenta, historial (también el que ya tenías guardado), perfil, maestrías y lectura de un jugador."),

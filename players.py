@@ -89,11 +89,7 @@ def load_extra(lcu):
 
 
 def _role(p):
-    t = p.get("timeline", {})
-    lane = t.get("lane", "")
-    if lane == "BOTTOM":
-        return "SUPPORT" if t.get("role") == "SUPPORT" else "BOTTOM"
-    return "" if lane in ("", "NONE") else lane
+    return history.role_of(p)   # no la etiqueta cruda del cliente: ver history.role_of
 
 
 _cache = {}

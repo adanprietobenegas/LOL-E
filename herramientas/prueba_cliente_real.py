@@ -74,6 +74,27 @@ paso("lectura de un jugador (la tuya)", bool(me.get("name")) and not me.get("err
 mode = core.detect_mode(lcu)
 paso("modo de partida (fuera de partida debe salir sin cola)", isinstance(mode, dict), str(mode))
 paso("sala actual legible", True, f"{len(players.lobby_party(lcu, pu) or ())} compañeros en la sala")
+# ---- línea que jugaste: nadie puede quedar como «jungla» sin llevar Aplastar ----
+glist = lcu.get("/lol-match-history/v1/products/lol/current-summoner/matches?begIndex=0&endIndex=200", timeout=40)["games"]["games"]
+SR = core.SR_QUEUES
+ventana = [g for g in glist if g.get("queueId") in SR]
+mala, cuentas = [], {}
+gamesf = core.read_json(history.gpath(TMP), {}) or {}
+for g in ventana:
+    me = history.my_part(g, pu)
+    e = gamesf.get(str(g["gameId"])) or {}
+    cuentas[e.get("r", "?")] = cuentas.get(e.get("r", "?"), 0) + 1
+    if e.get("r") == "JUNGLE" and history.SMITE not in (me.get("spell1Id"), me.get("spell2Id")) and (me.get("stats") or {}).get("roleBoundItem") not in history.JUNGLE_ITEMS:
+        mala.append(g["gameId"])
+paso("ninguna partida de la ventana queda como jungla sin Aplastar", not mala, f"{len(ventana)} partidas de Grieta; líneas: {cuentas}")
+paso("todas las de la ventana llevan la regla nueva", all((gamesf.get(str(g['gameId'])) or {}).get("rv") == history.ROLE_V for g in ventana))
+renek = [g for g in ventana if (history.my_part(g, pu) or {}).get("championId") == 58]
+paso("Renekton: ninguna partida figura como jungla", all((gamesf.get(str(g["gameId"])) or {}).get("r") != "JUNGLE" for g in renek),
+     ", ".join(f"{(gamesf.get(str(g['gameId'])) or {}).get('r') or 'sin línea'}" for g in renek) or "no hay partidas con él en la ventana")
+hist_f = core.read_json(hp, {}) or {}
+paso("el historial coincide con las partidas", all((hist_f.get(str(g["gameId"])) or {}).get("r") == (gamesf.get(str(g["gameId"])) or {}).get("r") for g in ventana))
+sch = core.read_json(os.path.join(TMP, "schema.json"), {}) or {}
+paso("datos migrados al esquema nuevo", sch.get("v") == core.SCHEMA, f"esquema {sch.get('v')}")
 err = leer("error.log")
 paso("ningún fallo del programa registrado", not err, err[:600])
 print("\nRegistro de diagnóstico de esta prueba:")

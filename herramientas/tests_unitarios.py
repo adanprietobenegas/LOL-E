@@ -550,6 +550,96 @@ class FlujoCompleto(unittest.TestCase):
         self.assertEqual(sorted(json.loads(self.leer("history_cuentaB.json"))), ["500"])
 
 
+class LineaQueJugaste(unittest.TestCase):
+    """Caso real: Renekton aparecía como «jungla» en el historial. El cliente etiquetó JUNGLE a los dos jugadores de un equipo
+    (Renekton y Master Yi) y a ninguno como TOP; solo Master Yi llevaba Aplastar."""
+    @staticmethod
+    def p(champ, lane, role, s1, s2, item, team=200):
+        return {"participantId": champ, "teamId": team, "championId": champ, "spell1Id": s1, "spell2Id": s2,
+                "stats": {"roleBoundItem": item, "win": True}, "timeline": {"lane": lane, "role": role}}
+
+    def test_el_toplane_etiquetado_como_jungla_no_es_jungla(self):
+        import history
+        reneketon = self.p(58, "JUNGLE", "NONE", 4, 14, 1220)
+        yi = self.p(11, "JUNGLE", "NONE", 11, 4, 1209)
+        self.assertEqual(history.role_of(reneketon), "TOP")
+        self.assertEqual(history.role_of(yi), "JUNGLE")
+
+    def test_sin_pistas_no_se_adivina(self):
+        import history
+        self.assertEqual(history.role_of(self.p(1, "JUNGLE", "NONE", 4, 14, 0)), "")        # sin Aplastar ni objeto de rol
+        self.assertEqual(history.role_of(self.p(1, "JUNGLE", "NONE", 4, 14, 1206)), "")     # objeto de otra línea: tampoco
+        self.assertEqual(history.role_of(self.p(1, "NONE", "NONE", 4, 14, 0)), "")
+        self.assertEqual(history.role_of({}), "")
+
+    def test_el_resto_de_lineas_siguen_igual(self):
+        import history
+        self.assertEqual(history.role_of(self.p(1, "TOP", "SOLO", 4, 12, 1220)), "TOP")
+        self.assertEqual(history.role_of(self.p(1, "MIDDLE", "SOLO", 4, 14, 1206)), "MIDDLE")
+        self.assertEqual(history.role_of(self.p(1, "BOTTOM", "CARRY", 4, 7, 3006)), "BOTTOM")
+        self.assertEqual(history.role_of(self.p(1, "BOTTOM", "SUPPORT", 4, 3, 2055)), "SUPPORT")
+        self.assertEqual(history.role_of(self.p(1, "MIDDLE", "SUPPORT", 4, 3, 1208)), "SUPPORT")   # apoyo que el cliente puso en mid
+        self.assertEqual(history.role_of(self.p(1, "JUNGLE", "NONE", 11, 4, 0)), "JUNGLE")         # jungla sin objeto de rol
+
+    def test_el_rival_de_linea_ya_no_es_el_jungla(self):
+        d = {"participants": [self.p(58, "JUNGLE", "NONE", 4, 14, 1220, 200), self.p(11, "JUNGLE", "NONE", 11, 4, 1209, 200),
+                              self.p(86, "TOP", "SOLO", 4, 12, 1220, 100), self.p(64, "JUNGLE", "NONE", 11, 4, 1209, 100)]}
+        me = d["participants"][0]
+        self.assertEqual(core.find_opponent(me, d), 86)                 # el toplane rival (antes salía Master Yi / nadie)
+        self.assertEqual(core.find_opponent(d["participants"][1], d), 64)   # y el jungla, su jungla
+
+    def test_partidas_guardadas_con_la_regla_vieja_se_corrigen(self):
+        import history
+        tmp = tempfile.mkdtemp()
+        gv = {"1": {"c": 58, "w": True, "r": "JUNGLE", "o": 11, "q": 420, "t": 1, "a": [], "p": []},
+              "2": {"c": 1, "w": True, "r": "TOP", "o": 5, "q": 420, "t": 2, "a": [], "p": []},
+              "3": {"c": 64, "w": True, "r": "JUNGLE", "o": 9, "q": 420, "t": 3, "a": [], "p": [], "rv": history.ROLE_V}}
+        hv = {"1": {"id": "1", "c": 58, "r": "JUNGLE", "q": 420}, "2": {"id": "2", "c": 9, "r": "JUNGLE", "q": 450}}
+        for f, d in (("games_x.json", gv), ("history_x.json", hv), ("history.json", hv)):
+            json.dump(d, open(os.path.join(tmp, f), "w"))
+        json.dump({"v": 1}, open(os.path.join(tmp, "history_owner.json"), "w"))
+        json.dump({"1": 1}, open(os.path.join(tmp, "history_x.json.bak"), "w"))
+        core._roles_1(tmp)
+        g = json.load(open(os.path.join(tmp, "games_x.json")))
+        self.assertEqual((g["1"]["r"], g["1"]["o"]), ("", 0))              # jungla sin comprobar: sin línea ni rival
+        self.assertEqual((g["2"]["r"], g["2"]["o"]), ("TOP", 5))           # lo demás, intacto
+        self.assertEqual((g["3"]["r"], g["3"]["o"]), ("JUNGLE", 9))        # lo ya comprobado con la regla nueva, intacto
+        for f in ("history_x.json", "history.json"):
+            self.assertEqual(json.load(open(os.path.join(tmp, f)))["1"]["r"], "")
+        self.assertEqual(json.load(open(os.path.join(tmp, "history_owner.json"))), {"v": 1})
+
+    def test_al_conectar_se_recalculan_las_partidas_de_la_ventana_del_cliente(self):
+        import history
+        from cliente_falso import ClienteFalso, YO
+        tmp, antes = tempfile.mkdtemp(), (core.CACHE, history.ACCOUNT)
+        core.CACHE, history.ACCOUNT = tmp, ""
+        core._DIAG["last"] = ""
+        try:
+            def juego(gid, champ, lane, s1, s2, item, queue=420):
+                return {"gameId": gid, "gameCreation": gid, "gameDuration": 1500, "queueId": queue, "gameMode": "CLASSIC",
+                        "gameType": "MATCHED_GAME", "participantIdentities": [{"participantId": 1, "player": {"puuid": YO}}],
+                        "participants": [{"participantId": 1, "teamId": 100, "championId": champ, "spell1Id": s1, "spell2Id": s2,
+                                          "stats": {"win": True, "kills": 1, "deaths": 1, "assists": 1, "roleBoundItem": item},
+                                          "timeline": {"lane": lane, "role": "NONE"}}]}
+            fake = ClienteFalso()
+            fake.viejas = [juego(11, 58, "JUNGLE", 4, 14, 1220), juego(12, 11, "JUNGLE", 11, 4, 1209)]
+            antiguo = {"11": {"c": 58, "w": True, "r": "JUNGLE", "o": 7, "q": 420, "t": 11, "a": [], "p": []},
+                       "12": {"c": 11, "w": True, "r": "JUNGLE", "o": 7, "q": 420, "t": 12, "a": [], "p": []}}
+            json.dump(antiguo, open(os.path.join(tmp, f"games_{YO}.json"), "w"))
+            P = core.load_player_data(fake, {})
+            g = json.load(open(os.path.join(tmp, f"games_{YO}.json")))
+            self.assertEqual((g["11"]["r"], g["11"]["rv"]), ("TOP", history.ROLE_V))     # Renekton: toplane
+            self.assertEqual((g["12"]["r"], g["12"]["rv"]), ("JUNGLE", history.ROLE_V))  # el que sí lleva Aplastar
+            self.assertEqual(P["rstats"].get((58, "TOP")), [1, 1])
+            self.assertNotIn((58, "JUNGLE"), P["rstats"])
+            self.assertEqual(P["rstats"].get((11, "JUNGLE")), [1, 1])
+            self.assertIn("pasa de «JUNGLE» a «TOP»", open(os.path.join(tmp, "diag.log"), encoding="utf-8").read())
+            hist = json.load(open(os.path.join(tmp, f"history_{YO}.json")))
+            self.assertEqual(hist["11"]["r"], "TOP")
+        finally:
+            core.CACHE, history.ACCOUNT = antes
+
+
 class FallosQueDejanRastro(unittest.TestCase):
     def setUp(self):
         self.tmp, self.cache = tempfile.mkdtemp(), core.CACHE

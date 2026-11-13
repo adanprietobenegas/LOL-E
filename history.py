@@ -20,6 +20,35 @@ def _read(path, default):
     return default
 
 
+# ---- la línea que jugaste ----
+# La etiqueta de línea del cliente (timeline.lane) es una estimación suya y falla: etiqueta como «JUNGLE» a quien juega
+# TOP y puede dejar a un equipo con dos jungleros y ningún toplane (visto en partidas reales: de 16 «Jungla» solo 5 llevaban
+# Aplastar). Quien juega jungla lleva SIEMPRE Aplastar, así que esa es la señal. De paso, el cliente da el objeto de rol
+# (stats.roleBoundItem): 1220 y 1221 salen en todas las partidas de toplane, 1209 en las de jungla y 1208/2055 en las de apoyo.
+# Son valores observados, no documentados por Riot: por eso se exige coherencia con la etiqueta antes de fiarse de ellos.
+SMITE = 11
+ROLE_V = 1   # versión de esta regla; las partidas guardadas con otra se recalculan (ver lol_advisor.load_player_data)
+TOP_ITEMS, JUNGLE_ITEMS, SUPPORT_ITEMS = {1220, 1221}, {1209}, {1208, 2055}
+
+
+def role_of(p):
+    """Línea de un participante: «TOP», «JUNGLE», «MIDDLE», «BOTTOM», «SUPPORT» o «» si no se sabe (un dato equivocado es
+    peor que ninguno)."""
+    t = p.get("timeline") or {}
+    lane, role = t.get("lane") or "", t.get("role") or ""
+    item = (p.get("stats") or {}).get("roleBoundItem") or 0
+    smite = SMITE in (p.get("spell1Id"), p.get("spell2Id"))
+    if role == "SUPPORT" and item in SUPPORT_ITEMS:
+        return "SUPPORT"
+    if lane == "JUNGLE":
+        if smite or item in JUNGLE_ITEMS:
+            return "JUNGLE"
+        return "TOP" if item in TOP_ITEMS else ""     # sin Aplastar no es jungla; sin más pistas, no se adivina
+    if lane == "BOTTOM":
+        return "SUPPORT" if role == "SUPPORT" else "BOTTOM"
+    return "" if lane in ("", "NONE") else lane
+
+
 # ---- una carpeta, varias cuentas ----
 # Cada cuenta guarda su historial en history_<puuid>.json y games_<puuid>.json. Los archivos antiguos (history.json y games.json,
 # sin dueño) se copian a la primera cuenta que demuestre que son suyos: alguna de sus partidas del cliente ya está en ellos.
@@ -110,10 +139,9 @@ def from_game(g, puuid=""):
     if me is None:
         return None
     st, tl = me.get("stats", {}), me.get("timeline", {})
-    lane = tl.get("lane", "")
-    role = "SUPPORT" if lane == "BOTTOM" and tl.get("role") == "SUPPORT" else ("" if lane in ("NONE", "") else lane)
+    role = role_of(me)
     return {"id": str(g["gameId"]), "t": g.get("gameCreation", 0), "d": g.get("gameDuration", 0), "q": g.get("queueId", 0),
-            "c": me.get("championId", 0), "w": bool(st.get("win")), "r": role,
+            "c": me.get("championId", 0), "w": bool(st.get("win")), "r": role, "rv": ROLE_V,
             "k": st.get("kills", 0), "de": st.get("deaths", 0), "a": st.get("assists", 0),
             "cs": st.get("totalMinionsKilled", 0) + st.get("neutralMinionsKilled", 0), "lv": st.get("champLevel", 0),
             "dm": st.get("totalDamageDealtToChampions", 0), "g": st.get("goldEarned", 0), "v": st.get("visionScore", 0),

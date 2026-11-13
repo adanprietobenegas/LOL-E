@@ -14,7 +14,7 @@ import synergy
 import trends
 from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.22.7"
+APP_NAME, APP_VERSION = "LOL-E", "1.22.8"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -261,15 +261,11 @@ class LCU:
 
 def find_opponent(me, detail):
     """Campeon rival en tu misma linea, a partir del detalle de la partida."""
-    t = me.get("timeline", {})
-    lane, role = t.get("lane"), t.get("role")
-    if not detail or lane in (None, "NONE"):
+    mine = history.role_of(me)
+    if not detail or not mine:
         return 0
-    for q in detail.get("participants", []):
-        qt = q.get("timeline", {})
-        if q.get("teamId") != me.get("teamId") and qt.get("lane") == lane and (lane != "BOTTOM" or qt.get("role") == role):
-            return q["championId"]
-    return 0
+    rivals = [q for q in detail.get("participants", []) if q.get("teamId") != me.get("teamId") and history.role_of(q) == mine]
+    return rivals[0]["championId"] if len(rivals) == 1 else 0   # con dos candidatos no se adivina cuál es
 
 
 def load_season_seed(champs):
@@ -442,8 +438,32 @@ def soft_fail(where):
 players.on_fail = soft_fail
 
 # ---------- Versión de los datos guardados ----------
-SCHEMA = 1   # sube cuando cambie la forma de algún archivo de cache/; MIGRATIONS[n] lleva los datos de la versión n a la n+1
-MIGRATIONS = {}
+def _roles_1(cache):
+    """Esquema 1 -> 2: las partidas guardadas como «JUNGLE» con la regla antigua (la etiqueta cruda del cliente) no son de fiar:
+    solo 5 de 16 lo eran en los datos reales. Se dejan sin línea ni rival, y las que el cliente aún entrega (sus últimas 200)
+    se recalculan solas al conectar. Las más antiguas se quedan sin línea: mejor ninguna que una equivocada."""
+    n = 0
+    for f in os.listdir(cache):
+        if not (f.startswith(("history", "games")) and f.endswith(".json")):
+            continue
+        path = os.path.join(cache, f)
+        data = read_json(path, None)
+        if not isinstance(data, dict):
+            continue
+        changed = False
+        for e in data.values():
+            if isinstance(e, dict) and e.get("r") == "JUNGLE" and e.get("rv") != history.ROLE_V:
+                e["r"] = ""
+                if "o" in e:
+                    e["o"] = 0
+                changed, n = True, n + 1
+        if changed:
+            write_json(path, data)
+    diag(f"Migración de líneas: {n} partidas marcadas como jungla sin comprobar quedan sin línea hasta recalcularse")
+
+
+SCHEMA = 2   # sube cuando cambie la forma de algún archivo de cache/; MIGRATIONS[n] lleva los datos de la versión n a la n+1
+MIGRATIONS = {1: _roles_1}
 
 
 def check_schema():
@@ -526,14 +546,15 @@ def load_player_data(lcu, season=None):
         for g in glist:
             gid, q = str(g["gameId"]), g.get("queueId")
             e = gc.get(gid)
-            if isinstance(e, dict) and ("p" in e or q not in SR_QUEUES):
+            # las partidas de Grieta guardadas con otra versión de la regla de líneas se recalculan una vez (el cliente aún
+            # las entrega mientras estén entre sus últimas 200); fuera de esa ventana se quedan como las dejó la migración
+            stale = q in SR_QUEUES and isinstance(e, dict) and e.get("rv") != history.ROLE_V
+            if isinstance(e, dict) and ("p" in e or q not in SR_QUEUES) and not stale:
                 continue
             me = history.my_part(g, P["puuid"])
             if me is None:
                 continue
-            t = me.get("timeline", {})
-            lane = t.get("lane", "")
-            role = "SUPPORT" if lane == "BOTTOM" and t.get("role") == "SUPPORT" else ("" if lane == "NONE" else lane)
+            role = history.role_of(me)
             opp, allies, mates = 0, [], []
             if q in SR_QUEUES:  # el detalle (rival de linea y aliados) solo importa en la Grieta
                 try:
@@ -542,8 +563,10 @@ def load_player_data(lcu, season=None):
                     allies, mates = ally_champs(me, detail)
                 except Exception:
                     continue
+            if stale and role != e.get("r"):
+                diag(f"Partida {gid}: la línea pasa de «{e.get('r') or '?'}» a «{role or '?'}» (regla de líneas v{history.ROLE_V})")
             gc[gid] = {"c": me["championId"], "w": bool(me["stats"]["win"]), "r": role, "o": opp, "q": q,
-                       "t": g.get("gameCreation", 0), "a": allies, "p": mates}
+                       "t": g.get("gameCreation", 0), "a": allies, "p": mates, "rv": history.ROLE_V}
             dirty = True
     except (urllib.error.URLError, ConnectionError, OSError) as e:
         diag(f"Historial sin leer: {type(e).__name__} {e}")   # cliente cerrado o aún arrancando: se reintenta

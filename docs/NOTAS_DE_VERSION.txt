@@ -7,6 +7,24 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.8   (13 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Caso real: una Solo/Dúo con Renekton figuraba como jungla (partida 8041219712). El cliente etiquetó JUNGLE a los
+    dos jugadores de un equipo (Renekton y Master Yi) y ninguno TOP; solo Master Yi llevaba Aplastar (hechizo 11).
+    Cruzando las 55 partidas de Grieta del usuario: de 16 «JUNGLE» del cliente, 5 llevaban Aplastar y 11 no.
+  · history.role_of(participante) es ahora la única regla de línea: JUNGLE solo con Aplastar (o el objeto de rol 1209);
+    una etiqueta JUNGLE sin Aplastar con objeto de rol 1220/1221 es TOP, y sin más pistas queda sin línea; apoyo con
+    objeto 1208/2055. 1220/1221, 1209 y 1208/2055 son valores OBSERVADOS en el cliente (stats.roleBoundItem), no
+    documentados por Riot. history.from_game, players._role, lol_advisor.find_opponent y load_player_data la usan.
+    find_opponent ya no adivina si hay dos candidatos.
+  · Registros con "rv" (ROLE_V = 1). Esquema 1 -> 2 (lol_advisor._roles_1): las entradas «JUNGLE» sin "rv" de cualquier
+    history*/games*.json se dejan sin línea ni rival; las de la ventana del cliente (últimas 200) se recalculan al
+    conectar (con una línea en diag.log por cada cambio). Las anteriores a esa ventana quedan sin línea.
+  · Comprobado con el cliente real (herramientas/prueba_cliente_real.py): 55 partidas de Grieta, 5 jungla (todas con
+    Aplastar), Renekton -> TOP, esquema 2. 6 pruebas nuevas (54 en total).
+  · analysis.infer_roles ya usaba Aplastar y no se tocó.
+
 VERSIÓN 1.22.7   (13 de noviembre de 2026)
 ---------------------------------------------------------------------
 
