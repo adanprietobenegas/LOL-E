@@ -7,6 +7,7 @@ import builds
 import opgg_builds
 import lol_advisor as core
 import runes as runemod
+import shopping
 from ui_kit import PAL, ctl, ON_FILL
 
 CACHE_DIR = core.CACHE   # (en render() «core» es una lista de objetos)
@@ -335,11 +336,7 @@ SITUATIONS = [
 
 def situations(ui, parent, d, champs, ens, width):
     """Objetos sueltos para cada situación, elegidos entre los que más se compran con este campeón (cantera de Lolalytics)."""
-    pool = []
-    for i in list(d.get("palette") or []) + [o["id"] for k in ("i4", "i5", "i6") for o in (d.get("stats") or {}).get(k, [])]:
-        info = ui.items.get(i)
-        if i not in pool and info and not info.get("into") and info["g"] >= 1000 and "Boots" not in info["t"] and "Consumable" not in info["t"]:
-            pool.append(i)
+    pool = shopping.candidate_pool(ui.items, d)
     ui.lbl(parent, "SEGÚN LA SITUACIÓN", 10, "dim", True, anchor="w").pack(anchor="w", pady=(16, 2))
     if ens:
         ui.lbl(parent, f"Equipo rival ahora: {ens['ad']} de daño físico, {ens['ap']} de mágico, {ens['tanks']} {'tanque' if ens['tanks'] == 1 else 'tanques'}, control {ctl(ens['cc'])}.",
@@ -401,11 +398,7 @@ def build_blocks(ui, d, cid, lane, ens):
         blocks.append(("Variante: más victorias", win))
         used.update(win)
     # situaciones
-    pool = []
-    for i in list(d.get("palette") or []) + [o["id"] for k in ("i4", "i5", "i6") for o in st.get(k, [])]:
-        info = ui.items.get(i)
-        if i not in pool and info and not info.get("into") and info["g"] >= 1000 and "Boots" not in info["t"] and "Consumable" not in info["t"]:
-            pool.append(i)
+    pool = shopping.candidate_pool(ui.items, d)
     sit = []
     for title, what, test, now in SITUATIONS:
         found = [i for i in pool if test(ui.items[i])][:4]

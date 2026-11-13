@@ -51,6 +51,26 @@ def buy_hint(ui, snap, plan):
         return None
 
 
+def counter_hint(ui, snap, plan, other):
+    """(frase, id) con UN objeto contra lo que llevan los rivales (de los que más se compran con tu campeón), o None. Ver shopping.counter_item."""
+    try:
+        if not plan or not plan.get("cid") or plan.get("kind") not in (None, "sr") or plan["cid"] not in ui.champs or not ui.items:
+            return None
+        lane = LANES.get(plan.get("role") or "")
+        yo = next((p for p in snap["players"] if p["me"]), None)
+        if not lane or not yo:
+            return None
+        opp = plan.get("opp") or 0
+        st = builds.peek(builds.request(core.CACHE, ui.champs[plan["cid"]], lane, ui.champs[opp] if opp in ui.champs else None))
+        if st[0] != "ok":
+            return None
+        res = shopping.counter_item(live.itemization(other, ui.items), shopping.candidate_pool(ui.items, st[1]), ui.items, yo["items"])
+        return (f"{res['why']} Opción de tu build: {ui.items[res['id']]['n']}.", res["id"]) if res else None
+    except Exception:
+        core.log_exc("Objeto contra los rivales")
+        return None
+
+
 def paint(ui, host, snap, width, opp_cid=0, plan=None):
     ui.clear(host)
     mine, other, (t_mine, t_other), k_mine, k_other, known = _rows(snap)
@@ -93,11 +113,19 @@ def paint(ui, host, snap, width, opp_cid=0, plan=None):
         fila.pack(fill="x", pady=(8, 0))
         _item(ui, fila, hint[1], 26)
         ui.lbl(fila, hint[0], 11, "fg", True, anchor="w", justify="left", wraplength=max(220, width - 150)).pack(side="left", padx=6)
+    contra = counter_hint(ui, snap, plan, other)
+    if contra:
+        fila = ui.frame(box)
+        fila.pack(fill="x", pady=(6, 0))
+        _item(ui, fila, contra[1], 26)
+        ui.lbl(fila, contra[0] + "  (orientativo)", 11, "fg", anchor="w", justify="left", wraplength=max(220, width - 150)).pack(side="left", padx=6)
     pareja = live.duel(snap, opp_cid)
     if pareja:   # tu rival directo (el de tu línea, o el que elegiste a mano): cómo vas frente a él
         ui.lbl(box, live.duel_line(*pareja, ui.champs.get(opp_cid, {}).get("name", "")), 11, "fg", anchor="w", justify="left",
                wraplength=max(240, width - 110)).pack(anchor="w", pady=(6, 0))
     frases = live.reading(live.itemization(other, ui.items or {}))
+    if contra:   # la sugerencia ya dice qué acumulan o qué daño hacen: no se repite
+        frases = [f for f in frases if not f.startswith("Acumulan")]
     if frases:
         ui.lbl(box, " ".join(frases) + "  (orientativo)", 10, "dim", anchor="w", justify="left",
                wraplength=max(240, width - 110)).pack(anchor="w", pady=(6, 0))

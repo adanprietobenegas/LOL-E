@@ -81,3 +81,36 @@ def describe(res, items):
     if res["partial"]:
         txt += f" (ya llevas {', '.join(nombre(c) for c in res['partial'])})"
     return txt + "."
+
+
+def candidate_pool(items, build):
+    """Objetos completos (sin botas ni consumibles, de 1000+ de oro) entre los que más se compran con este campeón: la paleta de la página
+    y las opciones de los huecos 4 a 6. `build`: los datos de builds.py. Es la cantera de las «situaciones»."""
+    pool = []
+    for i in list(build.get("palette") or []) + [o["id"] for k in ("i4", "i5", "i6") for o in (build.get("stats") or {}).get(k, [])]:
+        info = items.get(i)
+        if i not in pool and info and not info.get("into") and info["g"] >= 1000 and "Boots" not in info["t"] and "Consumable" not in info["t"]:
+            pool.append(i)
+    return pool
+
+
+def counter_item(enemy, pool, items, inventory, minimum=2500):
+    """UN objeto concreto contra lo que llevan los rivales, o None. `enemy`: resultado de live.itemization (oro en daño físico/mágico y en
+    armadura/resistencia mágica). Primero la penetración si acumulan una defensa; si no, la defensa contra su tipo de daño dominante.
+    Solo habla con oro suficiente (`minimum`) y entre los objetos de `pool` que aún no llevas. Devuelve {id, why}."""
+    have = set(inventory)
+    libres = [i for i in pool if i not in have]
+    defensa, ataque = enemy["armor"] + enemy["mr"], enemy["ad"] + enemy["ap"]
+    if defensa >= minimum:
+        for dom, otro, efecto, texto in (("armor", "mr", "penarm", "acumulan armadura"), ("mr", "armor", "penmag", "acumulan resistencia mágica")):
+            if enemy[dom] >= 1.8 * enemy[otro]:
+                it = next((i for i in libres if efecto in items[i].get("x", [])), None)
+                if it:
+                    return {"id": it, "why": f"Los rivales {texto}: penetración."}
+    if ataque >= minimum:
+        for dom, tag, texto in (("ad", "Armor", "físico"), ("ap", "SpellBlock", "mágico")):
+            if enemy[dom] >= 0.7 * ataque:
+                it = next((i for i in libres if tag in items[i]["t"]), None)
+                if it:
+                    return {"id": it, "why": f"Su daño es sobre todo {texto} ({round(100 * enemy[dom] / ataque)} %): {'armadura' if tag == 'Armor' else 'resistencia mágica'}."}
+    return None

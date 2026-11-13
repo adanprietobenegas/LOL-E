@@ -57,6 +57,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 - **Ficha «Tus PL guardados»** en Rango y logros del inicio: línea de PL acumulados por partida clasificatoria (`analysis.lp_series` sobre `lp.json`); solo se ve con 3+ partidas con dato. Probado con una serie de ejemplo (captura 17b).
 
 **En `main` sin publicar** (candidata a 1.22.13):
+- **Objeto contra los rivales** en el bloque en vivo (`shopping.counter_item`, `ui_live.counter_hint`): un solo objeto de tu cantera (penetración si acumulan defensa; si no, armadura o RM contra su daño dominante). Solo datos en vivo inventados; captura 10d.
 - **Informe de diagnóstico más completo** (`health_lines` y los ajustes relevantes en `copy_diagnostics`): esquema de datos, partidas de la Grieta con línea de regla antigua o sin línea, PL guardados, edad del meta y de las builds.
 
 ***Pendiente de ver en la realidad*** (no se puede cerrar sin el usuario o sin otra partida):

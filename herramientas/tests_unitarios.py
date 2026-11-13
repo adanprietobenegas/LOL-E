@@ -1025,6 +1025,40 @@ class QueAprender(unittest.TestCase):
         self.assertEqual((r[0]["role"], [c for c, _ in r[0]["cands"]]), ("SUPPORT", [20]))
 
 
+class ObjetoContraLosRivales(unittest.TestCase):
+    CAT = {1: {"g": 2800, "n": "Casco", "t": ["Armor"], "x": [], "into": []}, 2: {"g": 2800, "n": "Manto", "t": ["SpellBlock"], "x": [], "into": []},
+           3: {"g": 3000, "n": "Lanza", "t": ["Damage"], "x": ["penarm"], "into": []}, 4: {"g": 3000, "n": "Bastón", "t": ["SpellDamage"], "x": ["penmag"], "into": []},
+           5: {"g": 3000, "n": "Arco", "t": ["Damage"], "x": [], "into": []}, 6: {"g": 900, "n": "Botas", "t": ["Boots"], "x": [], "into": []},
+           7: {"g": 500, "n": "Pieza", "t": ["Armor"], "x": [], "into": [1]}}
+
+    def setUp(self):
+        import shopping
+        self.s = shopping
+
+    def test_la_cantera_solo_tiene_objetos_completos(self):
+        b = {"palette": [1, 6, 7, 3, 1], "stats": {"i4": [{"id": 2}, {"id": 999}]}}
+        self.assertEqual(self.s.candidate_pool(self.CAT, b), [1, 3, 2])        # sin botas, sin piezas intermedias, sin repetidos ni desconocidos
+
+    def test_penetracion_si_acumulan_una_defensa(self):
+        pool = [1, 2, 3, 4, 5]
+        r = self.s.counter_item({"ad": 3000, "ap": 3000, "armor": 4000, "mr": 1000}, pool, self.CAT, [])
+        self.assertEqual(r["id"], 3)
+        r = self.s.counter_item({"ad": 3000, "ap": 3000, "armor": 500, "mr": 4000}, pool, self.CAT, [])
+        self.assertEqual(r["id"], 4)
+
+    def test_defensa_contra_su_tipo_de_dano(self):
+        pool = [1, 2, 5]
+        self.assertEqual(self.s.counter_item({"ad": 7000, "ap": 1000, "armor": 0, "mr": 0}, pool, self.CAT, [])["id"], 1)
+        self.assertEqual(self.s.counter_item({"ad": 1000, "ap": 7000, "armor": 0, "mr": 0}, pool, self.CAT, [])["id"], 2)
+
+    def test_no_opina_sin_motivo(self):
+        pool = [1, 2, 3, 4, 5]
+        self.assertIsNone(self.s.counter_item({"ad": 500, "ap": 300, "armor": 100, "mr": 0}, pool, self.CAT, []))                  # muy poco oro: no significa nada
+        self.assertIsNone(self.s.counter_item({"ad": 3000, "ap": 3000, "armor": 2000, "mr": 1500}, pool, self.CAT, []))            # equilibrado
+        self.assertIsNone(self.s.counter_item({"ad": 7000, "ap": 1000, "armor": 0, "mr": 0}, [1], self.CAT, [1]))                  # ya llevas el único que sirve
+        self.assertIsNone(self.s.counter_item({"ad": 7000, "ap": 1000, "armor": 0, "mr": 0}, [5], self.CAT, []))                   # nada en tu cantera sirve
+
+
 class Documentacion(unittest.TestCase):
     """El punto de partida de las conversaciones nuevas (docs/CONTINUAR.md) no puede quedarse atrás: estas pruebas fallan si no se actualiza."""
     def leer(self, nombre):
