@@ -11,8 +11,8 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 
 ## Dónde está (13/11/2026)
 
-- **Publicada en GitHub: 1.22.9** (13/11/2026): rival a mano, certificados raíz, parche de la build y privacidad de lo guardado.
-  Pendiente: revisarla en una partida real con el usuario (flujo cola → selección → partida → fin).
+- **Publicada en GitHub: 1.22.10** (13/11/2026): regla de líneas v2 (objeto de rol, botas, eliminación) y recálculo de partidas antiguas.
+  Pendiente: ver en el PC del usuario que tras actualizarse el Historial y el Repertorio quedan bien (y la selección y «Partida» en directo).
 - Pruebas: `python herramientas/tests_unitarios.py` → 71, todas pasan. Con LoL abierto y fuera de partida:
   `python herramientas/prueba_cliente_real.py` (solo lectura, sobre una copia temporal) → TODO BIEN con la 1.22.8.
 - La actualización automática funciona: el usuario confirmó que su 1.22.5 pasó sola a la 1.22.6. Cualquier PC con una
@@ -134,7 +134,7 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
   equipo por eliminación); `find_opponent` las usa; `ROLE_V = 2`, así que las partidas guardadas con la regla v1 se recalculan
   (las que el cliente lista al conectar; el resto con `_refresh_old_games`). Comprobado con el cliente real: TODO BIEN, 0 pendientes.
   `python herramientas/validar_lineas.py 30` reproduce la medida (necesita el cliente abierto y en reposo).
-- **Todo lo anterior está en `main` SIN PUBLICAR → 1.22.10** (recalcular partidas antiguas por su detalle + regla de líneas v2).
+- **Lo anterior se publicó en la 1.22.10** (recalcular partidas antiguas por su detalle + regla de líneas v2).
   Antes de publicar: `python herramientas/publicar.py --sin-probar "..."` y esperar a que el usuario no esté en cola ni en partida.
 - Privacidad: desde mi vista no se puede verificar `last_session.json` ni parte de `live_samples/` (la carpeta de datos que ve
   la sesión mezcla copias antiguas); el usuario puede comprobarlo con el comando de PowerShell de abajo.
