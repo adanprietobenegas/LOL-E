@@ -218,7 +218,7 @@ def find_client(conf):
                 _, _, port, pw, _ = open(p).read().split(":")
                 return int(port), pw
             except Exception:
-                pass
+                diag("Leer el archivo de conexión del cliente: " + type(sys.exc_info()[1]).__name__)
     if time.time() < _PS_NEXT:
         return None
     _PS_NEXT = time.time() + 20
@@ -232,7 +232,7 @@ def find_client(conf):
         if port and pw:
             return int(port.group(1)), pw.group(1)
     except Exception:
-        pass
+        diag("Buscar el cliente por su proceso: " + type(sys.exc_info()[1]).__name__)
     return None
 
 
@@ -300,7 +300,7 @@ def detect_account(lcu, conf):
         if reg.get("webRegion") or reg.get("region"):
             conf["opgg_region"] = (reg.get("webRegion") or reg["region"]).lower()
     except Exception:
-        pass
+        soft_fail("Detectar tu cuenta para op.gg")
 
 
 def load_season(champs, conf=None):
@@ -428,6 +428,44 @@ def diag(msg):
         pass
 
 
+def soft_fail(where):
+    """Para llamar dentro de un `except`: una lectura opcional ha fallado y la app sigue, pero deja rastro (antes eran
+    `except: pass`). Si el cliente no respondió, una línea en el registro de diagnóstico; si es un fallo del programa, la
+    traza completa en el registro de errores."""
+    e = sys.exc_info()[1]
+    if isinstance(e, (urllib.error.URLError, ConnectionError, OSError)):
+        diag(f"{where}: el cliente no respondió ({type(e).__name__})")
+    else:
+        log_exc(where)
+
+
+players.on_fail = soft_fail
+
+# ---------- Versión de los datos guardados ----------
+SCHEMA = 1   # sube cuando cambie la forma de algún archivo de cache/; MIGRATIONS[n] lleva los datos de la versión n a la n+1
+MIGRATIONS = {}
+
+
+def check_schema():
+    """cache/schema.json dice con qué versión de datos se escribió la carpeta. Si es anterior, se aplican las migraciones
+    pendientes, una a una; si es posterior (se instaló una versión más antigua encima), se avisa en el registro y no se toca."""
+    path = os.path.join(CACHE, "schema.json")
+    cur = read_json(path, None)
+    v = cur.get("v") if isinstance(cur, dict) and isinstance(cur.get("v"), int) else 0
+    if v > SCHEMA:
+        diag(f"Datos de una versión más nueva (esquema {v}, esta app usa el {SCHEMA}): no se modifican")
+        return v
+    try:
+        for n in range(max(v, 1), SCHEMA):
+            MIGRATIONS[n](CACHE)
+            diag(f"Datos migrados del esquema {n} al {n + 1}")
+        if v != SCHEMA:
+            write_json(path, {"v": SCHEMA, "app": APP_VERSION, "t": int(time.time())})
+    except Exception:
+        log_exc("Migrar los datos guardados")
+    return SCHEMA
+
+
 def note_queue(q):
     """Una cola que LOL-E no conoce cae en «Otros»: se apunta una vez para poder añadirla (la 1740 pasó desapercibida)."""
     if q and q not in _DIAG["queues"] and queue_group(q) == "Otros":
@@ -453,11 +491,11 @@ def load_player_data(lcu, season=None):
         for m in lcu.get("/lol-champion-mastery/v1/local-player/champion-mastery") or []:
             P["mastery"][m["championId"]] = m["championPoints"]
     except Exception:
-        pass
+        soft_fail("Leer tus maestrías")
     try:
         P["owned"] = {c["id"] for c in lcu.get("/lol-champions/v1/owned-champions-minimal") or []}
     except Exception:
-        pass
+        soft_fail("Leer tus campeones")
     # El cliente solo devuelve las ultimas partidas: las guardamos en disco para acumular historial.
     gc = None  # gameId -> {c: campeon, w: victoria, r: rol, o: rival de linea, q: cola, t: fecha, a: aliados}
     dirty = False
@@ -554,7 +592,7 @@ def load_player_data(lcu, season=None):
             P["rank"] = f"{solo['tier']}{' ' + solo['div'] if solo['div'] else ''} · {solo['lp']} PL"
             P["record"] = f"{solo['w']}V · {solo['l']}D" + (f" · {solo['wr']:.0%}" if solo["w"] + solo["l"] else "")
     except Exception:
-        pass
+        soft_fail("Leer tu perfil y tu rango")
     return P
 
 
@@ -732,7 +770,7 @@ def detect_mode(lcu):
         gm = str(q.get("gameMode") or (gf.get("map") or {}).get("gameMode") or "").upper()
         custom = bool(gd.get("isCustomGame"))
     except Exception:
-        pass
+        soft_fail("Detectar el modo de la partida")
     if custom:  # personalizadas: sin roles asignados; solo las de ARAM tienen banquillo
         return {"id": qid, "group": "Personalizada", "kind": "aram" if gm in ("ARAM", "KIWI") else "other"}
     if gm == "CHERRY":
@@ -980,7 +1018,7 @@ def start_meta(conf, P, ui, force=False):
                 TRENDS["data"] = trends.load(CACHE, d["patch"], force, (conf.get("opgg_region") or "").lower())
                 META["dirty"] = True
             except Exception:
-                pass
+                soft_fail("Cargar las tendencias del parche")
         except Exception as e:
             META["error"] = str(e)
             ui.status(f"Sin datos de meta: {e}")
@@ -1134,7 +1172,7 @@ def run(conf, champs, ui):
                             if got:
                                 getattr(ui, "live_augments", lambda f: None)(augments.flat_live([v for _, v in got]))
                     except Exception:
-                        pass
+                        soft_fail("Leer las mejoras en vivo")
                     try:  # id de la partida en curso: luego se espera a que el cliente la liste en el historial
                         gfs = (lcu.get("/lol-gameflow/v1/session") or {}).get("gameData", {})
                         cur_gid = gfs.get("gameId") or cur_gid
@@ -1142,7 +1180,7 @@ def run(conf, champs, ui):
                     except (urllib.error.URLError, ConnectionError, OSError):
                         raise
                     except Exception:
-                        pass
+                        soft_fail("Leer la partida en curso")
                     time.sleep(5); continue
                 if (not P.get("hist_ok") or not my_puuid) and hist_tries < 12 and time.time() >= next_hist:
                     # el historial o tu cuenta no llegaron (cliente aún iniciando sesión): reintentar
@@ -1413,7 +1451,7 @@ def migrate_data():
         try:
             shutil.move(old, DATA_DIR)
         except Exception:
-            pass
+            soft_fail("Mover los datos de la versión antigua")
 
 
 def seed_cache():
@@ -1436,7 +1474,9 @@ def main():
     install_error_hooks()
     migrate_data()
     seed_cache()
+    check_schema()
     history.load_account(CACHE)   # sin cliente se enseña el historial de la última cuenta vista
+    diag(f"--- {APP_NAME} {APP_VERSION} arranca ---")
     threading.Thread(target=prune_cache, daemon=True).start()
     try:
         sys.stdout.reconfigure(errors="replace")

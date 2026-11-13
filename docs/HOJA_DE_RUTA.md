@@ -26,10 +26,10 @@ El estado del día a día sigue en `ESTADO_Y_PENDIENTES.md`.
 |---|---|---|
 | HECHO · Historial separado por cuenta (`history_<puuid>.json`) con migración | Hoy dos cuentas en el mismo PC mezclan partidas | Medio |
 | HECHO · Registro de diagnóstico (`cache/diag.log`: fases, lecturas, cuántas partidas llegaron) | Los fallos que cuentas de palabra no dejan rastro que consultar | Bajo |
-| Quitar los `except Exception: pass` restantes en `lol_advisor.py` y `players.py` | Mismo motivo | Bajo |
+| HECHO · Quitar los `except Exception: pass` de las lecturas del cliente en `lol_advisor.py` y `players.py` | Mismo motivo | Bajo |
 | HECHO (respuestas inventadas, no grabadas) · Cliente falso y pruebas del flujo cola → selección → partida → fin | El bucle principal no tiene ninguna prueba | Medio |
 | HECHO · Colas desconocidas: avisar en el registro la primera vez que aparece una | La 1740 salió como «Otros» sin que nadie lo notara | Bajo |
-| Versión de esquema en cada JSON guardado | Poder migrar sin romper datos antiguos | Bajo |
+| HECHO (una por carpeta: `cache/schema.json`) · Versión de esquema de los datos guardados | Poder migrar sin romper datos antiguos | Bajo |
 
 ## Etapa 2 · Claridad y legibilidad
 

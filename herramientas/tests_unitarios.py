@@ -550,6 +550,64 @@ class FlujoCompleto(unittest.TestCase):
         self.assertEqual(sorted(json.loads(self.leer("history_cuentaB.json"))), ["500"])
 
 
+class FallosQueDejanRastro(unittest.TestCase):
+    def setUp(self):
+        self.tmp, self.cache = tempfile.mkdtemp(), core.CACHE
+        core.CACHE = self.tmp
+        core._DIAG["last"] = ""
+
+    def tearDown(self):
+        core.CACHE = self.cache
+
+    def leer(self, name):
+        p = os.path.join(self.tmp, name)
+        return open(p, encoding="utf-8").read() if os.path.exists(p) else ""
+
+    def test_cliente_que_no_responde_va_al_diagnostico_y_un_fallo_del_programa_al_registro(self):
+        try:
+            raise ConnectionError("cerrado")
+        except Exception:
+            core.soft_fail("Leer tus maestrías")
+        self.assertIn("Leer tus maestrías: el cliente no respondió", self.leer("diag.log"))
+        self.assertEqual(self.leer("error.log"), "")
+        try:
+            {}["falta"]
+        except Exception:
+            core.soft_fail("Leer tu perfil y tu rango")
+        self.assertIn("KeyError", self.leer("error.log"))
+
+    def test_las_lecturas_de_otros_jugadores_tambien_avisan(self):
+        import players
+        self.assertIs(players.on_fail, core.soft_fail)
+
+        class Roto:
+            def get(self, path, timeout=0):
+                if "summoners-by-puuid" in path or "ranked-stats" in path: return {}
+                raise ConnectionError()
+        players._cache.pop("zz", None)
+        p = players.fetch_player(Roto(), "zz")
+        players._cache.pop("zz", None)
+        self.assertEqual(p["recent"], [])                                   # sigue devolviendo al jugador, sin datos
+        self.assertIn("de un jugador: el cliente no respondió", self.leer("diag.log"))
+
+    def test_version_de_los_datos_guardados(self):
+        self.assertEqual(core.check_schema(), core.SCHEMA)
+        self.assertEqual(json.loads(self.leer("schema.json"))["v"], core.SCHEMA)
+        json.dump({"v": core.SCHEMA + 5}, open(os.path.join(self.tmp, "schema.json"), "w"))
+        self.assertEqual(core.check_schema(), core.SCHEMA + 5)              # datos de una versión más nueva: no se tocan
+        self.assertEqual(json.loads(self.leer("schema.json"))["v"], core.SCHEMA + 5)
+        self.assertIn("más nueva", self.leer("diag.log"))
+        json.dump({"v": 1}, open(os.path.join(self.tmp, "schema.json"), "w"))
+        hechos, orig_s, orig_m = [], core.SCHEMA, core.MIGRATIONS
+        core.SCHEMA, core.MIGRATIONS = 3, {1: lambda c: hechos.append(1), 2: lambda c: hechos.append(2)}
+        try:
+            self.assertEqual(core.check_schema(), 3)
+        finally:
+            core.SCHEMA, core.MIGRATIONS = orig_s, orig_m
+        self.assertEqual(hechos, [1, 2])                                    # una a una y en orden
+        self.assertEqual(json.loads(self.leer("schema.json"))["v"], 3)
+
+
 class Versiones(unittest.TestCase):
     def test_la_version_tiene_notas_y_documentacion(self):
         import novedades

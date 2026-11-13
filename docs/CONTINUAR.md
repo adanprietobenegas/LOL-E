@@ -16,7 +16,7 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
   y eso tapaba la dirección de fábrica; la app nunca buscaba versiones. `load_conf` ya trata el vacío como «la de
   fábrica». Cada PC con una versión anterior a la 1.22.5 necesita UNA instalación manual; después llegan solas.
   Pendiente: confirmar, cuando salga la siguiente versión, que la 1.22.5 instalada se actualiza sola.
-- Pruebas: `python herramientas/tests_unitarios.py` (45, todas pasan).
+- Pruebas: `python herramientas/tests_unitarios.py` (48, todas pasan).
 - Pendiente de que el usuario confirme en su app que el análisis del ARAM de Lillia ya no muestra Sona.
 
 ## Reglas del usuario
@@ -132,10 +132,17 @@ Hecho:
   arranque sin cuenta y dos cuentas en la misma carpeta. Las respuestas son inventadas con la forma del cliente
   real, no grabaciones.
 
+Hecho después (13/11/2026, en `main`, sin publicar):
+- Los `except Exception: pass` de las lecturas del cliente en `lol_advisor.py` (11) y `players.py` (6) llaman ahora a
+  `soft_fail(dónde)`: si el cliente no respondió, una línea en `diag.log`; si es un fallo del programa, la traza en
+  `error.log`. Se dejaron tal cual los 7 que protegen al propio registro, la ventana única y la consola.
+- Versión de los datos: `cache/schema.json` (`SCHEMA`, `MIGRATIONS`, `check_schema()` al arrancar). Es una versión de
+  la carpeta entera, no un campo dentro de cada archivo: así una versión antigua de la app puede seguir leyéndolos.
+- Cada arranque deja una línea «--- LOL-E x.y.z arranca ---» en `diag.log`.
+
 Sin hacer de la etapa 1:
-- Quitar los `except Exception: pass` restantes de `lol_advisor.py` y `players.py`.
-- Versión de esquema en cada JSON guardado (solo la llevan `account.json` y `history_owner.json`).
 - Los análisis guardados (`cache/analysis/<id>.json`) siguen sin separarse por cuenta.
+- El cliente falso usa respuestas inventadas; faltaría grabar las de una partida real.
 
 Sin probar: la migración en la app instalada del usuario y el flujo con el cliente real. Antes de publicarlo conviene
 que el usuario lo sepa: es la primera versión que cambia dónde se guarda su historial.

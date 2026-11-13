@@ -13,6 +13,14 @@ RANKED_QUEUES = {420, 440, 710}
 CACHE_TTL = 600  # los datos de un jugador valen 10 minutos
 
 
+on_fail = None   # lo pone lol_advisor: deja rastro de una lectura fallida (este módulo no puede importarlo: sería circular)
+
+
+def _fail(where):
+    if on_fail:
+        on_fail(where)
+
+
 def rank_info(q):
     if not q or not q.get("tier"):
         return None
@@ -56,7 +64,7 @@ def load_extra(lcu):
             out["prev"] = {"key": prev_t, "tier": TIERS_ES.get(prev_t, prev_t.title()),
                            "div": "" if prev_t in APEX else (solo.get("previousSeasonEndDivision") or st.get("highestPreviousSeasonEndDivision") or "").replace("NA", "")}
     except Exception:
-        pass
+        _fail("Leer tu rango máximo")
     try:
         ch = lcu.get("/lol-challenges/v1/summary-player-data/local-player") or {}
         lvl = (ch.get("overallChallengeLevel") or "").upper()
@@ -66,17 +74,17 @@ def load_extra(lcu):
             out["challenges"] = {"level": lvl, "pct": ch.get("positionPercentile"), "points": ch.get("totalChallengeScore", 0),
                                  "next": ch.get("pointsUntilNextRank", 0), "cats": cats}
     except Exception:
-        pass
+        _fail("Leer tus retos")
     try:
         out["honor"] = (lcu.get("/lol-honor-v2/v1/profile") or {}).get("honorLevel")
     except Exception:
-        pass
+        _fail("Leer tu honor")
     try:
         sc = lcu.get("/lol-champion-mastery/v1/local-player/champion-mastery-score")
         if isinstance(sc, (int, float)):
             out["mastery_score"] = int(sc)
     except Exception:
-        pass
+        _fail("Leer tu puntuación de maestría")
     return out
 
 
@@ -173,14 +181,14 @@ def fetch_player(lcu, puuid):
         out["roles"] = [r for r, _ in Counter(x["role"] for x in sr if x["role"]).most_common(2)]
         out["stats"] = recent_stats(out["recent"], sr, rec)
     except Exception:
-        pass
+        _fail("Leer las partidas de un jugador")
     try:
         ms = lcu.get(f"/lol-champion-mastery/v1/{puuid}/champion-mastery") or []
         out["mastery"] = {m["championId"]: m["championPoints"] for m in ms}
         out["mastery_top"] = [{"c": m["championId"], "pts": m["championPoints"], "lvl": m.get("championLevel", 0), "last": m.get("lastPlayTime", 0)}
                               for m in sorted(ms, key=lambda m: -m["championPoints"])[:5]]
     except Exception:
-        pass
+        _fail("Leer las maestrías de un jugador")
     _cache[puuid] = (time.time(), out)
     return out
 
