@@ -7,6 +7,17 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.11   (13 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · live.py / ui_live.py: partida en vivo desde 127.0.0.1:2999 (único acceso: augments.fetch_live), sondeo cada 10 s (20 s en Mayhem).
+    Marcador, objetivos, 10 jugadores, lectura de objetos rivales, rival directo (live.duel), siguiente compra (shopping.py + items.py
+    esquema 4 con «from»). Solo probado con datos en vivo inventados (cliente_falso.live_sample) y el bucle contra el cliente simulado.
+  · Pestaña Repertorio propia (ui_pool.PoolView); atajos Ctrl+1…6.
+  · gc.disable() + GUI.gc_tick en el hilo principal: evita el interbloqueo de Font.__del__ desde otro hilo.
+  · lol_advisor.run: «played» distingue esquivar de jugar; analysis.save_lp no pisa un PL real con 0.
+  · analysis.vs_average: tu partida frente a tu media. 101 pruebas + comprobar_todo (pantallas a 560/1340 y demo Grieta/ARAM) en verde.
+
 VERSIÓN 1.22.10   (13 de noviembre de 2026)
 ---------------------------------------------------------------------
 

@@ -10,6 +10,15 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.11", "fecha": "13 de noviembre de 2026", "titulo": "Partida en vivo, Repertorio visible y un arreglo del congelado", "items": [
+        ("nuevo", "En «Partida», durante la partida, un bloque EN VIVO con el marcador, los objetivos y los 10 jugadores (nivel, bajas, farmeo, objetos y oro en objetos), una lectura de los objetos rivales (tipo de daño y defensas) y cómo vas frente a tu rival directo. Se repinta solo cada ~10 s y se puede apagar en Ajustes."),
+        ("nuevo", "En ese bloque, tu siguiente objeto de la build de la web y cuánto oro te falta, restando los componentes que ya llevas."),
+        ("nuevo", "El Repertorio tiene pestaña propia (Ctrl+4); el Historial pasa a Ctrl+5."),
+        ("nuevo", "Al terminar la partida, tu KDA y tu farmeo frente a tu media con ese campeón (o en el modo)."),
+        ("arreglo", "Corregido un fallo raro que podía dejar la ventana congelada para siempre."),
+        ("arreglo", "Si esquivabas una partida, LOL-E daba por terminada la anterior (la reanalizaba, esperaba y podía borrar su variación de PL). Ya no."),
+        ("arreglo", "El pie de la ventana ya no se queda en «Cargando tus datos…» una vez cargados."),
+    ]},
     {"v": "1.22.10", "fecha": "13 de noviembre de 2026", "titulo": "Tu línea y tu rival de línea, mucho más fiables", "items": [
         ("arreglo", "El cliente de LoL etiqueta mal la línea de muchos jugadores: en tus últimas 30 partidas, solo 14 de 60 equipos tenían los cinco puestos distintos según el cliente (en casi la mitad aparecían dos junglas y ningún toplane). LOL-E ahora deduce la línea por señales fiables (el objeto de rol, Aplastar y las botas del tirador) y completa el último puesto por eliminación: 55 de 60 equipos quedan bien repartidos."),
         ("arreglo", "«Tu rival de línea» en las partidas pasadas ya se encuentra también cuando juegas de apoyo o de tirador (antes salía vacío), y no se confunde con el jungla enemigo. Esto mejora el Historial, el Repertorio y las estadísticas contra cada rival."),
