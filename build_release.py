@@ -1,6 +1,6 @@
 """Construye el paquete de distribucion de LOL-E.
 
-Requisitos (solo en el PC donde se compila): Python 3.12 con `pip install customtkinter pillow pyinstaller`
+Requisitos (solo en el PC donde se compila): Python 3.12 con `pip install customtkinter pillow certifi pyinstaller`
 e Inno Setup 6. Resultado: release/LOL-E-<version>.zip
 
 Uso:  python build_release.py
@@ -41,7 +41,7 @@ def main():
 
     step("2/5 Ejecutable (PyInstaller)")
     run([sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", "--windowed", "--name", "LOL-E",
-         "--icon", icon, "--collect-all", "customtkinter", "--add-data", f"{HERE}\\assets\\icon.png;assets", "--add-data", f"{HERE}\\assets\\icon.ico;assets",
+         "--icon", icon, "--collect-all", "customtkinter", "--collect-data", "certifi", "--add-data", f"{HERE}\\assets\\icon.png;assets", "--add-data", f"{HERE}\\assets\\icon.ico;assets",
          "--add-data", f"{HERE}\\assets\\fonts;assets\\fonts", "--add-data", f"{HERE}\\assets\\claves.json;assets", "--distpath", os.path.join(TMP, "dist"),
          "--workpath", os.path.join(TMP, "work"), "--specpath", TMP, "--paths", HERE, os.path.join(HERE, "app.py")])
 

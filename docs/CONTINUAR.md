@@ -13,7 +13,7 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 
 - **Publicada en GitHub: 1.22.8** (13/11/2026): el arreglo de las líneas (Renekton figuraba como jungla).
   En `main`, SIN publicar: elegir el rival de línea a mano ahora recalcula también las puntuaciones (ver abajo).
-- Pruebas: `python herramientas/tests_unitarios.py` → 63, todas pasan. Con LoL abierto y fuera de partida:
+- Pruebas: `python herramientas/tests_unitarios.py` → 67, todas pasan. Con LoL abierto y fuera de partida:
   `python herramientas/prueba_cliente_real.py` (solo lectura, sobre una copia temporal) → TODO BIEN con la 1.22.8.
 - La actualización automática funciona: el usuario confirmó que su 1.22.5 pasó sola a la 1.22.6. Cualquier PC con una
   versión anterior a la 1.22.5 necesita instalar a mano UNA vez (tenía guardada vacía la dirección de actualizaciones).
@@ -57,7 +57,7 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 | Herramienta | Para qué |
 |---|---|
 | `comprobar_todo.py` | **Antes de publicar** (~7 min, sin cliente): pruebas + recorrido de TODAS las pantallas a 560 y 1340 px + la app entera contra el cliente falso; falla ante cualquier error al pintar |
-| `tests_unitarios.py` | 63 pruebas sin ventana ni cliente (incluye el bucle principal contra el cliente falso) |
+| `tests_unitarios.py` | 67 pruebas sin ventana ni cliente (incluye el bucle principal contra el cliente falso) |
 | `prueba_cliente_real.py` | Lectura de solo lectura contra el cliente REAL (cuenta, historial, migración, líneas, perfil) |
 | `capturas.py [ancho] [alto] [carpeta]` | Capturas de todas las pantallas sin cliente; `LOLE_SOLO`, `LOLE_PAGINAS`, `LOLE_CONF`, `LOLE_PERFIL` |
 | `demo_falso.py` | La app entera (ventana + bucle) contra el cliente falso, con una captura por fase |
@@ -70,6 +70,12 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 - La etiqueta de línea del cliente (`timeline.lane`) FALLA: etiqueta JUNGLE a toplanes y puede dejar dos jungleros y
   ningún TOP en un equipo. La jungla se reconoce por llevar Aplastar (hechizo 11). Regla única: `history.role_of`.
   El objeto de rol (`stats.roleBoundItem`: 1220/1221 top, 1209 jungla, 1208/2055 apoyo) es un valor observado.
+- **Certificados de internet**: Python usa el almacén de Windows, que rellena sus raíces bajo demanda; en algunos PC una
+  raíz aún no está y la petición falla con `CERTIFICATE_VERIFY_FAILED` de forma intermitente y por servidor (visto con op.gg
+  y con GitHub en el PC de desarrollo). `lol_advisor.install_certs()` (al arrancar) suma los certificados de `certifi` a los
+  del sistema; `certifi` está en `requirements.txt` y el empaquetado lo recoge (`--collect-data certifi`). Sigue verificando
+  certificado y nombre. Esto pudo ser parte de por qué a alguien «no le sale» algo (builds, meta, iconos). El actualizador
+  además tiene `curl.exe` de reserva. El cliente de LoL usa su propio contexto sin verificar, solo para 127.0.0.1.
 - Tras abrir el cliente, algunas lecturas llegan vacías un rato (p. ej. `owned-champions-minimal`): se reintenta.
 - El cliente solo entrega las últimas ~200 partidas; LOL-E guarda las que ve. Historial por cuenta:
   `history_<puuid>.json`; los antiguos sin dueño se copian a la primera cuenta que los reconoce.
@@ -91,6 +97,9 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
   las pruebas pero fallaba al pintar la build; solo lo vio una captura. Ahora el recorrido de pantallas es parte de la puerta
   (`capturas.py` devuelve código 1 si hay errores; `LOLE_SINFOTO=1` recorre sin guardar imágenes) y se comprobó que falla
   si se inyecta ese mismo error.
+- **Certificados** (ver «Lo que se sabe del cliente»): arreglo de fondo, sin publicar. Lo ideal es que vaya en la 1.22.9: es el
+  único cambio pendiente que puede arreglar fallos de red a otras personas. Comprobado: op.gg y GitHub fallaban y ahora van;
+  el paquete construido incluye `certifi/cacert.pem`. Sin probar ejecutando el `.exe` construido.
 - **Parche de la build**: `builds.patch_of` lee «Patch 16.22» de la página de Lolalytics (26.22 en numeración pública) y
   `builds.load` guarda `patch` y `read` con la build; la nota de fuente dice «parche 26.22, leída hoy» y avisa si el
   parche es anterior al del juego (`ui_build.source_note`). Las builds guardadas antes no lo traen: solo muestran la fuente.

@@ -550,6 +550,71 @@ class FlujoCompleto(unittest.TestCase):
         self.assertEqual(sorted(json.loads(self.leer("history_cuentaB.json"))), ["500"])
 
 
+class CertificadosRaiz(unittest.TestCase):
+    def test_se_suman_los_certificados_de_certifi_a_los_del_sistema(self):
+        import ssl
+        try:
+            import certifi  # noqa: F401
+        except ImportError:
+            self.skipTest("certifi no está instalado en este Python")
+        original = ssl._create_default_https_context
+        try:
+            base = len(ssl.create_default_context().get_ca_certs())
+            self.assertTrue(core.install_certs())
+            ctx = ssl._create_default_https_context()
+            self.assertGreater(len(ctx.get_ca_certs()), base)           # ahora hay más raíces de confianza
+            self.assertTrue(ctx.check_hostname)                         # y se sigue verificando el nombre del servidor
+            self.assertEqual(ctx.verify_mode, ssl.CERT_REQUIRED)        # y el certificado
+            self.assertIsNot(core.CTX, ctx)                             # el contexto sin verificar del cliente de LoL es otro
+            self.assertEqual(core.CTX.verify_mode, ssl.CERT_NONE)
+        finally:
+            ssl._create_default_https_context = original
+
+    def test_sin_certifi_no_falla(self):
+        import ssl
+        original, mod = ssl._create_default_https_context, sys.modules.get("certifi")
+        sys.modules["certifi"] = None                                    # fuerza el ImportError
+        try:
+            self.assertFalse(core.install_certs())
+            self.assertIs(ssl._create_default_https_context, original)   # y no toca nada
+        finally:
+            ssl._create_default_https_context = original
+            if mod is None:
+                sys.modules.pop("certifi", None)
+            else:
+                sys.modules["certifi"] = mod
+
+
+class PreparacionDeLaPublicacion(unittest.TestCase):
+    def test_notas_de_la_publicacion_salen_de_novedades_y_dicen_lo_no_probado(self):
+        import publicar
+        e = {"v": "9.9.9", "titulo": "Un título", "items": [("arreglo", "Arregla algo."), ("nuevo", "Añade algo.")]}
+        t = publicar.notas_markdown(e, "el flujo de una partida completa.")
+        self.assertTrue(t.startswith("Un título.\n\n- **Arreglo:** Arregla algo.\n- **Nuevo:** Añade algo.\n"))
+        self.assertIn("instala esta a mano una vez", t)
+        self.assertTrue(t.rstrip().endswith("Sin probar todavía: el flujo de una partida completa."))
+        for tipo, _ in __import__("novedades").NOTES[0]["items"]:           # todos los tipos reales tienen etiqueta propia
+            self.assertIn(tipo, publicar.TIPOS)
+
+    def test_los_archivos_de_release_se_verifican(self):
+        import hashlib, publicar
+        rel = tempfile.mkdtemp()
+        self.assertTrue(publicar.problemas_de_artefactos(rel, "1.0.0"))                  # no hay nada
+        exe = os.path.join(rel, "Instalar-LOL-E-1.0.0.exe")
+        open(exe, "wb").write(b"x" * 6_000_000)
+        open(os.path.join(rel, "LOL-E-1.0.0.zip"), "wb").write(b"z")
+        info = {"version": "1.0.0", "url": "https://github.com/a/b/releases/latest/download/Instalar-LOL-E-1.0.0.exe",
+                "sha256": hashlib.sha256(open(exe, "rb").read()).hexdigest()}
+        json.dump(info, open(os.path.join(rel, "latest.json"), "w"))
+        self.assertEqual(publicar.problemas_de_artefactos(rel, "1.0.0"), [])
+        json.dump({**info, "sha256": "0" * 64}, open(os.path.join(rel, "latest.json"), "w"))
+        self.assertIn("la huella SHA-256 de latest.json no es la del instalador", publicar.problemas_de_artefactos(rel, "1.0.0"))
+        json.dump({**info, "version": "0.9.0"}, open(os.path.join(rel, "latest.json"), "w"))
+        self.assertTrue(any("latest.json dice 0.9.0" in m for m in publicar.problemas_de_artefactos(rel, "1.0.0")))
+        json.dump({**info, "url": "https://github.com/a/b/releases/latest/download/Instalar-LOL-E-0.9.0.exe"}, open(os.path.join(rel, "latest.json"), "w"))
+        self.assertTrue(any("no apunta al instalador" in m for m in publicar.problemas_de_artefactos(rel, "1.0.0")))
+
+
 class ParcheDeLaBuild(unittest.TestCase):
     def test_el_parche_se_lee_de_la_pagina(self):
         import builds

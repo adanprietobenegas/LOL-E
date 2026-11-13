@@ -95,6 +95,23 @@ CTX = ssl.create_default_context()
 CTX.check_hostname, CTX.verify_mode = False, ssl.CERT_NONE
 
 
+def install_certs():
+    """Todas las peticiones de LOL-E a internet verifican con el almacén de Windows MÁS los certificados raíz de `certifi`.
+    Windows rellena sus raíces bajo demanda y Python no puede forzarlo: en un PC al que aún no le había llegado la de un servidor
+    (visto con op.gg) la petición fallaba con CERTIFICATE_VERIFY_FAILED sin que el usuario pudiera hacer nada. Si `certifi` no
+    está, no pasa nada: sigue valiendo el almacén de Windows. Devuelve True si se aplicó. (El cliente de LoL tiene su propio
+    contexto, CTX, sin verificar y solo para 127.0.0.1; esto no lo toca.)"""
+    try:
+        import certifi
+        ctx = ssl.create_default_context()
+        ctx.load_verify_locations(cafile=certifi.where())
+        ssl._create_default_https_context = lambda *a, **k: ctx
+        return True
+    except Exception as e:
+        diag(f"Certificados raíz adicionales no disponibles ({type(e).__name__}): se usa solo el almacén de Windows")
+        return False
+
+
 def load_conf():
     conf = dict(DEFAULT_CONF)
     conf.update(read_json(CONF_FILE, {}))
@@ -1532,6 +1549,7 @@ def main():
     if "--consola" not in sys.argv and not single_instance():
         return
     install_error_hooks()
+    install_certs()
     migrate_data()
     seed_cache()
     check_schema()
