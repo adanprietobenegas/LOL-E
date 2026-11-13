@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.10", "fecha": "13 de noviembre de 2026", "titulo": "Tu línea y tu rival de línea, mucho más fiables", "items": [
+        ("arreglo", "El cliente de LoL etiqueta mal la línea de muchos jugadores: en tus últimas 30 partidas, solo 14 de 60 equipos tenían los cinco puestos distintos según el cliente (en casi la mitad aparecían dos junglas y ningún toplane). LOL-E ahora deduce la línea por señales fiables (el objeto de rol, Aplastar y las botas del tirador) y completa el último puesto por eliminación: 55 de 60 equipos quedan bien repartidos."),
+        ("arreglo", "«Tu rival de línea» en las partidas pasadas ya se encuentra también cuando juegas de apoyo o de tirador (antes salía vacío), y no se confunde con el jungla enemigo. Esto mejora el Historial, el Repertorio y las estadísticas contra cada rival."),
+        ("arreglo", "El cliente a veces entrega solo las últimas 20 partidas aunque se le pidan más. Las que faltan se recalculan ahora una a una con su detalle, así que ninguna se queda con una línea antigua o sin línea."),
+    ]},
     {"v": "1.22.9", "fecha": "13 de noviembre de 2026", "titulo": "Recomendaciones contra tu rival, descargas más fiables y menos datos de otros", "items": [
         ("mejora", "Si eliges a mano tu rival de línea, las recomendaciones se recalculan contra él (puntuación, «contra tu rival» y orden), no solo la build y la guía. «Auto» vuelve al rival que se deduce solo."),
         ("arreglo", "En algunos PC con Windows, las descargas de builds, meta, iconos u op.gg fallaban por un certificado de seguridad que Windows aún no tenía y LOL-E no avisaba. Ahora LOL-E lleva sus propios certificados raíz además de los de Windows; la conexión se verifica igual de estricta."),

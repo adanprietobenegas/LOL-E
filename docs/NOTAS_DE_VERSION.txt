@@ -7,6 +7,20 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.10   (13 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Regla de líneas v2 (history.ROLE_V = 2). role_of: objeto de rol (ITEM_ROLE: 1220/1221 top, 1209 jungla, 1206 mid,
+    1208/2055 apoyo) > botas (BOOT_ITEMS, solo con etiqueta BOTTOM o MIDDLE) > Aplastar (con etiqueta JUNGLE/NONE) > etiqueta
+    del cliente salvo JUNGLE. team_roles completa un equipo por eliminación; lol_advisor.find_opponent la usa para ambos equipos.
+    Medido con el cliente real en 30 partidas (60 equipos): puestos distintos 14 con la etiqueta, 55 con la regla nueva.
+    Caso que lo destapó: una partida real con 4 de 10 etiquetas mal (Jax «jungla», Fizz «top», Nami «bot», Jhin «mid»).
+  · lol_advisor._refresh_old_games: recalcula con el detalle por id (60 por lectura, las más recientes primero) las partidas de
+    Grieta guardadas que el cliente ya no lista; el cliente llegó a entregar solo 20 aunque se pidieran 200.
+  · Las partidas con rv != 2 se recalculan solas; la regla v1 (1.22.8-1.22.9) dejaba sin línea 40+ partidas hasta ese momento.
+  · Los valores del objeto de rol son OBSERVADOS en el cliente, no documentados por Riot.
+  · Comprobado con el cliente real (prueba_cliente_real.py y validar_lineas.py): 0 partidas pendientes. 71 pruebas.
+
 VERSIÓN 1.22.9   (13 de noviembre de 2026)
 ---------------------------------------------------------------------
 
