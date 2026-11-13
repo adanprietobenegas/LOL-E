@@ -57,6 +57,8 @@ def main():
     medir("inicio: repintar entero", lambda: [s.refresh(ui.make_ctx(), True) for s in ui.idle_secs])
     push(ses); ui.players(team); pump(4000)
     medir("seleccion: repintar entera", seleccion_entera)
+    for sec in ui.select_secs:   # qué sección pesa: en la app se repintan una a una, solo las que cambian
+        medir("seleccion: solo " + type(sec).__name__, lambda sec=sec: sec.refresh(ui.make_ctx(), True), veces=3)
     medir("seleccion: llega un cambio sin novedad", lambda: [s.refresh(ui.make_ctx()) for s in ui.select_secs])
     medir("seleccion: otra tarjeta del carrusel", lambda: ui.recs.pick((ui.recs.sel + 1) % max(1, len(ui.recs.vis))))
     medir("seleccion: cambiar de pestaña", lambda: ui.recs.set_tab("Meta y build" if ui.recs.tab != "Meta y build" else "Resumen"))

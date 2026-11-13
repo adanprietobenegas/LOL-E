@@ -141,7 +141,8 @@ Hecho después (13/11/2026, publicado en la 1.22.6):
 - Cada arranque deja una línea «--- LOL-E x.y.z arranca ---» en `diag.log`.
 
 Sin hacer de la etapa 1:
-- Los análisis guardados (`cache/analysis/<id>.json`) siguen sin separarse por cuenta.
+- (Descartado) Separar por cuenta los análisis guardados: van por identificador de partida, el historial ya es por
+  cuenta y dos cuentas del mismo PC no pueden estar en la misma partida, así que no se pueden mezclar.
 - El cliente falso usa respuestas inventadas; faltaría grabar las de una partida real.
 
 Sin probar: la migración en la app instalada del usuario y el flujo con el cliente real. Antes de publicarlo conviene
@@ -191,3 +192,15 @@ Lo que queda es el coste real de crear cientos de widgets de CustomTkinter (cada
 lienzo). Bajarlo más pide sustituirlos por widgets ligeros de Tk pantalla a pantalla, o no reconstruir lo que no cambia.
 En la app real la selección se repinta sección a sección, así que el bloqueo percibido es menor que la cifra entera.
 Las medidas son de la ventana de desarrollo, no de una partida real con LoL en marcha (ahí el PC va más justo).
+
+## Pendiente inmediato (13/11/2026)
+
+1. **Prueba contra el cliente real, sin ejecutar todavía** (el cliente estaba cerrado):
+   `python herramientas/prueba_cliente_real.py`, con LoL abierto y fuera de partida. Es de solo lectura y trabaja sobre
+   una copia temporal. Comprueba cuenta, historial por cuenta y su herencia, perfil, maestrías, lectura de un jugador
+   y que no quede ningún fallo registrado. Es lo primero que hay que lanzar en la próxima conversación.
+2. Preguntar al usuario si su app pasó sola de la 1.22.5 a la 1.22.6 (el ejecutable instalado cambió el 12/11 a las
+   21:16, así que instaló algo a mano; no se sabe qué versión).
+3. Rendimiento, hallazgo del 13/11: repintar una sola sección pequeña cuesta ~300 ms aunque construirla sean 36 ms; el
+   resto es el recálculo y redibujado de toda la página que hace Tk ante cualquier cambio de tamaño. No se arregla con
+   retoques: pide menos widgets por pantalla. `python herramientas/tiempos.py 560 "solo"` da el desglose por sección.
