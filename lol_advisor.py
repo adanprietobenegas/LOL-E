@@ -61,7 +61,7 @@ DEFAULT_CONF = {
     "auto_install": True,   # instalar solas las versiones nuevas (sin pulsar nada), nunca durante una cola, selección o partida
     "update_url": "https://github.com/adanprietobenegas/LOL-E/releases/latest/download/latest.json",        # direccion del archivo latest.json
     "tab": "asesor",
-    "start_tab": "ultima",   # ultima | asesor | enfrentamiento | datos
+    "start_tab": "ultima",   # ultima | asesor | enfrentamiento | repertorio | historial | datos
     "animations": True,
     "filters": {"orden": "Afinidad", "clase": "Todas", "mi_rol": True, "mios": False, "meta": False},
     "opgg_enabled": True,    # actualiza tus stats de temporada y matchups desde op.gg

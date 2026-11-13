@@ -13,6 +13,7 @@ import lol_advisor as core
 import updater
 from lol_advisor import APP_NAME, APP_VERSION, CACHE, DATA_DIR, PRESET_INFO, read_json, save_conf
 from ui_history import HistoryView
+from ui_pool import PoolView
 from ui_views import DataView, MatchupView
 from ui_kit import REC_VIEWS, ACCENTS, DISPLAY, Kit, PAL, THEMES, calm, res
 from ui_game import GameView
@@ -59,7 +60,7 @@ class GUI:
             pass
         self.root.bind("<Escape>", lambda e: self.close_dock())
         self.root.report_callback_exception = lambda t, v, tb: core.log_exc("Error en la ventana", (t, v, tb))
-        for i, nm in enumerate(("Asesor", "Partida", "Enfrentamiento", "Historial", "Datos"), 1):  # Ctrl+1…5 cambian de pestaña (en el orden de arriba)
+        for i, nm in enumerate(("Asesor", "Partida", "Enfrentamiento", "Repertorio", "Historial", "Datos"), 1):  # Ctrl+1…6 cambian de pestaña (en el orden de arriba)
             self.root.bind(f"<Control-Key-{i}>", lambda e, n=nm: self.set_page(n))
         self.root.bind("<Left>", lambda e: self.key_go(-1))
         self.root.bind("<Right>", lambda e: self.key_go(1))
@@ -413,6 +414,7 @@ class GUI:
                     self.matchup_view.update(self.make_ctx())
                 elif kind == "history":
                     self.history_view.data_changed()
+                    self.pool_view.data_changed()
 
                 elif kind == "update":
                     self.on_update(ev[1], ev[2], ev[3])
@@ -614,7 +616,7 @@ class GUI:
         self.add_volume_slider(vol, 70).pack(side="left")
         self.update_btn = ctk.CTkButton(bar, text="", height=28, corner_radius=14, font=k.font(11, True), fg_color=k.acc,
                                         text_color=PAL["bg"], hover_color=k.acc, command=self.confirm_update)
-        tabs = {"asesor": "Asesor", "partida": "Partida", "enfrentamiento": "Enfrentamiento", "historial": "Historial"}
+        tabs = {"asesor": "Asesor", "partida": "Partida", "enfrentamiento": "Enfrentamiento", "repertorio": "Repertorio", "historial": "Historial"}
         self.tab_names = {**tabs, "datos": "Datos"}   # «Datos» es una página más, pero se abre desde su botón de la cabecera
         self.tab_seg = k.seg(self.main, list(tabs.values()), tabs.get(self.page, ""), self.set_page)
         self.tab_seg.pack(fill="x", padx=18, pady=(8, 0))
@@ -642,6 +644,7 @@ class GUI:
         self.select_secs = [self.turn, self.draft, mypick, ideas, self.aram_build, self.recs, self.lobby, self.enemies, BansRow(k, self.select_view)]
         self.matchup_view = MatchupView(k, self.body, self)
         self.history_view = HistoryView(k, self.body, self)
+        self.pool_view = PoolView(k, self.body, self)
         self.data_view = DataView(k, self.body, self)
         self.game_view = GameView(k, self.body, self)
 
@@ -654,10 +657,10 @@ class GUI:
     def show_view(self, name):
         if self.view == name:
             return
-        for v in (self.idle_view, self.select_view, self.matchup_view.box, self.history_view.box, self.data_view.box, self.game_view.box):
+        for v in (self.idle_view, self.select_view, self.matchup_view.box, self.history_view.box, self.pool_view.box, self.data_view.box, self.game_view.box):
             v.pack_forget()
         {"idle": self.idle_view, "select": self.select_view, "matchup": self.matchup_view.box,
-         "history": self.history_view.box, "data": self.data_view.box, "game": self.game_view.box}[name].pack(fill="x")
+         "history": self.history_view.box, "pool": self.pool_view.box, "data": self.data_view.box, "game": self.game_view.box}[name].pack(fill="x")
         self.view = name
         try:
             self.body._parent_canvas.yview_moveto(0)
@@ -665,7 +668,7 @@ class GUI:
             pass
 
     def effective_view(self):
-        return {"enfrentamiento": "matchup", "historial": "history", "datos": "data", "partida": "game"}.get(self.page, self.advisor)
+        return {"enfrentamiento": "matchup", "historial": "history", "repertorio": "pool", "datos": "data", "partida": "game"}.get(self.page, self.advisor)
 
     def apply_page(self):
         prev = self.view
@@ -713,6 +716,8 @@ class GUI:
             self.matchup_view.refresh(ctx, force)
         elif self.view == "history":
             self.history_view.refresh(ctx, force)
+        elif self.view == "pool":
+            self.pool_view.refresh(ctx, force)
         elif self.view == "data":
             self.data_view.refresh(ctx, force)
         elif self.view == "game":
@@ -796,7 +801,7 @@ class GUI:
         if self.view == "select" and self.ctx["r"]:
             self.kit.anim = False
             self.recs.resized(self.make_ctx()["width"])
-        elif self.view in ("matchup", "history", "data", "idle", "game"):
+        elif self.view in ("matchup", "history", "pool", "data", "idle", "game"):
             self.refresh_current()
 
     # ---------- enlace, pie y volumen ----------
@@ -1164,7 +1169,7 @@ class GUI:
         switch("Modo compacto (solo turno y lo recomendado)", "compact")
 
         section("Al abrir")
-        starts = {"Última usada": "ultima", "Asesor": "asesor", "Enfrentamiento": "enfrentamiento", "Historial": "historial", "Datos": "datos"}
+        starts = {"Última usada": "ultima", "Asesor": "asesor", "Enfrentamiento": "enfrentamiento", "Repertorio": "repertorio", "Historial": "historial", "Datos": "datos"}
         label("Pestaña inicial")
         k.menu(sc, list(starts), {v: k_ for k_, v in starts.items()}.get(conf["start_tab"], "Última usada"),
                lambda v: self.set("start_tab", starts[v], redraw=False), 300).pack(anchor="w", padx=12, pady=2)

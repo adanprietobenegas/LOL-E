@@ -247,11 +247,11 @@ def history_fecha(ms):
 
 
 class SummaryCard(Section):
-    """Resumen interactivo de la pantalla principal: rango y logros, modos y repertorio en una sola tarjeta con pestañas.
+    """Resumen interactivo de la pantalla principal: rango y logros y modos en una sola tarjeta con pestañas (el repertorio tiene ya su pestaña).
 
     Cada ficha enseña una previsualización al pasar el ratón y, al pulsarla, un detalle que se despliega con animación.
     """
-    TABS = ["Rango y logros", "Modos", "Repertorio"]
+    TABS = ["Rango y logros", "Modos"]
     CATS = {"COLLECTION": "Colección", "TEAMWORK": "Trabajo en equipo", "EXPERTISE": "Pericia", "VETERANCY": "Veteranía",
             "IMAGINATION": "Imaginación"}
     DIVS = {"IV": "III", "III": "II", "II": "I"}
@@ -309,7 +309,7 @@ class SummaryCard(Section):
     def paint_tab(self, animate):
         ui = self.ui
         self.ui.clear(self.body)
-        fn = {"Rango y logros": self.tab_logros, "Modos": self.tab_modos, "Repertorio": self.tab_pool}[self.tab]
+        fn = {"Rango y logros": self.tab_logros, "Modos": self.tab_modos}.get(self.tab, self.tab_logros)   # (una pestaña recordada de otra versión)
         if animate and ui.anim_on():
             ui.reveal(self.body, fn)
         else:
@@ -653,17 +653,6 @@ class SummaryCard(Section):
             ui.reveal(holder, fill)
         else:
             fill(holder)
-
-    # ---- pestaña: repertorio ----
-    def tab_pool(self, parent):
-        """Tus campeones: titular con el hallazgo, cifras, tabla ordenable y panel de detalle (resumen, partidas y build)."""
-        self.slot = None
-        if getattr(self, "pool_panel", None) is None:
-            self.pool_panel = PoolPanel(self.ui, self.ctx, self.hist)
-        else:
-            self.pool_panel.ctx, self.pool_panel.hist = self.ctx, self.hist
-        self.pool_panel.mount(parent)
-
 
 class PoolCard(Section):
     def key(self, ctx):

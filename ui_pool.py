@@ -423,3 +423,43 @@ class PoolPanel:
     def set_lane(self, cid, lane):
         self.lane_pick[cid] = lane
         self.render_detail()
+
+
+class PoolView:
+    """Pestaña «Repertorio»: la pantalla de PoolPanel con su propio sitio en la barra de pestañas (antes era un segmento de la
+    tarjeta de logros, abajo de la pantalla de inicio, y no existía durante la selección ni la partida). Conserva lo elegido
+    (orden, ámbito, campeón) entre repintados."""
+
+    def __init__(self, ui, parent, gui):
+        self.ui, self.gui = ui, gui
+        self.box = ui.frame(parent)
+        self.sig, self.panel, self.hist = None, None, []
+
+    def load_hist(self):
+        try:
+            self.hist = [e for e in history.load_all(history.hpath(core.CACHE), history.gpath(core.CACHE)) if not e.get("rm")]
+        except Exception:
+            self.hist = []
+
+    def data_changed(self):
+        """Llegó una partida nueva o se recalcularon las líneas: se relee y se repinta si es lo que se está viendo."""
+        self.sig = None
+        if self.gui.view == "pool":
+            self.refresh(self.gui.make_ctx(), True)
+
+    def refresh(self, ctx, force=False):
+        ui = self.ui
+        self.load_hist()
+        info = ctx.get("info") or {}
+        w = ctx["width"]
+        sig = (ui.epoch, w >= 1000, w < 640, len(self.hist), self.hist[0]["id"] if self.hist else "", len(info.get("mastery_all") or {}),
+               len(info.get("owned") or []))
+        if sig == self.sig and not force:
+            return
+        self.sig = sig
+        ui.clear(self.box)
+        if self.panel is None:
+            self.panel = PoolPanel(ui, ctx, self.hist)
+        else:
+            self.panel.ctx, self.panel.hist = ctx, self.hist
+        self.panel.mount(ui.card(self.box))

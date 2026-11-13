@@ -141,6 +141,17 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
   `Select-String -Path "$env:LOCALAPPDATA\LOL-E\cache\live_samples\*","$env:LOCALAPPDATA\LOL-E\cache\last_session.json" -Pattern '"(summonerName|riotId|gameName|puuid)":\s*"[^"]+"' | Measure-Object`
   (debe dar Count 0).
 
+## Repertorio con pestaña propia (13/11/2026, en `main`, SIN publicar → 1.22.11)
+
+El usuario dijo que el Repertorio le gustaba pero estaba «bastante oculto»: era un segmento de la tarjeta «Rango y logros · Modos ·
+Repertorio» al final de la pantalla de inicio (hay que bajar, pulsar un segmento pequeño, y no existía durante la selección ni la
+partida). Ahora es la pestaña **Repertorio** entre Enfrentamiento e Historial (`ui_pool.PoolView`, `gui.pool_view`); la tarjeta de
+inicio conserva «Rango y logros» y «Modos». Ctrl+1…6 (Asesor, Partida, Enfrentamiento, Repertorio, Historial, Datos: el Historial
+pasa de Ctrl+4 a Ctrl+5); «Al abrir» en Ajustes ofrece también Repertorio e Historial; LEEME actualizado. Comprobado a 470, 560 y
+1340 px (caben las cinco pestañas; en ancho se ve la tabla con el detalle al lado, como estaba diseñado). No cambia el resto de
+la navegación: el rediseño completo (`docs/rediseno/prototipo_v2.html`) sigue sin hacerse hasta que el usuario lo revise.
+Al subir la versión, añadir la entrada en `novedades.py` y `NOTAS_DE_VERSION.txt`.
+
 ## Estado de lo pendiente (13/11/2026, tras publicar la 1.22.10)
 
 Hecho y sin nada sin subir. Lo que queda NO se puede cerrar sin el usuario o sin otra partida:

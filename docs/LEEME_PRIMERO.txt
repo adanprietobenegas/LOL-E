@@ -486,7 +486,7 @@ SECCIONES PLEGABLES
 
 ATAJOS Y EXTRAS
 ---------------
-  Ctrl+1 … Ctrl+5   Cambian entre Asesor, Partida, Enfrentamiento, Historial y Datos.
+  Ctrl+1 … Ctrl+6   Cambian entre Asesor, Partida, Enfrentamiento, Repertorio, Historial y Datos.
   ← y →             Cambian de tarjeta en el carrusel.
   Esc               Cierra los Ajustes.
   Historial         «Exportar CSV» guarda en Documentos las partidas que
