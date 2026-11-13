@@ -99,7 +99,7 @@ def main():
             linea(f + ":", f"modificado {time.strftime('%d/%m %H:%M', time.localtime(os.path.getmtime(fp)))}" + (f" · menciona la {ver}" if ver in txt else f" · NO menciona la {ver}: ¿está al día?"))
         else:
             linea(f + ":", "NO EXISTE")
-    print("\nOrden de lectura para una conversación nueva: docs/CONTINUAR.md → este informe → docs/PLAN_DE_FUTURO.md (solo si toca decidir rumbo).\n")
+    print("\nOrden de lectura para una conversación nueva: docs/CONTINUAR.md -> este informe -> docs/PLAN_DE_FUTURO.md (solo si toca decidir rumbo).\n")
 
 
 if __name__ == "__main__":

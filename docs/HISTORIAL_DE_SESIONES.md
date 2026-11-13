@@ -302,3 +302,19 @@ pruebas del bucle cubren la línea y el rival de línea.
   una herramienta falta en su tabla. `HOJA_DE_RUTA.md` y `ESTADO_Y_PENDIENTES.md` pasaron a ser punteros/obsoletos.
 - **Bug real de esquivar** (descubierto por un escenario): ver CONTINUAR §2. Lección: cada rama del bucle principal merece un escenario del cliente simulado.
 - **Medida honesta**: construir los controles de filtros solo al abrirlos ahorra ~30 ms (a/b alternado), no los ~200 que sugería el perfilador.
+
+## Noche del 13/11/2026: partida en vivo y robustez (1.22.11 a 1.22.13)
+
+Publicadas, cada una con el sí del usuario (1.22.11, 1.22.12 y 1.22.13). Detalle de lo que no está en `CONTINUAR.md`:
+- **Partida en vivo** (`live.py`, `ui_live.py`, `augments.fetch_live`): marcador, objetivos y 10 jugadores desde la API local 2999; lectura de objetos
+  rivales, rival directo (`live.duel`), siguiente compra (`shopping.py`, recetas de Data Dragon, `items.py` esquema 4) y un objeto contra los rivales
+  (`shopping.counter_item`); aviso sonoro al poder comprar (`GUI.buy_alert`). Solo probado con datos inventados (`cliente_falso.live_sample`).
+- **Gráfico de PL** (`analysis.lp_series`, ficha «Tus PL guardados») y **«Qué aprender»** (`learn.py`) en Repertorio: probados con datos de ejemplo.
+- **Fuentes externas sin red**: build, meta, op.gg y tendencias usan lo guardado (campo `stale`); solo si encaja (mismo rango/región), con reintento
+  de builds a los 5 min; validador de escala del meta; el puesto de op.gg no se borra.
+- **Bucle**: remake sin esperas ni PL falsos (`history.is_remake`); tras esquivar no se da por terminada la partida anterior.
+- **Revisión de código** (`code-review` alto, 9 hallazgos corregidos) antes de publicar la 1.22.13. Lección: los hallazgos útiles fueron de
+  interacción entre piezas (estado fijado en sesión, reserva de otro rango o región), no de sintaxis; las pruebas con red simulada los habrían
+  cazado antes si se hubieran escrito pensando en «qué pasa cuando vuelve la red».
+- Medido: el modo rápido de capturas (`LOLE_SOLO`) da avisos «no encuentro el botón Situaciones/Variantes» porque no espera a que cargue la build;
+  no es un fallo (la comprobación completa da 0 errores).
