@@ -118,6 +118,9 @@ def main():
         parar(f"falta «VERSIÓN {ver}» en docs/NOTAS_DE_VERSION.txt")
     print("   bien")
 
+    lj = os.path.join(REL, "latest.json")
+    if os.path.exists(lj) and json.load(open(lj, encoding="utf-8")).get("version") != ver:
+        os.remove(lj)   # es de la versión anterior: las pruebas lo exigen igual a la actual y aún no se ha construido
     if not a.saltar_comprobacion:
         print("3. Comprobación completa (unos 7 minutos)")
         r = subprocess.run([sys.executable, os.path.join(HERE, "comprobar_todo.py")], cwd=ROOT, encoding="utf-8", errors="replace",
