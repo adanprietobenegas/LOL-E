@@ -35,7 +35,19 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
   cliente simulado; NO visto aún con una partida real** (los nombres de los eventos de dragón/barón/heraldo y quién los mata son según la
   documentación de la API; las muestras reales que tenía el usuario eran de Mayhem y no los traen).
 
-**Pendiente de ver en la realidad** (no se puede cerrar sin el usuario o sin otra partida):
+- **Corrección del cierre de partidas tras ESQUIVAR** (hallazgo de un escenario nuevo del cliente simulado): al acabar una selección sin que
+  empezara partida, el motor daba por terminada la partida ANTERIOR (decía «Partida terminada», la reanalizaba, esperaba hasta 8 veces si
+  el rango no se había movido y guardaba «0 PL» para ella, pudiendo pisar su variación real). Ahora `played` distingue esquivar de jugar, el
+  motor espera si la fase sigue en «ChampSelect» y `analysis.save_lp` no sustituye una variación real por un 0.
+- **Tu partida frente a tu media** (`analysis.vs_average`, `average_lines`): bajo el titular del análisis, tu KDA y farmeo frente a tu media con ese
+  campeón (o en el modo si hay menos de 3 partidas); marca bueno/malo solo si se aleja un 25 %.
+- **Tu rival directo en el bloque en vivo** (`live.duel`, `duel_line`): nivel, objetos y marcador frente a él, con «va por delante» solo si la
+  diferencia es clara (≥ 15 % y ≥ 500 de oro).
+- **Pruebas del bucle ampliadas** con el cliente simulado: esquivar, caída del cliente a mitad de selección, ARAM y Arena, reconexión, cuenta
+  desconocida que luego aparece (el reloj del test avanza ~40 s por paso), y las sesiones raras que antes comprobaba `test_modes.py` (que
+  necesitaba el cliente real). Construcción diferida de los controles de filtros (ahorra ~30 ms por repintado de la selección, medido a/b).
+
+***Pendiente de ver en la realidad*** (no se puede cerrar sin el usuario o sin otra partida):
 1. La instalación del usuario corría la 1.22.9 el 13/11 a las 17:59: basta con cerrar y abrir LOL-E fuera de cola para pasar a la
    1.22.10. Después, en su `diag.log` debe aparecer «Partidas antiguas recalculadas con su detalle…», y su Historial/Repertorio no deben
    tener toplanes como jungla.
@@ -132,6 +144,8 @@ vivo en una partida real, y las decisiones pendientes del usuario de la sección
 
 ## 9. Registro de actualizaciones de este documento
 
+- 13/11/2026 (noche, 2): partida en vivo ampliada (rival directo), comparación con tu media, corrección del cierre tras esquivar, escenarios del bucle; plan y
+  estado al día.
 - 13/11/2026 (noche): reorganizado en capas (este archivo + `PLAN_DE_FUTURO.md` + `HISTORIAL_DE_SESIONES.md` + `herramientas/estado.py`); añadidas pruebas de
   frescura de documentos. Estado: 1.22.10 publicada; en main sin publicar Repertorio con pestaña, corrección del interbloqueo y partida en vivo.
 - 13/11/2026 (tarde): 1.22.5 a 1.22.10 publicadas (actualizador, certificados, regla de líneas v2, recálculo de partidas antiguas). Ver el historial.

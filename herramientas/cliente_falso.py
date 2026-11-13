@@ -66,10 +66,10 @@ COLAS = {"sr": {"id": 420, "gameMode": "CLASSIC"}, "aram": {"id": 450, "gameMode
 
 
 class ClienteFalso:
-    def __init__(self, puuid=YO, guion=GUION, partida_nueva=900, modo="sr", caidas=()):
+    def __init__(self, puuid=YO, guion=GUION, partida_nueva=900, modo="sr", caidas=(), cuenta_desde=0):
         """modo: «sr» (Grieta), «aram» o «arena». caidas: números de paso del guion en los que el cliente «no responde» (se cae y vuelve)."""
         self.puuid, self.guion, self.paso, self.nueva = puuid, list(guion), 0, partida_nueva
-        self.modo, self.caidas = modo, set(caidas)
+        self.modo, self.caidas, self.cuenta_desde = modo, set(caidas), cuenta_desde   # cuenta_desde: paso a partir del cual el cliente da tu cuenta
         self.pedidas = []
         self.viejas = [partida(100, 103, True, 1_000), partida(101, 86, False, 2_000)]
         self.detalles = {}   # gameId -> detalle de la Grieta (los 10 jugadores); lo demás devuelve None, como el cliente con una partida que ya no tiene
@@ -120,6 +120,8 @@ class ClienteFalso:
                           playerChampionSelections=[])
             return {"gameData": gd, "map": {"gameMode": "CLASSIC"}}
         if path == "/lol-summoner/v1/current-summoner":
+            if self.paso < self.cuenta_desde:   # el cliente aún está iniciando sesión: no sabe quién eres
+                return {"puuid": "", "gameName": "", "tagLine": "", "summonerLevel": 0, "profileIconId": 0}
             return {"puuid": self.puuid, "gameName": "Prueba", "tagLine": "TEST", "summonerLevel": 100, "profileIconId": 1}
         if path.startswith("/lol-match-history/v1/products/lol/current-summoner/matches"):
             return {"games": {"games": self.historial()}}

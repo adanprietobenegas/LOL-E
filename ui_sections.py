@@ -903,10 +903,19 @@ class Recs(Section):
         self.filter_sum = ui.lbl(line, "", 10, "dim", anchor="w")
         self.filter_sum.pack(side="left", padx=(10, 0))
         bar = ui.frame(parent)
-        self.filter_box, self.filter_line = bar, line
-        if folds.get("rec_filters"):
-            bar.pack(fill="x", pady=(0, 10))
+        self.filter_box, self.filter_line, self.filter_built = bar, line, False
         self.paint_filter_line()
+        if folds.get("rec_filters"):
+            self.build_filter_controls()
+            bar.pack(fill="x", pady=(0, 10))
+
+    def build_filter_controls(self):
+        """Los controles (dos menús desplegables y los botones) solo se construyen cuando se van a ver: con los filtros plegados, que es lo
+        habitual, cada repintado de la selección se ahorra ~200 ms (los menús de CustomTkinter son lo más caro de esta tarjeta)."""
+        if self.filter_built:
+            return
+        self.filter_built = True
+        ui, f, bar = self.ui, self.ui.conf["filters"], self.filter_box
         r1 = ui.frame(bar)
         r1.pack(fill="x")
         ui.lbl(r1, "Ordenar", 10, "dim").pack(side="left", padx=(0, 6))
@@ -944,6 +953,7 @@ class Recs(Section):
         folds["rec_filters"] = not folds.get("rec_filters")
         core.save_conf(ui.conf)
         if folds["rec_filters"]:
+            self.build_filter_controls()
             self.filter_box.pack(fill="x", pady=(0, 10), after=self.filter_line)
         else:
             self.filter_box.pack_forget()

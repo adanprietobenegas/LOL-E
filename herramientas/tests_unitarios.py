@@ -477,8 +477,9 @@ class FlujoCompleto(unittest.TestCase):
         analysis, history, players = self.mods
         ev = []
 
-        class Reloj:   # el bucle «duerme» sin esperar: cada siesta avanza un paso del guion
-            time, strftime, perf_counter = staticmethod(real.time), staticmethod(real.strftime), staticmethod(real.perf_counter)
+        class Reloj:   # el bucle «duerme» sin esperar: cada siesta avanza un paso del guion y el reloj ~40 s (los reintentos «cada 30 s» ocurren)
+            time = staticmethod(lambda: real.time() + fake.paso * 40)
+            strftime, perf_counter = staticmethod(real.strftime), staticmethod(real.perf_counter)
             sleep = staticmethod(fake.dormir)
 
         class Ventana:
@@ -587,6 +588,17 @@ class FlujoCompleto(unittest.TestCase):
         self.assertEqual(analysis.lp_for(tmp, 101)["d"], -20)
         analysis.save_lp(tmp, 102, {"d": 0, "now": 37, "tier": "Oro II", "move": ""})          # y un 0 en una partida nueva sí se guarda
         self.assertEqual(analysis.lp_for(tmp, 102)["d"], 0)
+
+    def test_si_la_cuenta_aun_no_es_conocida_se_reintenta_y_se_guarda_despues(self):
+        from cliente_falso import ClienteFalso, YO
+        fake = ClienteFalso(guion=["None"] * 8, cuenta_desde=3)
+        ev = self.correr(fake)
+        d = self.leer("diag.log")
+        self.assertIn("cuenta aún desconocida", d)                                      # al principio no sabía quién eres y no guardó nada
+        self.assertEqual(self.leer("error.log"), "")
+        guardadas = json.loads(self.leer(f"history_{YO}.json"))                          # y al saberlo, el reintento guardó el historial
+        self.assertEqual(sorted(guardadas), ["100", "101"])
+        self.assertTrue(any("Historial cargado" in e[2] for e in ev if e[0] == "idle"))
 
     def test_el_cliente_se_cae_en_plena_seleccion_y_vuelve(self):
         from cliente_falso import ClienteFalso
@@ -928,6 +940,58 @@ class PartidaEnVivo(unittest.TestCase):
         r = self.live.summarize({"allPlayers": [{"championName": "Nadie", "team": "ORDER"}]}, self.champs)
         self.assertEqual((r["players"][0]["cid"], r["players"][0]["items"], r["players"][0]["value"], r["me_team"], r["t"]), (0, [], 0, "", 0.0))
         self.assertEqual((self.live.clock(872.4), self.live.clock(-5), self.live.money(12345)), ("14:32", "0:00", "12,3k"))
+
+
+class SeleccionesRaras(unittest.TestCase):
+    """Sesiones de selección con lo que cada modo trae (o NO trae): el motor no puede lanzar excepciones. Sustituye al viejo test_modes.py,
+    que necesitaba el cliente real y una ventana. Caso real que lo originó: en Arena `advise` fallaba con AttributeError."""
+    def setUp(self):
+        try:
+            self.champs = core.load_champions()
+        except Exception as e:
+            self.skipTest(f"sin datos de campeones en cache/: {e}")
+        from cliente_falso import ClienteFalso
+        self.P = core.load_player_data(ClienteFalso(), {})
+        self.conf = core.load_conf()
+        self.conf.pop("_opp", None)
+
+    def ver(self, ses, mode):
+        import copy
+        r = core.advise(copy.deepcopy(ses), self.champs, self.P, self.conf, mode)
+        self.assertIsInstance(r, dict)
+        self.assertNotIn("error", r)
+        return r
+
+    def test_arena(self):
+        ses = {"localPlayerCellId": 2, "myTeam": [{"cellId": 2, "championId": 0, "playerSubteamId": 1}, {"cellId": 3, "championId": 103, "playerSubteamId": 1}],
+               "theirTeam": [], "timer": {"phase": "BAN_PICK"}, "actions": [[None]]}
+        r = self.ver(core.sanitize_session(ses), {"id": 1750, "group": "Arena", "kind": "other"})
+        self.assertEqual((r["mode"]["kind"], r["cands"]), ("other", []))
+
+    def test_personalizada_de_la_grieta_sin_posiciones(self):
+        ses = {"localPlayerCellId": 0, "myTeam": [{"cellId": i, "championId": c} for i, c in enumerate((0, 64, 103, 222, 89))],
+               "theirTeam": [{"cellId": 5 + i, "championId": c} for i, c in enumerate((157, 23, 0, 0, 0))], "bans": {},
+               "timer": {"phase": "BAN_PICK", "adjustedTimeLeftInPhase": 25000, "totalTimeInPhase": 30000}, "actions": []}
+        for modo in ({"id": 0, "group": "Personalizada", "kind": "other"}, {"id": 0, "group": "", "kind": "sr"}):
+            self.ver(core.sanitize_session(ses), modo)
+
+    def test_aram_con_banquillo_vacio_o_con_huecos(self):
+        casos = [{"localPlayerCellId": 0, "myTeam": [{"cellId": 0, "championId": 103}, {"cellId": 1, "championId": 64}], "theirTeam": [],
+                  "benchChampions": [{"championId": 1}, {"championId": 51}], "timer": {"phase": "BAN_PICK"}, "actions": []},
+                 {"localPlayerCellId": 0, "myTeam": [{"cellId": 0, "championId": None}], "theirTeam": None,
+                  "benchChampions": [{"championId": None}, {}], "timer": None, "actions": None, "bans": None}]
+        for ses in casos:
+            self.ver(core.sanitize_session(ses), {"id": 450, "group": "ARAM", "kind": "aram"})
+
+    def test_sesion_vacia_o_sin_nada(self):
+        for ses in ({}, {"myTeam": None, "theirTeam": None}, {"localPlayerCellId": 7, "myTeam": [{"cellId": 0}]}):
+            self.ver(core.sanitize_session(ses), {"id": 0, "group": "", "kind": "sr"})
+
+    def test_grieta_normal_pone_tu_linea_y_candidatos(self):
+        from cliente_falso import SELECCION
+        r = self.ver(core.sanitize_session(SELECCION), {"id": 420, "group": "Solo/Dúo", "kind": "sr"})
+        self.assertEqual((r["role"], r["turn"]), ("TOP", "pick"))
+        self.assertTrue(r["cands"] and r["lane_opp"] == 157)
 
 
 class RivalElegidoAMano(unittest.TestCase):

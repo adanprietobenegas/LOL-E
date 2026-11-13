@@ -290,3 +290,15 @@ pruebas del bucle cubren la línea y el rival de línea.
 6. **Cliente falso con respuestas grabadas de una partida real** en vez de inventadas.
 7. **Etapa 3 de la hoja de ruta** (más valor en partida): datos en vivo del puerto 2999, resumen de una frase al terminar,
    recalcular recomendaciones al elegir rival a mano, antigüedad visible de los datos de build y meta.
+
+### Noche del 13/11/2026: partida en vivo, contexto y fallos encontrados por escenarios
+
+- **Repertorio con pestaña propia** y **interbloqueo por el recolector de basura** (ver CONTINUAR §2 y la sección anterior).
+- **Partida en vivo** (`live.py`, `ui_live.py`): construida contra una muestra INVENTADA con la estructura real; se intentó usar una muestra real recortada
+  de la carpeta del usuario y el sistema lo bloqueó (repositorio público): no se rodeó, se fabricó la muestra a mano (`cliente_falso.live_sample`).
+  Error de herramienta aprendido: `
+` en un script lanzado desde la línea de órdenes llega como salto de línea real.
+- **Sistema de contexto**: `CONTINUAR.md` corto, `PLAN_DE_FUTURO.md`, `estado.py`, pruebas `Documentacion` que fallan si el documento no menciona la versión o si
+  una herramienta falta en su tabla. `HOJA_DE_RUTA.md` y `ESTADO_Y_PENDIENTES.md` pasaron a ser punteros/obsoletos.
+- **Bug real de esquivar** (descubierto por un escenario): ver CONTINUAR §2. Lección: cada rama del bucle principal merece un escenario del cliente simulado.
+- **Medida honesta**: construir los controles de filtros solo al abrirlos ahorra ~30 ms (a/b alternado), no los ~200 que sugería el perfilador.
