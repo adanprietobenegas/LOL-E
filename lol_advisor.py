@@ -549,6 +549,43 @@ def ally_champs(me, detail):
     return [p["championId"] for p in mates], [ids.get(p["participantId"], "") for p in mates if ids.get(p["participantId"])]
 
 
+def _refresh_old_games(lcu, puuid, gc, limit=60):
+    """Recalcula con la regla de líneas actual las partidas de Grieta guardadas que el cliente YA NO lista (a veces solo entrega las
+    últimas 20, aunque se le pidan 200): su detalle sí se puede pedir por identificador. Las más recientes primero y, como mucho,
+    `limit` por lectura; el resto, en la siguiente. Una partida que ya no existe o en la que no se te reconoce se marca como
+    revisada y se deja como está. Devuelve True si cambió algo de `gc`."""
+    pend = sorted((k for k, e in gc.items() if isinstance(e, dict) and e.get("q") in SR_QUEUES and e.get("rv") != history.ROLE_V),
+                  key=lambda k: -(gc[k].get("t") or 0))
+    if not pend or not puuid:
+        return False
+    hechas, cambian, recs = 0, 0, []
+    for gid in pend[:limit]:
+        try:
+            detail = lcu.get(f"/lol-match-history/v1/games/{gid}")
+        except (urllib.error.URLError, ConnectionError, OSError):
+            break                                   # el cliente se ha cerrado: se sigue en la próxima lectura
+        except Exception:
+            log_exc("Releer una partida antigua")
+            continue
+        e = gc[gid]
+        me = history.my_part(detail, puuid) if isinstance(detail, dict) else None
+        if me is None:
+            gc[gid] = {**e, "rv": history.ROLE_V}
+        else:
+            role = history.role_of(me)
+            allies, mates = ally_champs(me, detail)
+            cambian += role != e.get("r")
+            gc[gid] = {**e, "r": role, "o": find_opponent(me, detail), "a": allies, "p": mates, "rv": history.ROLE_V}
+            rec = history.from_game(detail, puuid)
+            if rec:
+                recs.append(rec)
+        hechas += 1
+    if recs:
+        history.save(history.hpath(CACHE), recs)
+    diag(f"Partidas antiguas recalculadas con su detalle: {hechas} de {len(pend)} pendientes, {cambian} con otra línea")
+    return hechas > 0
+
+
 def load_player_data(lcu, season=None):
     """Maestría, historial, enfrentamientos, parejas de campeones, modos y perfil. Todo desde el cliente, sin claves."""
     P = {"mastery": {}, "stats": {}, "rstats": {}, "matchups": {}, "opp": {}, "pairs": {}, "modes": {}, "mates": {}, "aram": {}, "owned": set(),
@@ -613,6 +650,8 @@ def load_player_data(lcu, season=None):
                 diag(f"Partida {gid}: la línea pasa de «{e.get('r') or '?'}» a «{role or '?'}» (regla de líneas v{history.ROLE_V})")
             gc[gid] = {"c": me["championId"], "w": bool(me["stats"]["win"]), "r": role, "o": opp, "q": q,
                        "t": g.get("gameCreation", 0), "a": allies, "p": mates, "rv": history.ROLE_V}
+            dirty = True
+        if _refresh_old_games(lcu, P["puuid"], gc):
             dirty = True
     except (urllib.error.URLError, ConnectionError, OSError) as e:
         diag(f"Historial sin leer: {type(e).__name__} {e}")   # cliente cerrado o aún arrancando: se reintenta

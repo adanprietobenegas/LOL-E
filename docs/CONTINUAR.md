@@ -13,7 +13,7 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 
 - **Publicada en GitHub: 1.22.9** (13/11/2026): rival a mano, certificados raíz, parche de la build y privacidad de lo guardado.
   Pendiente: revisarla en una partida real con el usuario (flujo cola → selección → partida → fin).
-- Pruebas: `python herramientas/tests_unitarios.py` → 67, todas pasan. Con LoL abierto y fuera de partida:
+- Pruebas: `python herramientas/tests_unitarios.py` → 68, todas pasan. Con LoL abierto y fuera de partida:
   `python herramientas/prueba_cliente_real.py` (solo lectura, sobre una copia temporal) → TODO BIEN con la 1.22.8.
 - La actualización automática funciona: el usuario confirmó que su 1.22.5 pasó sola a la 1.22.6. Cualquier PC con una
   versión anterior a la 1.22.5 necesita instalar a mano UNA vez (tenía guardada vacía la dirección de actualizaciones).
@@ -57,7 +57,7 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 | Herramienta | Para qué |
 |---|---|
 | `comprobar_todo.py` | **Antes de publicar** (~7 min, sin cliente): pruebas + recorrido de TODAS las pantallas a 560 y 1340 px + la app entera contra el cliente falso; falla ante cualquier error al pintar |
-| `tests_unitarios.py` | 67 pruebas sin ventana ni cliente (incluye el bucle principal contra el cliente falso) |
+| `tests_unitarios.py` | 68 pruebas sin ventana ni cliente (incluye el bucle principal contra el cliente falso) |
 | `prueba_cliente_real.py` | Lectura de solo lectura contra el cliente REAL (cuenta, historial, migración, líneas, perfil) |
 | `capturas.py [ancho] [alto] [carpeta]` | Capturas de todas las pantallas sin cliente; `LOLE_SOLO`, `LOLE_PAGINAS`, `LOLE_CONF`, `LOLE_PERFIL` |
 | `demo_falso.py` | La app entera (ventana + bucle) contra el cliente falso, con una captura por fase |
@@ -108,6 +108,20 @@ Repositorio público `adanprietobenegas/LOL-E`, rama `main`.
 - No se pudo ampliar la validación del objeto de rol: el cliente se cerró. `validar_lineas.py` queda listo para
   cuando esté abierto; solo con eso se podría usar el objeto de rol también en las partidas con línea «NONE»
   (8 de las 55 de Grieta del usuario quedan sin línea).
+
+## Revisión con la 1.22.9 en el PC del usuario (13/11/2026, 17:20)
+
+- Se actualizó sola de la 1.22.6 a la 1.22.9 (`diag.log`: «arranca» ×2) y aplicó las migraciones de esquema 1→2→3 y de
+  privacidad; «Partida 8041219712: la línea pasa de ? a TOP» (Renekton) en la instalación real.
+- Ventana real capturada con `PrintWindow` (la captura de pantalla normal sacaba lo que tapaba la ventana): nivel 901, los tres
+  rangos con PL y V/D, maestría 1.307 y las últimas 5 partidas coinciden con el cliente.
+- **Hallazgo**: el cliente entregó 20 partidas aunque se le pidieron 200 (antes daba 200), así que solo 13 de las 61 de Grieta
+  se recalcularon con la regla de líneas; 48 quedaron pendientes. El detalle por id sí funciona para partidas antiguas.
+  Arreglo en `main` (SIN publicar): `lol_advisor._refresh_old_games` las recalcula con su detalle (60 por lectura, las más
+  recientes primero). Con el cliente real, sobre una copia: 46 de 46 recalculadas, 18 con otra línea, 0 pendientes.
+  Hace falta publicarlo (1.22.10) para que llegue a la instalación del usuario; esperar a que no esté en cola ni en partida
+  (la actualización automática instala en «Lobby»).
+- Pendiente de esta revisión: seguir una partida completa con el cliente real y revisar `diag.log` al acabar.
 
 ## Siguiente trabajo, por orden
 

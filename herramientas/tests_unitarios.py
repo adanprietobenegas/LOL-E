@@ -808,6 +808,54 @@ class LineaQueJugaste(unittest.TestCase):
             self.assertEqual(json.load(open(os.path.join(tmp, f)))["1"]["r"], "")
         self.assertEqual(json.load(open(os.path.join(tmp, "history_owner.json"))), {"v": 1})
 
+    def test_las_partidas_que_el_cliente_ya_no_lista_se_recalculan_con_su_detalle(self):
+        import history
+        tmp, antes = tempfile.mkdtemp(), (core.CACHE, history.ACCOUNT)
+        core.CACHE, history.ACCOUNT = tmp, ""
+        core._DIAG["last"] = ""
+
+        def detalle(gid, champ, s1, s2, item):
+            yo = {"participantId": 1, "teamId": 100, "championId": champ, "spell1Id": s1, "spell2Id": s2,
+                  "stats": {"win": True, "roleBoundItem": item, "kills": 1, "deaths": 1, "assists": 1}, "timeline": {"lane": "JUNGLE", "role": "NONE"}}
+            rival = {"participantId": 2, "teamId": 200, "championId": 86, "spell1Id": 4, "spell2Id": 12,
+                     "stats": {"win": False, "roleBoundItem": 1220}, "timeline": {"lane": "TOP", "role": "SOLO"}}
+            return {"gameId": gid, "gameCreation": gid, "gameDuration": 1500, "queueId": 420, "participants": [yo, rival],
+                    "participantIdentities": [{"participantId": 1, "player": {"puuid": "yo"}}, {"participantId": 2, "player": {"puuid": "otro"}}]}
+        detalles = {"1": detalle(1, 58, 4, 14, 1220), "2": detalle(2, 11, 11, 4, 1209)}      # 1: toplane etiquetado como jungla; 2: jungla de verdad
+
+        class Lcu:
+            def __init__(self): self.pedidas = []
+            def get(self, path, timeout=0):
+                gid = path.rsplit("/", 1)[-1]
+                self.pedidas.append(gid)
+                if gid == "3": raise ConnectionError("cerrado")
+                return detalles.get(gid)                                                     # el 4 ya no existe: None
+        try:
+            gc = {"1": {"c": 58, "w": True, "r": "", "o": 0, "q": 420, "t": 1, "a": [], "p": []},
+                  "2": {"c": 11, "w": True, "r": "", "o": 0, "q": 420, "t": 2, "a": [], "p": []},
+                  "4": {"c": 9, "w": True, "r": "JUNGLE", "o": 3, "q": 420, "t": 4, "a": [], "p": []},
+                  "5": {"c": 5, "w": True, "r": "TOP", "o": 7, "q": 420, "t": 5, "a": [], "p": [], "rv": history.ROLE_V},   # ya al día: no se pide
+                  "6": {"c": 5, "w": True, "r": "", "o": 0, "q": 450, "t": 6, "a": [], "p": []}}                          # ARAM: no cuenta
+            lcu = Lcu()
+            self.assertTrue(core._refresh_old_games(lcu, "yo", gc))
+            self.assertEqual(lcu.pedidas, ["4", "2", "1"])                  # de la más reciente a la más antigua; el 5 y el 6 no se piden
+            self.assertEqual((gc["1"]["r"], gc["1"]["o"], gc["1"]["rv"]), ("TOP", 86, history.ROLE_V))
+            self.assertEqual((gc["2"]["r"], gc["2"]["rv"]), ("JUNGLE", history.ROLE_V))
+            self.assertEqual(gc["4"]["r"], "JUNGLE")                        # sin detalle: se deja como está...
+            self.assertEqual(gc["4"]["rv"], history.ROLE_V)                 # ...y no se vuelve a pedir
+            self.assertEqual(gc["6"].get("rv"), None)
+            self.assertFalse(core._refresh_old_games(lcu, "yo", gc))        # ya no queda nada pendiente
+            self.assertEqual(lcu.pedidas, ["4", "2", "1"])
+            hist = json.load(open(os.path.join(tmp, "history.json")))
+            self.assertEqual((hist["1"]["r"], hist["2"]["r"]), ("TOP", "JUNGLE"))
+            # si el cliente se cierra a mitad, se para sin marcar las que faltan
+            gc2 = {"7": {"c": 1, "w": True, "r": "", "o": 0, "q": 420, "t": 7, "a": [], "p": []},
+                   "3": {"c": 1, "w": True, "r": "", "o": 0, "q": 420, "t": 3, "a": [], "p": []}}
+            core._refresh_old_games(Lcu(), "yo", gc2)
+            self.assertEqual(gc2["3"].get("rv"), None)
+        finally:
+            core.CACHE, history.ACCOUNT = antes
+
     def test_al_conectar_se_recalculan_las_partidas_de_la_ventana_del_cliente(self):
         import history
         from cliente_falso import ClienteFalso, YO

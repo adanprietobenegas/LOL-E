@@ -99,6 +99,9 @@ paso("Renekton: ninguna partida figura como jungla", all((gamesf.get(str(g["game
      ", ".join(f"{(gamesf.get(str(g['gameId'])) or {}).get('r') or 'sin línea'}" for g in renek) or "no hay partidas con él en la ventana")
 hist_f = core.read_json(hp, {}) or {}
 paso("el historial coincide con las partidas", all((hist_f.get(str(g["gameId"])) or {}).get("r") == (gamesf.get(str(g["gameId"])) or {}).get("r") for g in ventana))
+pend = [k for k, e in gamesf.items() if isinstance(e, dict) and e.get("q") in SR and e.get("rv") != history.ROLE_V]
+paso("no queda ninguna partida de Grieta pendiente de la regla de líneas (también las que el cliente ya no lista)", not pend,
+     f"{len(gamesf)} guardadas; pendientes: {len(pend)}")
 sch = core.read_json(os.path.join(TMP, "schema.json"), {}) or {}
 paso("datos migrados al esquema nuevo", sch.get("v") == core.SCHEMA, f"esquema {sch.get('v')}")
 err = leer("error.log")
