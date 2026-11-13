@@ -7,6 +7,18 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.6   (13 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Rendimiento: ui_kit.reveal no anima ni mide las secciones plegables que nacen abiertas; QuietMenu y calm() quitan
+    el update_idletasks que CustomTkinter hace al dibujar menús y la barra de desplazamiento. Medidas con
+    herramientas/tiempos.py (560 px): selección 1360 → 1000 ms, plan 1764 → 1316, análisis 1793 → 967,
+    enfrentamiento 1836 → 1336.
+  · lol_advisor.soft_fail() sustituye a 11 «except: pass» de lecturas del cliente; players.on_fail a otros 6.
+  · cache/schema.json: SCHEMA, MIGRATIONS y check_schema() al arrancar. diag.log marca cada arranque con la versión.
+  · Es la primera versión que puede comprobar si una 1.22.5 instalada se actualiza sola.
+  · No probado con el cliente real.
+
 VERSIÓN 1.22.5   (12 de noviembre de 2026)
 ---------------------------------------------------------------------
 

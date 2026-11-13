@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.6", "fecha": "13 de noviembre de 2026", "titulo": "Más ágil y con los fallos a la vista", "items": [
+        ("mejora", "Las pantallas más cargadas se pintan entre un 25 y un 45 % más rápido: la selección, el plan y el análisis de «Partida» y el «Enfrentamiento» con rival. Medido en una ventana de pruebas; con LoL en marcha la mejora puede notarse distinto."),
+        ("arreglo", "Diecisiete lecturas del cliente que fallaban sin decir nada (maestrías, perfil, rango, retos, datos de otros jugadores…) ahora dejan rastro: si el cliente no responde, en el registro de diagnóstico; si es un fallo de LOL-E, en el registro de errores."),
+        ("mejora", "La carpeta de datos lleva una versión propia, para poder cambiar su forma en el futuro sin romper lo que ya tienes guardado."),
+    ]},
     {"v": "1.22.5", "fecha": "12 de noviembre de 2026", "titulo": "Ahora sí se actualiza sola, y nadie falta en la partida", "items": [
         ("arreglo", "LOL-E no se actualizaba sola en los PC que la instalaron hace tiempo: tenían guardada vacía la dirección de actualizaciones y ya no buscaban versiones nuevas. Esta versión hay que instalarla a mano una vez; a partir de ella, las siguientes llegan solas."),
         ("arreglo", "En «Partida», con la ventana ancha, podía faltar uno de los 10 jugadores cuando dos del mismo equipo venían con la misma línea. Ahora salen siempre los 10, cada uno con su campeón."),

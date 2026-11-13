@@ -11,11 +11,11 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
 
 ## Dónde está
 
-- Versión en `main` y publicada en GitHub: **1.22.5** (12/11/2026).
+- Versión en `main` y publicada en GitHub: **1.22.6** (13/11/2026).
 - **Por qué no se actualizaban los PC antiguos (resuelto en la 1.22.5):** su `config.json` guardaba `"update_url": ""`
   y eso tapaba la dirección de fábrica; la app nunca buscaba versiones. `load_conf` ya trata el vacío como «la de
   fábrica». Cada PC con una versión anterior a la 1.22.5 necesita UNA instalación manual; después llegan solas.
-  Pendiente: confirmar, cuando salga la siguiente versión, que la 1.22.5 instalada se actualiza sola.
+  Pendiente: confirmar que una 1.22.5 instalada pasa sola a la 1.22.6 (preguntar al usuario).
 - Pruebas: `python herramientas/tests_unitarios.py` (48, todas pasan).
 - Pendiente de que el usuario confirme en su app que el análisis del ARAM de Lillia ya no muestra Sona.
 
@@ -54,7 +54,7 @@ Repositorio `adanprietobenegas/LOL-E`, rama `main`.
    op.gg). Los fallos al pintar ahora se guardan en el registro de errores, no solo pasan por el pie.
 3. ~~Etapa 1~~ **hecha en parte el 12/11/2026** (publicada en la 1.22.4). Ver «Etapa 1» abajo.
 4. ~~Contenido~~ **hecho el 12/11/2026** (publicado en la 1.22.5). Ver «Jugadores de la partida y punto 4» abajo.
-5. ~~Rendimiento del pintado~~ **hecho en parte el 12/11/2026** (en `main`, sin publicar). Ver «Rendimiento» abajo.
+5. ~~Rendimiento del pintado~~ **hecho en parte el 12/11/2026** (publicado en la 1.22.6). Ver «Rendimiento» abajo.
 
 ## Auditoría visual (12/11/2026)
 
@@ -132,7 +132,7 @@ Hecho:
   arranque sin cuenta y dos cuentas en la misma carpeta. Las respuestas son inventadas con la forma del cliente
   real, no grabaciones.
 
-Hecho después (13/11/2026, en `main`, sin publicar):
+Hecho después (13/11/2026, publicado en la 1.22.6):
 - Los `except Exception: pass` de las lecturas del cliente en `lol_advisor.py` (11) y `players.py` (6) llaman ahora a
   `soft_fail(dónde)`: si el cliente no respondió, una línea en `diag.log`; si es un fallo del programa, la traza en
   `error.log`. Se dejaron tal cual los 7 que protegen al propio registro, la ventana única y la consola.
@@ -169,7 +169,7 @@ Punto 4:
 
 Sin probar en una partida real.
 
-## Rendimiento del pintado (12/11/2026, en `main`, sin publicar)
+## Rendimiento del pintado (12/11/2026, publicado en la 1.22.6)
 
 Medir: `python herramientas/tiempos.py [ancho] [texto]` (mediana de 5 repintados por pantalla; con un texto, saca el
 perfil de las acciones cuyo nombre lo contiene). Ventana de 560 px, sin partida en curso, en el PC del usuario:
