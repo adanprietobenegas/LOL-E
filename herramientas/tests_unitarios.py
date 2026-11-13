@@ -581,6 +581,18 @@ class FlujoCompleto(unittest.TestCase):
         self.assertNotIn("Partida terminada", self.leer("diag.log"))
         self.assertEqual(sorted(json.loads(self.leer("history_" + __import__("cliente_falso").YO + ".json"))), ["100", "101"])
 
+    def test_remake_se_reconoce_y_no_guarda_variacion_de_pl(self):
+        from cliente_falso import ClienteFalso, partida, YO
+        import history as h
+        self.assertTrue(h.is_remake(partida(1, 86, True, 1, remake=True), YO))
+        self.assertFalse(h.is_remake(partida(1, 86, True, 1), YO))
+        ev = self.correr(ClienteFalso(remake=True))
+        d = self.leer("diag.log")
+        self.assertIn("Partida anulada por remake", d)
+        self.assertIn("Partida terminada", d)                                          # el cierre sigue su curso (se actualiza el historial)
+        self.assertEqual(self.leer("error.log"), "")
+        self.assertFalse(os.path.exists(os.path.join(self.tmp, "lp.json")))             # y no queda ninguna variación de PL
+
     def test_save_lp_no_pisa_una_variacion_real_con_un_cero(self):
         import analysis
         tmp = tempfile.mkdtemp()

@@ -170,6 +170,12 @@ def my_part(g, puuid=""):
     return parts[0] if len(parts) == 1 else None
 
 
+def is_remake(g, puuid=""):
+    """¿La partida acabó por remake (rendición temprana, anulada)? Un remake no mueve los PL ni cuenta como partida jugada."""
+    me = my_part(g, puuid)
+    return bool(me and (me.get("stats") or {}).get("gameEndedInEarlySurrender"))
+
+
 def from_game(g, puuid=""):
     """Registro compacto de una partida del cliente; None si no se sabe cuál de los jugadores eres."""
     me = my_part(g, puuid)

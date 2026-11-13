@@ -12,14 +12,14 @@ YO = "yo-puuid-0001"
 GUION = ["None", "Matchmaking", "ReadyCheck", "ChampSelect", "ChampSelect", "InProgress", "InProgress", "EndOfGame", "None", "None"]
 
 
-def partida(gid, champ, win, t, queue=450, puuid=YO, lane="NONE", role="NONE", item=0, spells=(4, 14)):
+def partida(gid, champ, win, t, queue=450, puuid=YO, lane="NONE", role="NONE", item=0, spells=(4, 14), remake=False):
     """Una partida como las de la lista del historial: un solo participante (tú)."""
     return {"gameId": gid, "gameCreation": t, "gameDuration": 1200, "queueId": queue, "gameMode": "ARAM", "gameType": "MATCHED_GAME",
             "participantIdentities": [{"participantId": 1, "player": {"puuid": puuid}}],
             "participants": [{"participantId": 1, "teamId": 100, "championId": champ, "spell1Id": spells[0], "spell2Id": spells[1],
                               "stats": {"win": win, "kills": 5, "deaths": 3, "assists": 9, "totalMinionsKilled": 40,
                                         "neutralMinionsKilled": 0, "champLevel": 16, "totalDamageDealtToChampions": 21000,
-                                        "goldEarned": 11000, "visionScore": 0, "roleBoundItem": item},
+                                        "goldEarned": 11000, "visionScore": 0, "roleBoundItem": item, "gameEndedInEarlySurrender": remake},
                               "timeline": {"lane": lane, "role": role}}]}
 
 
@@ -66,10 +66,11 @@ COLAS = {"sr": {"id": 420, "gameMode": "CLASSIC"}, "aram": {"id": 450, "gameMode
 
 
 class ClienteFalso:
-    def __init__(self, puuid=YO, guion=GUION, partida_nueva=900, modo="sr", caidas=(), cuenta_desde=0):
+    def __init__(self, puuid=YO, guion=GUION, partida_nueva=900, modo="sr", caidas=(), cuenta_desde=0, remake=False):
         """modo: «sr» (Grieta), «aram» o «arena». caidas: números de paso del guion en los que el cliente «no responde» (se cae y vuelve)."""
         self.puuid, self.guion, self.paso, self.nueva = puuid, list(guion), 0, partida_nueva
         self.modo, self.caidas, self.cuenta_desde = modo, set(caidas), cuenta_desde   # cuenta_desde: paso a partir del cual el cliente da tu cuenta
+        self.remake = remake   # la partida nueva acaba anulada (rendición temprana): en la lista del historial lleva gameEndedInEarlySurrender
         self.pedidas = []
         self.viejas = [partida(100, 103, True, 1_000), partida(101, 86, False, 2_000)]
         self.detalles = {}   # gameId -> detalle de la Grieta (los 10 jugadores); lo demás devuelve None, como el cliente con una partida que ya no tiene
@@ -89,7 +90,7 @@ class ClienteFalso:
     # ---- respuestas ----
     def historial(self):
         fin = "EndOfGame" in self.guion[: self.paso + 1]
-        return ([partida(self.nueva, 86, True, 9_000, queue=420, lane="JUNGLE", item=1220)] if fin else []) + self.viejas[::-1]
+        return ([partida(self.nueva, 86, True, 9_000, queue=420, lane="JUNGLE", item=1220, remake=self.remake)] if fin else []) + self.viejas[::-1]
 
     def get(self, path, timeout=None):
         self.pedidas.append(path)

@@ -1264,7 +1264,10 @@ def run(conf, champs, ui):
                             time.sleep(8)
                             continue
                         qkey = {420: "solo", 440: "flex", 710: "prem"}.get(g.get("queueId"))
-                        if qkey and rank_before and rank_before.get(qkey):
+                        remake = history.is_remake(g, my_puuid)
+                        if remake:
+                            diag(f"Partida anulada por remake: {g['gameId']}. Los PL no se mueven: no se espera ni se guarda ninguna variación")
+                        if qkey and rank_before and rank_before.get(qkey) and not remake:
                             dl = analysis.lp_delta(rank_before[qkey], (P.get("profile") or {}).get(qkey))
                             if dl and dl["d"] == 0 and end_tries < 8:  # el rango tarda un poco más en actualizarse
                                 end_tries += 1
