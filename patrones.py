@@ -97,6 +97,23 @@ def result(a, p):
 
 
 _CACHE = {}
+_NOW = {}      # cache_dir -> (instante, patrón): lo calculado se reutiliza unos segundos, porque el Plan se repinta a menudo
+
+
+def current(cache_dir, every=30):
+    """El patrón vigente (None si no hay), recalculado como mucho cada `every` segundos: leer y analizar hasta 80 partidas en cada repintado costaría."""
+    import time
+    t, p = _NOW.get(cache_dir, (0, None))
+    if time.time() - t < every:
+        return p
+    try:
+        p = find(load(cache_dir))
+    except Exception:
+        p = None
+    _NOW[cache_dir] = (time.time(), p)
+    return p
+
+
 
 
 def load(cache_dir, limit=80):

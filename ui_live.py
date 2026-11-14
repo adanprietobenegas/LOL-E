@@ -325,7 +325,7 @@ class LiveView:
         self.counter.set(counter_hint(ui, snap, plan, other))
         pareja = live.duel(snap, opp_cid)
         if self.prev_snap is not snap:   # una lectura nueva: ¿ha pasado algo con tu rival?
-            for txt in live.spikes(self.prev_snap, snap, opp_cid):
+            for txt in (live.spikes(self.prev_snap, snap, opp_cid) if self.prev_snap and snap["t"] - self.prev_snap["t"] <= 30 else []):   # tras un rato minimizada no se juntan avisos viejos
                 self.alerts.append((snap["t"], txt))
             self.prev_snap = snap
         self.alerts = [(t, x) for t, x in self.alerts if 0 <= snap["t"] - t <= live.SPIKE_SHOW]

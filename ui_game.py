@@ -183,7 +183,7 @@ class GameView:
             return None
         try:
             import patrones
-            return patrones.goal(patrones.find(patrones.load(core.CACHE)))
+            return patrones.goal(patrones.current(core.CACHE))
         except Exception:
             return None
 

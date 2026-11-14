@@ -353,7 +353,7 @@ class HistoryView:
         if best:
             lines.append((f"Tu mejor franja horaria es la {best[0]}: {round(best[1] * 100)} % de victorias en {best[2]} partidas.", "dim"))
         try:   # el patrón que se repite en tus derrotas (solo con suficientes partidas analizadas)
-            pat = patrones.sentence(patrones.find(patrones.load(core.CACHE)))
+            pat = patrones.sentence(patrones.current(core.CACHE))
         except Exception:
             pat = None
         if pat:

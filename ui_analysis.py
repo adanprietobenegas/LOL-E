@@ -223,7 +223,7 @@ class AnalysisView:
             ui.lbl(mid, (lp["move"] + " · " if lp.get("move") else "") + f"ahora {lp['tier']} · {lp['now']} PL", 9, "dim").pack()
         try:   # el objetivo que llevabas (sacado de tu patrón de derrotas): ¿se cumplió?
             import patrones
-            res = patrones.result(a, patrones.find(patrones.load(core.CACHE)))
+            res = patrones.result(a, patrones.current(core.CACHE))
         except Exception:
             res = None
         if res:
