@@ -9,8 +9,8 @@ from collections import Counter
 import customtkinter as ctk
 from PIL import Image
 
-import analysis
 import history
+import lpseries
 import lol_advisor as core
 from players import TIERS_ES
 from ui_build import build_panel
@@ -292,8 +292,10 @@ class SummaryCard(Section):
                 json.dumps(info.get("pool"), default=str), json.dumps(self.streaks()), self.lp_key(), ctx["width"] // 300)
 
     def lp_key(self):
-        self.lp = analysis.lp_series(core.CACHE, self.hist)
-        return (self.lp["n"], self.lp["total"]) if self.lp else None
+        """Datos de la gráfica de rango (lp.json y las fotos de op.gg) y su huella, para repintar solo si cambian."""
+        lp, snaps = lpseries.load_all(core.CACHE)
+        self.lp = (lp, snaps) if len(lp) + len(snaps) >= 3 else None
+        return (len(lp), len(snaps), max(snaps) if snaps else "", self.hist[0]["id"] if self.hist else "") if self.lp else None
 
     # ---- estructura ----
     def build(self, ctx):
@@ -396,6 +398,13 @@ class SummaryCard(Section):
         es = lambda x: f"{x:.1f}".replace(".", ",")
         miles = lambda n: f"{int(n):,}".replace(",", ".")
         tiles, self.details = [], {}
+        if getattr(self, "lp", None):   # tu rango en el tiempo: siempre visible, sin pulsar nada
+            import ui_lp
+            try:
+                self.lp_chart = ui_lp.LpChart(ui, parent, self.ctx["width"], self.hist, self.lp[0], self.lp[1])
+                ui.frame(parent, height=10).pack()
+            except Exception:
+                core.log_exc("Gráfica de rango")
         if ex.get("peak"):
             p = ex["peak"]
             tiles.append(("peak", "Mejor rango de la temporada", f"{p['tier']} {p['div']}".strip(), "tu punto más alto este año",
@@ -422,11 +431,6 @@ class SummaryCard(Section):
             tiles.append(("streak", "Racha actual", txt, f"Mejor racha de victorias guardada: {st['best']}", "good" if st["cur_win"] else "bad",
                           "Pulsa para ver tus últimas partidas"))
             self.details["streak"] = self.d_streak
-        if getattr(self, "lp", None):
-            t = self.lp["total"]
-            tiles.append(("lp", "Tus PL guardados", f"{t:+d} PL".replace("-", "−"), f"en {self.lp['n']} partidas clasificatorias", "good" if t > 0 else "bad" if t < 0 else "fg",
-                          "Pulsa para ver cómo han ido subiendo o bajando tus PL"))
-            self.details["lp"] = self.d_lp
         if not tiles:
             ui.lbl(parent, "Aún no hay datos de rango o logros: abre el cliente de LoL con tu cuenta.", 11, "dim").pack(anchor="w")
             self.slot = None
@@ -593,36 +597,6 @@ class SummaryCard(Section):
         ui.lbl(parent, f"{w} victorias y {len(games) - w} derrotas ({round(w / max(1, len(games)) * 100)} %). Mejor racha de victorias guardada: "
                        f"{st.get('best', 0)}. Partidas guardadas: {st.get('n', 0)}.", 10, "dim", anchor="w", justify="left",
                wraplength=min(self.ctx["width"] - 130, 640)).pack(anchor="w")
-
-    def d_lp(self, parent):
-        """Línea de PL acumulados partida a partida (clasificatorias con variación guardada)."""
-        ui = self.ui
-        pts = self.lp["pts"][-60:]
-        ui.lbl(parent, f"TUS PL, PARTIDA A PARTIDA (ÚLTIMAS {len(pts)})", 9, "dim", True, anchor="w").pack(anchor="w")
-        sx = ui.scale_px()
-        S = lambda v: int(v * sx)
-        W, H = max(260, min(self.ctx["width"] - 150, 640)), 120
-        cv = tk.Canvas(parent, width=S(W), height=S(H), bg=ui.bg(parent), highlightthickness=0, bd=0)
-        cv.pack(anchor="w", pady=(4, 6))
-        base = pts[0]["cum"] - pts[0]["d"]               # el punto de partida es antes de la primera partida del trozo
-        ys = [base] + [p["cum"] for p in pts]
-        lo, hi = min(ys), max(ys)
-        span = max(1, hi - lo)
-        x = lambda i: S(8 + (W - 16) * i / max(1, len(ys) - 1))
-        y = lambda v: S(H - 12 - (H - 24) * (v - lo) / span)
-        dim, good, bad = ui.hexm(PAL["dim"]), ui.hexm(PAL["good"]), ui.hexm(PAL["bad"])
-        cv.create_line(S(8), y(base), S(W - 8), y(base), fill=ui.hexm(PAL["edge"]), dash=(3, 3))   # la línea de partida: por encima ganaste PL, por debajo perdiste
-        for i in range(1, len(ys)):
-            cv.create_line(x(i - 1), y(ys[i - 1]), x(i), y(ys[i]), fill=good if ys[i] >= ys[i - 1] else bad, width=2)
-        cv.create_oval(x(len(ys) - 1) - S(3), y(ys[-1]) - S(3), x(len(ys) - 1) + S(3), y(ys[-1]) + S(3), fill=ui.hexm(PAL["fg"]), outline="")
-        cv.create_text(S(8), S(4), text=f"{hi - base:+d}".replace("-", "−"), fill=dim, font=ui.tkf(8, False, False), anchor="nw")
-        cv.create_text(S(W - 8), S(H - 2), text=f"{lo - base:+d}".replace("-", "−"), fill=dim, font=ui.tkf(8, False, False), anchor="se")
-        gan = sum(1 for p in pts if p["d"] > 0)
-        perd = sum(1 for p in pts if p["d"] < 0)
-        total = ys[-1] - base
-        ui.lbl(parent, f"En estas {len(pts)} partidas: {total:+d} PL ({gan} que sumaron, {perd} que restaron). Solo cuentan las partidas "
-                       f"en las que LOL-E vio tu rango antes y después; las que jugaste con la app cerrada no aparecen.", 10, "dim",
-               anchor="w", justify="left", wraplength=min(self.ctx["width"] - 130, 640)).pack(anchor="w")
 
     # ---- pestaña: modos ----
     def tab_modos(self, parent):

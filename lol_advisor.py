@@ -334,11 +334,11 @@ def load_season(champs, conf=None):
     return {"champs": load_season_seed(champs), "matchups": {}}
 
 
-def fetch_opgg(conf):
-    """Descarga la pagina de campeones. Va por PowerShell porque Python rechaza la cadena de certificados de op.gg
+def fetch_opgg(conf, suffix="/champions"):
+    """Descarga la pagina de campeones (`suffix` vacío: el perfil principal, que trae las fotos diarias de tu rango). Va por PowerShell porque Python rechaza la cadena de certificados de op.gg
     y no quiero desactivar la verificacion SSL."""
     who = urllib.parse.quote(f"{conf['opgg_name']}-{conf['opgg_tag']}")
-    url = f"https://op.gg/lol/summoners/{conf['opgg_region']}/{who}/champions"
+    url = f"https://op.gg/lol/summoners/{conf['opgg_region']}/{who}{suffix}"
     out = os.path.join(CACHE, "opgg.html")
     os.makedirs(CACHE, exist_ok=True)
     ps = ("Invoke-WebRequest -UseBasicParsing -TimeoutSec 40 -Headers @{'User-Agent'='Mozilla/5.0';"
@@ -347,6 +347,26 @@ def fetch_opgg(conf):
                    capture_output=True, **{k: v for k, v in quiet().items() if k != "stdin"})
     with open(out, encoding="utf-8", errors="replace") as f:
         return f.read()
+
+
+def parse_lp_histories(html):
+    """Fotos diarias de tu rango del perfil de op.gg (`lpHistories`: solo las últimas jornadas): [{created_at, tier_info: {lp, tier, label}}] o []."""
+    text = html.replace('\\"', '"')
+    i = text.find('"lpHistories":[')
+    if i < 0:
+        return []
+    try:
+        d, _ = json.JSONDecoder().raw_decode(text, i + len('"lpHistories":'))
+    except ValueError:
+        return []
+    return d if isinstance(d, list) else []
+
+
+def save_lp_snapshots(conf):
+    """Lee el perfil de op.gg y suma sus fotos diarias de rango a `opgg_lp.json`: la historia crece sola. Devuelve las nuevas (0 si no hay)."""
+    import lpseries
+    snaps = lpseries.parse_snapshots(parse_lp_histories(fetch_opgg(conf, "")))
+    return lpseries.save_snapshots(os.path.join(CACHE, "opgg_lp.json"), snaps) if snaps else 0
 
 
 def parse_ladder(html):
@@ -423,6 +443,12 @@ def maybe_update_opgg(conf, champs, P, force=False):
             raise ValueError("la pagina no trajo datos (perfil no encontrado o web cambiada)")
         # si la página ya no trae el puesto (formato cambiado), se conserva el último conocido en vez de borrarlo
         write_json(path, {"ts": time.time(), "games": P["games"], "champs": c, "matchups": m, "ladder": parse_ladder(html) or meta.get("ladder")})
+        try:
+            n = save_lp_snapshots(conf)
+            if n:
+                diag(f"Fotos diarias de tu rango de op.gg: {n} nuevas guardadas")
+        except Exception:
+            soft_fail("Fotos diarias de tu rango de op.gg")
         OPGG_MSG = f"op.gg actualizado: {len(c)} campeones y {len(m)} enfrentamientos"
         return load_season(champs, conf)
     except Exception as e:

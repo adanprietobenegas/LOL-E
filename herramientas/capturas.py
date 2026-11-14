@@ -47,12 +47,16 @@ P["profile"] = {"name": "Jugador", "tag": "EUW", "level": 214, "icon": 29, "puui
                 "flex": {"key": "SILVER", "tier": "Plata", "div": "I", "lp": 12, "w": 9, "l": 7, "wr": 9 / 16}, "prem": None, "extra": {}}
 P["rank"], P["record"], P["puuid"] = "Oro II · 47 PL", "58V · 51D · 53%", "yo"
 l.META["data"] = meta.load(l.CACHE, l.DD_VERSION or "16.21.1", meta.tier_for("GOLD"))
-import analysis
-_cum, _pts = 0, []   # una serie de PL de ejemplo (el cache del proyecto no tiene lp.json): la tarjeta «Tus PL guardados» sale en el inicio
-for _i, _d in enumerate([18, -17, 19, 20, -16, -19, 17, 21, -18, 16, 19, -15, 20, 18, -17, 19]):
-    _cum += _d
-    _pts.append({"t": 1700000000000 + _i * 86400000, "cum": _cum, "d": _d, "w": _d > 0, "tier": "GOLD II"})
-analysis.lp_series = lambda *a, **k: {"pts": _pts, "total": _cum, "n": len(_pts)}
+import lpseries, time as _t   # una serie de rango de ejemplo (el cache del proyecto no tiene lp.json): la gráfica sale en el inicio
+_pts, _v = [], 1000 + 3 * 100 + 35   # Oro II
+_now = int(_t.time() * 1000)
+for _i, _d in enumerate([18, -17, 19, 20, -16, -19, 17, 21, -18, 16, 19, -15, 20, 18, -17, 19, 17, -16, 21, 18, -19, 20, 17, 16, -15, 19]):
+    _v += _d
+    _pts.append({"t": _now - (26 - _i) * 86400000 * 2 // 1 + _i * 1000, "v": _v, "d": _d, "w": _d > 0, "cid": [86, 122, 875, 54][_i % 4],
+                 "tier": lpseries.label_of(_v // 100 * 100).replace("Maestro+", "Maestro"), "lp": _v % 100, "src": "game"})
+_pts.insert(5, {"t": _pts[4]["t"] + 86400000, "v": _pts[4]["v"] + 5, "d": None, "cid": None, "w": None, "tier": "Oro II", "lp": 70, "src": "day"})
+lpseries.series = lambda lp, hist, snaps, queue="solo": _pts if queue == "solo" else []
+lpseries.load_all = lambda cache_dir: ({"a": 1, "b": 2, "c": 3}, {})
 import learn   # «Qué aprender» de ejemplo (el cache del proyecto no tiene partidas con línea)
 learn.advice = lambda *a, **k: [{"role": "TOP", "n": 14, "main": 86, "main_g": 12, "main_wr": .58, "cands": [(122, 53.4), (875, 52.9), (54, 52.1)]}]
 
@@ -225,6 +229,8 @@ PASOS = [
                                  ui.root.after(900, lambda: ui.idle_secs[2].switch("Modos"))), 3500),
     ("17b_inicio_pl", lambda: (ui.set_page("Asesor"), ui.idle(l.player_info(P), "Conectado al cliente. Entra en una cola cuando quieras."),
                                ui.root.after(900, lambda: (ui.idle_secs[2].switch("Rango y logros"), ui.root.after(400, lambda: ui.idle_secs[2].toggle("lp"))))), 3500),   # la ficha «Tus PL guardados» abierta (gráfico)
+    ("17c_pl_hover", lambda: (ui.set_page("Asesor"), ui.idle(l.player_info(P), "Conectado al cliente. Entra en una cola cuando quieras."),
+                              ui.root.after(900, lambda: (ui.idle_secs[2].switch("Rango y logros"), ui.root.after(500, lambda: (lambda ch: ch.hover(type("E", (), {"x": int(ch.px(ch.pts[-7]["t"]))})()))(ui.idle_secs[2].lp_chart))))), 3500),   # el cuadro con el campeón, el resultado y los PL de una partida
     ("18_repertorio", lambda: ui.set_page("Repertorio"), 4500),
     ("18b_repertorio_detalle", lambda: (ui.pool_view.panel.__setattr__("dtab", "Partidas"), ui.pool_view.panel.render()), 3000),
     ("19_seleccion_contra_rival", lambda: (push(ses), ui.players(team), ui.root.after(2500, lambda: ui.recs.set_tab("Contra rival"))), 6000),

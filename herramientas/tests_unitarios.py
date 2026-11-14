@@ -958,6 +958,88 @@ class PaginasDeRunas(unittest.TestCase):
         self.assertEqual(builds.parse_rune_pages(d), [])
 
 
+class SerieDeRango(unittest.TestCase):
+    NOW = 1_800_000_000_000      # un «ahora» fijo en ms
+
+    def partida(self, i, dias, q=420, c=86, w=True, rm=False):
+        return {"id": str(i), "t": self.NOW - int(dias * 86_400_000), "q": q, "c": c, "w": w, "rm": rm}
+
+    def test_valor_y_nombre_de_la_escala(self):
+        import lpseries as ls
+        self.assertEqual(ls.value_of("GOLD", "II", 40), 3 * 400 + 2 * 100 + 40)
+        self.assertEqual(ls.parse_tier_text("Platino III"), ("PLATINUM", "III"))
+        self.assertEqual(ls.parse_tier_text("Maestro"), ("MASTER", ""))
+        self.assertEqual(ls.parse_tier_text("Cosa rara"), (None, ""))
+        self.assertEqual(ls.label_of(3 * 400 + 2 * 100), "Oro II")
+        self.assertEqual(ls.label_of(2800 + 300), "Maestro+")
+
+    def test_puntos_de_partida_por_cola_y_sin_remakes(self):
+        import lpseries as ls
+        lp = {"1": {"d": 18, "now": 58, "tier": "Oro II"}, "2": {"d": -15, "now": 43, "tier": "Oro II"}, "3": {"d": 20, "now": 70, "tier": "Oro III"},
+              "4": {"d": 9, "now": 10, "tier": "Oro II"}, "5": {"d": 5, "now": 5, "tier": "Oro II"}, "6": {"d": 1, "now": 1}}
+        games = [self.partida(1, 3), self.partida(2, 2, w=False), self.partida(3, 1, q=440), self.partida(4, 1, rm=True), self.partida(5, 0.5, q=450),
+                 self.partida(6, 0.2)]
+        solo = ls.game_points(lp, games, "solo")
+        self.assertEqual([(p["d"], p["v"], p["w"]) for p in solo], [(18, 1458, True), (-15, 1443, False)])   # sin remake, sin ARAM, sin rango ilegible
+        self.assertEqual([p["d"] for p in ls.game_points(lp, games, "flex")], [20])
+        self.assertEqual(ls.summary(solo), (3, 2, 1, 1))
+
+    def test_fotos_de_opgg_solo_en_dias_sin_partida(self):
+        import lpseries as ls
+        hist = [{"created_at": "2026-11-04T00:00:32+09:00", "tier_info": {"lp": 1956, "tier": "CHALLENGER", "label": "C 1"}},
+                {"created_at": "2026-11-05T00:00:29+09:00", "tier_info": {"lp": 50, "tier": "PLATINUM", "label": "P 3"}},
+                {"created_at": "2026-11-06T00:00:29+09:00", "tier_info": {"lp": 1, "tier": "RARO", "label": "R 1"}},
+                {"created_at": "mal", "tier_info": {}}]
+        snaps = ls.parse_snapshots(hist)
+        self.assertEqual(sorted(snaps), ["2026-11-04", "2026-11-05"])                    # lo que no se entiende se ignora
+        self.assertEqual((snaps["2026-11-05"]["key"], snaps["2026-11-05"]["div"]), ("PLATINUM", "III"))
+        dias = ls.day_points(snaps, taken_days={"2026-11-04"})
+        self.assertEqual([p["tier"] for p in dias], ["Platino III"])                      # el día 4 ya tiene partida propia: no se duplica
+        d = tempfile.mkdtemp()
+        path = os.path.join(d, "opgg_lp.json")
+        self.assertEqual(ls.save_snapshots(path, snaps), 2)
+        self.assertEqual(ls.save_snapshots(path, {**snaps, "2026-11-06": snaps["2026-11-05"]}), 1)   # solo cuenta lo nuevo: la historia se acumula
+        self.assertEqual(len(ls.load_snapshots(path)), 3)
+
+    def test_tramos(self):
+        import lpseries as ls
+        pts = [{"t": self.NOW - dias * 86_400_000, "v": 1000 + dias, "src": "game", "d": 1, "w": True} for dias in (120, 60, 20, 5, 1)]
+        self.assertEqual(len(ls.select(pts, "all", self.NOW)), 5)
+        self.assertEqual(len(ls.select(pts, "7", self.NOW)), 2)
+        self.assertEqual(len(ls.select(pts, "30", self.NOW)), 3)
+        self.assertEqual(len(ls.select(pts, "90", self.NOW)), 4)
+        many = [{"t": i, "v": 1000, "src": "game", "d": 1, "w": True} for i in range(50)]
+        self.assertEqual(len(ls.select(many, "n20", self.NOW)), 20)
+        self.assertEqual(ls.select([], "30", self.NOW), [])
+
+    def test_bandas_de_division(self):
+        import lpseries as ls
+        self.assertEqual(ls.bands(1150, 1450), [(1200, "Oro IV"), (1300, "Oro III"), (1400, "Oro II")])
+        self.assertEqual(ls.bands(2750, 3000), [(2800, "Maestro+")])
+
+
+class FotosDePLdeOpgg(unittest.TestCase):
+    def test_se_leen_del_perfil_y_se_acumulan(self):
+        import json, tempfile
+        from unittest import mock
+        import lol_advisor as l
+        lista = [{"created_at": "2026-11-04T00:00:32+09:00", "tier_info": {"lp": 40, "tier": "GOLD", "label": "G 2"}, "elo_point": 1},
+                 {"created_at": "2026-11-05T00:00:29+09:00", "tier_info": {"lp": 61, "tier": "GOLD", "label": "G 2"}, "elo_point": 2}]
+        crudo = '<script>self.__next_f.push([1,"x:{@@lpHistories@@:' + json.dumps(lista).replace('"', '@@') + ',@@otra@@:1}"])</script>'
+        html = crudo.replace("@@", chr(92) + chr(34))          # como viene en la página: el JSON escapado dentro de una cadena de JavaScript
+        self.assertEqual(l.parse_lp_histories(html), lista)
+        self.assertEqual(l.parse_lp_histories("<html>sin datos</html>"), [])
+        self.assertEqual(l.parse_lp_histories('"lpHistories":"$62:props"'), [])        # la referencia (cadena) no es la lista
+        old = l.CACHE
+        l.CACHE = tempfile.mkdtemp()
+        try:
+            with mock.patch.object(l, "fetch_opgg", return_value=html):
+                self.assertEqual(l.save_lp_snapshots({}), 2)
+                self.assertEqual(l.save_lp_snapshots({}), 0)                              # la segunda vez no hay nada nuevo
+        finally:
+            l.CACHE = old
+
+
 class ParcheDeLaBuild(unittest.TestCase):
     def test_el_parche_se_lee_de_la_pagina(self):
         import builds
@@ -1152,21 +1234,6 @@ class PuedesComprar(unittest.TestCase):
         self.assertIsNone(self.s.next_purchase(orden, [31, 41], 100, self.CAT))           # todo comprado (o mejorado): nada que proponer
         self.assertIsNone(self.s.next_purchase([999], [], 100, self.CAT))                 # precio desconocido: no opina
         self.assertIsNone(self.s.next_purchase([], [11], 100, self.CAT))
-
-
-class TendenciaDePL(unittest.TestCase):
-    def test_serie_acumulada_solo_con_clasificatorias_y_dato(self):
-        import analysis, json, tempfile
-        d = tempfile.mkdtemp()
-        lp = {"1": {"d": 18, "now": 18, "tier": "GOLD II"}, "2": {"d": -17}, "3": {"d": 20}, "4": {"d": 99}, "5": {"d": 5}, "6": {"d": 0}}
-        json.dump(lp, open(d + "/lp.json", "w"))
-        g = lambda i, t, q=420, w=True, rm=False: {"id": str(i), "t": t, "q": q, "w": w, "rm": rm}
-        games = [g(3, 30), g(1, 10), g(2, 20, w=False), g(4, 40, q=450), g(5, 50, rm=True), g(7, 60), g(6, 25)]   # 4: ARAM, 5: remake, 7: sin dato
-        s = analysis.lp_series(d, games)
-        self.assertEqual([p["cum"] for p in s["pts"]], [18, 1, 1, 21])        # cronológico: 1, 2, 6 (0 PL), 3
-        self.assertEqual((s["total"], s["n"]), (21, 4))
-        self.assertIsNone(analysis.lp_series(d, games[:2]))                   # menos de 3 partidas con dato: no hay tendencia
-        self.assertIsNone(analysis.lp_series(tempfile.mkdtemp(), games))      # sin lp.json
 
 
 class QueAprender(unittest.TestCase):
