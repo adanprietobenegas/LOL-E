@@ -65,6 +65,8 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 - **Informe de diagnóstico más completo** (`health_lines` y los ajustes relevantes en `copy_diagnostics`): esquema de datos, partidas de la Grieta con línea de regla antigua o sin línea, PL guardados, edad del meta y de las builds.
 
 **En `main` sin publicar** (candidata a 1.22.14), hallado con una partida real el 14/11/2026:
+- **Pantalla en blanco al acabar la partida** (vista en la partida real del 14/11): al terminar, la pestaña pasa sola a «Análisis» y, si estabas desplazado abajo en el bloque en vivo, el desplazamiento quedaba fuera del contenido. `GameView.refresh` vuelve arriba al cambiar de pestaña o de partida (captura `10e_fin_con_scroll`).
+- **Variación de PL no guardada** en esa partida (`lp.json` sin entrada nueva; «esperas 0»): `rank_before` salía vacío. Ahora el rango previo se lee al encontrar partida (`rank_snapshot`, se reintenta en cada fase hasta empezar) y el registro dice «Rango antes de la partida…» o «Sin el rango de antes…». **Causa exacta no confirmada**: mirar el `diag.log` de la próxima partida clasificatoria.
 - **Torres e inhibidores contaban 0 en partidas reales**: el código real es `Turret_TOrder_…` / `Inhib_TChaos_…` y `live._side` esperaba `_T1_/_T2_`. Corregido (acepta ambos formatos), con la muestra real: 3 y 7 torres, 2 inhibidores. Los eventos `DragonKill`, `HeraldKill` y `BaronKill` SÍ eran correctos (nombre y equipo por `KillerName`); además existe `HordeKill` (larvas del vacío), ahora se cuenta («Larvas»).
 
 ***Pendiente de ver en la realidad*** (no se puede cerrar sin el usuario o sin otra partida):

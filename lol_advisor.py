@@ -384,6 +384,20 @@ _opgg_last_try = 0.0
 OPGG_MSG = ""  # ultimo resultado, para mostrarlo en pantalla
 
 
+def rank_snapshot(lcu):
+    """{solo, flex, prem} con tu rango ahora mismo, o None si el cliente no lo da. Es lo que se compara al acabar la partida para saber los PL ganados o perdidos."""
+    try:
+        qm = (lcu.get("/lol-ranked/v1/current-ranked-stats") or {}).get("queueMap") or {}
+        out = {"solo": players.rank_info(qm.get("RANKED_SOLO_5x5")), "flex": players.rank_info(qm.get("RANKED_FLEX_SR")),
+               "prem": players.rank_info(qm.get("RANKED_PREMADE_5x5"))}
+        return out if any(out.values()) else None
+    except (urllib.error.URLError, ConnectionError, OSError):
+        return None
+    except Exception:
+        soft_fail("Leer tu rango antes de la partida")
+        return None
+
+
 def maybe_update_opgg(conf, champs, P, force=False):
     """Devuelve datos de temporada nuevos si tocaba actualizar (por horas o por partidas nuevas)."""
     global _opgg_last_try, OPGG_MSG
@@ -1238,6 +1252,13 @@ def run(conf, champs, ui):
                             play_phase(conf, "start")
                     diag(f"Fase: {last_flow} -> {flow}")
                     last_flow = flow
+                    if flow in ("ReadyCheck", "ChampSelect", "GameStart", "InProgress") and (flow == "ReadyCheck" or not (rank_before and any(rank_before.values()))):
+                        # el rango de ANTES de la partida, leído ahora y no del último volcado (que puede estar vacío o ser viejo); si el cliente aún no lo da
+                        # al encontrar partida, se reintenta en cada fase hasta que empiece
+                        snap_rank = rank_snapshot(lcu)
+                        if snap_rank:
+                            rank_before = snap_rank
+                            diag("Rango antes de la partida: " + ", ".join(f"{k} {v['tier']} {v['div']} {v['lp']} PL" for k, v in snap_rank.items() if v))
                     getattr(ui, "phase", lambda f: None)(flow)
                 if last is not None:
                     last = prev_turn = mode = None
@@ -1266,6 +1287,8 @@ def run(conf, champs, ui):
                             time.sleep(8)
                             continue
                         qkey = {420: "solo", 440: "flex", 710: "prem"}.get(g.get("queueId"))
+                        if qkey and not (rank_before or {}).get(qkey):
+                            diag(f"Sin el rango de antes de la partida ({qkey}): no se puede calcular la variación de PL")
                         remake = history.is_remake(g, my_puuid)
                         if remake:
                             diag(f"Partida anulada por remake: {g['gameId']}. Los PL no se mueven: no se espera ni se guarda ninguna variación")

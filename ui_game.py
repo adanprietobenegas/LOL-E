@@ -68,6 +68,13 @@ class GameView:
         self.host = ui.frame(card)
         self.host.pack(fill="x")
         (self.plan_tab if self.tab == "Plan" else self.analysis_tab)(ctx)
+        shown = (self.tab, self.gid)
+        if shown != getattr(self, "_shown", shown):   # otra pestaña u otra partida: se empieza arriba (visto en una partida real: al acabar, la pantalla pasa sola
+            try:                                      # a «Análisis» y, si mirabas la parte baja del bloque en vivo, quedaba en blanco: el desplazamiento no existe ya)
+                self.gui.body._parent_canvas.yview_moveto(0)
+            except Exception:
+                core.log_exc("Volver arriba en Partida")
+        self._shown = shown
 
     def set_tab(self, v):
         self.tab = v

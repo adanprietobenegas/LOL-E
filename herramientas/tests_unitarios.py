@@ -581,6 +581,14 @@ class FlujoCompleto(unittest.TestCase):
         self.assertNotIn("Partida terminada", self.leer("diag.log"))
         self.assertEqual(sorted(json.loads(self.leer("history_" + __import__("cliente_falso").YO + ".json"))), ["100", "101"])
 
+    def test_los_pl_ganados_se_guardan_aunque_el_perfil_estuviera_vacio_al_arrancar(self):
+        from cliente_falso import ClienteFalso
+        import analysis
+        ev = self.correr(ClienteFalso(pl=(40, 57)))
+        self.assertEqual(self.leer("error.log"), "")
+        self.assertIn("Partida terminada: 900", self.leer("diag.log"))
+        self.assertEqual(analysis.lp_for(self.tmp, 900)["d"], 17)                      # 40 -> 57: +17, tomado del rango leído al encontrar partida
+
     def test_remake_se_reconoce_y_no_guarda_variacion_de_pl(self):
         from cliente_falso import ClienteFalso, partida, YO
         import history as h

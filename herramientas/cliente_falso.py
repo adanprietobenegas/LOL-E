@@ -66,10 +66,11 @@ COLAS = {"sr": {"id": 420, "gameMode": "CLASSIC"}, "aram": {"id": 450, "gameMode
 
 
 class ClienteFalso:
-    def __init__(self, puuid=YO, guion=GUION, partida_nueva=900, modo="sr", caidas=(), cuenta_desde=0, remake=False):
+    def __init__(self, puuid=YO, guion=GUION, partida_nueva=900, modo="sr", caidas=(), cuenta_desde=0, remake=False, pl=None):
         """modo: «sr» (Grieta), «aram» o «arena». caidas: números de paso del guion en los que el cliente «no responde» (se cae y vuelve)."""
         self.puuid, self.guion, self.paso, self.nueva = puuid, list(guion), 0, partida_nueva
         self.modo, self.caidas, self.cuenta_desde = modo, set(caidas), cuenta_desde   # cuenta_desde: paso a partir del cual el cliente da tu cuenta
+        self.pl = pl   # (PL antes, PL después) en Solo/Dúo Oro II: el rango cambia cuando la partida acaba
         self.remake = remake   # la partida nueva acaba anulada (rendición temprana): en la lista del historial lleva gameEndedInEarlySurrender
         self.pedidas = []
         self.viejas = [partida(100, 103, True, 1_000), partida(101, 86, False, 2_000)]
@@ -137,6 +138,9 @@ class ClienteFalso:
         if path == "/lol-champions/v1/owned-champions-minimal":
             return [{"id": 86}, {"id": 103}, {"id": 54}]
         if path == "/lol-ranked/v1/current-ranked-stats":
+            if self.pl and "ReadyCheck" in self.guion[: self.paso + 1]:   # antes de encontrar partida el cliente aún no da el rango (como al arrancar a la vez)
+                fin = "EndOfGame" in self.guion[: self.paso + 1]
+                return {"queueMap": {"RANKED_SOLO_5x5": {"tier": "GOLD", "division": "II", "leaguePoints": self.pl[1 if fin else 0], "wins": 10, "losses": 9}}}
             return {"queueMap": {}}
         return None   # lo demás (retos, honor, sala…) el cliente real también puede no darlo
 

@@ -201,6 +201,7 @@ PASOS = [
     ("10c_partida_en_vivo", lambda: (ui.ctx["plan"].__setitem__("opp", next(c for c, v in champs.items() if v["name"] == "Darius")),   # tu rival de línea: el de la muestra
                                      ui.live(__import__("live").summarize(__import__("cliente_falso").live_sample(), champs))), 3000),
     ("10d_vivo_compra", lambda: ui.live(__import__("live").summarize(__import__("cliente_falso").live_sample(), champs)), 3500),   # 2.ª lectura: ya con la build cargada
+    ("10e_fin_con_scroll", lambda: (ui.body._parent_canvas.yview_moveto(1.0), ui.root.after(300, lambda: (ui.idle(l.player_info(P), "Partida terminada. Historial actualizado. Esperando la siguiente…"), ui.phase("None"), analisis_guardado()))), 3500),   # el usuario miraba la parte baja del bloque en vivo cuando acabó la partida: no debe quedar la pantalla en blanco
     ("11_partida_analisis", lambda: (fin_partida(), tab_partida("Análisis")), 5000),
     ("11b_analisis_guardado", analisis_guardado, 5000),
     ("12_enfrentamiento", lambda: ui.set_page("Enfrentamiento"), 4000),
