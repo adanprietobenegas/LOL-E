@@ -233,10 +233,10 @@ class HistoryView:
         self.render_list(games)
 
     # ---- resumen de lo que estás viendo ----
-    def tile(self, grid, i, cols, label, value, sub="", color="fg"):
+    def tile(self, grid, i, cols, label, value, sub="", color="fg", span=1):
         ui = self.ui
         cell = ctk.CTkFrame(grid, fg_color=PAL["card2"], corner_radius=12)
-        cell.grid(row=i // cols, column=i % cols, sticky="nsew", padx=4, pady=4)
+        cell.grid(row=i // cols, column=i % cols, columnspan=span, sticky="nsew", padx=4, pady=4)
         inner = ui.frame(cell)
         inner.pack(fill="x", padx=12, pady=9)
         ui.lbl(inner, label.upper(), 9, "dim", True, anchor="w").pack(anchor="w")
@@ -277,7 +277,7 @@ class HistoryView:
             tiles.append(("Racha", f"{n} {'victoria' if cur_win else 'derrota'}{'s' if n != 1 else ''}", "las más recientes seguidas",
                           "good" if cur_win else "bad"))
         for i, t in enumerate(tiles):
-            self.tile(grid, i, cols, *t)
+            self.tile(grid, i, cols, *t, span=(cols - i % cols) if i == len(tiles) - 1 else 1)   # la última ficha, si queda sola en su fila, ocupa todo el ancho
         strip = ui.frame(self.summary_host)
         strip.pack(fill="x", pady=(8, 0))
         ui.lbl(strip, "ÚLTIMAS 20", 9, "dim", True).pack(side="left", padx=(4, 10))
