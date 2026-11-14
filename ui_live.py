@@ -246,7 +246,7 @@ class LiveView:
             self.obj[key] = ui.lbl(cell, "0 · 0", 12, "dim", True)
             self.obj[key].pack()
         wrap = max(220, width - 150)
-        slots = [ui.frame(box) for _ in range(5)]   # huecos fijos y en orden: lo que aparece o desaparece no cambia el lugar de lo demás
+        slots = [ui.frame(box) for _ in range(6)]   # huecos fijos y en orden: lo que aparece o desaparece no cambia el lugar de lo demás
         for s in slots:
             s.pack(fill="x")
         self.buy = Hint(ui, slots[0], wrap)
@@ -254,7 +254,8 @@ class LiveView:
         self.duel = ui.lbl(slots[2], "", 11, "fg", anchor="w", justify="left", wraplength=max(240, width - 110))
         self.reading = ui.lbl(slots[3], "", 10, "dim", anchor="w", justify="left", wraplength=max(240, width - 110))
         self.alert = ui.lbl(slots[4], "", 11, "warn", True, anchor="w", justify="left", wraplength=max(240, width - 110))
-        self.duel_on = self.reading_on = self.alert_on = False
+        self.timer = ui.lbl(slots[5], "", 11, "info", True, anchor="w", justify="left", wraplength=max(240, width - 110))
+        self.duel_on = self.reading_on = self.alert_on = self.timer_on = False
         self.prev_snap, self.alerts = None, []   # [(hora de partida, frase)] de picos del rival, que se quedan unos segundos
         self.summary = ""
         self.fold = ui_vs.collapsible(ui, detail, "Los 10 jugadores en directo", "nivel, objetos y oro de cada uno", "live_board", self._fill_board, open_=False)
@@ -329,6 +330,7 @@ class LiveView:
             self.prev_snap = snap
         self.alerts = [(t, x) for t, x in self.alerts if 0 <= snap["t"] - t <= live.SPIKE_SHOW]
         self._text(self.alert, "alert_on", " ".join(x for _t, x in self.alerts), 6)
+        self._text(self.timer, "timer_on", live.timers(snap) or "", 6)
         self._text(self.duel, "duel_on", live.duel_line(*pareja, ui.champs.get(opp_cid, {}).get("name", "")) if pareja else "", 6)
         frases = live.reading(live.itemization(other, ui.items or {}))
         if self.counter.last:   # la sugerencia ya dice qué acumulan o qué daño hacen: no se repite

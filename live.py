@@ -82,12 +82,13 @@ def summarize(d, champs):
             who = team_of_name(e.get("KillerName"), players)
             if who:
                 teams[who][{"DragonKill": "dragons", "BaronKill": "barons", "HeraldKill": "heralds", "HordeKill": "grubs"}[n]] += 1
+    baron_kills = sorted(float(e.get("EventTime") or 0) for e in (d.get("events") or {}).get("Events") or [] if e.get("EventName") == "BaronKill")
     for p in players:
         p.pop("names", None)
     me = next((p for p in players if p["me"]), None)
     players.sort(key=lambda p: (0 if p["team"] == "ORDER" else 1, ORDER.get(p["pos"], 9)))   # azul primero, y por línea
     return {"t": float((d.get("gameData") or {}).get("gameTime") or 0), "mode": (d.get("gameData") or {}).get("gameMode") or "",
-            "gold": int(ap.get("currentGold") or 0), "me_team": me["team"] if me else "", "players": players, "teams": teams}
+            "baron_kills": baron_kills, "gold": int(ap.get("currentGold") or 0), "me_team": me["team"] if me else "", "players": players, "teams": teams}
 
 
 def clock(t):
@@ -147,6 +148,27 @@ def duel(snap, opp_cid):
         return None
     rival = next((p for p in snap["players"] if p["cid"] == opp_cid and p["team"] != yo["team"]), None)
     return (yo, rival) if rival else None
+
+
+BARON_SPAWN, BARON_RESPAWN = 1200, 360   # el Barón sale a los 20:00 y 6 min después de caer (parche 26.x; las fuentes coinciden). El dragón y las larvas NO se
+# incluyen: las fuentes discrepan y no se ha podido confirmar el tiempo actual
+BARON_WARN = 60                           # se avisa cuando falta menos de este tiempo
+
+
+def timers(snap):
+    """Frase del Barón según el reloj de la partida (estimada: no lee el estado real de la fosa), o None si no toca decir nada.
+    Solo en la Grieta (modo CLASSIC)."""
+    if not snap or snap.get("mode") != "CLASSIC":
+        return None
+    t = snap.get("t", 0)
+    kills = snap.get("baron_kills") or []
+    due = (kills[-1] + BARON_RESPAWN) if kills else BARON_SPAWN
+    left = due - t
+    if left > BARON_WARN:
+        return None
+    if left > 0:
+        return f"El Barón {'reaparece' if kills else 'aparece'} en {clock(left)} (estimado)."
+    return "El Barón debería estar disponible (estimado)." if left > -300 else None
 
 
 SPIKE_LEVELS = (6, 11, 16)

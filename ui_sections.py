@@ -180,10 +180,10 @@ class AchievementsCard(Section):
         st = self.streaks()
         return (json.dumps(ex, sort_keys=True, default=str), json.dumps(st, sort_keys=True), ctx["width"] // 300)
 
-    def tile(self, grid, i, cols, label, value, sub="", color="fg"):
+    def tile(self, grid, i, cols, label, value, sub="", color="fg", span=1):
         ui = self.ui
         cell = ctk.CTkFrame(grid, fg_color=PAL["card2"], corner_radius=12)
-        cell.grid(row=i // cols, column=i % cols, sticky="nsew", padx=4, pady=4)
+        cell.grid(row=i // cols, column=i % cols, columnspan=span, sticky="nsew", padx=4, pady=4)
         inner = ui.frame(cell)
         inner.pack(fill="x", padx=12, pady=10)
         wl = getattr(self, "tile_wl", 200)
@@ -237,7 +237,7 @@ class AchievementsCard(Section):
         for k in range(cols):
             grid.columnconfigure(k, weight=1, uniform="lg")
         for i, (label, value, sub, color) in enumerate(tiles):
-            self.tile(grid, i, cols, label, value, sub, color)
+            self.tile(grid, i, cols, label, value, sub, color, span=(cols - i % cols) if i == len(tiles) - 1 else 1)   # la última, si queda sola, ocupa todo el ancho
         ui.lbl(c, "Datos de tu cliente de LoL. La posición exacta en el ranking de tu servidor no la da el cliente; el porcentaje de los "
                   "retos sí es de tu servidor.", 9, "dim", anchor="w", wraplength=min(ctx["width"] - 90, 760), justify="left").pack(
             anchor="w", pady=(6, 0))
@@ -327,10 +327,10 @@ class SummaryCard(Section):
         return small if w < 600 else mid if w < 960 else big
 
     # ---- ficha con previsualización y pulsación ----
-    def tile(self, grid, i, cols, key, label, value, sub="", color="fg", preview=""):
+    def tile(self, grid, i, cols, key, label, value, sub="", color="fg", preview="", span=1):
         ui = self.ui
         cell = ctk.CTkFrame(grid, fg_color=PAL["card2"], corner_radius=12, border_width=1, border_color=PAL["card2"])
-        cell.grid(row=i // cols, column=i % cols, sticky="nsew", padx=4, pady=4)
+        cell.grid(row=i // cols, column=i % cols, columnspan=span, sticky="nsew", padx=4, pady=4)
         inner = ui.frame(cell)
         inner.pack(fill="x", padx=12, pady=10)
         wl = max(100, min(220, (self.ctx["width"] - 110) // cols - 40))
@@ -447,7 +447,7 @@ class SummaryCard(Section):
         for k in range(cols):
             grid.columnconfigure(k, weight=1, uniform="lg")
         for i, (key, label, value, sub, color, prev) in enumerate(tiles):
-            self.tile(grid, i, cols, key, label, value, sub, color, prev)
+            self.tile(grid, i, cols, key, label, value, sub, color, prev, span=(cols - i % cols) if i == len(tiles) - 1 else 1)
         self.slot = ui.frame(parent)
         self.slot.pack(fill="x")
         ui.lbl(parent, "Datos de tu cliente de LoL. Pulsa cualquier ficha para ver el detalle. La posición exacta en el ranking de tu servidor "

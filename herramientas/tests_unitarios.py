@@ -958,6 +958,25 @@ class PaginasDeRunas(unittest.TestCase):
         self.assertEqual(builds.parse_rune_pages(d), [])
 
 
+class TemporizadorDelBaron(unittest.TestCase):
+    def test_avisa_cerca_del_spawn_y_tras_una_muerte(self):
+        import live
+        s = lambda t, kills=(): {"mode": "CLASSIC", "t": t, "baron_kills": list(kills)}
+        self.assertIsNone(live.timers(s(600)))                                   # lejos
+        self.assertIn("aparece en 0:45", live.timers(s(1155)))
+        self.assertIn("disponible", live.timers(s(1230)))
+        self.assertIsNone(live.timers(s(1600)))                                  # hace mucho que debería haber salido: se calla
+        self.assertIn("reaparece en 0:50", live.timers(s(1510, [1200])))         # murió a los 20:00: vuelve a los 26:00 (1560)
+        self.assertIsNone(live.timers(s(1300, [1200])))                          # aún falta mucho
+        self.assertIsNone(live.timers({"mode": "ARAM", "t": 1190}))              # ARAM no tiene Barón
+
+    def test_resumen_trae_las_muertes_del_baron(self):
+        import live
+        d = {"allPlayers": [{"championName": "Ahri", "team": "ORDER", "scores": {}, "items": []}], "activePlayer": {},
+             "events": {"Events": [{"EventName": "BaronKill", "EventTime": 1250.5, "KillerName": "x"}]}, "gameData": {"gameTime": 1300, "gameMode": "CLASSIC"}}
+        self.assertEqual(live.summarize(d, {})["baron_kills"], [1250.5])
+
+
 class PatronesRepetidos(unittest.TestCase):
     def partida(self, win, muertes_pronto, cs_dif=0, oro_dif=0):
         mins = list(range(0, 21))
