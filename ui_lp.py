@@ -93,7 +93,12 @@ class LpChart:
         pad = max(40, (vmax - vmin) * 0.12)
         vmin, vmax = vmin - pad, vmax + pad
         t0, t1 = pts[0]["t"], pts[-1]["t"]
-        if t1 == t0:
+        # el eje es el TRAMO elegido (7, 30, 90 días, este año), aunque el historial guardado sea más corto: así se nota el cambio de tramo
+        if _STATE["range"] in ("7", "30", "90"):
+            t0, t1 = self.now - int(_STATE["range"]) * lpseries.DAY_MS, self.now
+        elif _STATE["range"] == "year":
+            t0, t1 = int(datetime.datetime(datetime.datetime.fromtimestamp(self.now / 1000).year, 1, 1).timestamp() * 1000), self.now
+        if t1 <= t0:
             t1 = t0 + 1
         px = lambda t: S(LEFT + (self.W - LEFT - RIGHT) * (t - t0) / (t1 - t0))
         py = lambda v: S(TOP + (H - TOP - BOTTOM) * (1 - (v - vmin) / (vmax - vmin)))
@@ -137,8 +142,11 @@ class LpChart:
         x, y = px(last["t"]), py(last["v"])
         cv.create_oval(x - S(4), y - S(4), x + S(4), y + S(4), fill=fg, outline="")
         has_day = any(p["src"] == "day" for p in pts)
-        self.note.configure(text="Los puntos rellenos son partidas que LOL-E vio con la app abierta; " + (
-            "los huecos son fotos diarias de tu rango que da op.gg. " if has_day else "") + "Pasa el ratón por un punto para ver la partida.")
+        first = allp[0]["t"]
+        txt = "Los puntos rellenos son partidas que LOL-E vio con la app abierta; " + ("los huecos son fotos diarias de tu rango que da op.gg. " if has_day else "") +               "Pasa el ratón por un punto para ver la partida."
+        if t0 < first - lpseries.DAY_MS:   # el tramo empieza antes de lo que hay guardado: se dice, en vez de dejar un hueco sin explicar
+            txt += f"  Tu historial de rango guardado empieza el {fecha(first)}; antes de esa fecha LOL-E no tenía tus PL."
+        self.note.configure(text=txt)
 
     # ---- al pasar el ratón ----
     def hover(self, e):

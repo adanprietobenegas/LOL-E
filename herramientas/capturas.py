@@ -231,6 +231,10 @@ PASOS = [
                                ui.root.after(900, lambda: (ui.idle_secs[2].switch("Rango y logros"), ui.root.after(400, lambda: ui.idle_secs[2].toggle("lp"))))), 3500),   # la ficha «Tus PL guardados» abierta (gráfico)
     ("17c_pl_hover", lambda: (ui.set_page("Asesor"), ui.idle(l.player_info(P), "Conectado al cliente. Entra en una cola cuando quieras."),
                               ui.root.after(900, lambda: (ui.idle_secs[2].switch("Rango y logros"), ui.root.after(500, lambda: (lambda ch: ch.hover(type("E", (), {"x": int(ch.px(ch.pts[-7]["t"]))})()))(ui.idle_secs[2].lp_chart))))), 3500),   # el cuadro con el campeón, el resultado y los PL de una partida
+    ("17d_pl_7_dias", lambda: (ui.set_page("Asesor"), ui.idle(l.player_info(P), "Conectado al cliente. Entra en una cola cuando quieras."),
+                        ui.root.after(900, lambda: (ui.idle_secs[2].switch("Rango y logros"), ui.root.after(500, lambda: ui.idle_secs[2].lp_chart.set_range("7 días"))))), 3500),   # el tramo cambia el eje
+    ("17e_pl_90_dias", lambda: (ui.set_page("Asesor"), ui.idle(l.player_info(P), "Conectado al cliente. Entra en una cola cuando quieras."),
+                        ui.root.after(900, lambda: (ui.idle_secs[2].switch("Rango y logros"), ui.root.after(500, lambda: ui.idle_secs[2].lp_chart.set_range("90 días"))))), 3500),   # el tramo cambia el eje
     ("18_repertorio", lambda: ui.set_page("Repertorio"), 4500),
     ("18b_repertorio_detalle", lambda: (ui.pool_view.panel.__setattr__("dtab", "Partidas"), ui.pool_view.panel.render()), 3000),
     ("19_seleccion_contra_rival", lambda: (push(ses), ui.players(team), ui.root.after(2500, lambda: ui.recs.set_tab("Contra rival"))), 6000),
