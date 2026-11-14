@@ -995,6 +995,15 @@ class TemporizadorDelBaron(unittest.TestCase):
         self.assertIsNone(live.timers(s(1300, [1200])))                          # aún falta mucho
         self.assertIsNone(live.timers({"mode": "ARAM", "t": 1190}))              # ARAM no tiene Barón
 
+    def test_dragon(self):
+        import live
+        s = lambda t, dk=(): {"mode": "CLASSIC", "t": t, "drake_kills": list(dk), "baron_kills": [], "teams": {"ORDER": {"grubs": 3}}}
+        self.assertIn("dragón aparece en 0:20", live.timers(s(280)))
+        self.assertIn("reaparece en 0:30", live.timers(s(870, [(600, "Fire")])))
+        self.assertIsNone(live.timers(s(700, [(600, "Fire")])))
+        four = [(300, "Fire"), (700, "Water"), (1100, "Earth"), (1500, "Air")]
+        self.assertIsNone(live.timers(s(1790, four)))        # con el alma tomada no se avisa
+
     def test_larvas_del_vacio(self):
         import live
         s = lambda t, grubs=0: {"mode": "CLASSIC", "t": t, "teams": {"ORDER": {"grubs": grubs}, "CHAOS": {"grubs": 0}}}

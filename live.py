@@ -83,12 +83,14 @@ def summarize(d, champs):
             if who:
                 teams[who][{"DragonKill": "dragons", "BaronKill": "barons", "HeraldKill": "heralds", "HordeKill": "grubs"}[n]] += 1
     baron_kills = sorted(float(e.get("EventTime") or 0) for e in (d.get("events") or {}).get("Events") or [] if e.get("EventName") == "BaronKill")
+    drake_kills = sorted((float(e.get("EventTime") or 0), str(e.get("DragonType") or "")) for e in (d.get("events") or {}).get("Events") or []
+                         if e.get("EventName") == "DragonKill")
     for p in players:
         p.pop("names", None)
     me = next((p for p in players if p["me"]), None)
     players.sort(key=lambda p: (0 if p["team"] == "ORDER" else 1, ORDER.get(p["pos"], 9)))   # azul primero, y por línea
     return {"t": float((d.get("gameData") or {}).get("gameTime") or 0), "mode": (d.get("gameData") or {}).get("gameMode") or "",
-            "baron_kills": baron_kills, "gold": int(ap.get("currentGold") or 0), "me_team": me["team"] if me else "", "players": players, "teams": teams}
+            "baron_kills": baron_kills, "drake_kills": drake_kills, "gold": int(ap.get("currentGold") or 0), "me_team": me["team"] if me else "", "players": players, "teams": teams}
 
 
 def clock(t):
@@ -152,6 +154,7 @@ def duel(snap, opp_cid):
 
 BARON_SPAWN, BARON_RESPAWN = 1200, 360   # el Barón sale a los 20:00 y 6 min después de caer (parche 26.x; las fuentes coinciden). El dragón y las larvas NO se
 # incluyen: las fuentes discrepan y no se ha podido confirmar el tiempo actual
+DRAKE_SPAWN, DRAKE_RESPAWN = 300, 300     # dragón elemental: a los 5:00 y 5 min tras caer (wiki oficial, página «Dragon pit»). Con el alma o el Ancestral ya no se avisa: no está confirmado
 GRUBS_SPAWN, GRUBS_END = 480, 885         # larvas del Vacío: aparecen a los 8:00, una sola vez por partida, y se van a los 14:45 (wiki oficial, parche 25.09 en adelante)
 BARON_WARN = 60                           # se avisa cuando falta menos de este tiempo
 
@@ -170,6 +173,13 @@ def timers(snap):
         out.append(f"El Barón {'reaparece' if kills else 'aparece'} en {clock(left)} (estimado).")
     elif -300 < left <= 0:
         out.append("El Barón debería estar disponible (estimado).")
+    dk = snap.get("drake_kills") or []
+    if len(dk) < 4 and not any(str(k[1]).lower().startswith("elder") for k in dk):
+        dl = ((dk[-1][0] + DRAKE_RESPAWN) if dk else DRAKE_SPAWN) - t
+        if 0 < dl <= BARON_WARN:
+            out.append(f"El dragón {'reaparece' if dk else 'aparece'} en {clock(dl)} (estimado).")
+        elif -120 < dl <= 0:
+            out.append("El dragón debería estar disponible (estimado).")
     grubs = sum((tm or {}).get("grubs", 0) for tm in (snap.get("teams") or {}).values())
     gl = GRUBS_SPAWN - t
     if 0 < gl <= BARON_WARN:
