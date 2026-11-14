@@ -318,3 +318,23 @@ Publicadas, cada una con el sí del usuario (1.22.11, 1.22.12 y 1.22.13). Detall
   cazado antes si se hubieran escrito pensando en «qué pasa cuando vuelve la red».
 - Medido: el modo rápido de capturas (`LOLE_SOLO`) da avisos «no encuentro el botón Situaciones/Variantes» porque no espera a que cargue la build;
   no es un fallo (la comprobación completa da 0 errores).
+
+
+## Tarde y noche del 14/11/2026: gráfica de rango, Historial y coach (1.22.14 a 1.22.18, y 1.22.19 en `main` sin publicar)
+
+Cada versión se publicó con el sí del usuario. Lo que no está en `CONTINUAR.md`:
+- **Gráfica de rango** (`lpseries.py`, `ui_lp.py`): el tramo elegido manda en el eje; estimación hacia atrás (`lpseries.estimate`: mediana propia de PL por
+  victoria/derrota, repartiendo el residuo entre puntos seguros; marcada como estimada y con interruptor «Solo reales»). Fuentes de historial
+  revisadas: el cliente solo da el rango actual, op.gg ~10 días (se acumulan), League of Graphs bloquea (Cloudflare). No se probaron endpoints sin documentar
+  de op.gg (el sistema lo bloqueó y no se insistió).
+- **Historial**: franja y aro de color por resultado (se probó un degradado con el icono del campeón difuminado y el usuario lo rechazó: no repetir);
+  sesión y forma tras derrotas (`sesion.py`) y patrón repetido en derrotas con objetivo y evaluación (`patrones.py`).
+- **Rendimiento** (aviso de un compañero, causa sin confirmar): medido ~0 % de CPU; prioridad baja (`SetPriorityClass` necesita `argtypes`/`restype` o falla
+  en silencio) y sin repintar el bloque en vivo minimizada; patrón cacheado 30 s.
+- **En vivo**: aviso de picos del rival (`live.spikes`), temporizador del Barón y de las larvas (`live.timers`; larvas 8:00–14:45 confirmadas en la
+  wiki oficial; dragón sin confirmar, no se puso).
+- **Expertos** (subagentes de solo lectura, sonnet, de uno en uno): diseño (capturas viejas de la 1.22.1 → parte de su crítica ya estaba resuelta, mirar la
+  fecha de las capturas antes de fiarse), coach (de ahí salieron sesión, patrones, picos, objetivo) y revisión de código (sin fallos serios; dos menores
+  corregidos).
+- **Pendiente de la realidad**: variación de PL de las dos últimas partidas Flexible (no salía en `diag.log`; la causa NO está confirmada y la versión
+  1.22.18 ya apunta «Variación de PL…» en cada partida).
