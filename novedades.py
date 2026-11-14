@@ -10,6 +10,9 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.17", "fecha": "14 de noviembre de 2026", "titulo": "El resultado, a primera vista en el Historial", "items": [
+        ("nuevo", "En el Historial, cada partida lleva una franja verde o roja a la izquierda y un aro del mismo color en la foto del campeón, para ver si ganaste o perdiste sin mirar al chip de la derecha. Los remakes van en gris."),
+    ]},
     {"v": "1.22.16", "fecha": "14 de noviembre de 2026", "titulo": "Tu rango hacia atrás, estimado", "items": [
         ("nuevo", "En «Tu rango en el tiempo», las partidas de las que LOL-E no guardó los PL se estiman con tus victorias y derrotas (a trazos y con el punto hueco) para que la gráfica llegue más atrás. Se apoyan en tus puntos reales y en las fotos de op.gg, y cuadran con ellos. Puedes ocultarlas con «Solo reales»."),
     ]},

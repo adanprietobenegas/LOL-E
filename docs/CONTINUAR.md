@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.22.16). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.22.17). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -22,9 +22,9 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 2. Estado (actualizar al terminar cada conversación)
 
-**Publicado en GitHub: 1.22.16** (14/11/2026; la 1.22.15 fue la anterior).
+**Publicado en GitHub: 1.22.17** (14/11/2026; la 1.22.16 fue la anterior).
 
-**En `main` sin publicar** (candidata a 1.22.17): Historial: el resultado se ve sin mirar al chip de la derecha (franja gruesa a la izquierda y aro de color en la foto, fondo liso; `ui_history.row`). La actualización automática funciona (el usuario pasó solo de 1.22.5 a 1.22.9).
+**Incluido en la 1.22.17** (publicada): Historial: el resultado se ve sin mirar al chip de la derecha (franja gruesa a la izquierda y aro de color en la foto, fondo liso; `ui_history.row`). La actualización automática funciona (el usuario pasó solo de 1.22.5 a 1.22.9).
 
 **Incluido en la 1.22.11** (publicada; `python herramientas/estado.py` muestra si hay algo nuevo sin publicar):
 - **Pestaña Repertorio propia**, entre Enfrentamiento e Historial (antes estaba escondida en la tarjeta de logros del inicio). Ctrl+1…6;
