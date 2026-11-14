@@ -14,6 +14,7 @@ import updater
 from lol_advisor import APP_NAME, APP_VERSION, CACHE, DATA_DIR, PRESET_INFO, read_json, save_conf
 from ui_history import HistoryView
 from ui_pool import PoolView
+from ui_rail import RailNav
 from ui_views import DataView, MatchupView
 from ui_kit import REC_VIEWS, ACCENTS, DISPLAY, Kit, PAL, THEMES, calm, res
 from ui_game import GameView
@@ -27,7 +28,7 @@ DOCK_W = 360
 
 MAX_W = 1240  # ancho máximo del contenido (se centra en pantallas más grandes)
 
-
+
 
 def lower_priority():
     """LOL-E pasa a prioridad «por debajo de lo normal»: si Windows tiene que repartir CPU, el juego va primero. Sin efecto si falla."""
@@ -207,6 +208,32 @@ class GUI:
                 save_conf(self.conf)
         except Exception:
             pass
+
+    PHASE_ES = {"Matchmaking": "En cola", "ReadyCheck": "Partida encontrada", "ChampSelect": "En selección", "GameStart": "Empieza la partida",
+                "InProgress": "Partida en curso", "Reconnect": "Reconectando"}
+
+    def band_click(self):
+        self.set_page("Asesor" if self.page == "partida" else "Partida")
+
+    def update_band(self):
+        """Estado del modo en vivo: tiñe la barra lateral y muestra (o esconde) la banda de arriba con la fase, el campeón y el botón de ir y volver."""
+        phase = self.ctx.get("phase")
+        live = self.advisor == "select" or phase in self.PHASE_ES
+        self.tab_seg.set_live(live)
+        plan = self.ctx.get("plan") or {}
+        champ = core.name(plan["cid"], self.champs) if plan.get("cid") in self.champs else ""
+        label = self.PHASE_ES.get(phase) or ("En selección" if self.advisor == "select" else "")
+        sig = (live, label, champ, self.page == "partida")
+        if sig == self.band_sig:
+            return
+        self.band_sig = sig
+        if not live:
+            self.band.pack_forget()
+            return
+        self.band_txt.configure(text=f"●  {label}" + (f"  ·  {champ}" if champ else ""))
+        self.band_btn.configure(text="Consultar" if self.page == "partida" else "Volver a la partida")
+        if not self.band.winfo_ismapped():
+            self.band.pack(fill="x", padx=16, pady=(8, 0), before=self.mid)
 
     def hidden(self):
         """La ventana está minimizada u oculta: repintarla no la ve nadie."""
@@ -469,6 +496,10 @@ class GUI:
     def tick(self):
         if not self.running:
             return
+        try:   # la barra lateral y la banda se tiñen de ámbar mientras hay cola, selección o partida
+            self.update_band()
+        except Exception:
+            core.log_exc("Banda del modo en vivo")
         if self.view == "select" and self.ctx["session"]:
             self.turn.tick(self.ctx)
         self.root.after(500, self.tick)
@@ -675,11 +706,21 @@ class GUI:
                                         text_color=PAL["bg"], hover_color=k.acc, command=self.confirm_update)
         tabs = {"asesor": "Asesor", "partida": "Partida", "enfrentamiento": "Enfrentamiento", "repertorio": "Repertorio", "historial": "Historial"}
         self.tab_names = {**tabs, "datos": "Datos"}   # «Datos» es una página más, pero se abre desde su botón de la cabecera
-        self.tab_seg = k.seg(self.main, list(tabs.values()), tabs.get(self.page, ""), self.set_page)
-        self.tab_seg.pack(fill="x", padx=16, pady=(8, 0))
-        self.body = ctk.CTkScrollableFrame(self.main, fg_color="transparent", corner_radius=0, scrollbar_button_color=PAL["edge"],
+        # banda del modo en vivo: solo con cola, selección o partida (el prototipo v3); lleva el estado y un botón para ir y volver entre la partida y la consulta
+        self.band = ctk.CTkFrame(self.main, fg_color=("#fbead0", "#2e2210"), corner_radius=10, border_width=1, border_color=PAL["warn"])
+        self.band_txt = k.clbl(self.band, "", 12, "warn", True)
+        self.band_txt.pack(side="left", padx=(12, 8), pady=6)
+        self.band_btn = ctk.CTkButton(self.band, text="", width=150, height=26, corner_radius=8, font=k.font(11, True), fg_color="transparent", border_width=1,
+                                      border_color=PAL["warn"], text_color=PAL["warn"], hover_color=PAL["card2"], command=self.band_click)
+        self.band_btn.pack(side="right", padx=10, pady=5)
+        self.band_sig = None
+        self.mid = k.frame(self.main)   # la barra lateral a la izquierda y el cuerpo a su lado
+        self.mid.pack(fill="both", expand=True)
+        self.tab_seg = RailNav(k, self.mid, self.set_page, tabs.get(self.page, ""))
+        self.tab_seg.frame.pack(side="left", fill="y", padx=(12, 0), pady=(10, 0))
+        self.body = ctk.CTkScrollableFrame(self.mid, fg_color="transparent", corner_radius=0, scrollbar_button_color=PAL["edge"],
                                            scrollbar_button_hover_color=PAL["border"])
-        self.body.pack(fill="both", expand=True, padx=12, pady=(8, 0))
+        self.body.pack(side="left", fill="both", expand=True, padx=(6, 12), pady=(8, 0))
         calm(getattr(self.body, "_scrollbar", None))   # la barra recalculaba toda la ventana en cada cambio de alto del contenido
         self.footer = k.clbl(self.main, "", 10, "dim", anchor="w")
         self.footer.pack(fill="x", padx=24, pady=(2, 12))
@@ -835,6 +876,7 @@ class GUI:
             mw = int(self.main._apply_widget_scaling(MAX_W))
             w = min(avail, mw)
             tk.Place.place_configure(self.main, x=(avail - w) // 2, y=0, relwidth=0, width=w, relheight=1.0)
+            self.tab_seg.set_expanded(w / self.kit.scale_px() >= 900)   # con la ventana ancha la barra lateral enseña también los nombres
         except Exception:
             pass
 

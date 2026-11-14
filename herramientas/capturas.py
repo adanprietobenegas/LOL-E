@@ -260,13 +260,48 @@ SOLO = [x for x in os.environ.get("LOLE_SOLO", "").split(",") if x]
 MAXP = int(os.environ.get("LOLE_PAGINAS", "4"))
 
 
+def pw_grab(x, y, w, h):
+    """La ventana de LOL-E con PrintWindow: sale bien aunque otra ventana (p. ej. la de quien mira) la tape; None si no se puede (entonces se usa ImageGrab)."""
+    try:
+        import ctypes
+        from ctypes import wintypes as wt
+        u, g = ctypes.windll.user32, ctypes.windll.gdi32
+        u.GetAncestor.restype = wt.HWND
+        hwnd = u.GetAncestor(wt.HWND(ui.root.winfo_id()), 2)
+        r = wt.RECT()
+        u.GetWindowRect(hwnd, ctypes.byref(r))
+        W, H = r.right - r.left, r.bottom - r.top
+        dc = u.GetWindowDC(hwnd)
+        mdc = g.CreateCompatibleDC(dc)
+        bm = g.CreateCompatibleBitmap(dc, W, H)
+        g.SelectObject(mdc, bm)
+        u.PrintWindow(hwnd, mdc, 2)
+
+        class BI(ctypes.Structure):
+            _fields_ = [("biSize", wt.DWORD), ("biWidth", wt.LONG), ("biHeight", wt.LONG), ("biPlanes", wt.WORD), ("biBitCount", wt.WORD), ("biCompression", wt.DWORD),
+                        ("biSizeImage", wt.DWORD), ("a", wt.LONG), ("b", wt.LONG), ("c", wt.DWORD), ("d", wt.DWORD)]
+        bi = BI(ctypes.sizeof(BI), W, -H, 1, 32, 0, 0, 0, 0, 0, 0)
+        buf = ctypes.create_string_buffer(W * H * 4)
+        g.GetDIBits(mdc, bm, 0, H, buf, ctypes.byref(bi), 0)
+        g.DeleteObject(bm)
+        g.DeleteDC(mdc)
+        u.ReleaseDC(hwnd, dc)
+        from PIL import Image
+        full = Image.frombuffer("RGBA", (W, H), buf, "raw", "BGRA", 0, 1).convert("RGB")
+        ox, oy = x - r.left, y - r.top
+        return full.crop((ox, oy, ox + w, oy + h))
+    except Exception:
+        return None
+
+
 def grab(name):
     if os.environ.get("LOLE_SINFOTO"):   # solo recorrer las pantallas (lo usa comprobar_todo.py): sin guardar imágenes
         ui.root.update_idletasks()
         return
     ui.root.update_idletasks()
     x, y, w, h = ui.root.winfo_rootx(), ui.root.winfo_rooty(), ui.root.winfo_width(), ui.root.winfo_height()
-    ImageGrab.grab(bbox=(x, y, x + w, y + h), all_screens=True).save(os.path.join(OUT, name + ".png"))
+    im = pw_grab(x, y, w, h) or ImageGrab.grab(bbox=(x, y, x + w, y + h), all_screens=True)
+    im.save(os.path.join(OUT, name + ".png"))
     print("capturada", name, w, h, flush=True)
 
 

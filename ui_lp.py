@@ -134,7 +134,7 @@ class LpChart:
             t = t0 + (t1 - t0) * k / 4
             x = px(t)
             cv.create_text(min(max(x, S(LEFT)), S(self.W - RIGHT)), S(H - 10), text=datetime.datetime.fromtimestamp(t / 1000).strftime("%d/%m" if t1 - t0 < 330 * 86_400_000 else "%m/%y"),
-                           anchor="center", fill=dim, font=ui.tkf(9, False, False))
+                           anchor="e" if k == 4 else "center", fill=dim, font=ui.tkf(9, False, False))   # la última fecha acaba en el borde derecho y no se sale
         # línea: verde si el tramo sube, roja si baja, tenue entre fotos del día
         for a, b in zip(pts, pts[1:]):
             if b["src"] in ("game", "est") and b["d"]:

@@ -10,6 +10,8 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
 VERSIÓN 1.22.21   (15 de noviembre de 2026)
 ---------------------------------------------------------------------
 
+  · ui_rail.RailNav (navegación lateral con iconos propios; sustituye al selector de pestañas; con ancho ≥900 muestra nombres) + banda ámbar del modo en vivo
+    (GUI.update_band en tick(): fase, campeón y botón Consultar/Volver a la partida). Mismos nombres de página y Ctrl+1…6. capturas.py ahora usa PrintWindow.
   · wrapped.render_game (tarjeta 1080×1080 de una partida) + botón en ui_analysis.share_button; wrapped.style (estilo de juego por cifras por minuto,
     umbrales aproximados) en «Tu año en LoL». Solo visto con datos de ejemplo. 161 pruebas.
 
