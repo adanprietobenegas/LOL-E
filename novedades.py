@@ -10,6 +10,10 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.20", "fecha": "14 de noviembre de 2026", "titulo": "Tu año en LoL y una interfaz más uniforme", "items": [
+        ("nuevo", "En el Historial, «Tu año en LoL»: un resumen sobrio de tu temporada (partidas, victorias, horas, rachas, día más intenso, mejor franja, tu mejor campeón y el que más te mata) que puedes guardar como imagen para compartirlo."),
+        ("mejora", "Los espaciados de toda la interfaz siguen ahora una escala única, así que las pantallas respiran igual."),
+    ]},
     {"v": "1.22.19", "fecha": "14 de noviembre de 2026", "titulo": "Objetivos de la Grieta, dónde mueres y tu objetivo cumplido", "items": [
         ("nuevo", "En directo: avisos estimados de cuándo salen el dragón, las larvas del Vacío y el Barón (el último minuto antes), con los tiempos de la wiki oficial."),
         ("nuevo", "Historial: «Dónde mueres (aprox.)», con las zonas del mapa donde más caes (río, jungla propia o rival), cuando hay muertes suficientes."),

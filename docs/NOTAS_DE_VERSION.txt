@@ -7,6 +7,13 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.20   (14 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · wrapped.py + ui_history.wrapped_block: «Tu año en LoL» (cifras, datos curiosos, PNG 1080×1350 sobrio). 10 partidas mínimas.
+  · herramientas/espaciado.py: padx/pady de ui*.py y gui.py a la escala 0/2/4/8/12/16/24 (340 cambios; 6→8, 10→12). Capturas antes/después a 560 y 1340 sin errores.
+    Solo visto con datos de ejemplo y el historial del proyecto, no con el del usuario. 159 pruebas.
+
 VERSIÓN 1.22.19   (14 de noviembre de 2026)
 ---------------------------------------------------------------------
 

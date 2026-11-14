@@ -1,6 +1,6 @@
 # LOL-E · Plan de futuro
 
-Actualizado el 13/11/2026 (versión del código 1.22.19). Sustituye a `HOJA_DE_RUTA.md` y a `ESTADO_Y_PENDIENTES.md`. Lo que ya está hecho
+Actualizado el 13/11/2026 (versión del código 1.22.20). Sustituye a `HOJA_DE_RUTA.md` y a `ESTADO_Y_PENDIENTES.md`. Lo que ya está hecho
 está en `docs/HISTORIAL_DE_SESIONES.md`; el estado de hoy, en `docs/CONTINUAR.md`. **Este plan se revisa al terminar cada fase: tacha lo
 hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
 
