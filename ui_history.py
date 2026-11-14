@@ -6,7 +6,7 @@ import customtkinter as ctk
 
 import history
 import lol_advisor as core
-from ui_kit import PAL, ROLES_ES, ON_FILL
+from ui_kit import PAL, ROLES_ES, ON_FILL, mix
 from ui_views import small_btn, mini_bar
 
 STEP = 20
@@ -529,23 +529,26 @@ class HistoryView:
         if lv >= 3:
             widths += [W_ITEMS]
         chip_w = 28 if lv == 0 else W_RES
-        left = 8 + 38 + 10
+        left = 12 + 38 + 10
         total = left + sum(w + 10 for w in widths) + chip_w + 8 - (10 if lv == 0 else 0)
         H = 52
         cw = int((max(300, self.width - 100) if lv == 0 else total) * sx)
         cv = tk.Canvas(box, width=cw, height=int(H * sx), bg=ui.bg(parent), highlightthickness=0, bd=0, cursor="hand2")
         cv.pack(fill="x" if lv == 0 else None)
-        ui.rrect(cv, 0, 0, cw - 1, int(H * sx) - 1, int(10 * sx), fill=ui.hexm(PAL["card2"]), outline="")
         color = "dim" if e.get("rm") else "good" if e["w"] else "bad"
+        # el resultado se ve a primera vista, sin mirar al chip de la derecha: fondo con un toque del color, franja a la izquierda y aro en la foto
+        ui.rrect(cv, 0, 0, cw - 1, int(H * sx) - 1, int(10 * sx), fill=mix(ui.hexm(PAL["card2"]), ui.hexm(PAL[color]), 0.0 if color == "dim" else 0.12), outline="")
+        ui.rrect(cv, int(2 * sx), int(7 * sx), int(7 * sx), int(H * sx) - int(8 * sx), int(2 * sx), fill=ui.hexm(PAL[color]), outline="")
         f12b, f10, f12 = ui.tkf(12, True, False), ui.tkf(10, False, False), ui.tkf(12, False, False)
         fg, dim = ui.hexm(PAL["fg"]), ui.hexm(PAL["dim"])
         ph = ui.champ_photo(e["c"], 38) if e["c"] else None
         if ph is not None:
-            cv.create_image(int(8 * sx), int(7 * sx), image=ph, anchor="nw")
+            cv.create_image(int(12 * sx), int(7 * sx), image=ph, anchor="nw")
+            cv.create_rectangle(int(12 * sx) - 1, int(7 * sx) - 1, int(12 * sx) + ph.width(), int(7 * sx) + ph.height(), outline=ui.hexm(PAL[color]), width=max(2, int(2 * sx)))
             cv.image = getattr(cv, "image", [])
             cv.image.append(ph)
         else:
-            cv.create_rectangle(int(8 * sx), int(7 * sx), int(46 * sx), int(45 * sx), fill=ui.hexm(PAL["card"]), outline="")
+            cv.create_rectangle(int(12 * sx), int(7 * sx), int(50 * sx), int(45 * sx), fill=ui.hexm(PAL["card"]), outline=ui.hexm(PAL[color]), width=max(2, int(2 * sx)))
         x = left
 
         def two(x, top, bottom, w, top_color=fg, bottom_color=dim, bold=True):

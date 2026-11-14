@@ -22,7 +22,9 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 2. Estado (actualizar al terminar cada conversación)
 
-**Publicado en GitHub: 1.22.15** (14/11/2026). La actualización automática funciona (el usuario pasó solo de 1.22.5 a 1.22.9).
+**Publicado en GitHub: 1.22.16** (14/11/2026; la 1.22.15 fue la anterior).
+
+**En `main` sin publicar** (candidata a 1.22.17): Historial: el resultado se ve sin mirar al chip de la derecha (franja, aro de la foto y fondo teñido en verde/rojo; `ui_history.row`). La actualización automática funciona (el usuario pasó solo de 1.22.5 a 1.22.9).
 
 **Incluido en la 1.22.11** (publicada; `python herramientas/estado.py` muestra si hay algo nuevo sin publicar):
 - **Pestaña Repertorio propia**, entre Enfrentamiento e Historial (antes estaba escondida en la tarjeta de logros del inicio). Ctrl+1…6;
