@@ -358,6 +358,12 @@ class HistoryView:
             pat = None
         if pat:
             lines.append((pat, "warn"))
+        try:   # dónde mueres, si una zona (río o jungla) concentra buena parte
+            dsent = patrones.death_sentence(patrones.death_map(patrones.load(core.CACHE)))
+        except Exception:
+            dsent = None
+        if dsent:
+            lines.append((dsent, "dim"))
         for text, col in lines:
             ui.lbl(self.summary_host, text, 10, col, anchor="w", justify="left", wraplength=max(240, self.width - 60)).pack(anchor="w", padx=4, pady=(6, 0))
 

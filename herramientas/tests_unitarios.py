@@ -958,6 +958,31 @@ class PaginasDeRunas(unittest.TestCase):
         self.assertEqual(builds.parse_rune_pages(d), [])
 
 
+class DondeMueres(unittest.TestCase):
+    def test_zonas_del_mapa(self):
+        import patrones
+        self.assertEqual(patrones.zone(7400, 7400, 100), "río")
+        self.assertEqual(patrones.zone(1000, 1000, 100), "línea")
+        self.assertEqual(patrones.zone(7400, 1200, 100), "línea")        # línea de abajo
+        self.assertEqual(patrones.zone(11000, 6000, 100), "jungla rival")
+        self.assertEqual(patrones.zone(4000, 6000, 100), "jungla propia")
+        self.assertEqual(patrones.zone(11000, 6000, 200), "jungla propia")   # el equipo rojo lo ve al revés
+
+    def partida(self, pos_x, n):
+        mins = list(range(0, 21))
+        pl = {"pid": 1, "team": 100, "role": "TOP", "pos": [[pos_x, 6000]] * 21}
+        return {"queue": 420, "win": False, "me": 1, "team": 100, "minutes": mins, "players": {"1": pl},
+                "kills": [{"t": 5 + i, "killer": 2, "victim": 1, "assists": []} for i in range(n)]}
+
+    def test_mapa_y_frase(self):
+        import patrones
+        dm = patrones.death_map([self.partida(11000, 3) for _ in range(4)] + [self.partida(4000, 1)])
+        self.assertEqual(dm, {"jungla rival": 12, "jungla propia": 1})
+        self.assertIn("92 %", patrones.death_sentence(dm))
+        self.assertIsNone(patrones.death_map([self.partida(11000, 3)]))                   # muy pocas muertes
+        self.assertIsNone(patrones.death_sentence({"línea": 10, "jungla propia": 3}))      # morir en tu línea no es un patrón de posicionamiento
+
+
 class TemporizadorDelBaron(unittest.TestCase):
     def test_avisa_cerca_del_spawn_y_tras_una_muerte(self):
         import live

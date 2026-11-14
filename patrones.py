@@ -96,6 +96,63 @@ def result(a, p):
     return (not bad), ("Objetivo cumplido: " if not bad else "Objetivo no cumplido: ") + GOAL[p["clave"]]
 
 
+MAP = 14800                  # lado del mapa de la Grieta en unidades del juego
+
+
+def zone(x, y, team):
+    """Dónde cae un punto del mapa para el equipo `team` (100 azul, abajo a la izquierda; 200 rojo, arriba a la derecha): «río», «línea»,
+    «jungla propia» o «jungla rival». Es una clasificación aproximada por geometría del mapa, no por los límites exactos del juego."""
+    if abs(x + y - MAP) < 1800:
+        return "río"
+    edge = 2600
+    lane = (x < edge or y < edge or x > MAP - edge or y > MAP - edge or abs(x - y) < 1500)
+    if lane:
+        return "línea"
+    side = (x + y - MAP) * (1 if team == 100 else -1)      # >0: mitad del equipo rojo (para el azul, territorio rival)
+    return "jungla rival" if side > 0 else "jungla propia"
+
+
+def death_spots(a):
+    """Zonas aproximadas de tus muertes en una partida: la posición se toma del fotograma de minuto más cercano (error de hasta 30 s)."""
+    out = []
+    pos = analysis.me(a).get("pos") or []
+    mins = a.get("minutes") or []
+    for k in a.get("kills") or []:
+        if k.get("victim") != a["me"] or not pos or not mins:
+            continue
+        i = min(range(len(mins)), key=lambda j: abs(mins[j] - k.get("t", 0)))
+        if i < len(pos) and pos[i] and abs(mins[i] - k.get("t", 0)) <= 1.2:
+            out.append(zone(pos[i][0], pos[i][1], a.get("team")))
+    return out
+
+
+MIN_DEATHS = 12
+
+
+def death_map(analyses):
+    """{zona: muertes} de tus partidas de la Grieta, o None si hay menos de 12 muertes localizadas."""
+    from collections import Counter
+    c = Counter()
+    for a in analyses:
+        try:
+            if a.get("queue") in QUEUES and str(a.get("me")) in a.get("players", {}):
+                c.update(death_spots(a))
+        except Exception:
+            continue
+    return dict(c) if sum(c.values()) >= MIN_DEATHS else None
+
+
+def death_sentence(dm):
+    """Frase con dónde mueres más si una zona concentra el 40 % o más (y no es tu propia línea); None si no."""
+    if not dm:
+        return None
+    total = sum(dm.values())
+    z, n = max(((k, v) for k, v in dm.items() if k != "línea"), key=lambda kv: kv[1], default=(None, 0))
+    if z and n / total >= 0.4:
+        return f"Dónde mueres (aprox.): el {round(n / total * 100)} % de tus {total} muertes localizadas ocurren en {z}."
+    return None
+
+
 _CACHE = {}
 _NOW = {}      # cache_dir -> (instante, patrón): lo calculado se reutiliza unos segundos, porque el Plan se repinta a menudo
 
