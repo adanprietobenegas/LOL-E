@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.22.17). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.22.18). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -22,9 +22,9 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 2. Estado (actualizar al terminar cada conversación)
 
-**Publicado en GitHub: 1.22.17** (14/11/2026; la 1.22.16 fue la anterior).
+**Publicado en GitHub: 1.22.18** (14/11/2026; la 1.22.17 fue la anterior).
 
-**En `main` sin publicar** (candidata a 1.22.18):
+**Incluido en la 1.22.18** (publicada):
 - **Tu sesión y tu forma** (`sesion.py`, `ui_history.session_lines`; propuesta del experto coach): en el resumen del Historial, si llevas 2+ derrotas seguidas lo dice con TU dato (victorias tras 2+ derrotas frente a normales, solo con 8+ partidas y diferencia ≥ 8 puntos) y tu mejor franja horaria (diferencia ≥ 12 puntos). Sin conclusiones con muestras pequeñas. Pendiente de la misma idea: banner en el lobby/selección.
 - **Registro de PL**: `diag.log` apunta ahora «Variación de PL (cola): +x PL, ahora …» o «no se pudo calcular (antes…, después…)» para cazar por qué falta el PL de algunas partidas reales (sin confirmar la causa).
 - **Menos coste para el juego** (aviso de un compañero: tirones de fps aparentes; al usuario no le pasa): medido con el cliente falso, LOL-E gasta ~0 % de CPU en reposo y en partida (picos cortos de 15-45 % de un núcleo solo al cambiar de fase/pintar; 74-89 MB, 8-11 hilos). La causa NO está confirmada (puede ser otra cosa del PC). Medidas baratas: `gui.lower_priority` (prioridad «por debajo de lo normal» con `SetPriorityClass` y tipos explícitos; sin ellos fallaba en silencio), y con la ventana minimizada o oculta el bloque en vivo no se repinta (`GUI.hidden`, `on_map` pinta al volver). Ya estaba bien: la actualización automática espera a que no haya cola/selección/partida; la ventana solo es «siempre visible» en la selección por defecto (con «siempre» y el juego en pantalla sin bordes puede forzar la composición de Windows: preguntar al compañero qué ajuste usa y si tapa el juego). Si vuelve a pasar: pedir el registro y la hora exacta del tirón para cruzarlo con `diag.log`.

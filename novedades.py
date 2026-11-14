@@ -10,6 +10,14 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.18", "fecha": "14 de noviembre de 2026", "titulo": "Tu sesión, tus patrones y menos coste para el juego", "items": [
+        ("nuevo", "En el Historial: si llevas 2 o más derrotas seguidas, LOL-E lo dice con tu propio dato (cómo te va tras perder) y te indica tu mejor franja horaria, solo cuando hay partidas suficientes."),
+        ("nuevo", "Patrón repetido en tus derrotas (muertes tempranas, farmeo o oro por detrás) a partir de tus análisis guardados, y en la pestaña Partida un objetivo medible sacado de él."),
+        ("nuevo", "En directo: aviso cuando tu rival directo llega a nivel 6, 11 o 16 o compra objetos importantes."),
+        ("nuevo", "La gráfica de rango estima hacia atrás las partidas sin PL guardado (a trazos; se puede ocultar con «Solo reales»)."),
+        ("mejora", "LOL-E usa prioridad baja y no repinta el bloque en vivo con la ventana minimizada, para pesar lo mínimo mientras juegas."),
+        ("mejora", "La ficha «Racha» del Historial ocupa todo el ancho cuando queda sola."),
+    ]},
     {"v": "1.22.17", "fecha": "14 de noviembre de 2026", "titulo": "El resultado, a primera vista en el Historial", "items": [
         ("nuevo", "En el Historial, cada partida lleva una franja verde o roja a la izquierda y un aro del mismo color en la foto del campeón, para ver si ganaste o perdiste sin mirar al chip de la derecha. Los remakes van en gris."),
     ]},

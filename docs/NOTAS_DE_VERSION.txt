@@ -7,6 +7,14 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.18   (14 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · sesion.py (sesión, forma tras derrotas, franja horaria), patrones.py (patrón en derrotas y objetivo), live.spikes (picos del rival),
+    lpseries.estimate ya en 1.22.16. gui.lower_priority (SetPriorityClass con tipos explícitos) y sin repintar en vivo minimizada.
+    diag.log apunta «Variación de PL…». Solo probado con datos de ejemplo y pruebas unitarias; los umbrales de picos y patrones están por ajustar
+    con partidas reales. 147 pruebas.
+
 VERSIÓN 1.22.17   (14 de noviembre de 2026)
 ---------------------------------------------------------------------
 
