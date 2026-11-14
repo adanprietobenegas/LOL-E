@@ -62,7 +62,7 @@ class GameView:
         self.ui.clear(self.box)
         card = ui.card(self.box)
         top = ui.frame(card)
-        top.pack(fill="x", pady=(0, 10))
+        top.pack(fill="x", pady=(0, 12))
         ui.lbl(top, "Tu partida", 16, "fg", True, True).pack(side="left")
         ui.seg(top, TABS, self.tab, self.set_tab, width=220, height=28).pack(side="right")
         self.host = ui.frame(card)
@@ -141,7 +141,7 @@ class GameView:
                 Lobby.row(self, self.host, a, pl.get(x["puuid"]) if x["puuid"] else None, x["puuid"] in party, len(party),
                           False, mates.get(x["puuid"]), ring, qid, tag)
         ui.lbl(self.host, "Rango y partidas recientes salen del cliente de cada jugador. Un rango oculto o sin partidas se marca como tal.", 9, "dim",
-               anchor="w", justify="left", wraplength=max(260, self.width - 110)).pack(anchor="w", pady=(6, 10))
+               anchor="w", justify="left", wraplength=max(260, self.width - 110)).pack(anchor="w", pady=(8, 12))
 
     def on_live(self, ctx):
         """Llegó un resumen nuevo de la partida en vivo: se ACTUALIZA en sitio la vista que ya existe (solo cambia lo que ha cambiado; repintar
@@ -203,7 +203,7 @@ class GameView:
                 return
             ui.lbl(host, "Cuando elijas campeón en una selección, aquí tendrás su build, sus runas, el enfrentamiento y consejos, "
                          "también durante la partida y después.", 11, "dim", anchor="w", justify="left",
-                   wraplength=max(260, self.width - 110)).pack(anchor="w", pady=6)
+                   wraplength=max(260, self.width - 110)).pack(anchor="w", pady=8)
             return
         cid, opp, role = plan["cid"], plan.get("opp") or 0, plan.get("role") or ""
         lane = LANE_OF.get(role)
@@ -241,7 +241,7 @@ class GameView:
             ui_mayhem.build_block(ui, host, plan["cid"], 450, self.width)
         elif plan.get("kind") not in (None, "sr"):
             ui.lbl(host, f"En {plan.get('group') or 'este modo'} no hay plan de línea ni build recomendada. Cuando termine la partida, la pestaña Análisis te la cuenta.",
-                   11, "dim", anchor="w", justify="left", wraplength=max(260, self.width - 110)).pack(anchor="w", pady=(6, 0))
+                   11, "dim", anchor="w", justify="left", wraplength=max(260, self.width - 110)).pack(anchor="w", pady=(8, 0))
         if lane:
             self.ui.lbl(self.host, "", 4, "dim").pack()
             build_panel(ui, host, cid, lane, opp or None, self.width - 110,
@@ -277,7 +277,7 @@ class GameView:
             self.jump_roster = jump
 
     def section(self, title):
-        self.ui.lbl(self.host, title, 10, "dim", True, anchor="w").pack(anchor="w", pady=(14, 4))
+        self.ui.lbl(self.host, title, 10, "dim", True, anchor="w").pack(anchor="w", pady=(16, 4))
 
     def matchup_block(self, plan, lane):
         ui = self.ui
@@ -339,10 +339,10 @@ class GameView:
         for title, text in tips:
             row = ui.frame(self.host)
             row.pack(fill="x", pady=2)
-            ui.lbl(row, title.upper(), 9, "dim", True, width=96, anchor="w").pack(side="left", anchor="n", pady=(3, 0))
+            ui.lbl(row, title.upper(), 9, "dim", True, width=96, anchor="w").pack(side="left", anchor="n", pady=(4, 0))
             ui.lbl(row, text, 11, "fg", anchor="w", justify="left", wraplength=max(240, self.width - 250)).pack(side="left", fill="x", expand=True)
         ui.lbl(self.host, "Orientativo: sale de tus campeones y de la composición rival; no sustituye a la build del parche.", 9, "dim",
-               anchor="w").pack(anchor="w", pady=(6, 0))
+               anchor="w").pack(anchor="w", pady=(8, 0))
 
     # ---- análisis (el dibujo vive en ui_analysis.py) ----
     def load_games(self):

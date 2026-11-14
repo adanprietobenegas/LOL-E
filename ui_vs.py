@@ -131,7 +131,7 @@ def collapsible(ui, parent, title, summary, key, build, open_=True):
     stripe = tk.Frame(head, width=3, bg=ui.hexm(ui.acc))
     stripe.pack(side="left", fill="y")
     arrow = tk.Label(head, text="", bg=card, fg=dim, font=ui.tkf(12, False, False), width=2)
-    arrow.pack(side="left", padx=(10, 2), pady=7)
+    arrow.pack(side="left", padx=(12, 2), pady=8)
     ttl = tk.Label(head, text=title, bg=card, fg=fg, font=ui.tkf(12, True, False), anchor="w")
     ttl.pack(side="left")
     sm = tk.Label(head, text=summary, bg=card, fg=dim, font=ui.tkf(10, False, False), anchor="e")
@@ -208,7 +208,7 @@ class Board:
         self.lanes(host, mine, theirs)
         ui.lbl(host, "Pasa el ratón por una tarjeta para ver sus últimas 10 partidas; haz clic para abrir su perfil completo. "
                      "Todo sale del cliente de cada jugador: un rango oculto o sin partidas se marca como tal.", 9, "dim", anchor="w",
-               justify="left", wraplength=max(260, v.width - 110)).pack(anchor="w", pady=(6, 10))
+               justify="left", wraplength=max(260, v.width - 110)).pack(anchor="w", pady=(8, 12))
 
     # ---------- comparativa de equipos ----------
     def compare(self, host, mine, theirs):
@@ -217,7 +217,7 @@ class Board:
         box = ctk.CTkFrame(host, fg_color=PAL["card2"], corner_radius=12)
         box.pack(fill="x", pady=(0, 8))
         g = ui.frame(box)
-        g.pack(fill="x", padx=12, pady=10)
+        g.pack(fill="x", padx=12, pady=12)
         for c, w in ((0, 1), (1, 0), (2, 1)):
             g.grid_columnconfigure(c, weight=w, uniform="cmp" if w else "")
         g.grid_columnconfigure(1, minsize=150)
@@ -238,8 +238,8 @@ class Board:
             for side, val, column, anchor in (("a", va, 0, "e"), ("b", vb, 2, "w")):
                 txt = fmt(val) if val is not None else "s/d"
                 color = colr(val) if (colr and val is not None) else ("good" if better == side else "fg")
-                ui.lbl(g, txt, 12, color, True).grid(row=i, column=column, sticky=anchor, padx=8, pady=1)
-            ui.lbl(g, title, 10, "dim").grid(row=i, column=1, pady=1)
+                ui.lbl(g, txt, 12, color, True).grid(row=i, column=column, sticky=anchor, padx=8, pady=2)
+            ui.lbl(g, title, 10, "dim").grid(row=i, column=1, pady=2)
             i += 1
         for title, key in (("Daño físico · mágico", "dmg"), ("Tanques · control", "tank")):
             for column, t, anchor in ((0, a, "e"), (2, b, "w")):
@@ -250,8 +250,8 @@ class Board:
                     txt = f"{c['ad']} · {c['ap']}"
                 else:
                     txt = f"{c['tanks']} · {ctl(c['cc'])}"
-                ui.lbl(g, txt, 12, "fg", True).grid(row=i, column=column, sticky=anchor, padx=8, pady=1)
-            ui.lbl(g, title, 10, "dim").grid(row=i, column=1, pady=1)
+                ui.lbl(g, txt, 12, "fg", True).grid(row=i, column=column, sticky=anchor, padx=8, pady=2)
+            ui.lbl(g, title, 10, "dim").grid(row=i, column=1, pady=2)
             i += 1
         if a["n"] < len(mine) or b["n"] < len(theirs):
             ui.lbl(box, "Las medias solo cuentan a quien ya se ha leído y tiene datos.", 9, "dim").pack(pady=(0, 8))
@@ -266,7 +266,7 @@ class Board:
         cw = (width - 84) // 2
         for k in keys:
             box = ui.frame(host)
-            box.pack(fill="x", pady=3)
+            box.pack(fill="x", pady=4)
             g = ui.frame(box)
             g.pack(fill="x")
             g.grid_columnconfigure(0, weight=1, uniform="lane")
@@ -282,7 +282,7 @@ class Board:
             if rname:
                 ui.chip(mid, rname, "dim").pack()
             if k == self.my_role and right.get(k):
-                ui.lbl(mid, "tu línea", 9, "warn", True).pack(pady=(3, 0))
+                ui.lbl(mid, "tu línea", 9, "warn", True).pack(pady=(4, 0))
 
     # ---------- una tarjeta ----------
     def card(self, parent, x, p, ring, cw, row, det):
@@ -291,10 +291,10 @@ class Board:
         card = ctk.CTkFrame(parent, fg_color=PAL["card2"], corner_radius=12, border_width=2 if (x["me"] or lane_rival) else 0,
                             border_color=self.c_ally if x["me"] else self.c_rival)
         inner = ui.frame(card)
-        inner.pack(fill="both", expand=True, padx=10, pady=8)
+        inner.pack(fill="both", expand=True, padx=12, pady=8)
         ui.champ(inner, x["cid"], 46, False, ring if x["cid"] else None).pack(side="left", anchor="n")
         col_ = ui.frame(inner)
-        col_.pack(side="left", fill="x", expand=True, padx=(10, 0))
+        col_.pack(side="left", fill="x", expand=True, padx=(12, 0))
         head = ui.frame(col_)
         head.pack(fill="x")
         prof = (self.info or {}).get("profile") or {}
@@ -323,7 +323,7 @@ class Board:
         elif x["puuid"]:
             ui.lbl(line, "Leyendo tu perfil…" if x["me"] else "Leyendo su perfil…", 9, "dim").pack(side="left")
         bw = ui.frame(col_)
-        bw.pack(fill="x", pady=(5, 0))
+        bw.pack(fill="x", pady=(4, 0))
         used = 0
         for txt, colr in badges(p, x, self.party, self.mates.get(x["puuid"]))[:3]:
             f = ui.tkf(10, False, False)
@@ -345,7 +345,7 @@ class Board:
 
         def paint():
             if key in opened:
-                det.pack(fill="x", pady=(3, 0))
+                det.pack(fill="x", pady=(4, 0))
                 if not det.winfo_children():
                     profile_build(ui, det, p, self.qid, self.v.width)
             else:
@@ -415,7 +415,7 @@ class Board:
         ui = self.ui
         bg, fg, dim = ui.hexm(PAL["card2"]), ui.hexm(PAL["fg"]), ui.hexm(PAL["dim"])
         good, bad = ui.hexm(PAL["good"]), ui.hexm(PAL["bad"])
-        frame = tk.Frame(t, bg=bg, bd=1, relief="solid", padx=12, pady=10)
+        frame = tk.Frame(t, bg=bg, bd=1, relief="solid", padx=12, pady=12)
         frame.pack()
 
         def label(parent, text, size=10, bold=False, color=fg, **kw):
@@ -439,7 +439,7 @@ class Board:
             label(frame, f"Máximo de la temporada: {pk}", 9, False, dim).pack(anchor="w")
         rec = p.get("recent") or []
         stt = p.get("stats") or {}
-        tk.Frame(frame, bg=ui.hexm(PAL["border"]), height=1).pack(fill="x", pady=6)
+        tk.Frame(frame, bg=ui.hexm(PAL["border"]), height=1).pack(fill="x", pady=8)
         if not rec:
             label(frame, "Sin partidas de Grieta recientes.", 10, False, dim).pack(anchor="w")
         else:
@@ -452,7 +452,7 @@ class Board:
                 ph = ui.champ_photo(g["c"], 22) if g.get("c") else None
                 ic = tk.Label(grid, image=ph, bg=bg, bd=0) if ph is not None else tk.Label(grid, text="?", bg=bg, fg=dim)
                 ic.image = ph
-                ic.grid(row=i, column=0, padx=(0, 6), pady=1)
+                ic.grid(row=i, column=0, padx=(0, 8), pady=2)
                 tk.Label(grid, text="Victoria" if g["w"] else "Derrota", font=ui.tkf(10, True, False), fg=good if g["w"] else bad, bg=bg, width=8,
                          anchor="w").grid(row=i, column=1)
                 kda = (g["k"] + g["a"]) / max(1, g["d"])
@@ -465,13 +465,13 @@ class Board:
                 tk.Label(grid, text=f"{ago(g.get('t'))} · {int(g.get('dur', 0) // 60)} min", font=ui.tkf(9, False, False), fg=dim, bg=bg, width=16, anchor="w").grid(row=i, column=7)
             if stt.get("n"):
                 label(frame, f"Media: {num(stt['k'])}/{num(stt['d'])}/{num(stt['a'])} · {num(stt['kda'])} KDA · {num(stt['cspm'])} súbditos por minuto",
-                      9, False, dim).pack(anchor="w", pady=(6, 0))
+                      9, False, dim).pack(anchor="w", pady=(8, 0))
         champs = stt.get("champs") or []
         if champs:
-            tk.Frame(frame, bg=ui.hexm(PAL["border"]), height=1).pack(fill="x", pady=6)
+            tk.Frame(frame, bg=ui.hexm(PAL["border"]), height=1).pack(fill="x", pady=8)
             label(frame, "Lo que más juega", 10, True).pack(anchor="w")
             line = tk.Frame(frame, bg=bg)
-            line.pack(anchor="w", pady=(3, 0))
+            line.pack(anchor="w", pady=(4, 0))
             for c in champs[:4]:
                 ph = ui.champ_photo(c["c"], 22)
                 if ph is not None:
@@ -481,6 +481,6 @@ class Board:
                 label(line, f" {c['n']}p · {round(100 * c['w'] / c['n'])} %   ", 9, False, dim).pack(side="left")
         sig = signals(p)
         if sig:
-            tk.Frame(frame, bg=ui.hexm(PAL["border"]), height=1).pack(fill="x", pady=6)
+            tk.Frame(frame, bg=ui.hexm(PAL["border"]), height=1).pack(fill="x", pady=8)
             for txt, colr in sig[:4]:
                 label(frame, "• " + txt, 9, False, ui.hexm(PAL.get(colr, PAL["fg"]))).pack(anchor="w")

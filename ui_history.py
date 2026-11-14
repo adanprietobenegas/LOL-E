@@ -145,12 +145,12 @@ class HistoryView:
             for label, values, cur_v, key in pair:
                 ui.lbl(row, label, 10, "dim", width=58 if not narrow else 52, anchor="w").pack(side="left")
                 ui.menu(row, values, cur_v, lambda v, k=key: self.set_filter(k, v), 128 if not narrow else 116).pack(
-                    side="left", padx=(0, 14 if not narrow else 8))
+                    side="left", padx=(0, 16 if not narrow else 8))
         bar = ui.frame(c)
         bar.pack(fill="x", pady=(8, 0))
         small_btn(ui, bar, "Restablecer filtros", self.clear_filters, 140).pack(side="left")
         small_btn(ui, bar, "Actualizar", self.update_now, 90).pack(side="right")
-        small_btn(ui, bar, "Exportar CSV", self.export_csv, 110).pack(side="right", padx=(0, 6))
+        small_btn(ui, bar, "Exportar CSV", self.export_csv, 110).pack(side="right", padx=(0, 8))
 
     def export_csv(self):
         """Guarda las partidas que ves (con los filtros puestos) en Documentos, listas para abrir con Excel."""
@@ -240,7 +240,7 @@ class HistoryView:
         cell = ctk.CTkFrame(grid, fg_color=PAL["card2"], corner_radius=12)
         cell.grid(row=i // cols, column=i % cols, columnspan=span, sticky="nsew", padx=4, pady=4)
         inner = ui.frame(cell)
-        inner.pack(fill="x", padx=12, pady=9)
+        inner.pack(fill="x", padx=12, pady=8)
         ui.lbl(inner, label.upper(), 9, "dim", True, anchor="w").pack(anchor="w")
         ui.lbl(inner, value, 17, color, True, True, anchor="w").pack(anchor="w", pady=(2, 0))
         if sub:
@@ -282,7 +282,7 @@ class HistoryView:
             self.tile(grid, i, cols, *t, span=(cols - i % cols) if i == len(tiles) - 1 else 1)   # la última ficha, si queda sola en su fila, ocupa todo el ancho
         strip = ui.frame(self.summary_host)
         strip.pack(fill="x", pady=(8, 0))
-        ui.lbl(strip, "ÚLTIMAS 20", 9, "dim", True).pack(side="left", padx=(4, 10))
+        ui.lbl(strip, "ÚLTIMAS 20", 9, "dim", True).pack(side="left", padx=(4, 12))
         ui.dots(strip, [e["w"] for e in ordered[:20][::-1]]).pack(side="left")
         self.session_lines(self.all)
         self.wrapped_block()
@@ -293,7 +293,7 @@ class HistoryView:
         else:   # ventana estrecha: campeones y modos plegados, para que las partidas empiecen en la primera pantalla
             folds = ui.conf.setdefault("folds", {})
             more = ui.lbl(self.summary_host, "", 10, "info", True, anchor="w")
-            more.pack(anchor="w", padx=4, pady=(10, 0))
+            more.pack(anchor="w", padx=4, pady=(12, 0))
 
             def paint():
                 if folds.get("hist_more"):
@@ -314,7 +314,7 @@ class HistoryView:
         if self.level >= 1:
             two.columnconfigure(1, weight=1, uniform="two")
         left = ui.frame(two)
-        left.grid(row=0, column=0, sticky="nsew", padx=(4, 10))
+        left.grid(row=0, column=0, sticky="nsew", padx=(4, 12))
         ui.lbl(left, "CAMPEONES MÁS JUGADOS", 9, "dim", True, anchor="w").pack(anchor="w", pady=(0, 4))
         cnt, win = Counter(e["c"] for e in games), Counter(e["c"] for e in games if e["w"])
         for cid, g in cnt.most_common(5):
@@ -327,7 +327,7 @@ class HistoryView:
             ui.lbl(row, f"{round(wr * 100)} %", 11, "good" if wr >= .5 else "bad", True, width=44, anchor="w").pack(side="left")
         right = ui.frame(two)
         if self.level >= 1:
-            right.grid(row=0, column=1, sticky="nsew", padx=(10, 4))
+            right.grid(row=0, column=1, sticky="nsew", padx=(12, 4))
         else:
             right.grid(row=1, column=0, sticky="nsew", padx=4, pady=(12, 0))
         ui.lbl(right, "POR MODO", 9, "dim", True, anchor="w").pack(anchor="w", pady=(0, 4))
@@ -360,16 +360,16 @@ class HistoryView:
         def fill():
             ui.clear(body)
             top = ui.frame(body)
-            top.pack(fill="x", pady=(6, 4))
+            top.pack(fill="x", pady=(8, 4))
             ui.seg(top, ["Este año", "Todo el historial"], "Este año" if mode["w"] == "year" else "Todo el historial", pick, height=24).pack(side="left")
             s = stats()
             if not s:
-                ui.lbl(body, "Aún no hay suficientes partidas guardadas (hacen falta 10) para un resumen.", 10, "dim", anchor="w").pack(anchor="w", pady=(6, 0))
+                ui.lbl(body, "Aún no hay suficientes partidas guardadas (hacen falta 10) para un resumen.", 10, "dim", anchor="w").pack(anchor="w", pady=(8, 0))
                 return
             ui.lbl(body, f"{s['n']} partidas · {round(s['wr'] * 100)} % de victorias · {s['hours']:.0f} h jugadas"
                          + (f" · KDA {s['kda']:.2f}".replace(".", ",") if s.get("kda") is not None else ""), 11, "fg", True, anchor="w").pack(anchor="w", pady=(4, 2))
             for title, text in wrapped.lines(s, champ_name):
-                ui.lbl(body, f"{title}: {text}", 10, "dim", anchor="w", justify="left", wraplength=max(240, self.width - 60)).pack(anchor="w", pady=1)
+                ui.lbl(body, f"{title}: {text}", 10, "dim", anchor="w", justify="left", wraplength=max(240, self.width - 60)).pack(anchor="w", pady=2)
             msg = ui.lbl(body, "", 10, "good", anchor="w")
 
             def save():
@@ -435,7 +435,7 @@ class HistoryView:
         if dsent:
             lines.append((dsent, "dim"))
         for text, col in lines:
-            ui.lbl(self.summary_host, text, 10, col, anchor="w", justify="left", wraplength=max(240, self.width - 60)).pack(anchor="w", padx=4, pady=(6, 0))
+            ui.lbl(self.summary_host, text, 10, col, anchor="w", justify="left", wraplength=max(240, self.width - 60)).pack(anchor="w", padx=4, pady=(8, 0))
 
     # ---- lista por días ----
     def col_header(self, wrap):
@@ -454,14 +454,14 @@ class HistoryView:
             cols.append(("Objetos", W_ITEMS))
         cols.append(("Resultado", W_RES))
         for t, w in cols:
-            ui.lbl(head, t.upper(), 8, "dim", True, width=w, anchor="w").pack(side="left", padx=(10, 0))
+            ui.lbl(head, t.upper(), 8, "dim", True, width=w, anchor="w").pack(side="left", padx=(12, 0))
 
     def render_list(self, games):
         ui = self.ui
         self.ui.clear(self.list_host)
         if not games:
             ui.lbl(self.list_host, "Ninguna partida cumple los filtros." if self.all else "Cuando juegues, tus partidas aparecerán aquí.",
-                   11, "dim").pack(anchor="w", pady=6)
+                   11, "dim").pack(anchor="w", pady=8)
             return
         self.wrap = ui.frame(self.list_host)
         self.wrap.pack(fill="x" if self.level == 0 else None)  # sin «fill» queda centrada: la información de cada fila va junta
@@ -480,7 +480,7 @@ class HistoryView:
             bar = ui.frame(self.wrap)
             bar.pack(fill="x", padx=8, pady=(0, 2))
             small_btn(ui, bar, "Plegar todos los días", lambda: self.fold_days(False), 150).pack(side="left")
-            small_btn(ui, bar, "Desplegar todos", lambda: self.fold_days(True), 130).pack(side="left", padx=(6, 0))
+            small_btn(ui, bar, "Desplegar todos", lambda: self.fold_days(True), 130).pack(side="left", padx=(8, 0))
         self.append_rows()
 
     def append_rows(self):
@@ -506,7 +506,7 @@ class HistoryView:
         if left > 0:
             b = ctk.CTkButton(self.list_host, text=f"Mostrar {min(STEP, left)} más  ({left} restantes)", height=34, corner_radius=10,
                               font=ui.font(12), fg_color=PAL["card2"], hover_color=PAL["card2"], text_color=PAL["fg"], command=self.more)
-            b.pack(pady=(10, 0))
+            b.pack(pady=(12, 0))
             ui.smooth_btn(b, PAL["card2"], PAL["border"])
             self.more_b = b
 
@@ -612,7 +612,7 @@ class HistoryView:
         sx = ui.scale_px()
         champs = ui.champs
         box = ui.frame(parent)
-        box.pack(fill="x", pady=3)
+        box.pack(fill="x", pady=4)
         arena = mode_of(e) == "Arena"
         grp = mode_of(e)
         role = ROLES_ES.get(e["r"], "") if e["r"] and not arena else ""
@@ -735,15 +735,15 @@ class HistoryView:
             else:
                 px = int(size * ui.scale_px())
                 lab = tk.Frame(parent, width=px, height=px, bg=ui.hexm(PAL["card"]))
-            lab.pack(side="left", padx=1)
+            lab.pack(side="left", padx=2)
 
     def detail(self, box, e):
         """Datos extra de la partida, justo debajo de su fila."""
         ui = self.ui
         d = ctk.CTkFrame(box, fg_color=PAL["card"], corner_radius=10, border_width=1, border_color=PAL["border"])
-        d.pack(fill="x", pady=(0, 6), padx=10)
+        d.pack(fill="x", pady=(0, 8), padx=12)
         inner = ui.frame(d)
-        inner.pack(fill="x", padx=12, pady=10)
+        inner.pack(fill="x", padx=12, pady=12)
         mins = max(1, e["d"] / 60) if e.get("d") else 0
         arena = mode_of(e) == "Arena"
         parts = []
@@ -768,6 +768,6 @@ class HistoryView:
             names = [ui.items[i]["n"] for i in e["it"] if i and i in ui.items]
             if names:
                 ui.lbl(inner, "Objetos: " + ", ".join(names), 10, "dim", anchor="w", justify="left",
-                       wraplength=min(self.width - 130, 760)).pack(anchor="w", pady=(6, 0))
-        ui.lbl(inner, f"Partida del {fecha(e['t'])} · número {e['id']}", 9, "dim", anchor="w").pack(anchor="w", pady=(6, 0))
+                       wraplength=min(self.width - 130, 760)).pack(anchor="w", pady=(8, 0))
+        ui.lbl(inner, f"Partida del {fecha(e['t'])} · número {e['id']}", 9, "dim", anchor="w").pack(anchor="w", pady=(8, 0))
         return d

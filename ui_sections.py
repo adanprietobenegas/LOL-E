@@ -51,21 +51,21 @@ class Section:
 def rank_block(ui, parent, title, rk):
     box = ctk.CTkFrame(parent, fg_color=PAL["card2"], corner_radius=12)
     inner = ui.frame(box)
-    inner.pack(fill="x", padx=12, pady=10)
+    inner.pack(fill="x", padx=12, pady=12)
     ui.lbl(inner, title.upper(), 9, "dim", True).pack(anchor="w")
     row = ui.frame(inner)
     row.pack(anchor="w", pady=(4, 0))
     if rk:
         em = ui.emblem(rk["key"], 44)
         if em:
-            ctk.CTkLabel(row, image=em, text="").pack(side="left", padx=(0, 10))
+            ctk.CTkLabel(row, image=em, text="").pack(side="left", padx=(0, 12))
         txt = ui.frame(row)
         txt.pack(side="left")
         ui.lbl(txt, f"{rk['tier']} {rk['div']}".strip(), 15, TIER_COLORS.get(rk["key"], "fg"), True, True).pack(anchor="w")
         ui.lbl(txt, f"{rk['lp']} PL  ·  {rk['w']}V {rk['l']}D  ·  {rk['wr'] * 100:.0f} %", 10, "dim", anchor="w", wraplength=170,
                justify="left").pack(anchor="w")
     else:
-        ui.lbl(row, "Sin clasificar", 13, "dim", True).pack(anchor="w", pady=10)
+        ui.lbl(row, "Sin clasificar", 13, "dim", True).pack(anchor="w", pady=12)
     return box
 
 
@@ -83,7 +83,7 @@ class ProfileCard(Section):
         top.pack(fill="x")
         img = ui.profile_icon(pr["icon"], 56) if pr.get("icon") else None
         if img:
-            ctk.CTkLabel(top, image=img, text="").pack(side="left", padx=(0, 14))
+            ctk.CTkLabel(top, image=img, text="").pack(side="left", padx=(0, 16))
         mid = ui.frame(top)
         mid.pack(side="left")
         ui.lbl(mid, pr.get("name") or "Invocador", 20, "fg", True, True).pack(anchor="w")
@@ -137,7 +137,7 @@ class WaitCard(Section):
         ui.autowrap(ui.lbl(c, hint, 10, "dim", anchor="w", justify="left"), c).pack(anchor="w", pady=(4, 0))
         note = self.tilt()
         if note and ctx["linked"]:
-            ui.autowrap(ui.lbl(c, note, 10, "warn", True, anchor="w", justify="left"), c).pack(anchor="w", pady=(6, 0))
+            ui.autowrap(ui.lbl(c, note, 10, "warn", True, anchor="w", justify="left"), c).pack(anchor="w", pady=(8, 0))
         msg = ctx["msg"] or ""
         if msg and not any(s in msg for s in ("Conectado al cliente", "Abre el cliente", "Esperando al cliente")):
             ui.autowrap(ui.lbl(c, msg, 10, "dim", anchor="w", justify="left"), c).pack(anchor="w", pady=(2, 0))
@@ -197,10 +197,10 @@ class AchievementsCard(Section):
         cell = ctk.CTkFrame(grid, fg_color=PAL["card2"], corner_radius=12)
         cell.grid(row=i // cols, column=i % cols, columnspan=span, sticky="nsew", padx=4, pady=4)
         inner = ui.frame(cell)
-        inner.pack(fill="x", padx=12, pady=10)
+        inner.pack(fill="x", padx=12, pady=12)
         wl = getattr(self, "tile_wl", 200)
         ui.lbl(inner, label.upper(), 9, "dim", True, anchor="w", wraplength=wl, justify="left").pack(anchor="w")
-        ui.lbl(inner, value, 15, color, True, True, anchor="w", wraplength=wl, justify="left").pack(anchor="w", pady=(3, 0))
+        ui.lbl(inner, value, 15, color, True, True, anchor="w", wraplength=wl, justify="left").pack(anchor="w", pady=(4, 0))
         if sub:
             ui.lbl(inner, sub, 10, "dim", anchor="w", wraplength=wl, justify="left").pack(anchor="w")
 
@@ -252,7 +252,7 @@ class AchievementsCard(Section):
             self.tile(grid, i, cols, label, value, sub, color, span=(cols - i % cols) if i == len(tiles) - 1 else 1)   # la última, si queda sola, ocupa todo el ancho
         ui.lbl(c, "Datos de tu cliente de LoL. La posición exacta en el ranking de tu servidor no la da el cliente; el porcentaje de los "
                   "retos sí es de tu servidor.", 9, "dim", anchor="w", wraplength=min(ctx["width"] - 90, 760), justify="left").pack(
-            anchor="w", pady=(6, 0))
+            anchor="w", pady=(8, 0))
 
 
 def history_fecha(ms):
@@ -316,7 +316,7 @@ class SummaryCard(Section):
         c = ui.card(self.box)
         ui.seg(c, self.TABS, self.tab, self.switch, height=30).pack(fill="x")
         self.body = ui.frame(c)
-        self.body.pack(fill="x", pady=(10, 0))
+        self.body.pack(fill="x", pady=(12, 0))
         self.paint_tab(False)
 
     def switch(self, name):
@@ -344,13 +344,13 @@ class SummaryCard(Section):
         cell = ctk.CTkFrame(grid, fg_color=PAL["card2"], corner_radius=12, border_width=1, border_color=PAL["card2"])
         cell.grid(row=i // cols, column=i % cols, columnspan=span, sticky="nsew", padx=4, pady=4)
         inner = ui.frame(cell)
-        inner.pack(fill="x", padx=12, pady=10)
+        inner.pack(fill="x", padx=12, pady=12)
         wl = max(100, min(220, (self.ctx["width"] - 110) // cols - 40))
         head = ui.frame(inner)
         head.pack(fill="x")
         ui.lbl(head, label.upper(), 9, "dim", True, anchor="w", wraplength=wl, justify="left").pack(side="left")
         ui.lbl(head, "▸", 9, "dim").pack(side="right")
-        ui.lbl(inner, value, 15, color, True, True, anchor="w", wraplength=wl, justify="left").pack(anchor="w", pady=(3, 0))
+        ui.lbl(inner, value, 15, color, True, True, anchor="w", wraplength=wl, justify="left").pack(anchor="w", pady=(4, 0))
         if sub:
             ui.lbl(inner, sub, 10, "dim", anchor="w", wraplength=wl, justify="left").pack(anchor="w")
         self.tiles[key] = cell
@@ -394,7 +394,7 @@ class SummaryCard(Section):
         wrap = ctk.CTkFrame(self.slot, fg_color=PAL["card2"], corner_radius=12)
         wrap.pack(fill="x", padx=4, pady=(4, 2))
         holder = ui.frame(wrap)
-        holder.pack(fill="x", padx=14, pady=12)
+        holder.pack(fill="x", padx=16, pady=12)
         if ui.anim_on():
             ui.reveal(holder, fn)
         else:
@@ -464,7 +464,7 @@ class SummaryCard(Section):
         self.slot.pack(fill="x")
         ui.lbl(parent, "Datos de tu cliente de LoL. Pulsa cualquier ficha para ver el detalle. La posición exacta en el ranking de tu servidor "
                        "no la da el cliente; el puesto general es de op.gg.", 9, "dim", anchor="w",
-               wraplength=min(self.ctx["width"] - 90, 760), justify="left").pack(anchor="w", pady=(6, 0))
+               wraplength=min(self.ctx["width"] - 90, 760), justify="left").pack(anchor="w", pady=(8, 0))
 
     def next_rank(self, rk):
         order = list(TIERS_ES)
@@ -512,7 +512,7 @@ class SummaryCard(Section):
                 d = a - b
                 msg = (f"{verb_same}" if d == 0 else f"{verb_up}: {d} división{'es' if d > 1 else ''} por encima" if d > 0
                        else f"{verb_down}: te faltan {-d} división{'es' if -d > 1 else ''} para igualarlo")
-                ui.lbl(parent, msg, 11, "good" if d >= 0 else "warn", True, anchor="w").pack(anchor="w", pady=(6, 0))
+                ui.lbl(parent, msg, 11, "good" if d >= 0 else "warn", True, anchor="w").pack(anchor="w", pady=(8, 0))
 
     def d_peak(self, parent):
         rk = (self.ex or {}).get("peak")
@@ -545,7 +545,7 @@ class SummaryCard(Section):
             ui.lbl(box, f"{rk['tier']} {rk['div']}".strip() + f"  ·  {rk['lp']} PL", 12, TIER_COLORS.get(rk["key"], "fg"), True, anchor="w").pack(anchor="w")
             nxt = self.next_rank(rk)
             if nxt:
-                mini_bar(ui, box, min(rk["lp"], 100) / 100, "good", 200, 6).pack(anchor="w", pady=(3, 2))
+                mini_bar(ui, box, min(rk["lp"], 100) / 100, "good", 200, 6).pack(anchor="w", pady=(4, 2))
                 ui.lbl(box, f"Te faltan {max(0, 100 - rk['lp'])} PL para {nxt}", 10, "dim", anchor="w").pack(anchor="w")
             else:
                 ui.lbl(box, f"{rk['w']}V {rk['l']}D · {round(rk['wr'] * 100)} %", 10, "dim", anchor="w").pack(anchor="w")
@@ -555,7 +555,7 @@ class SummaryCard(Section):
         if lines and ex.get("prev"):
             info.append(f"Acabaste la temporada anterior en {ex['prev']['tier']} {ex['prev']['div']}".strip())
         if info:
-            ui.lbl(parent, "  ·  ".join(info), 10, "dim", anchor="w", wraplength=min(self.ctx["width"] - 130, 700), justify="left").pack(anchor="w", pady=(6, 0))
+            ui.lbl(parent, "  ·  ".join(info), 10, "dim", anchor="w", wraplength=min(self.ctx["width"] - 130, 700), justify="left").pack(anchor="w", pady=(8, 0))
 
     def d_challenges(self, parent):
         ui = self.ui
@@ -563,7 +563,7 @@ class SummaryCard(Section):
         es = lambda x: f"{x:.1f}".replace(".", ",")
         for c in sorted(ch.get("cats", []), key=lambda c: (c.get("pct") is None, c.get("pct") or 0)):
             row = ui.frame(parent)
-            row.pack(fill="x", pady=3)
+            row.pack(fill="x", pady=4)
             ui.lbl(row, self.CATS.get(c["cat"], c["cat"].title()), 11, "fg", True, width=120 if self.ctx["width"] < 640 else 140, anchor="w").pack(side="left")
             ui.lbl(row, TIERS_ES.get(c["level"], c["level"].title()), 11, TIER_COLORS.get(c["level"], "fg"), True,
                    width=70 if self.ctx["width"] < 640 else 84, anchor="w").pack(side="left")
@@ -576,7 +576,7 @@ class SummaryCard(Section):
                        "good" if c["pct"] <= 5 else "dim", anchor="w").pack(side="left")
         if ch.get("next"):
             ui.lbl(parent, f"Para el siguiente rango global de Retos te faltan {int(ch['next']):,} puntos.".replace(",", "."), 10, "dim", anchor="w").pack(
-                anchor="w", pady=(6, 0))
+                anchor="w", pady=(8, 0))
 
     def d_mastery(self, parent):
         ui = self.ui
@@ -587,7 +587,7 @@ class SummaryCard(Section):
         mx = max(p for _, p in top) or 1
         for cid, pts in top[:6]:
             row = ui.frame(parent)
-            row.pack(fill="x", pady=3)
+            row.pack(fill="x", pady=4)
             ui.champ(row, cid, 28, False).pack(side="left")
             ui.lbl(row, name(cid, ui.champs), 11, "fg", True, width=120, anchor="w").pack(side="left", padx=8)
             mini_bar(ui, row, pts / mx, "good", 160, 7).pack(side="left", padx=(0, 8))
@@ -610,7 +610,7 @@ class SummaryCard(Section):
         games = self.hist[:20]
         st = self.streaks() or {}
         ui.lbl(parent, "ÚLTIMAS 20 PARTIDAS", 9, "dim", True, anchor="w").pack(anchor="w")
-        ui.dots(parent, [e["w"] for e in games[::-1]], 12).pack(anchor="w", pady=(4, 6))
+        ui.dots(parent, [e["w"] for e in games[::-1]], 12).pack(anchor="w", pady=(4, 8))
         w = sum(1 for e in games if e["w"])
         ui.lbl(parent, f"{w} victorias y {len(games) - w} derrotas ({round(w / max(1, len(games)) * 100)} %). Mejor racha de victorias guardada: "
                        f"{st.get('best', 0)}. Partidas guardadas: {st.get('n', 0)}.", 10, "dim", anchor="w", justify="left",
@@ -629,7 +629,7 @@ class SummaryCard(Section):
             box = ui.frame(parent)
             box.pack(fill="x")
             row = ctk.CTkFrame(box, fg_color=PAL["card2"], corner_radius=10, border_width=1, border_color=PAL["card2"])
-            row.pack(fill="x", pady=3)
+            row.pack(fill="x", pady=4)
             inner = ui.frame(row)
             inner.pack(fill="x", padx=12, pady=8)
             wr = m["wins"] / m["games"]
@@ -655,9 +655,9 @@ class SummaryCard(Section):
             return
         games = [e for e in self.hist if mode_of(e) == mname]
         wrap = ctk.CTkFrame(slot, fg_color=PAL["card"], corner_radius=10, border_width=1, border_color=PAL["border"])
-        wrap.pack(fill="x", padx=8, pady=(0, 6))
+        wrap.pack(fill="x", padx=8, pady=(0, 8))
         holder = ui.frame(wrap)
-        holder.pack(fill="x", padx=12, pady=10)
+        holder.pack(fill="x", padx=12, pady=12)
 
         def fill(p):
             s = history.summary(games)
@@ -672,7 +672,7 @@ class SummaryCard(Section):
                 m_ = sum(durs) / len(durs)
                 line += f" · {int(m_ // 60)}:{int(m_ % 60):02d} de media"
             ui.lbl(p, line, 11, "fg", anchor="w", wraplength=min(self.ctx["width"] - 140, 640), justify="left").pack(anchor="w")
-            ui.dots(p, [e["w"] for e in games[:20][::-1]], 11).pack(anchor="w", pady=(6, 6))
+            ui.dots(p, [e["w"] for e in games[:20][::-1]], 11).pack(anchor="w", pady=(8, 8))
             cnt, win = Counter(e["c"] for e in games), Counter(e["c"] for e in games if e["w"])
             r2 = ui.frame(p)
             r2.pack(anchor="w")
@@ -704,12 +704,12 @@ class PoolCard(Section):
             cell = ctk.CTkFrame(grid, fg_color=PAL["card2"], corner_radius=12)
             cell.grid(row=n // 3, column=n % 3, sticky="ew", padx=4, pady=4)
             inner = ui.frame(cell)
-            inner.pack(padx=8, pady=10)
+            inner.pack(padx=8, pady=12)
             ui.champ(inner, cid, 48, True).pack()
             wr = w / g
             ui.lbl(inner, f"{wr:.0%}", 20, "good" if wr >= .5 else "bad", True, True).pack(pady=(4, 0))
             ui.lbl(inner, f"{w} de {g} partidas", 9, "dim").pack(pady=(0, 4))
-            ui.bar(inner, [(wr, "good" if wr >= .5 else "bad")], 5, True).pack(fill="x", padx=6)
+            ui.bar(inner, [(wr, "good" if wr >= .5 else "bad")], 5, True).pack(fill="x", padx=8)
 
 
 # ------------------------------------------------------------------ selección de campeón
@@ -730,7 +730,7 @@ class ProfileStrip(Section):
         right.pack(side="right")
         img = ui.profile_icon(pr["icon"], 30) if pr.get("icon") else None
         if img:
-            ctk.CTkLabel(row, image=img, text="").pack(side="left", padx=(0, 10))
+            ctk.CTkLabel(row, image=img, text="").pack(side="left", padx=(0, 12))
         solo = pr.get("solo")
         ui.lbl(row, r["rank"] or "Sin clasificar", 15, TIER_COLORS.get(solo["key"], "fg") if solo else "dim", True, True).pack(side="left")
         if r["record"] and ctx["width"] >= 600:
@@ -739,7 +739,7 @@ class ProfileStrip(Section):
             ui.lbl(right, "Cuidado con el tilt  ", 10, "warn", True).pack(side="left")
         for w in r["form"]:
             ctk.CTkLabel(right, text="V" if w else "D", width=22, height=20, corner_radius=6, font=ui.font(10, True, True),
-                         fg_color=PAL["good" if w else "bad"], text_color=ON_FILL).pack(side="left", padx=1)
+                         fg_color=PAL["good" if w else "bad"], text_color=ON_FILL).pack(side="left", padx=2)
 
 
 class TurnCard(Section):
@@ -768,7 +768,7 @@ class TurnCard(Section):
         st_col = {"ban": "bad", "pick": "good"}.get(r["turn"])
         tk.Frame(row, width=4, bg=ui.hexm(PAL[st_col]) if st_col else ui.hexm(ui.acc)).pack(side="left", fill="y", padx=(0, 12))
         if sr and r["role"] in ROLES_ES:
-            ctk.CTkLabel(row, image=ui.role_icon(r["role"], 56), text="").pack(side="left", padx=(0, 14))
+            ctk.CTkLabel(row, image=ui.role_icon(r["role"], 56), text="").pack(side="left", padx=(0, 16))
         left = ui.frame(row)
         left.pack(side="left")
         turn = r["turn"]
@@ -835,7 +835,7 @@ class MyPick(Section):
         pk = ui_opp.picker(ui, c, cid, lane, r.get("enemies") or [], r.get("lane_opp_auto") or 0,
                            ui.opp_now(), ui.set_opp, ctx["width"] - 110)
         if pk is not None:
-            pk.pack(fill="x", pady=(0, 10))
+            pk.pack(fill="x", pady=(0, 12))
         import ui_claves
         ui_claves.block(ui, c, cid, ctx["width"] - 110)
         build_panel(ui, c, cid, lane, r["lane_opp"] or None, ctx["width"] - 110, r.get("enemy_stats")).pack(fill="x")
@@ -933,13 +933,13 @@ class Recs(Section):
         self.filter_btn = small_btn(ui, line, "", self.toggle_filters, 86)
         self.filter_btn.pack(side="left")
         self.filter_sum = ui.lbl(line, "", 10, "dim", anchor="w")
-        self.filter_sum.pack(side="left", padx=(10, 0))
+        self.filter_sum.pack(side="left", padx=(12, 0))
         bar = ui.frame(parent)
         self.filter_box, self.filter_line, self.filter_built = bar, line, False
         self.paint_filter_line()
         if folds.get("rec_filters"):
             self.build_filter_controls()
-            bar.pack(fill="x", pady=(0, 10))
+            bar.pack(fill="x", pady=(0, 12))
 
     def build_filter_controls(self):
         """Los controles (dos menús desplegables y los botones) solo se construyen cuando se van a ver: con los filtros plegados, que es lo
@@ -950,10 +950,10 @@ class Recs(Section):
         ui, f, bar = self.ui, self.ui.conf["filters"], self.filter_box
         r1 = ui.frame(bar)
         r1.pack(fill="x")
-        ui.lbl(r1, "Ordenar", 10, "dim").pack(side="left", padx=(0, 6))
+        ui.lbl(r1, "Ordenar", 10, "dim").pack(side="left", padx=(0, 8))
         self.menu_order = ui.menu(r1, ORDENES, f["orden"], lambda v: self.set_filter("orden", v), 112)
         self.menu_order.pack(side="left")
-        ui.lbl(r1, "Clase", 10, "dim").pack(side="left", padx=(14, 6))
+        ui.lbl(r1, "Clase", 10, "dim").pack(side="left", padx=(16, 8))
         self.menu_class = ui.menu(r1, list(CLASES), f["clase"], lambda v: self.set_filter("clase", v), 112)
         self.menu_class.pack(side="left")
         r2 = ui.frame(bar)
@@ -986,7 +986,7 @@ class Recs(Section):
         core.save_conf(ui.conf)
         if folds["rec_filters"]:
             self.build_filter_controls()
-            self.filter_box.pack(fill="x", pady=(0, 10), after=self.filter_line)
+            self.filter_box.pack(fill="x", pady=(0, 12), after=self.filter_line)
         else:
             self.filter_box.pack_forget()
         self.paint_filter_line()
@@ -998,7 +998,7 @@ class Recs(Section):
                           border_color=PAL["border"], fg_color=ui.acc if on else PAL["card2"],
                           text_color=ON_FILL if on else PAL["fg"], hover_color=PAL["border"])
         b.configure(command=lambda: self.flip(b, key))
-        b.pack(side="left", padx=(0, 6))
+        b.pack(side="left", padx=(0, 8))
         self.toggles[key] = b
 
     def flip(self, btn, key):
@@ -1108,10 +1108,10 @@ class Recs(Section):
             return
         ui.root.after(90, self.fit_hero)
         if not self.vis and not self.r["cands"]:  # nada que comparar todavía (por ejemplo, un banquillo de ARAM aún vacío)
-            ui.lbl(self.dyn, "Todavía no hay campeones para comparar. Aparecerán cuando el cliente los muestre.", 11, "dim").pack(anchor="w", pady=(4, 6))
+            ui.lbl(self.dyn, "Todavía no hay campeones para comparar. Aparecerán cuando el cliente los muestre.", 11, "dim").pack(anchor="w", pady=(4, 8))
             return
         if not self.vis:
-            ui.lbl(self.dyn, "Ningún campeón cumple los filtros.", 11, "dim").pack(anchor="w", pady=(4, 6))
+            ui.lbl(self.dyn, "Ningún campeón cumple los filtros.", 11, "dim").pack(anchor="w", pady=(4, 8))
             ctk.CTkButton(self.dyn, text="Restablecer filtros", height=28, font=ui.font(11), fg_color=PAL["card2"], text_color=PAL["fg"],
                           hover_color=PAL["border"], command=self.reset_filters).pack(anchor="w")
             return
@@ -1187,7 +1187,7 @@ class Recs(Section):
             if i == 1:
                 w = max(340, min(2400, self.width - 52))
                 lab = self.hero_label(self.dyn, c, pct, w, "Mejor opción para ti")
-                lab.pack(pady=(0, 6))
+                lab.pack(pady=(0, 8))
                 self.list_hero = (lab, c, pct, w)
                 if not compact:
                     ui.chips(self.dyn, c["why"] or ["encaja con tu rol"], 4)
@@ -1195,7 +1195,7 @@ class Recs(Section):
             row = ctk.CTkFrame(self.dyn, fg_color=PAL["card2"], corner_radius=12)
             row.pack(fill="x", pady=4)
             inner = ui.frame(row)
-            inner.pack(fill="x", padx=12, pady=10)
+            inner.pack(fill="x", padx=12, pady=12)
             ui.champ(inner, c["cid"], 40, False).pack(side="left")
             right = ui.frame(inner)   # antes que el centro: si no, las etiquetas se comían su sitio y «afinidad» salía cortada
             right.pack(side="right", anchor="n")
@@ -1286,8 +1286,8 @@ class Recs(Section):
             self.list_tab = names[0]
         ui.seg(self.dyn, names, self.list_tab, self.set_list_tab, height=28).pack(fill="x", pady=(0, 8))
         bar = ui.frame(self.dyn)
-        bar.pack(fill="x", pady=(0, 6))
-        ui.lbl(bar, "Mostrar", 10, "dim").pack(side="left", padx=(0, 6))
+        bar.pack(fill="x", pady=(0, 8))
+        ui.lbl(bar, "Mostrar", 10, "dim").pack(side="left", padx=(0, 8))
         n = ui.conf.get("list_n", 20)
         ui.seg(bar, ["12", "20", "30", "40"], str(n), self.set_list_n, width=190, height=26).pack(side="left")
         if self.list_tab in ("Contra tu rival", "Ventaja vs rival") and (self.info.get("owned") or []):
@@ -1295,7 +1295,7 @@ class Recs(Section):
             b = ctk.CTkButton(bar, text="Solo los que tengo", height=26, width=10, corner_radius=13, font=ui.font(11), border_width=1,
                               border_color=PAL["border"], fg_color=ui.acc if on else PAL["card2"], text_color=ON_FILL if on else PAL["fg"],
                               hover_color=PAL["border"], command=self.flip_owned)
-            b.pack(side="left", padx=(10, 0))
+            b.pack(side="left", padx=(12, 0))
         items, why = self.list_items(self.list_tab)
         ui.lbl(self.dyn, why, 9, "dim", anchor="w", justify="left", wraplength=max(260, self.width - 110)).pack(anchor="w", pady=(0, 8))
         if not items:
@@ -1312,16 +1312,16 @@ class Recs(Section):
         fb, f9, f14 = ui.tkf(12, True, False), ui.tkf(9, False, False), ui.tkf(14, True, True)
         for i, (cid, val, color, sub) in enumerate(items):
             cell = tk_.Frame(grid, bg=card)
-            cell.grid(row=i // cols, column=i % cols, sticky="ew", padx=3, pady=3)
+            cell.grid(row=i // cols, column=i % cols, sticky="ew", padx=4, pady=4)
             ph = ui.champ_photo(cid, 34)
             ic = tk_.Label(cell, image=ph, bd=0, bg=card) if ph is not None else tk_.Frame(cell, width=34, height=34, bg=ui.hexm(PAL["card"]))
             ic.image = ph
-            ic.pack(side="left", padx=(8, 8), pady=6)
+            ic.pack(side="left", padx=(8, 8), pady=8)
             mid = tk_.Frame(cell, bg=card)
             mid.pack(side="left", fill="x", expand=True)
             tk_.Label(mid, text=f"{i + 1}.  {name(cid, ui.champs)}", font=fb, fg=fg, bg=card, anchor="w").pack(anchor="w")
             tk_.Label(mid, text=sub, font=f9, fg=dim, bg=card, anchor="w").pack(anchor="w")
-            tk_.Label(cell, text=val, font=f14, fg=ui.hexm(PAL[color]) if isinstance(color, str) and color in PAL else ui.hexm(color), bg=card).pack(side="right", padx=10)
+            tk_.Label(cell, text=val, font=f14, fg=ui.hexm(PAL[color]) if isinstance(color, str) and color in PAL else ui.hexm(color), bg=card).pack(side="right", padx=12)
 
     def set_list_tab(self, v):
         self.list_tab = v
@@ -1357,9 +1357,9 @@ class Recs(Section):
             ctk.CTkButton(row, text=txt, width=aw, height=150, corner_radius=12, font=ui.font(24, True), fg_color=PAL["card2"],
                           hover_color=PAL["border"], text_color=PAL["fg"], command=lambda d=d: self.go(d)).pack(side=side)
         self.hero_lab = ctk.CTkLabel(row, text="")
-        self.hero_lab.pack(side="left", padx=6)
+        self.hero_lab.pack(side="left", padx=8)
         self.build_strip()   # las otras opciones van justo bajo la imagen: debajo del desglose quedaban fuera de la primera pantalla
-        ui.seg(self.dyn, self.tabs(), self.tab, self.set_tab).pack(fill="x", pady=(10, 8))
+        ui.seg(self.dyn, self.tabs(), self.tab, self.set_tab).pack(fill="x", pady=(12, 8))
         self.info_host = ctk.CTkFrame(self.dyn, fg_color=PAL["card2"], corner_radius=12)
         self.info_host.pack(fill="x")
         self.hero = None
@@ -1379,7 +1379,7 @@ class Recs(Section):
         page = self.ui.frame(self.info_host)
         body = self.ui.frame(page)
         extra = max(0, (self.width - 52 - 800) // 2)  # en pantallas grandes la información se queda en una columna central
-        body.pack(fill="x", padx=14 + extra, pady=12)
+        body.pack(fill="x", padx=16 + extra, pady=12)
         {"Resumen": self.tab_summary, "Contra rival": self.tab_matchup, "Sinergias": self.tab_synergy,
          "Meta y build": self.tab_meta, "Build": self.tab_meta}[tab](body, c)
         self.pages[(c["cid"], tab)] = page
@@ -1436,9 +1436,9 @@ class Recs(Section):
         for i, c in enumerate(self.vis):
             row.columnconfigure(i, weight=1, uniform="thumb")
             cell = ctk.CTkFrame(row, fg_color="transparent", corner_radius=10, border_width=0, border_color=col(ui.acc))
-            cell.grid(row=0, column=i, sticky="ew", padx=3)
+            cell.grid(row=0, column=i, sticky="ew", padx=4)
             inner = ui.frame(cell)
-            inner.pack(padx=4, pady=6)
+            inner.pack(padx=4, pady=8)
             icon = ctk.CTkLabel(inner, text="", image=ui.icon(c["cid"], 40))
             icon.pack()
             num = ui.lbl(inner, self.pct_text(c), 13, "dim", True, True)
@@ -1471,24 +1471,24 @@ class Recs(Section):
         col.pack()  # sin «fill»: la columna queda centrada y el desglose no se pega al borde izquierdo
         why = [w for w in c["why"] if not re.match(r"^\d+/\d+ victorias( en ARAM)?$", w)]   # ya está arriba como «2 de 3»
         ui.chips(col, why or ["encaja con tu rol"], 3 if self.width < 900 else 4)
-        ui.lbl(col, "DESGLOSE DE LA AFINIDAD", 10, "dim", True).pack(anchor="w", pady=(10, 3))
+        ui.lbl(col, "DESGLOSE DE LA AFINIDAD", 10, "dim", True).pack(anchor="w", pady=(12, 4))
         breakdown_rows(ui, col, c["parts"], c["score"], self.r["pct_scale"], bw)
         ui.lbl(col, "La afinidad (0 a 100) es la suma de estos puntos sobre un máximo realista. Los pesos y su explicación están "
-                    "en «Datos» (botón de arriba).", 9, "dim", anchor="w", wraplength=bw + 150, justify="left").pack(anchor="w", pady=(6, 0))
+                    "en «Datos» (botón de arriba).", 9, "dim", anchor="w", wraplength=bw + 150, justify="left").pack(anchor="w", pady=(8, 0))
 
     def vs_row(self, parent, enemy, g, w, size=30):
         ui = self.ui
         row = ui.frame(parent)
-        row.pack(fill="x", pady=3)
+        row.pack(fill="x", pady=4)
         ui.champ(row, enemy, size, False).pack(side="left")
         mid = ui.frame(row)
-        mid.pack(side="left", fill="x", expand=True, padx=10)
+        mid.pack(side="left", fill="x", expand=True, padx=12)
         top = ui.frame(mid)
         top.pack(fill="x")
         ui.lbl(top, name(enemy, ui.champs), 12, "fg", True).pack(side="left")
         ok = w * 2 >= g
         ui.lbl(top, f"{w} de {g} victorias", 11, "good" if ok else "bad", True).pack(side="right")
-        ui.bar(mid, [(w / g if g else 0, "good" if ok else "bad")], 5).pack(fill="x", pady=(3, 0))
+        ui.bar(mid, [(w / g if g else 0, "good" if ok else "bad")], 5).pack(fill="x", pady=(4, 0))
 
     def tab_matchup(self, body, c):
         ui, r = self.ui, self.r
@@ -1521,7 +1521,7 @@ class Recs(Section):
         s = c["syn"]["score"]
         level, color = ("Alta", "good") if s >= .35 else ("Media", "info") if s >= 0 else ("Baja", "bad")
         head = ui.frame(body)
-        head.pack(fill="x", pady=(0, 6))
+        head.pack(fill="x", pady=(0, 8))
         ui.lbl(head, "SINERGIA CON TU EQUIPO", 10, "dim", True).pack(side="left")
         ui.lbl(head, level, 14, color, True, True).pack(side="right")
         for it in sorted(items, key=lambda i: -i["score"]):
@@ -1529,7 +1529,7 @@ class Recs(Section):
             row.pack(fill="x", pady=4)
             ui.champ(row, it["ally"], 34, False).pack(side="left")
             mid = ui.frame(row)
-            mid.pack(side="left", fill="x", expand=True, padx=10)
+            mid.pack(side="left", fill="x", expand=True, padx=12)
             top = ui.frame(mid)
             top.pack(fill="x")
             ui.lbl(top, name(it["ally"], ui.champs), 12, "fg", True).pack(side="left")
@@ -1544,7 +1544,7 @@ class Recs(Section):
         ui, mi, m = self.ui, self.r["meta_info"], c["meta"]
         if m and mi:
             row = ui.frame(body)
-            row.pack(fill="x", pady=(0, 6))
+            row.pack(fill="x", pady=(0, 8))
             ui.kpi(row, f"{pct_es(m['wr'])} %", "victorias")
             ui.kpi(row, f"{pct_es(m['pr'])} %", "uso")
             ui.kpi(row, f"{pct_es(m['br'])} %", "baneos")
@@ -1565,7 +1565,7 @@ class Recs(Section):
         ui.lbl(body, "CONSEJOS SEGÚN LA COMPOSICIÓN", 10, "dim", True).pack(anchor="w", pady=(2, 2))
         for title, text in c["build"]:
             row = ui.frame(body)
-            row.pack(fill="x", pady=3)
+            row.pack(fill="x", pady=4)
             ui.lbl(row, title.upper(), 9, ui.acc, True, width=96, anchor="w").pack(side="left", anchor="n")
             ui.lbl(row, text, 11, "fg", anchor="w", wraplength=300, justify="left").pack(side="left", fill="x", expand=True)
         ui.lbl(body, "Consejos orientativos según la composición actual. No sustituyen a la build recomendada del parche.", 9,
@@ -1574,7 +1574,7 @@ class Recs(Section):
         links = ui.frame(body)
         links.pack(anchor="w", pady=(8, 0))
         small_btn(ui, links, "Builds de especialistas (OneTricks)",
-                  lambda: open_url(f"https://www.onetricks.gg/es/champions/builds/{champ['icon']}"), 220).pack(side="left", padx=(0, 6))
+                  lambda: open_url(f"https://www.onetricks.gg/es/champions/builds/{champ['icon']}"), 220).pack(side="left", padx=(0, 8))
         lane = matchups.LANES.get(self.r["role"])
         if lane:
             small_btn(ui, links, "Meta en Lolalytics", lambda: open_url(f"https://lolalytics.com/lol/{matchups.slug(champ)}/build/?lane={lane}"),
@@ -1605,14 +1605,14 @@ class Lobby(Section):
             row = ui.frame(c)
             row.pack(anchor="w")
             for a in r["ally_cells"]:
-                ui.champ(row, a["champ"], 44, True, "#3ddc84" if a["champ"] else None).pack(side="left", padx=3)
+                ui.champ(row, a["champ"], 44, True, "#3ddc84" if a["champ"] else None).pack(side="left", padx=4)
         else:
             for a in r["ally_cells"]:
                 p = pl.get(a["puuid"]) if a["puuid"] else None
                 self.row(c, a, p, a["puuid"] in party, len(party), bool(pl) or not a["puuid"], r["mates"].get(a["puuid"]), qid=r["mode"]["id"])
             if r["ally_cells"] and not any(a["puuid"] for a in r["ally_cells"]):
                 ui.lbl(c, "En esta cola Riot oculta los nombres hasta que empieza la partida, así que no hay rango ni historial de tus aliados. "
-                          "Se muestran su línea y su campeón.", 10, "dim", anchor="w", justify="left", wraplength=max(260, ctx["width"] - 110)).pack(anchor="w", pady=(2, 6))
+                          "Se muestran su línea y su campeón.", 10, "dim", anchor="w", justify="left", wraplength=max(260, ctx["width"] - 110)).pack(anchor="w", pady=(2, 8))
         st = r["ally_stats"]
         if st and st["ad"] + st["ap"]:
             tot = st["ad"] + st["ap"]
@@ -1625,7 +1625,7 @@ class Lobby(Section):
         box = ctk.CTkFrame(parent, fg_color=PAL["card2"], corner_radius=12)
         box.pack(fill="x", pady=4)
         inner = ui.frame(box)
-        inner.pack(fill="x", padx=12, pady=10)
+        inner.pack(fill="x", padx=12, pady=12)
         ui.champ(inner, a["champ"], 44, False, ring if a["champ"] else None).pack(side="left", anchor="n")
         mid = ui.frame(inner)
         mid.pack(side="left", fill="x", expand=True, padx=12)
@@ -1637,21 +1637,21 @@ class Lobby(Section):
         if p and not p.get("error"):   # el rango se coloca antes que las etiquetas: con varias («Dúo», «Juntos…») se quedaba sin sitio y no salía
             rk = (p.get("prem") if qid == 710 else None) or p.get("solo") or p.get("flex")   # en las clasificatorias de 5 cuenta su rango de esa cola
             if rk:
-                ui.lbl(head, f"{rk['tier']} {rk['div']}".strip(), 12, TIER_COLORS.get(rk["key"], "fg"), True, True).pack(side="right", padx=(6, 0))
+                ui.lbl(head, f"{rk['tier']} {rk['div']}".strip(), 12, TIER_COLORS.get(rk["key"], "fg"), True, True).pack(side="right", padx=(8, 0))
         if ROLES_ES.get(a["role"]):
             ui.chip(head, ROLES_ES[a["role"]], "dim").pack(side="left", padx=(8, 0))
         if tag:
-            ui.chip(head, tag, "warn").pack(side="left", padx=(6, 0))
+            ui.chip(head, tag, "warn").pack(side="left", padx=(8, 0))
         if in_party:
-            ui.chip(head, "Dúo contigo" if party_n == 1 else "Tu grupo", "info").pack(side="left", padx=(6, 0))
+            ui.chip(head, "Dúo contigo" if party_n == 1 else "Tu grupo", "info").pack(side="left", padx=(8, 0))
         if mates and mates[0]:
             g, w = mates
-            ui.chip(head, f"Juntos {w}V {g - w}D", "good" if w * 2 >= g else "bad").pack(side="left", padx=(6, 0))
+            ui.chip(head, f"Juntos {w}V {g - w}D", "good" if w * 2 >= g else "bad").pack(side="left", padx=(8, 0))
         if p and not p.get("error"):
             if not rk and len(p.get("recent", [])) < 4:
                 ui.chip(head, "Sin rango ni historial", "warn").pack(side="right")
             line = ui.frame(mid)
-            line.pack(fill="x", pady=(5, 0))
+            line.pack(fill="x", pady=(4, 0))
             rec = p["recent"]
             if rec:
                 ui.dots(line, [x["w"] for x in rec]).pack(side="left")
@@ -1663,7 +1663,7 @@ class Lobby(Section):
                 txt = f"Maestría {pts // 1000}k con {champ_name}" if pts >= 1000 else f"Primera vez con {champ_name}"
                 ui.chip(line, txt, "good" if pts >= 50000 else "warn" if pts < 1000 else "info").pack(side="right")
             line2 = ui.frame(mid)
-            line2.pack(fill="x", pady=(5, 0))
+            line2.pack(fill="x", pady=(4, 0))
             for cid in p["top"][:3]:
                 ui.champ(line2, cid, 22, False).pack(side="left", padx=(0, 4))
             extra = []
@@ -1687,12 +1687,12 @@ def profile_toggle(self, box, inner, mid, a, p, qid):
     key = a.get("puuid") or ""
     det = ui.frame(box)
     lab = ui.lbl(mid, "", 10, "info", True)
-    lab.pack(anchor="w", pady=(6, 0))
+    lab.pack(anchor="w", pady=(8, 0))
 
     def paint():
         if key in opened:
             lab.configure(text="▾ Ocultar perfil")
-            det.pack(fill="x", padx=12, pady=(0, 10))
+            det.pack(fill="x", padx=12, pady=(0, 12))
             if not det.winfo_children():
                 ui_player.build(ui, det, p, qid, getattr(self, "width", 520))
         else:
@@ -1735,7 +1735,7 @@ class Enemies(Section):
         icons = ui.frame(row)
         icons.pack(side="left")
         for i in range(5):
-            ui.champ(icons, r["enemies"][i] if i < len(r["enemies"]) else 0, 48, True, "#ff5a5f").pack(side="left", padx=3)
+            ui.champ(icons, r["enemies"][i] if i < len(r["enemies"]) else 0, 48, True, "#ff5a5f").pack(side="left", padx=4)
         st = r["enemy_stats"]
         if st:
             info = ui.frame(row)
@@ -1774,4 +1774,4 @@ class BansRow(Section):
         row = ui.frame(c)
         row.pack(anchor="w")
         for cid in r["bans"]:
-            ui.champ(row, cid, 34, False, "#ff5a5f").pack(side="left", padx=3)
+            ui.champ(row, cid, 34, False, "#ff5a5f").pack(side="left", padx=4)

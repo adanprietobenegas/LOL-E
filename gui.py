@@ -603,7 +603,7 @@ class GUI:
             return
         self.update_info = info
         self.update_btn.configure(text=f"Actualizar a {info['version']}")
-        self.update_btn.pack(side="right", padx=(0, 10))
+        self.update_btn.pack(side="right", padx=(0, 12))
         self.status(f"Hay una versión nueva: {info['version']}")
         if self.conf.get("auto_install", True) and not manual:
             self.auto_install(info)
@@ -643,11 +643,11 @@ class GUI:
         self.main = ctk.CTkFrame(self.root, fg_color="transparent", corner_radius=0)
         tk.Place.place_configure(self.main, x=0, y=0, relwidth=1.0, relheight=1.0)  # ancho propio: no depende de la ventana
         bar = k.frame(self.main)
-        bar.pack(fill="x", padx=18, pady=(14, 2))
+        bar.pack(fill="x", padx=16, pady=(16, 2))
         try:
             im = Image.open(res("icon.png")).convert("RGBA").resize((64, 64), Image.LANCZOS)
             self.logo = ctk.CTkImage(light_image=im, dark_image=im, size=(32, 32))
-            ctk.CTkLabel(bar, image=self.logo, text="").pack(side="left", padx=(0, 10))
+            ctk.CTkLabel(bar, image=self.logo, text="").pack(side="left", padx=(0, 12))
         except Exception:
             pass
         k.clbl(bar, APP_NAME, 22, "fg", True, True).pack(side="left")
@@ -664,7 +664,7 @@ class GUI:
         self.datos_btn.pack(side="right", padx=(0, 8))
         k.smooth_btn(self.datos_btn, PAL["card"], PAL["card2"])
         self.link_lbl = k.clbl(bar, "", 11, "warn", True)
-        self.link_lbl.pack(side="right", padx=(10, 12))
+        self.link_lbl.pack(side="right", padx=(12, 12))
         vol = k.frame(bar)
         vol.pack(side="right")
         self.mute_btn = ctk.CTkButton(vol, text=self.vol_icon(), width=30, height=28, corner_radius=8, fg_color="transparent",
@@ -676,13 +676,13 @@ class GUI:
         tabs = {"asesor": "Asesor", "partida": "Partida", "enfrentamiento": "Enfrentamiento", "repertorio": "Repertorio", "historial": "Historial"}
         self.tab_names = {**tabs, "datos": "Datos"}   # «Datos» es una página más, pero se abre desde su botón de la cabecera
         self.tab_seg = k.seg(self.main, list(tabs.values()), tabs.get(self.page, ""), self.set_page)
-        self.tab_seg.pack(fill="x", padx=18, pady=(8, 0))
+        self.tab_seg.pack(fill="x", padx=16, pady=(8, 0))
         self.body = ctk.CTkScrollableFrame(self.main, fg_color="transparent", corner_radius=0, scrollbar_button_color=PAL["edge"],
                                            scrollbar_button_hover_color=PAL["border"])
-        self.body.pack(fill="both", expand=True, padx=10, pady=(8, 0))
+        self.body.pack(fill="both", expand=True, padx=12, pady=(8, 0))
         calm(getattr(self.body, "_scrollbar", None))   # la barra recalculaba toda la ventana en cada cambio de alto del contenido
         self.footer = k.clbl(self.main, "", 10, "dim", anchor="w")
-        self.footer.pack(fill="x", padx=20, pady=(2, 10))
+        self.footer.pack(fill="x", padx=24, pady=(2, 12))
         self.update_link()
 
     def build_views(self):
@@ -925,7 +925,7 @@ class GUI:
             else:
                 core.play_alert(snd, conf["volume"])
 
-        k.clbl(sc, ph_name, 11, "fg", True).pack(anchor="w", padx=12, pady=(10, 0))
+        k.clbl(sc, ph_name, 11, "fg", True).pack(anchor="w", padx=12, pady=(12, 0))
         k.clbl(sc, ph_desc, 10, "dim", anchor="w").pack(anchor="w", padx=12)
         row = k.frame(sc)
         row.pack(anchor="w", padx=12, pady=2)
@@ -1153,25 +1153,25 @@ class GUI:
                                      border_color=PAL["border"])
         d.pack_propagate(False)
         head = k.frame(d)
-        head.pack(fill="x", padx=20, pady=(16, 0))
+        head.pack(fill="x", padx=24, pady=(16, 0))
         k.clbl(head, "Ajustes", 20, "fg", True, True).pack(side="left")
         close = ctk.CTkButton(head, text="Cerrar", width=70, height=30, corner_radius=9, font=k.font(12), fg_color=PAL["card2"],
                               hover_color=PAL["card2"], text_color=PAL["fg"], command=self.close_dock)
         close.pack(side="right")
         k.smooth_btn(close, PAL["card2"], PAL["border"])
         k.clbl(d, "Los cambios se aplican al instante y se guardan solos.", 10, "dim", anchor="w", wraplength=self.note_w(),
-               justify="left").pack(anchor="w", padx=22, pady=(2, 0))
+               justify="left").pack(anchor="w", padx=24, pady=(2, 0))
         sc = ctk.CTkScrollableFrame(d, fg_color="transparent")
         self.dock_scroll = sc   # lo usan las capturas de prueba para paginar el panel
         calm(getattr(sc, "_scrollbar", None))
-        sc.pack(fill="both", expand=True, padx=8, pady=(4, 10))
+        sc.pack(fill="both", expand=True, padx=8, pady=(4, 12))
 
         def section(text):
             ctk.CTkFrame(sc, height=1, corner_radius=0, fg_color=PAL["border"]).pack(fill="x", padx=12, pady=(16, 0))
             k.clbl(sc, text.upper(), 10, k.acc, True).pack(anchor="w", padx=12, pady=(8, 4))
 
         def note(text):
-            k.clbl(sc, text, 10, "dim", wraplength=self.note_w(), justify="left", anchor="w").pack(anchor="w", padx=14, pady=(0, 4))
+            k.clbl(sc, text, 10, "dim", wraplength=self.note_w(), justify="left", anchor="w").pack(anchor="w", padx=16, pady=(0, 4))
 
         def label(text):
             k.clbl(sc, text, 11, "dim").pack(anchor="w", padx=12, pady=(8, 0))
@@ -1184,7 +1184,7 @@ class GUI:
         def switch(text, key, command=None):
             var = ctk.BooleanVar(value=bool(conf[key]))
             ctk.CTkSwitch(sc, text=text, variable=var, font=k.font(12), progress_color=k.acc,
-                          command=command or (lambda: self.set(key, var.get()))).pack(anchor="w", padx=12, pady=6)
+                          command=command or (lambda: self.set(key, var.get()))).pack(anchor="w", padx=12, pady=8)
 
         def button(text, cmd):
             b = ctk.CTkButton(sc, text=text, font=k.font(12), fg_color=PAL["card2"], text_color=PAL["fg"], hover_color=PAL["card2"],
@@ -1211,7 +1211,7 @@ class GUI:
         sw.pack(anchor="w", padx=12, pady=(2, 0))
         for n, colr in ACCENTS.items():
             ctk.CTkButton(sw, text="", width=30, height=30, corner_radius=15, fg_color=colr, hover_color=colr, border_width=2,
-                          border_color=PAL["border"], command=lambda n=n: self.set("accent", n)).pack(side="left", padx=3)
+                          border_color=PAL["border"], command=lambda n=n: self.set("accent", n)).pack(side="left", padx=4)
         label("Tamaño de la interfaz")
         cur = f"{round(conf['scale'] * 100)}%"
         seg(["90%", "100%", "115%", "130%"], cur if cur in ("90%", "100%", "115%", "130%") else "100%",
@@ -1257,7 +1257,7 @@ class GUI:
             self.set("preset", key, True, redraw=False)
             self.data_view.sig = None  # la pestaña «Datos» recoge los pesos nuevos la próxima vez
         seg(list(names), PRESET_INFO[conf["preset"]][0], pick)
-        desc.pack(anchor="w", padx=14, pady=(2, 4))
+        desc.pack(anchor="w", padx=16, pady=(2, 4))
         note("Los pesos, los umbrales y de dónde sale cada dato están en «Datos» (botón junto a Ajustes).")
         button("Abrir «Datos»", lambda: self.set_page("Datos"))
 
@@ -1307,7 +1307,7 @@ class GUI:
         k.clbl(sc, f"{APP_NAME} {APP_VERSION}\nNo está respaldado por Riot Games ni refleja las opiniones de Riot Games "
                    "ni de nadie que participe oficialmente en League of Legends. Solo lee la selección de campeón "
                    "de tu cliente; nunca interviene en la partida.", 10, "dim", wraplength=self.note_w(), justify="left").pack(
-            anchor="w", padx=14, pady=(0, 10))
+            anchor="w", padx=16, pady=(0, 12))
 
     _opp_choice = 0  # rival de línea elegido a mano (0 = el que se deduce solo)
 

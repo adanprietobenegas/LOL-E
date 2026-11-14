@@ -81,7 +81,7 @@ class AnalysisView:
         labels = {f"{fecha(g['t'])} · {ui.champs.get(g['c'], {}).get('name', g['c'])} · {'Victoria' if g['w'] else 'Derrota'}": g["id"] for g in gv.games[:15]}
         cur = next((k for k, v in labels.items() if v == gv.gid), list(labels)[0])
         bar = ui.frame(host)
-        bar.pack(fill="x", pady=(0, 10))
+        bar.pack(fill="x", pady=(0, 12))
         ui.lbl(bar, "Partida", 10, "dim").pack(side="left", padx=(0, 8))
         ui.menu(bar, list(labels), cur, lambda v: gv.pick_game(labels[v]), min(430, gv.width - 160)).pack(side="left")
         a = gv.data.get(gv.gid)
@@ -93,11 +93,11 @@ class AnalysisView:
             # sin cliente la lectura no puede terminar: se dice, en vez de dejar «Leyendo…» para siempre
             ui.lbl(host, "Leyendo la línea de tiempo de la partida…" if ctx.get("linked") else
                    "Para analizar esta partida hace falta el cliente de League of Legends abierto: ábrelo y se leerá sola.",
-                   11, "dim", anchor="w", justify="left", wraplength=max(260, gv.width - 110)).pack(anchor="w", pady=6)
+                   11, "dim", anchor="w", justify="left", wraplength=max(260, gv.width - 110)).pack(anchor="w", pady=8)
             return
         if a == "no":
             ui.lbl(host, "El cliente ya no guarda la línea de tiempo de esta partida (solo conserva las más recientes) o LoL está cerrado.",
-                   11, "dim", anchor="w", justify="left", wraplength=max(260, gv.width - 110)).pack(anchor="w", pady=(6, 4))
+                   11, "dim", anchor="w", justify="left", wraplength=max(260, gv.width - 110)).pack(anchor="w", pady=(8, 4))
             have = [g for g in gv.games if isinstance(gv.data.get(g["id"]), dict)]
             if have:
                 from ui_views import small_btn
@@ -172,7 +172,7 @@ class AnalysisView:
             return
         ui = self.ui
         row = ui.frame(host)
-        row.pack(fill="x", pady=(18, 6))
+        row.pack(fill="x", pady=(16, 8))
         ui.lbl(row, title, 10, "dim", True).pack(side="left")
         if sub:
             ui.lbl(row, "   " + sub, 9, "dim").pack(side="left")
@@ -183,7 +183,7 @@ class AnalysisView:
         txt = analysis.headline(a, adv)
         if txt:
             self.ui.lbl(host, txt, 12, "fg", True, anchor="w", justify="left",
-                        wraplength=max(260, self.gv.width - 110)).pack(anchor="w", pady=(0, 10))
+                        wraplength=max(260, self.gv.width - 110)).pack(anchor="w", pady=(0, 12))
 
     def media(self, host, a):
         """Tu partida frente a tu media (con ese campeón si hay partidas suficientes): una o dos líneas bajo el titular."""
@@ -192,7 +192,7 @@ class AnalysisView:
             este = next((g for g in todas if str(g["id"]) == str(self.gv.gid)), None)
             nombre = self.ui.champs.get((este or {}).get("c"), {}).get("name", "")
             for txt, tono in analysis.average_lines(analysis.vs_average(este, todas), nombre):
-                self.ui.lbl(host, txt, 11, tono, anchor="w", justify="left", wraplength=max(260, self.gv.width - 110)).pack(anchor="w", pady=(0, 3))
+                self.ui.lbl(host, txt, 11, tono, anchor="w", justify="left", wraplength=max(260, self.gv.width - 110)).pack(anchor="w", pady=(0, 4))
         except Exception:
             core.log_exc("Tu partida frente a tu media")
 
@@ -205,7 +205,7 @@ class AnalysisView:
         row.pack(fill="x", padx=16, pady=12)
         left = ui.frame(row)
         left.pack(side="left")
-        ui.champ(left, m["champ"], 56, False, self.hx(ui.acc)).pack(side="left", padx=(0, 10))
+        ui.champ(left, m["champ"], 56, False, self.hx(ui.acc)).pack(side="left", padx=(0, 12))
         t = ui.frame(left)
         t.pack(side="left")
         ui.lbl(t, "TÚ", 9, "dim", True).pack(anchor="w")
@@ -227,14 +227,14 @@ class AnalysisView:
         except Exception:
             res = None
         if res:
-            ui.lbl(host, res[1], 11, "good" if res[0] else "warn", True, anchor="w", justify="left", wraplength=max(240, gv.width - 110)).pack(anchor="w", pady=(0, 6))
+            ui.lbl(host, res[1], 11, "good" if res[0] else "warn", True, anchor="w", justify="left", wraplength=max(240, gv.width - 110)).pack(anchor="w", pady=(0, 8))
         if opp is None:
             return
         o = analysis.player(a, opp)
         right = ui.frame(row)
         right.pack(side="right")
         t2 = ui.frame(right)
-        t2.pack(side="left", padx=(0, 10))
+        t2.pack(side="left", padx=(0, 12))
         ui.lbl(t2, "COMPARADO CON", 9, "dim", True, anchor="e").pack(anchor="e")
         ui.lbl(t2, self.cname(o["champ"]), 17, "fg", True, True, anchor="e").pack(anchor="e")
         ui.lbl(t2, (self.rl(a, o["role"]) or "ARAM") + ((" · el que más daño hizo" if a.get("queue") in analysis.ARAM_QUEUES else " · rival directo") if opp == analysis.default_opp(a) else ""),
@@ -244,7 +244,7 @@ class AnalysisView:
         labels = {f"{self.cname(p['champ'])}" + (f" · {self.rl(a, p['role'])}" if self.rl(a, p['role']) else ""): p["pid"] for p in sorted(analysis.enemies(a), key=lambda p: ORDER.index(p["role"]) if p["role"] in ORDER else 9)}
         cur = next(k for k, v in labels.items() if v == opp)
         sel = ui.frame(host)
-        sel.pack(fill="x", pady=(0, 6))
+        sel.pack(fill="x", pady=(0, 8))
         ui.lbl(sel, "Comparar con", 10, "dim").pack(side="left", padx=(0, 8))
         ui.menu(sel, list(labels), cur, lambda v: self.set_opp(labels[v]), 240).pack(side="left")
         ui.lbl(sel, ("  En ARAM no hay líneas: por defecto, el rival que más daño hizo." if a.get("queue") in analysis.ARAM_QUEUES else
@@ -290,7 +290,7 @@ class AnalysisView:
         row.pack(fill="x", pady=(0, 4))
         for i, (lb, val, sub, col) in enumerate(cards):
             c = ctk.CTkFrame(row, fg_color=PAL["card2"], corner_radius=10)
-            c.pack(side="left", expand=True, fill="x", padx=(0 if i == 0 else 6, 0))
+            c.pack(side="left", expand=True, fill="x", padx=(0 if i == 0 else 8, 0))
             ui.lbl(c, lb, 9, "dim").pack(anchor="w", padx=12, pady=(8, 0))
             ui.lbl(c, val, 15, col, True, True).pack(anchor="w", padx=12)
             ui.lbl(c, sub, 8, "dim", anchor="w", wraplength=max(56, (self.gv.width - 120) // 5 - 24), justify="left").pack(anchor="w", padx=12, pady=(0, 8))
@@ -305,7 +305,7 @@ class AnalysisView:
         if gv.chart not in names:
             gv.chart = names[0]
         self.section(host, "EVOLUCIÓN DE LA PARTIDA")
-        ui.seg(host, names, gv.chart, gv.set_chart, height=28).pack(fill="x", pady=(0, 6))
+        ui.seg(host, names, gv.chart, gv.set_chart, height=28).pack(fill="x", pady=(0, 8))
         self.hover = ui.lbl(host, "Pasa el ratón por el gráfico para ver cada minuto.", 9, "dim", anchor="w")
         self.hover.pack(anchor="w", pady=(0, 2))
         W = self.avail()
@@ -491,8 +491,8 @@ class AnalysisView:
         ui = self.ui
         self.section(host, "LOS DOS EQUIPOS", "pulsa una columna para ordenar, como en el marcador del juego")
         top = ui.frame(host)
-        top.pack(fill="x", pady=(0, 6))
-        ui.seg(top, ["Por equipos", "Los 10 juntos"], "Los 10 juntos" if self.together else "Por equipos", self.set_together, height=26, width=240).pack(side="left", padx=(0, 10))
+        top.pack(fill="x", pady=(0, 8))
+        ui.seg(top, ["Por equipos", "Los 10 juntos"], "Los 10 juntos" if self.together else "Por equipos", self.set_together, height=26, width=240).pack(side="left", padx=(0, 12))
         ui.seg(top, SORTS, self.sort, self.set_sort, height=26).pack(side="left", fill="x", expand=True)
         sx = ui.scale_px()
         S = lambda v: int(v * sx)
@@ -572,14 +572,14 @@ class AnalysisView:
         key = bad if (bad and not a["win"]) or (bad and not good) else good or bad
         if key:
             line = ui.frame(host)
-            line.pack(anchor="w", pady=(0, 6))
+            line.pack(anchor="w", pady=(0, 8))
             ui.lbl(line, "Lo que más pesó:  " if key is bad else "Lo mejor:  ", 11, "dim", True).pack(side="left")
             ui.lbl(line, " · ".join(key), 11, "bad" if key is bad else "good", True, anchor="w", justify="left",
                    wraplength=max(240, self.gv.width - 260)).pack(side="left")
         for it in items[:9]:
             color = {"good": "good", "bad": "bad"}.get(it["tone"], "info")
             card = tk.Frame(host, bg=self.hx("card2"))
-            card.pack(fill="x", pady=3)
+            card.pack(fill="x", pady=4)
             tk.Frame(card, bg=self.hx(color), width=4).pack(side="left", fill="y")
             inner = ui.frame(card)
             inner.pack(side="left", fill="x", expand=True, padx=12, pady=8)

@@ -40,7 +40,7 @@ class DraftCard(Section):
         self.lines(c, r, pl, champs)
         self.teams(c, r, pl)
         ui.lbl(c, "Cola de grupos de 5: solo fines de semana y, según Riot, hasta el 7 de enero de 2027. Los puntajes de ban son orientativos.", 9, "dim",
-               anchor="w", justify="left", wraplength=max(260, ctx["width"] - 120)).pack(anchor="w", pady=(10, 0))
+               anchor="w", justify="left", wraplength=max(260, ctx["width"] - 120)).pack(anchor="w", pady=(12, 0))
 
     # ---- turnos ----
     def steps(self, c, pg):
@@ -48,7 +48,7 @@ class DraftCard(Section):
         if not pg["steps"]:
             return
         row = ui.frame(c)
-        row.pack(anchor="w", pady=(0, 6))
+        row.pack(anchor="w", pady=(0, 8))
         for s in pg["steps"]:
             col = ui.hexm(PAL["good"] if s["mine"] else PAL["bad"])
             if s["done"]:
@@ -58,7 +58,7 @@ class DraftCard(Section):
             else:
                 bg, fg = ui.hexm(PAL["card2"]), ui.hexm(PAL["dim"])
             tk.Label(row, text="B" if s["type"] == "ban" else "P", bg=bg, fg=fg, font=ui.tkf(8, True, False), width=2, bd=0,
-                     highlightthickness=1 if s["now"] else 0, highlightbackground=col).pack(side="left", padx=1)
+                     highlightthickness=1 if s["now"] else 0, highlightbackground=col).pack(side="left", padx=2)
         now = pg["now"]
         if now:
             who = "tu equipo" if now["mine"] else "el rival"
@@ -79,13 +79,13 @@ class DraftCard(Section):
         if not lst:
             return
         title = "BANS DIRIGIDOS · lo que más puede jugar cada rival que aún no ha elegido" + (" (2.ª tanda: ya se han visto 6 picks)" if pg["second_bans"] else "")
-        ui.lbl(c, title, 9, "dim", True, anchor="w", justify="left", wraplength=420).pack(anchor="w", pady=(10, 3))
+        ui.lbl(c, title, 9, "dim", True, anchor="w", justify="left", wraplength=420).pack(anchor="w", pady=(12, 4))
         for x in lst:
             row = ui.frame(c)
             row.pack(fill="x", pady=2)
             ui.champ(row, x["cid"], 30, False, "#ff5a5f").pack(side="left")
             mid = ui.frame(row)
-            mid.pack(side="left", padx=10)
+            mid.pack(side="left", padx=12)
             ui.lbl(mid, f"{champs[x['cid']]['name']}  ·  de {x['who']}", 11, "fg", True, anchor="w").pack(anchor="w")
             bits = []
             if x["n"]:
@@ -103,7 +103,7 @@ class DraftCard(Section):
         if not roles:
             return
         ui.lbl(c, "LÍNEA PROBABLE DE CADA RIVAL (deducida de sus líneas habituales y de su campeón)", 9, "dim", True, anchor="w", justify="left",
-               wraplength=420).pack(anchor="w", pady=(12, 3))
+               wraplength=420).pack(anchor="w", pady=(12, 4))
         row = ui.frame(c)
         row.pack(anchor="w")
         mine = (r.get("role") or "").upper()
@@ -111,7 +111,7 @@ class DraftCard(Section):
             if e["puuid"] not in roles:
                 continue
             cell = ui.frame(row)
-            cell.pack(side="left", padx=5)
+            cell.pack(side="left", padx=4)
             line = roles[e["puuid"]]
             ui.champ(cell, e["champ"], 38, False, "#ffd166" if line == mine else "#ff5a5f").pack()
             ui.lbl(cell, ROLES_ES.get(line, line), 9, "warn" if line == mine else "dim", line == mine).pack()
@@ -120,7 +120,7 @@ class DraftCard(Section):
         opp = next((e for e in r["enemy_cells"] if roles.get(e["puuid"]) == mine and e["champ"]), None)
         if mine and opp:
             ui.lbl(c, f"Tu rival de línea probable: {champs[opp['champ']]['name']} ({(pl.get(opp['puuid']) or {}).get('name') or opp['name']})", 11, "warn", True,
-                   anchor="w").pack(anchor="w", pady=(6, 0))
+                   anchor="w").pack(anchor="w", pady=(8, 0))
 
     # ---- resumen de equipos ----
     def teams(self, c, r, pl):
@@ -130,7 +130,7 @@ class DraftCard(Section):
         them = draft5.team_summary(r["enemy_cells"], pl, qid)
         if not mine["n"] and not them["n"]:
             return
-        ui.lbl(c, "RANGO DE LOS EQUIPOS (jugadores con rango conocido)", 9, "dim", True, anchor="w").pack(anchor="w", pady=(12, 3))
+        ui.lbl(c, "RANGO DE LOS EQUIPOS (jugadores con rango conocido)", 9, "dim", True, anchor="w").pack(anchor="w", pady=(12, 4))
         for label, t, col in (("Tu equipo (sin contarte)", mine, "good"), ("Equipo rival", them, "bad")):
             if not t["n"]:
                 continue
@@ -139,7 +139,7 @@ class DraftCard(Section):
                 line += f"  ·  mucha diferencia entre ellos ({int(t['spread'] // 100)} divisiones)"
             if t["unknown"]:
                 line += f"  ·  {t['unknown']} sin rango"
-            ui.lbl(c, line, 10, col, anchor="w", justify="left", wraplength=420).pack(anchor="w", pady=1)
+            ui.lbl(c, line, 10, col, anchor="w", justify="left", wraplength=420).pack(anchor="w", pady=2)
         if mine["n"] and them["n"]:
             d = them["avg"] - mine["avg"]
             if abs(d) >= 100:

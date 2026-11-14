@@ -88,7 +88,7 @@ class PoolPanel:
             ui.lbl(self.root, "Aún no hay campeones con partidas aquí. Prueba «Todos los modos», o juega con LOL-E abierto para que las guarde.", 11, "dim", anchor="w").pack(anchor="w", pady=8)
             return
         body = ui.frame(self.root)
-        body.pack(fill="x", pady=(10, 0))
+        body.pack(fill="x", pady=(12, 0))
         if self.wide:
             body.columnconfigure(0, weight=3, uniform="pl")
             body.columnconfigure(1, weight=2, uniform="pl")
@@ -104,7 +104,7 @@ class PoolPanel:
             self.dw = max(280, width - 110)
             top, bottom = ui.frame(body), ui.frame(body)
             top.pack(fill="x")
-            bottom.pack(fill="x", pady=(10, 0))
+            bottom.pack(fill="x", pady=(12, 0))
             self.dparent = top
             self.detail(top, next(r for r in rows if r["cid"] == self.sel))
             self.table_host = bottom
@@ -131,12 +131,12 @@ class PoolPanel:
                 line += f" Con {nm(worst)} pierdes más de lo que ganas ({round(worst['wr'] * 100)} % en {worst['g']})."
         else:
             line = "Aún hay pocas partidas por campeón (se necesitan 5 para sacar conclusiones)."
-        ui.lbl(self.root, line, 11, "dim", anchor="w", justify="left", wraplength=min(self.ctx["width"] - 90, 760)).pack(anchor="w", pady=(3, 8))
+        ui.lbl(self.root, line, 11, "dim", anchor="w", justify="left", wraplength=min(self.ctx["width"] - 90, 760)).pack(anchor="w", pady=(4, 8))
         # cifras: un solo contenedor partido por líneas, sin fichas ni iconos
         box = ctk.CTkFrame(self.root, fg_color=PAL["card2"], corner_radius=12)
         box.pack(fill="x")
         inner = ui.frame(box)
-        inner.pack(fill="x", padx=4, pady=10)
+        inner.pack(fill="x", padx=4, pady=12)
         figs = [("Campeones", str(len(rows)), "con partidas"), ("Partidas", str(tot), f"{wins}V {tot - wins}D"),
                 ("Victorias", f"{round(wins / tot * 100)} %", "de todas ellas"),
                 ("Más jugado", nm(max(rows, key=lambda r: r["g"])), f"{max(r['g'] for r in rows)} partidas")]
@@ -179,7 +179,7 @@ class PoolPanel:
         wrap = ui.frame(parent)
         wrap.pack(fill="x")
         head = ui.frame(wrap)
-        head.pack(fill="x", padx=10, pady=(0, 2))
+        head.pack(fill="x", padx=12, pady=(0, 2))
         cols = [("", 34), ("Campeón", 130 if nar else 150), ("Partidas", 56), ("Victorias", 64 if nar else 120)]
         if not nar:
             cols += [("KDA", 50), ("Maestría", 64)]
@@ -280,7 +280,7 @@ class PoolPanel:
             ui.lbl(inner, core.name(cid, ui.champs), 18, "fg", True, True, anchor="w").pack(anchor="w")
         ui.lbl(inner, f"{r['w']} victorias y {r['g'] - r['w']} derrotas · {round(r['wr'] * 100)} %" + (f" · maestría {r['mast'] // 1000} k" if r["mast"] >= 1000 else ""),
                10, "dim", anchor="w").pack(anchor="w", pady=(8, 8))
-        ui.seg(inner, ["Resumen", "Partidas", "Build"], self.dtab, self.set_dtab, height=26).pack(fill="x", pady=(0, 10))
+        ui.seg(inner, ["Resumen", "Partidas", "Build"], self.dtab, self.set_dtab, height=26).pack(fill="x", pady=(0, 12))
         body = ui.frame(inner)
         body.pack(fill="x")
         {"Resumen": self.d_summary, "Partidas": self.d_games, "Build": self.d_build}[self.dtab](body, r)
@@ -305,13 +305,13 @@ class PoolPanel:
             return
         nm = lambda c: core.name(c, ui.champs)
         box = ctk.CTkFrame(self.root, fg_color=PAL["card2"], corner_radius=12)
-        box.pack(fill="x", pady=(10, 0))
+        box.pack(fill="x", pady=(12, 0))
         inner = ui.frame(box)
-        inner.pack(fill="x", padx=14, pady=10)
+        inner.pack(fill="x", padx=16, pady=12)
         ui.lbl(inner, "QUÉ APRENDER", 9, "dim", True, anchor="w").pack(anchor="w")
         for it in items:
             ui.lbl(inner, f"{ROLES_ES.get(it['role'], it['role'])}: " + learn.line(it, nm), 11, "fg", anchor="w", justify="left",
-                   wraplength=min(self.ctx["width"] - 120, 740)).pack(anchor="w", pady=(6, 3))
+                   wraplength=min(self.ctx["width"] - 120, 740)).pack(anchor="w", pady=(8, 4))
             row = ui.frame(inner)
             row.pack(anchor="w")
             for cid, wr in it["cands"]:
@@ -319,7 +319,7 @@ class PoolPanel:
                 cell.pack(side="left", padx=(0, 12))
                 ui.champ(cell, cid, 30, False).pack(side="left")
                 ui.lbl(cell, f" {nm(cid)} · {es(wr)} %", 10, "good", True).pack(side="left")
-        ui.lbl(inner, "Tasas de victoria del parche en esa línea (Lolalytics) para tu rango y superiores; son orientativas.", 9, "dim", anchor="w").pack(anchor="w", pady=(6, 0))
+        ui.lbl(inner, "Tasas de victoria del parche en esa línea (Lolalytics) para tu rango y superiores; son orientativas.", 9, "dim", anchor="w").pack(anchor="w", pady=(8, 0))
 
     def d_summary(self, p, r):
         ui = self.ui
@@ -368,7 +368,7 @@ class PoolPanel:
             row = ui.frame(p)
             row.pack(anchor="w")
             for rl, (n_, w_) in sorted(roles.items(), key=lambda x: -x[1][0])[:3]:
-                ui.chip(row, f"{ROLES_ES.get(rl, rl)} · {n_} · {round(w_ / n_ * 100)} %", "good" if w_ * 2 >= n_ else "bad").pack(side="left", padx=(0, 6))
+                ui.chip(row, f"{ROLES_ES.get(rl, rl)} · {n_} · {round(w_ / n_ * 100)} %", "good" if w_ * 2 >= n_ else "bad").pack(side="left", padx=(0, 8))
         cnt = Counter(i for e in games if e.get("it") for i in e["it"] if i)
         if cnt and ui.items:
             self.section(p, "OBJETOS QUE MÁS LLEVAS")
@@ -401,13 +401,13 @@ class PoolPanel:
                 ui.lbl(row, title, 10, color, True, width=40, anchor="w").pack(side="left")
                 for opp, gg, ww in lst:
                     cell = ui.frame(row)
-                    cell.pack(side="left", padx=(0, 10))
+                    cell.pack(side="left", padx=(0, 12))
                     ui.champ(cell, opp, 24, False).pack(side="left")
                     ui.lbl(cell, f" {ww} de {gg}", 10, color, True).pack(side="left")
         nm = core.name(r["cid"], ui.champs)
         acts = ui.frame(p)
         acts.pack(anchor="w", pady=(12, 0))
-        small_btn(ui, acts, "Verlo como rival", lambda: ui.goto_matchup(r["cid"]), 120).pack(side="left", padx=(0, 6))
+        small_btn(ui, acts, "Verlo como rival", lambda: ui.goto_matchup(r["cid"]), 120).pack(side="left", padx=(0, 8))
         small_btn(ui, acts, "Ver en Historial", lambda: ui.goto_history(nm), 120).pack(side="left")
 
     def d_games(self, p, r):
@@ -429,7 +429,7 @@ class PoolPanel:
             ui.lbl(row, f"{e['d'] // 60}:{e['d'] % 60:02d}" if e.get("d") else "—", 10, "dim", width=52, anchor="w").pack(side="left")
             ui.lbl(row, "Victoria" if e["w"] else "Derrota", 10, "good" if e["w"] else "bad", True).pack(side="left")
         nm = core.name(r["cid"], ui.champs)
-        small_btn(ui, p, f"Ver las {len(games)} en el Historial", lambda: ui.goto_history(nm), 190).pack(anchor="w", pady=(10, 0))
+        small_btn(ui, p, f"Ver las {len(games)} en el Historial", lambda: ui.goto_history(nm), 190).pack(anchor="w", pady=(12, 0))
 
     def best_lane(self, r):
         """Línea más jugada con él (solo modos con líneas); si no hay, la que más se juega según el meta o su posición habitual."""
@@ -449,7 +449,7 @@ class PoolPanel:
         ui = self.ui
         lane = self.lane_pick.get(r["cid"]) or self.best_lane(r)
         ui.lbl(p, "Línea de la build", 10, "dim", anchor="w").pack(anchor="w", pady=(0, 2))
-        ui.seg(p, LANE_SEG, LANE_NAME[lane], lambda v, c=r["cid"]: self.set_lane(c, LANE_KEY[v]), height=26).pack(fill="x", pady=(0, 10))
+        ui.seg(p, LANE_SEG, LANE_NAME[lane], lambda v, c=r["cid"]: self.set_lane(c, LANE_KEY[v]), height=26).pack(fill="x", pady=(0, 12))
         build_panel(ui, p, r["cid"], lane, None, self.dw - 40).pack(fill="x")
 
     def set_lane(self, cid, lane):

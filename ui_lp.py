@@ -47,7 +47,7 @@ class LpChart:
             ui.seg(head, ["Con estimación", "Solo reales"], "Con estimación" if _STATE["est"] else "Solo reales", self.set_est, height=24).pack(side="right", padx=(0, 8))
         names = [n for n, _ in lpseries.RANGES]
         cur = next((n for n, k in lpseries.RANGES if k == _STATE["range"]), names[1])
-        ui.seg(self.box, names, cur, self.set_range, height=24).pack(fill="x", pady=(6, 6))
+        ui.seg(self.box, names, cur, self.set_range, height=24).pack(fill="x", pady=(8, 8))
         self.line = ui.lbl(self.box, "", 11, "fg", anchor="w", justify="left", wraplength=max(240, self.width - 40))
         self.line.pack(anchor="w", pady=(0, 4))
         sx = ui.scale_px()

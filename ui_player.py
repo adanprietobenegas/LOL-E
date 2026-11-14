@@ -67,7 +67,7 @@ def build(ui, parent, p, qid, width):
     wrap = max(240, width - 60)
 
     def head(text):
-        ui.lbl(parent, text, 9, "dim", True).pack(anchor="w", pady=(10, 3))
+        ui.lbl(parent, text, 9, "dim", True).pack(anchor="w", pady=(12, 4))
 
     # ---- rangos ----
     head("RANGOS")
@@ -77,7 +77,7 @@ def build(ui, parent, p, qid, width):
     for key, label in order:
         rk = p.get(key)
         line = ui.frame(parent)
-        line.pack(fill="x", pady=1)
+        line.pack(fill="x", pady=2)
         ui.lbl(line, label, 10, "dim", width=150, anchor="w").pack(side="left")
         if rk:
             shown += 1
@@ -88,7 +88,7 @@ def build(ui, parent, p, qid, width):
     extra = [t for t in (f"Máximo de esta temporada: {mk['peak']}" if mk.get("peak") else "",
                          f"Terminó la anterior en {mk['prev']}" if mk.get("prev") else "") if t]
     if extra:
-        ui.lbl(parent, "  ·  ".join(extra), 10, "dim", anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(3, 0))
+        ui.lbl(parent, "  ·  ".join(extra), 10, "dim", anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(4, 0))
 
     st = p.get("stats") or {}
     rec = p.get("recent") or []
@@ -103,7 +103,7 @@ def build(ui, parent, p, qid, width):
         if st.get("streak"):
             s = st["streak"]
             ui.lbl(parent, f"Racha actual: {abs(s)} {'victoria' if s > 0 else 'derrota'}{'s' if abs(s) > 1 else ''}", 10,
-                   "good" if s > 0 else "bad", anchor="w").pack(anchor="w", pady=(3, 0))
+                   "good" if s > 0 else "bad", anchor="w").pack(anchor="w", pady=(4, 0))
     # ---- rendimiento ----
     if st.get("n"):
         head("RENDIMIENTO EN ESAS PARTIDAS")
@@ -114,7 +114,7 @@ def build(ui, parent, p, qid, width):
                  (num(st["vpm"], 2), "visión por minuto"), (f"{int(st['dur'] // 60)} min", "duración media")]
         for i, (v, lab) in enumerate(cells):
             c = ui.frame(grid)
-            c.grid(row=i // 3, column=i % 3, sticky="w", padx=(0, 18), pady=2)
+            c.grid(row=i // 3, column=i % 3, sticky="w", padx=(0, 16), pady=2)
             ui.lbl(c, v, 12, "fg", True).pack(anchor="w")
             ui.lbl(c, lab, 9, "dim").pack(anchor="w")
     # ---- campeones recientes ----
@@ -151,6 +151,6 @@ def build(ui, parent, p, qid, width):
     if sg:
         head("A TENER EN CUENTA")
         for text, color in sg:
-            ui.lbl(parent, "• " + text, 10, color, anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=1)
+            ui.lbl(parent, "• " + text, 10, color, anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=2)
     ui.lbl(parent, f"Nivel de cuenta {p.get('level', '?')}  ·  datos del cliente de LoL, actualizados cada 10 minutos", 9, "dim",
-           anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(10, 0))
+           anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(12, 0))

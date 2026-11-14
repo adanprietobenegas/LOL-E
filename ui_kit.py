@@ -337,32 +337,32 @@ class Kit:
         dx, dy = st["sombra"]
         big = st["radio"] > 1.1   # esquinas muy redondas: el marco de sombra dejaba muescas en las esquinas; sin sombra de color, solo el hueco
         sh = ctk.CTkFrame(parent, fg_color="transparent" if big else (self.acc if st["sombra_color"] == "acento" else PAL["shadow"]), corner_radius=14, border_width=0)   # mismo radio que la tarjeta: sin esquinas con fuga de color
-        sh.pack(fill="x", padx=6, pady=pad)
+        sh.pack(fill="x", padx=8, pady=pad)
         f = ctk.CTkFrame(sh, fg_color=PAL["card"], corner_radius=14, border_width=st["bw"], border_color=self.edge_color())
         f.pack(fill="x", padx=(0, dx), pady=(0, dy))
         if st["filo"]:   # luz arriba: línea clara de 1 px a todo el ancho, como el reflejo del borde del vidrio
-            ctk.CTkFrame(f, height=1, corner_radius=0, fg_color=tuple(mix(PAL["card"][i], PAL["fg"][i], .55) for i in (0, 1))).pack(fill="x", padx=6, pady=(1, 0))
+            ctk.CTkFrame(f, height=1, corner_radius=0, fg_color=tuple(mix(PAL["card"][i], PAL["fg"][i], .55) for i in (0, 1))).pack(fill="x", padx=8, pady=(2, 0))
         host = f
         if st.get("doble"):   # segundo marco fino por dentro (plano técnico, filigrana)
             host = ctk.CTkFrame(f, fg_color="transparent", corner_radius=2, border_width=1,
                                 border_color=tuple(mix(PAL["card"][i], self.acc[i], .55) for i in (0, 1)))
             host.pack(fill="x", padx=4, pady=4)
         inner = self.frame(host)
-        inner.pack(fill="x", padx=16, pady=14)
+        inner.pack(fill="x", padx=16, pady=16)
         if title:
             head = self.frame(inner)
-            head.pack(fill="x", pady=(0, 6))
+            head.pack(fill="x", pady=(0, 8))
             tt = st.get("titulo", "barra")
             if tt == "barra":
                 ctk.CTkFrame(head, width=3, height=14, corner_radius=2, fg_color=self.acc).pack(side="left", padx=(0, 8))
                 self.lbl(head, title.upper(), 10, "fg", True).pack(side="left")
-                ctk.CTkFrame(inner, height=1, corner_radius=0, fg_color=PAL["border"]).pack(fill="x", pady=(0, 10))
+                ctk.CTkFrame(inner, height=1, corner_radius=0, fg_color=PAL["border"]).pack(fill="x", pady=(0, 12))
             elif tt == "corchetes":
                 self.lbl(head, f"[ {title.upper()} ]", 10, self.hexm(self.acc), True).pack(side="left")
-                ctk.CTkFrame(inner, height=1, corner_radius=0, fg_color=PAL["border"]).pack(fill="x", pady=(0, 10))
+                ctk.CTkFrame(inner, height=1, corner_radius=0, fg_color=PAL["border"]).pack(fill="x", pady=(0, 12))
             else:   # regla: título en grande y filete grueso del acento debajo
                 self.lbl(head, title, 13, "fg", True, True).pack(side="left")
-                ctk.CTkFrame(inner, height=2, corner_radius=0, fg_color=self.acc).pack(fill="x", pady=(0, 10))
+                ctk.CTkFrame(inner, height=2, corner_radius=0, fg_color=self.acc).pack(fill="x", pady=(0, 12))
         return inner
 
     def seg(self, parent, values, current, command, **kw):
@@ -399,7 +399,7 @@ class Kit:
         card, fg, dim = self.hexm(PAL["card2"]), self.hexm(PAL["fg"]), self.hexm(PAL["dim"])
         hover = self.hexm(PAL["border"])
         box = tk.Frame(parent, bg=bgp)
-        box.pack(fill="x", pady=(0, 6), padx=6)
+        box.pack(fill="x", pady=(0, 8), padx=8)
         import temas
         head = tk.Frame(box, bg=card, cursor="hand2", highlightthickness=1, highlightbackground=self.hexm(self.edge_color()),
                         highlightcolor=self.hexm(self.edge_color()))
@@ -407,7 +407,7 @@ class Kit:
         stripe = tk.Frame(head, width=3, bg=self.hexm(self.acc) if state["open"] else self.hexm(PAL["edge"]))
         stripe.pack(side="left", fill="y")
         arrow = tk.Label(head, text="▾" if state["open"] else "▸", bg=card, fg=dim, font=self.tkf(12, False, False), width=2)
-        arrow.pack(side="left", padx=(10, 2), pady=7)
+        arrow.pack(side="left", padx=(12, 2), pady=8)
         ttl = tk.Label(head, text=title, bg=card, fg=fg, font=self.tkf(12, True, False), anchor="w")
         ttl.pack(side="left")
         sm = tk.Label(head, text=summary, bg=card, fg=dim, font=self.tkf(10, False, False), anchor="e")
@@ -421,9 +421,9 @@ class Kit:
             if state["open"]:
                 if state["outer"] is None:
                     state["outer"] = self.reveal(box, build, animate=animate)
-                    state["outer"].pack_configure(padx=12, pady=(8, 6))
+                    state["outer"].pack_configure(padx=12, pady=(8, 8))
                 else:
-                    state["outer"].pack(fill="x", padx=12, pady=(8, 6))
+                    state["outer"].pack(fill="x", padx=12, pady=(8, 8))
             elif state["outer"] is not None:
                 state["outer"].pack_forget()
             arrow.configure(text="▾" if state["open"] else "▸")
@@ -503,13 +503,13 @@ class Kit:
             line = self.frame(parent)
             line.pack(anchor="w", pady=2)
             for w in items[j:j + per_row]:
-                self.chip(line, w, PAL[why_kind(w)]).pack(side="left", padx=(0, 5))
+                self.chip(line, w, PAL[why_kind(w)]).pack(side="left", padx=(0, 4))
 
     def dots(self, parent, results, size=9):
         """Resultados recientes como puntos verdes (victoria) y rojos (derrota)."""
         row = self.frame(parent)
         for w in results:   # la victoria es un cuadrado entero y la derrota uno más bajo: se distinguen aunque no se vea el color (daltonismo)
-            tk.Frame(row, width=size, height=size if w else max(3, round(size * .55)), bg=self.hexm(PAL["good" if w else "bad"])).pack(side="left", padx=1, anchor="s")
+            tk.Frame(row, width=size, height=size if w else max(3, round(size * .55)), bg=self.hexm(PAL["good" if w else "bad"])).pack(side="left", padx=2, anchor="s")
         return row
 
     def clickable(self, w, cb):
@@ -526,7 +526,7 @@ class Kit:
         f.pack(side="left", expand=True)
         lab = self.lbl(f, "0" if value.isdigit() and self.anim and self.anim_on() else value, 20, self.acc, True, True)
         lab.pack()
-        self.lbl(f, label, 10, "dim").pack(pady=(3, 0))
+        self.lbl(f, label, 10, "dim").pack(pady=(4, 0))
         if value.isdigit() and self.anim and self.anim_on():
             self.count_up(lab, int(value))
 
@@ -865,7 +865,7 @@ class Kit:
             ph.pack_propagate(False)
             self.lbl(ph, self.champs[cid]["name"][:3] if cid in self.champs else "?", max(9, size // 5), "dim", True).pack(expand=True)
         if caption:
-            self.lbl(f, name(cid, self.champs)[:11], 10, "fg" if cid else "dim").pack(pady=(3, 0))
+            self.lbl(f, name(cid, self.champs)[:11], 10, "fg" if cid else "dim").pack(pady=(4, 0))
         return f
 
     def splash(self, cid):

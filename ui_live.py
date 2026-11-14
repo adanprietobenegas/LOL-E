@@ -132,7 +132,7 @@ class Hint:
         self.icon_host = ui.frame(self.row)
         self.icon_host.pack(side="left")
         self.text = ui.lbl(self.row, "", 11, "fg", True, anchor="w", justify="left", wraplength=wrap)
-        self.text.pack(side="left", padx=6)
+        self.text.pack(side="left", padx=8)
         self.iid, self.shown, self.last = None, False, None
 
     def set(self, value, bold=True):
@@ -152,7 +152,7 @@ class Hint:
             self.iid = value[1]
         self.text.configure(text=value[0])
         if not self.shown:
-            self.row.pack(fill="x", pady=(6, 0))
+            self.row.pack(fill="x", pady=(8, 0))
             self.shown = True
 
 
@@ -177,7 +177,7 @@ class PlayerCell:
         sx = ui.scale_px()
         self.bar_w = int(max(60, width) * sx)
         self.bar = tk.Canvas(self.body, width=self.bar_w, height=int(4 * sx), bg=ui.bg(self.body), highlightthickness=0, bd=0)
-        self.bar.pack(anchor=al, pady=(3, 0))
+        self.bar.pack(anchor=al, pady=(4, 0))
         self.bar_rect = self.bar.create_rectangle(0, 0, 0, int(4 * sx), fill=NEUTRAL, outline="")
         self.cid, self.items, self.sig = None, None, None
 
@@ -225,7 +225,7 @@ class LiveView:
         card = tk.Frame(strip, bg=ui.hexm(PAL["card2"]))
         card.pack(fill="x")
         box = tk.Frame(card, bg=ui.hexm(PAL["card2"]))
-        box.pack(fill="x", padx=12, pady=10)
+        box.pack(fill="x", padx=12, pady=12)
         head = ui.frame(box)
         head.pack(fill="x")
         self.clock = ui.lbl(head, "EN VIVO", 10, "fg", True)
@@ -233,11 +233,11 @@ class LiveView:
         self.gold = ui.lbl(head, "", 10, "dim")
         self.gold.pack(side="right")
         self.bar_kills = BarRow(ui, box, "Bajas", W)
-        self.bar_kills.cv.pack(anchor="w", pady=(6, 0))
+        self.bar_kills.cv.pack(anchor="w", pady=(8, 0))
         self.bar_gold = BarRow(ui, box, "Oro en objetos", W)
         self.bar_gold.cv.pack(anchor="w", pady=(2, 0))
         objs = ui.frame(box)
-        objs.pack(fill="x", pady=(6, 0))
+        objs.pack(fill="x", pady=(8, 0))
         self.obj = {}
         for key, title in OBJECTIVES:
             cell = ui.frame(objs)
@@ -275,19 +275,19 @@ class LiveView:
         if pair:
             for i in range(max(mine_n, other_n)):
                 row = ui.frame(self.board)
-                row.pack(fill="x", pady=3)
+                row.pack(fill="x", pady=4)
                 row.grid_columnconfigure(0, weight=1, uniform="lv")
                 row.grid_columnconfigure(1, weight=1, uniform="lv")
                 for col, (key, side) in enumerate((("mine", "L"), ("other", "R"))):
                     cell = PlayerCell(ui, row, side, cw, maxref)
-                    cell.frame.grid(row=0, column=col, sticky="ew", padx=6)
+                    cell.frame.grid(row=0, column=col, sticky="ew", padx=8)
                     self.cells[(key, i)] = cell
         else:
             for key, n, title in (("other", other_n, "RIVALES"), ("mine", mine_n, "TU EQUIPO")):
-                ui.lbl(self.board, title, 9, "dim", True, anchor="w").pack(anchor="w", pady=(6, 2))
+                ui.lbl(self.board, title, 9, "dim", True, anchor="w").pack(anchor="w", pady=(8, 2))
                 for i in range(n):
                     cell = PlayerCell(ui, self.board, "L", cw, maxref)
-                    cell.frame.pack(fill="x", pady=3)
+                    cell.frame.pack(fill="x", pady=4)
                     self.cells[(key, i)] = cell
         if self.snap:
             self._update_board(self.snap)

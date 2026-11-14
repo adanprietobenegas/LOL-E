@@ -63,7 +63,7 @@ def header(an, host, a):
     card = ctk.CTkFrame(host, fg_color=PAL["card2"], corner_radius=14)
     card.pack(fill="x", pady=(0, 8))
     row = ui.frame(card)
-    row.pack(fill="x", padx=18, pady=16)
+    row.pack(fill="x", padx=16, pady=16)
     ui.champ(row, m["champ"], 84, False, an.hx(ui.acc)).pack(side="left", padx=(0, 16))
     t = ui.frame(row)
     t.pack(side="left")
@@ -89,9 +89,9 @@ def awards(an, host, a):
         fn, fmt = METRICS[metric]
         best = max(players, key=fn)
         card = ctk.CTkFrame(grid, fg_color=PAL["card2"], corner_radius=12)
-        card.grid(row=i // 3, column=i % 3, sticky="nsew", padx=3, pady=3)
+        card.grid(row=i // 3, column=i % 3, sticky="nsew", padx=4, pady=4)
         inner = ui.frame(card)
-        inner.pack(fill="x", padx=10, pady=8)
+        inner.pack(fill="x", padx=12, pady=8)
         mine_team = best["team"] == a["team"]
         ui.lbl(inner, title.upper(), 8, "dim", True, anchor="w").pack(anchor="w")
         line = ui.frame(inner)
@@ -107,7 +107,7 @@ def ranking(an, host, a):
     """Los 10 jugadores ordenados por la cifra elegida; tu fila, más grande."""
     ui = an.ui
     bar = ui.frame(host)
-    bar.pack(fill="x", pady=(0, 6))
+    bar.pack(fill="x", pady=(0, 8))
     ui.lbl(bar, "Ordenar por", 10, "dim").pack(side="left", padx=(0, 8))
     ui.menu(bar, list(METRICS), an.aram_sort, lambda v: set_sort(an, host, a, v), 160).pack(side="left")
     ui.seg(bar, TEAMS, an.aram_team, lambda v: set_team(an, host, a, v), height=28, width=250).pack(side="right")
@@ -153,7 +153,7 @@ def rows(an, host, a):
                            border_width=1 if me else 0, border_color=an.hx(an.ui.acc) if me else PAL["card2"])
         row.pack(fill="x", pady=2)
         inner = ui.frame(row)
-        inner.pack(fill="x", padx=8, pady=6 if me else 3)
+        inner.pack(fill="x", padx=8, pady=8 if me else 3)
         ui.lbl(inner, f"{i}", 12 if me else 10, "warn" if i == 1 else "dim", True, width=24, anchor="w").pack(side="left")
         ui.champ(inner, p["champ"], 44 if me else 30, False, "#3ddc84" if mine_team else "#ff5a5f").pack(side="left", padx=(0, 8))
         mid = ui.frame(inner)
@@ -162,5 +162,5 @@ def rows(an, host, a):
         head.pack(fill="x")
         ui.lbl(head, an.cname(p["champ"]) + (" (tú)" if me else ""), 13 if me else 11, "fg", True, anchor="w").pack(side="left")
         ui.lbl(head, f"{p['k']} / {p['d']} / {p['a']}", 10, "dim", anchor="e").pack(side="right")
-        ui.bar(mid, [(max(0.02, fn(p) / top), "good" if mine_team else "bad")], 6 if me else 5).pack(fill="x", pady=(3, 0))
+        ui.bar(mid, [(max(0.02, fn(p) / top), "good" if mine_team else "bad")], 6 if me else 5).pack(fill="x", pady=(4, 0))
         ui.lbl(inner, fmt(fn(p)), 13 if me else 11, "warn" if me else "fg", True, width=80, anchor="e").pack(side="right", padx=(8, 0))

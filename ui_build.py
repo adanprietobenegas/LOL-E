@@ -94,7 +94,7 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None):
                 slots = []
                 for k in range(cols):
                     s_ = ui.frame(grid)
-                    s_.grid(row=0, column=k, sticky="nw", padx=(0 if k == 0 else 14, 0))
+                    s_.grid(row=0, column=k, sticky="nw", padx=(0 if k == 0 else 16, 0))
                     grid.columnconfigure(k, weight=1, uniform="bp")
                     slots.append(s_)
                 render(ui, slots[0], d, champs, cid, enemy, cw, lane, again)
@@ -119,7 +119,7 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None):
 
 def _row(ui, parent, label):
     row = ui.frame(parent)
-    row.pack(fill="x", pady=3)
+    row.pack(fill="x", pady=4)
     ui.lbl(row, label.upper(), 9, "dim", True, width=84, anchor="w").pack(side="left", anchor="n", pady=(4, 0))
     body = ui.frame(row)
     body.pack(side="left", fill="x", expand=True)
@@ -212,7 +212,7 @@ def _chain(ui, parent, ids, notes=None):
 
 def other_source(ui, parent, d, champs, cid, width, lane, again):
     """Builds de op.gg junto a las de Lolalytics: cada web calcula con su muestra, y ver las dos enseña en qué hay acuerdo."""
-    ui.lbl(parent, "SEGÚN OP.GG", 10, "dim", True, anchor="w").pack(anchor="w", pady=(14, 4))
+    ui.lbl(parent, "SEGÚN OP.GG", 10, "dim", True, anchor="w").pack(anchor="w", pady=(16, 4))
     key = opgg_builds.request(core.CACHE, champs[cid], lane)
     st = opgg_builds.peek(key)
     if st[0] == "loading":
@@ -240,14 +240,14 @@ def other_source(ui, parent, d, champs, cid, width, lane, again):
         b = _row(ui, parent, "Botas")
         for n, r in enumerate(o["boots"][:3]):
             cell = ui.frame(b)
-            cell.pack(side="left", padx=(0, 14))
+            cell.pack(side="left", padx=(0, 16))
             _item(ui, cell, r["id"])
             ui.lbl(cell, f"{r['pr']:.0f} % · {r['wr']:.1f} %".replace(".", ","), 9, "dim").pack(side="left")
     if o.get("starters"):
         b = _row(ui, parent, "Inicio")
         for r in o["starters"][:2]:
             cell = ui.frame(b)
-            cell.pack(side="left", padx=(0, 14))
+            cell.pack(side="left", padx=(0, 16))
             for i in r["items"]:
                 _item(ui, cell, i)
             ui.lbl(cell, f"{r['pr']:.0f} % · {r['wr']:.1f} %".replace(".", ","), 9, "dim").pack(side="left")
@@ -256,7 +256,7 @@ def other_source(ui, parent, d, champs, cid, width, lane, again):
         ui.lbl(b, " > ".join(o["skills"]) + "  (orden de subida más jugado según op.gg; la R siempre que puedas)", 10, "fg", anchor="w").pack(anchor="w")
     ui.lbl(parent, "Los porcentajes de uso y victorias de cada web salen de su propia muestra y su filtro de rango; compara el orden, no las cifras. "
                    "LeagueOfGraphs no se consulta: bloquea las lecturas automáticas.", 9, "dim", anchor="w", justify="left",
-           wraplength=max(240, width - 60)).pack(anchor="w", pady=(6, 0))
+           wraplength=max(240, width - 60)).pack(anchor="w", pady=(8, 0))
 
 
 def variants(ui, parent, d, champs, cid, width, lane=None, again=None):
@@ -284,8 +284,8 @@ def variants(ui, parent, d, champs, cid, width, lane=None, again=None):
     shown = [("Más jugada", a)] + ([("Más victorias", b)] if b != a else [])
     for label, ids in shown:
         row = ui.frame(parent)
-        row.pack(fill="x", pady=3)
-        ui.lbl(row, label.upper(), 9, "dim", True, width=110, anchor="w").pack(side="left", anchor="n", pady=(6, 0))
+        row.pack(fill="x", pady=4)
+        ui.lbl(row, label.upper(), 9, "dim", True, width=110, anchor="w").pack(side="left", anchor="n", pady=(8, 0))
         body = ui.frame(row)
         body.pack(side="left", fill="x", expand=True)
         line = ui.frame(body)
@@ -312,7 +312,7 @@ def variants(ui, parent, d, champs, cid, width, lane=None, again=None):
         b0 = _row(ui, parent, label)
         for n, o in enumerate(sorted(opts[k], key=lambda o: -o["games"])[:3 if width >= 520 else 2]):   # en estrecho la tercera opción salía cortada
             cell = ui.frame(b0)
-            cell.pack(side="left", padx=(0, 14))
+            cell.pack(side="left", padx=(0, 16))
             _item(ui, cell, o["id"])
             ui.lbl(cell, pct_txt(o), 9, "dim").pack(side="left")
     ui.lbl(parent, "Los porcentajes de los objetos tardíos salen algo inflados: solo los compran las partidas que duran lo suficiente, y esas "
@@ -340,7 +340,7 @@ def situations(ui, parent, d, champs, ens, width):
     ui.lbl(parent, "SEGÚN LA SITUACIÓN", 10, "dim", True, anchor="w").pack(anchor="w", pady=(16, 2))
     if ens:
         ui.lbl(parent, f"Equipo rival ahora: {ens['ad']} de daño físico, {ens['ap']} de mágico, {ens['tanks']} {'tanque' if ens['tanks'] == 1 else 'tanques'}, control {ctl(ens['cc'])}.",
-               9, "dim", anchor="w").pack(anchor="w", pady=(0, 6))
+               9, "dim", anchor="w").pack(anchor="w", pady=(0, 8))
     n = 0
     for title, what, test, now in SITUATIONS:
         found = [i for i in pool if test(ui.items[i])][:5]
@@ -356,7 +356,7 @@ def situations(ui, parent, d, champs, ens, width):
         if now(ens):
             ui.chip(head, "recomendado ahora", "good").pack(side="left", padx=(8, 0))
         line = ui.frame(row)
-        line.pack(anchor="w", pady=(3, 0))
+        line.pack(anchor="w", pady=(4, 0))
         for i in found:
             _item(ui, line, i, 32)
     if not n:
@@ -424,7 +424,7 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
     uid = f"{itemset.PREFIX}{cid}-{lane or 'x'}"
     title = f"LOL-E · {name}" + (f" · {matchups.LANE_NAMES.get(lane, '')}" if lane else "") + (f" vs {champs[enemy]['name']}" if vs else "")
     row = ui.frame(parent)
-    row.pack(fill="x", pady=(10, 0))
+    row.pack(fill="x", pady=(12, 0))
     res = {}
     msg = ui.lbl(row, "", 10, "dim", anchor="w", justify="left", wraplength=360)
 
@@ -446,7 +446,7 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
 
     btn = ctk.CTkButton(row, text="Enviar al cliente", height=28, width=140, corner_radius=8, font=ui.font(11, True), fg_color=ui.acc,
                         text_color=ON_FILL, command=go)
-    btn.pack(side="left", padx=(0, 10))
+    btn.pack(side="left", padx=(0, 12))
     msg.pack(side="left", fill="x", expand=True)
     var = ctk.BooleanVar(value=bool(ui.conf.get("auto_itemset")))
 
@@ -456,7 +456,7 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
         if var.get():
             go_auto()
     sw = ctk.CTkSwitch(parent, text="Enviar siempre al elegir campeón", variable=var, font=ui.font(10), progress_color=ui.acc, command=toggle)
-    sw.pack(anchor="w", pady=(6, 0))
+    sw.pack(anchor="w", pady=(8, 0))
     ui.autowrap(ui.lbl(parent, "Crea un conjunto de objetos propio en tu cliente de League («LOL-E · campeón · línea»), y lo copia a la carpeta del juego. "
                    "El juego lo lee al EMPEZAR la partida: envíalo durante la selección de campeón (o activa el envío automático); si lo envías "
                    "con la partida ya cargada, aparecerá en la siguiente. "
@@ -503,7 +503,7 @@ def rune_icons(ui, parent, rn, rd, width):
     tree = (rd.get("trees") or {}).get((rd.get("runes") or {}).get(rn["keystone"], {}).get("t"))
     if kn:
         txt = f"{kn}" + (f" ({tree})" if tree else "") + (f"  +  {(rd.get('trees') or {}).get(sec_tree)}" if sec_tree else "")
-        ui.lbl(parent, txt, 10, "dim", anchor="w", wraplength=max(200, width - 140), justify="left").pack(anchor="w", pady=(3, 0))
+        ui.lbl(parent, txt, 10, "dim", anchor="w", wraplength=max(200, width - 140), justify="left").pack(anchor="w", pady=(4, 0))
 
 
 def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
@@ -538,13 +538,13 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
         cur = cur if cur in names else names[0]
         _RUNE_PICK[pick_key] = cur
         if len(pages) > 1:
-            ui.seg(holder, names, cur, lambda v: paint_runes(v), height=26).pack(fill="x", pady=(0, 6))
+            ui.seg(holder, names, cur, lambda v: paint_runes(v), height=26).pack(fill="x", pady=(0, 8))
         page = next(p for p in pages if p["label"] == cur)
         rune_icons(ui, holder, page["runes"], rd, width)
         if page.get("wr"):
             es = lambda x: f"{x:.1f}".replace(".", ",")
             partes = [f"{es(page['wr'])} % de victorias"] + ([f"{es(page['pr'])} % de uso"] if page.get("pr") else []) + [f"{page['n']:,} partidas".replace(",", ".")]
-            ui.lbl(holder, "  ·  ".join(partes), 10, "dim", anchor="w").pack(anchor="w", pady=(3, 0))
+            ui.lbl(holder, "  ·  ".join(partes), 10, "dim", anchor="w").pack(anchor="w", pady=(4, 0))
     paint_runes()
     if d.get("skills"):
         b = _row(ui, parent, "Habilidades")
@@ -613,4 +613,4 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
     if d.get("tier") == "all":
         notes.append("Pocos datos en tu rango: se usan los de todos los rangos.")
     notes.append(source_note(d, current_patch()) + " Pasa el ratón por un icono para ver su descripción.")
-    ui.lbl(parent, " ".join(notes), 9, "dim", anchor="w", justify="left", wraplength=max(200, width - 20)).pack(anchor="w", pady=(6, 0))
+    ui.lbl(parent, " ".join(notes), 9, "dim", anchor="w", justify="left", wraplength=max(200, width - 20)).pack(anchor="w", pady=(8, 0))

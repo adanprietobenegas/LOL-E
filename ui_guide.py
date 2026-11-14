@@ -11,7 +11,7 @@ def _rows(ui, parent, rows, width, lw=104):
     for title, text, *tone in rows:
         row = ui.frame(parent)
         row.pack(fill="x", pady=2)
-        ui.lbl(row, title.upper(), 9, tone[0] if tone and tone[0] in ("good", "bad") else "dim", True, width=lw, anchor="w").pack(side="left", anchor="n", pady=(3, 0))
+        ui.lbl(row, title.upper(), 9, tone[0] if tone and tone[0] in ("good", "bad") else "dim", True, width=lw, anchor="w").pack(side="left", anchor="n", pady=(4, 0))
         ui.lbl(row, text, 11, "fg", anchor="w", justify="left", wraplength=max(220, width - lw - 150)).pack(side="left", fill="x", expand=True)
 
 
@@ -20,12 +20,12 @@ def _spells(ui, parent, d, width):
     p = d["passive"]
     if p["n"]:
         row = ui.frame(parent)
-        row.pack(fill="x", pady=(0, 3))
+        row.pack(fill="x", pady=(0, 4))
         ui.lbl(row, "PASIVA", 9, "dim", True, width=44, anchor="w").pack(side="left", anchor="n", pady=(2, 0))
         ui.lbl(row, p["n"], 11, "warn", True, width=150, anchor="w").pack(side="left", anchor="n")
     for s in d["spells"]:
         box = ui.frame(parent)
-        box.pack(fill="x", pady=3)
+        box.pack(fill="x", pady=4)
         head = ui.frame(box)
         head.pack(fill="x")
         ui.lbl(head, s["k"], 12, "warn", True, width=20, anchor="w").pack(side="left")
@@ -40,19 +40,19 @@ def _spells(ui, parent, d, width):
         ui.lbl(head, "  ·  ".join(meta), 10, "dim", anchor="e").pack(side="right")
         if s["d"]:
             txt = s["d"] if len(s["d"]) <= 170 else s["d"][:167].rsplit(" ", 1)[0] + "…"
-            ui.lbl(box, txt, 10, "dim", anchor="w", justify="left", wraplength=max(220, width - 120)).pack(anchor="w", padx=(20, 0))
+            ui.lbl(box, txt, 10, "dim", anchor="w", justify="left", wraplength=max(220, width - 120)).pack(anchor="w", padx=(24, 0))
 
 
 def _own(ui, parent, d, name, width, b):
     sp = guide.spikes(d, name, (b or {}).get("skills") or [], [i for i in (((b or {}).get("items") or {}).get("core") or []) if "Boots" not in (ui.items.get(i) or {}).get("t", [])], ui.items)
     if d["ally"]:
-        ui.lbl(parent, "CONSEJOS DE RIOT PARA JUGAR CON " + name.upper(), 9, "dim", True, anchor="w").pack(anchor="w", pady=(0, 3))
+        ui.lbl(parent, "CONSEJOS DE RIOT PARA JUGAR CON " + name.upper(), 9, "dim", True, anchor="w").pack(anchor="w", pady=(0, 4))
         for t in d["ally"]:
-            ui.lbl(parent, "•  " + t, 11, "fg", anchor="w", justify="left", wraplength=max(240, width - 120)).pack(anchor="w", pady=1)
-    ui.lbl(parent, "HABILIDADES (enfriamiento de rango 1 al máximo)", 9, "dim", True, anchor="w").pack(anchor="w", pady=(10, 3))
+            ui.lbl(parent, "•  " + t, 11, "fg", anchor="w", justify="left", wraplength=max(240, width - 120)).pack(anchor="w", pady=2)
+    ui.lbl(parent, "HABILIDADES (enfriamiento de rango 1 al máximo)", 9, "dim", True, anchor="w").pack(anchor="w", pady=(12, 4))
     _spells(ui, parent, d, width)
     if sp:
-        ui.lbl(parent, "PICOS DE PODER", 9, "dim", True, anchor="w").pack(anchor="w", pady=(10, 3))
+        ui.lbl(parent, "PICOS DE PODER", 9, "dim", True, anchor="w").pack(anchor="w", pady=(12, 4))
         _rows(ui, parent, sp, width)
         ui.lbl(parent, "Los niveles y el coste son exactos; el minuto en que llegas a cada objeto depende de tu partida.", 9, "dim", anchor="w").pack(anchor="w", pady=(4, 0))
 
@@ -65,13 +65,13 @@ def _vs(ui, parent, dm, do, cid, opp, width):
     if rows:
         _rows(ui, parent, rows, width)
     if do["enemy"]:
-        ui.lbl(parent, f"CONSEJOS DE RIOT CONTRA {no.upper()}", 9, "dim", True, anchor="w").pack(anchor="w", pady=(10, 3))
+        ui.lbl(parent, f"CONSEJOS DE RIOT CONTRA {no.upper()}", 9, "dim", True, anchor="w").pack(anchor="w", pady=(12, 4))
         for t in do["enemy"]:
-            ui.lbl(parent, "•  " + t, 11, "fg", anchor="w", justify="left", wraplength=max(240, width - 120)).pack(anchor="w", pady=1)
-    ui.lbl(parent, f"HABILIDADES DE {no.upper()}", 9, "dim", True, anchor="w").pack(anchor="w", pady=(10, 3))
+            ui.lbl(parent, "•  " + t, 11, "fg", anchor="w", justify="left", wraplength=max(240, width - 120)).pack(anchor="w", pady=2)
+    ui.lbl(parent, f"HABILIDADES DE {no.upper()}", 9, "dim", True, anchor="w").pack(anchor="w", pady=(12, 4))
     _spells(ui, parent, do, width)
     ui.lbl(parent, "Lo de arriba sale de comparar las estadísticas y habilidades oficiales de ambos; no es una guía escrita de este duelo.", 9, "dim",
-           anchor="w", justify="left", wraplength=max(240, width - 120)).pack(anchor="w", pady=(6, 0))
+           anchor="w", justify="left", wraplength=max(240, width - 120)).pack(anchor="w", pady=(8, 0))
 
 
 def guide_block(ui, host, cid, opp, lane, width):

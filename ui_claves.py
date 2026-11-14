@@ -19,7 +19,7 @@ def block(ui, parent, cid, width):
             lab, color = claves.TIPOS.get(tipo, ("CLAVE", "dim"))
             row = ui.frame(c)
             row.pack(fill="x", pady=2)
-            ui.lbl(row, lab, 9, color, True, width=88, anchor="w").pack(side="left", anchor="n", pady=(3, 0))
+            ui.lbl(row, lab, 9, color, True, width=88, anchor="w").pack(side="left", anchor="n", pady=(4, 0))
             ui.lbl(row, texto, 11, "fg", anchor="w", justify="left", wraplength=max(220, width - 88 - 40)).pack(side="left", fill="x", expand=True)
         cur = claves.stale(core.DD_VERSION)
         ver = claves.load().get("patch", "")

@@ -113,7 +113,7 @@ class MatchupView:
         row.pack(fill="x", pady=(0, 8))
         badge = ctk.CTkLabel(row, text=str(n), width=24, height=24, corner_radius=12, font=ui.font(11, True, True), fg_color=ui.acc,
                              text_color=ON_FILL)
-        badge.pack(side="left", padx=(0, 10))
+        badge.pack(side="left", padx=(0, 12))
         lab = ui.lbl(row, text, 13, "fg", True, True)
         lab.pack(side="left")
         return lab
@@ -138,9 +138,9 @@ class MatchupView:
         self.entry.bind("<KeyRelease>", self.on_type)
         self.entry.bind("<Return>", lambda e: self.pick_first())
         self.sugg = ui.frame(c)
-        self.sugg.pack(fill="x", pady=(6, 0))
+        self.sugg.pack(fill="x", pady=(8, 0))
         self.render_sugg()
-        ui.lbl(c, "Línea en la que juega el rival", 10, "dim", anchor="w").pack(anchor="w", pady=(10, 2))
+        ui.lbl(c, "Línea en la que juega el rival", 10, "dim", anchor="w").pack(anchor="w", pady=(12, 2))
         self.lane_seg = ui.seg(c, LANE_SEG, LANE_LABEL.get(self.lane, ""), self.set_lane, height=28)
         self.lane_seg.pack(fill="x")
         self.lane_hint = ui.lbl(c, "", 10, "dim", anchor="w", justify="left", wraplength=wl)
@@ -151,7 +151,7 @@ class MatchupView:
         r = ui.card(self.box)
         self.res_title = self.step_title(r, 2, "Qué campeón le gana")
         self.f_show = ui.seg(r, SHOWS, self.filt["show"], lambda v: self.set_filt("show", v), height=28)
-        self.f_show.pack(fill="x", pady=(0, 6))
+        self.f_show.pack(fill="x", pady=(0, 8))
         self.f_menus = {}
         groups = [(("Clase", list(CLASSES), "clase", 110), ("Orden", ORDERS, "order", 150), ("Mín. partidas", list(MIN_GAMES), "min", 90))]
         if self.level == 0:
@@ -165,7 +165,7 @@ class MatchupView:
                 m.pack(side="left", padx=(0, 12))
                 self.f_menus[key] = m
         bar = ui.frame(r)
-        bar.pack(fill="x", pady=(6, 8))
+        bar.pack(fill="x", pady=(8, 8))
         self.f_adv_var = ctk.BooleanVar(value=self.filt["adv"])
         ctk.CTkSwitch(bar, text="Solo los que ganan más del 50 %", variable=self.f_adv_var, font=ui.font(11), progress_color=ui.acc,
                       command=lambda: self.set_filt("adv", self.f_adv_var.get())).pack(side="left")
@@ -253,9 +253,9 @@ class MatchupView:
         row = ctk.CTkFrame(self.sugg, fg_color=PAL["card2"], corner_radius=10)
         row.pack(fill="x", pady=2)
         inner = ui.frame(row)
-        inner.pack(fill="x", padx=10, pady=5)
+        inner.pack(fill="x", padx=12, pady=4)
         ui.champ(inner, cid, 30, False).pack(side="left")
-        ui.lbl(inner, ui.champs[cid]["name"], 12, "fg", True, anchor="w", width=150).pack(side="left", padx=10)
+        ui.lbl(inner, ui.champs[cid]["name"], 12, "fg", True, anchor="w", width=150).pack(side="left", padx=12)
         ui.lbl(inner, self.lane_text(cid), 10, "dim").pack(side="left")
         ui.lbl(inner, "Elegir  ›", 10, ui.acc, True).pack(side="right")
         ui.clickable(row, lambda c=cid: self.select(c))
@@ -268,7 +268,7 @@ class MatchupView:
         grid.pack(pady=(8, 0))
         for i, cid in enumerate(ids):
             cell = ui.frame(grid)
-            cell.grid(row=i // cols, column=i % cols, padx=3, pady=3)
+            cell.grid(row=i // cols, column=i % cols, padx=4, pady=4)
             ui.champ(cell, cid, 38, True).pack()
             ui.clickable(cell, lambda c=cid: self.select(c))
             cell.bind("<Enter>", lambda e, c=cid: self.hover(c), add="+")
@@ -417,27 +417,27 @@ class MatchupView:
             return
         if not enemy:
             ui.lbl(self.host, "Todavía no has elegido rival. Escribe su nombre arriba, o elige uno de los recientes.", 11, "dim", anchor="w",
-                   justify="left", wraplength=wl).pack(anchor="w", pady=6)
+                   justify="left", wraplength=wl).pack(anchor="w", pady=8)
             return
         if not lane:
-            ui.lbl(self.host, "Elige la línea en la que juega el rival (arriba).", 11, "dim").pack(anchor="w", pady=6)
+            ui.lbl(self.host, "Elige la línea en la que juega el rival (arriba).", 11, "dim").pack(anchor="w", pady=8)
             return
         key = (enemy, lane)
         self.start(key)
         if key in self.errors:
-            ui.lbl(self.host, self.errors[key], 11, "bad", anchor="w", justify="left", wraplength=wl).pack(anchor="w", pady=6)
+            ui.lbl(self.host, self.errors[key], 11, "bad", anchor="w", justify="left", wraplength=wl).pack(anchor="w", pady=8)
             alts = [ln for ln in self.lanes_of(enemy) if LANE_KEYS[ln] != lane][:3]
             if alts:
                 ui.lbl(self.host, f"Líneas de {ui.champs[enemy]['name']} con más partidas:", 10, "dim").pack(anchor="w", pady=(2, 4))
                 row = ui.frame(self.host)
                 row.pack(anchor="w")
                 for ln in alts:
-                    small_btn(ui, row, f"Ver en {ln.lower()}", lambda v=ln: self.set_lane(v), 120).pack(side="left", padx=(0, 6))
+                    small_btn(ui, row, f"Ver en {ln.lower()}", lambda v=ln: self.set_lane(v), 120).pack(side="left", padx=(0, 8))
             ui.lbl(self.host, "Con datos propios: si ya te has enfrentado a este campeón, tus partidas aparecen en «Tu rival» (arriba).", 9, "dim",
                    anchor="w", justify="left", wraplength=wl).pack(anchor="w", pady=(8, 0))
             return
         if key not in self.data:
-            ui.lbl(self.host, f"Cargando los datos de {ui.champs[enemy]['name']}…", 11, "dim").pack(anchor="w", pady=6)
+            ui.lbl(self.host, f"Cargando los datos de {ui.champs[enemy]['name']}…", 11, "dim").pack(anchor="w", pady=8)
             return
         self.render(ctx, enemy, lane, self.data[key])
 
@@ -482,7 +482,7 @@ class MatchupView:
             small_btn(ui, btns, "Quitar", self.clear_enemy, 64).pack(side="right")
         if lane:
             small_btn(ui, btns, "Ver su build" if not self.rival_open else "Ocultar build",   # con el nombre no cabía y salía cortado
-                      lambda: self.toggle_rival(enemy, lane), 96).pack(side="right", padx=(0, 6))
+                      lambda: self.toggle_rival(enemy, lane), 96).pack(side="right", padx=(0, 8))
         self.paint_rival(enemy, lane)
 
     def paint_rising(self, lane):
@@ -499,12 +499,12 @@ class MatchupView:
         if not lst:
             return
         ui.lbl(host, f"EN AUGE EN {matchups.LANE_NAMES[lane].upper()}  ·  suben de uso frente al parche anterior, aquí o en las regiones que suelen ir por delante",
-               9, "dim", True, anchor="w").pack(anchor="w", pady=(10, 4))
+               9, "dim", True, anchor="w").pack(anchor="w", pady=(12, 4))
         row = ui.frame(host)
         row.pack(anchor="w")
         for cid, tag in lst:
             cell = ui.frame(row)
-            cell.pack(side="left", padx=(0, 10))
+            cell.pack(side="left", padx=(0, 12))
             ui.champ(cell, cid, 34, True).pack()
             ui.lbl(cell, "▲ sube" if tag == "sube" else "▲ fuera", 8, "good", True).pack()
             ui.clickable(cell, lambda c=cid: self.select(c))
@@ -531,8 +531,8 @@ class MatchupView:
         panel = ctk.CTkFrame(self.rival_slot, fg_color=PAL["card2"], corner_radius=12)
         panel.pack(fill="x", pady=(0, 8))
         inner = ui.frame(panel)
-        inner.pack(fill="x", padx=14, pady=12)
-        ui.lbl(inner, f"Así juega {ui.champs[enemy]['name']} en {matchups.LANE_NAMES[lane].lower()}", 12, "fg", True, True, anchor="w").pack(anchor="w", pady=(0, 6))
+        inner.pack(fill="x", padx=16, pady=12)
+        ui.lbl(inner, f"Así juega {ui.champs[enemy]['name']} en {matchups.LANE_NAMES[lane].lower()}", 12, "fg", True, True, anchor="w").pack(anchor="w", pady=(0, 8))
         build_panel(ui, inner, enemy, lane, None, min(self.width - 150, 760)).pack(fill="x")
 
     def filtered(self, rows, ctx):
@@ -585,7 +585,7 @@ class MatchupView:
         wl = min(self.width - 90, 800)
         if not rows:
             ui.lbl(self.host, "Ningún campeón cumple los filtros. Prueba a bajar las «partidas mínimas» o a quitar filtros.", 11, "dim", anchor="w",
-                   justify="left", wraplength=wl).pack(anchor="w", pady=6)
+                   justify="left", wraplength=wl).pack(anchor="w", pady=8)
             return
         allr = bool(self.data.get((enemy, lane))) and self.data[(enemy, lane)][0].get("tier") == "all"
         ui.lbl(self.host, f"{len(rows)} campeones con datos contra {ui.champs[enemy]['name']} en {matchups.LANE_NAMES[lane].lower()}. "
@@ -596,7 +596,7 @@ class MatchupView:
         if self.level == 0:
             for i, (r, g) in enumerate(rows[:self.shown]):
                 cell = ctk.CTkFrame(self.host, fg_color=PAL["card2"], corner_radius=12)
-                cell.pack(fill="x", pady=3)
+                cell.pack(fill="x", pady=4)
                 self.result_card(cell, i + 1, r, g, owned, enemy, lane)
         else:
             self.podium(rows[:3], owned, enemy, lane)
@@ -607,7 +607,7 @@ class MatchupView:
         if left > 0:
             b = ctk.CTkButton(self.host, text=f"Mostrar {min(PAGE, left)} más  ({left} restantes)", height=34, corner_radius=10,
                               font=ui.font(12), fg_color=PAL["card2"], hover_color=PAL["card2"], text_color=PAL["fg"], command=self.more)
-            b.pack(pady=(10, 0))
+            b.pack(pady=(12, 0))
             ui.smooth_btn(b, PAL["card2"], PAL["border"])
 
     def more(self):
@@ -617,7 +617,7 @@ class MatchupView:
     def podium(self, top, owned, enemy, lane):
         ui = self.ui
         grid = ui.frame(self.host)
-        grid.pack(fill="x", pady=(0, 10))
+        grid.pack(fill="x", pady=(0, 12))
         for i in range(len(top)):
             grid.columnconfigure(i, weight=1, uniform="pd")
         medals = ("1º", "2º", "3º")
@@ -630,16 +630,16 @@ class MatchupView:
             head.pack()
             ui.lbl(head, medals[i], 12, ui.acc if i == 0 else "dim", True, True).pack(side="left", padx=(0, 8))
             ui.champ(head, r["cid"], 44, False).pack(side="left")
-            ui.lbl(inner, ui.champs[r["cid"]]["name"], 14, "fg", True, True).pack(pady=(6, 0))
+            ui.lbl(inner, ui.champs[r["cid"]]["name"], 14, "fg", True, True).pack(pady=(8, 0))
             ok = r["wr"] >= 50
             ui.lbl(inner, f"{pct_es(r['wr'])} %", 22, "good" if ok else "bad", True, True).pack()
             ui.lbl(inner, f"{'+' if r['delta'] >= 0 else '−'}{pct_es(abs(r['delta']))} sobre su media · {r['games']} partidas", 9, "dim").pack()
             tag, color = self.tag_of(r, g, owned)
-            ui.chip(inner, tag, col(color) if color != "dim" else "dim").pack(pady=(6, 0))
+            ui.chip(inner, tag, col(color) if color != "dim" else "dim").pack(pady=(8, 0))
             self.small_chip(inner, r, dict(pady=(4, 0)))
             btns = ui.frame(inner)
-            btns.pack(pady=(6, 0))
-            small_btn(ui, btns, "Build", lambda c=r["cid"]: self.toggle_pod(c, enemy, lane), 54).pack(side="left", padx=(0, 6))
+            btns.pack(pady=(8, 0))
+            small_btn(ui, btns, "Build", lambda c=r["cid"]: self.toggle_pod(c, enemy, lane), 54).pack(side="left", padx=(0, 8))
             small_btn(ui, btns, "Lolalytics", lambda c=r["cid"]: open_url(matchups.vs_url(ui.champs[c], ui.champs[enemy], lane)), 72).pack(side="left")
         self.pod_slot = ui.frame(self.host)
         self.pod_slot.pack(fill="x", pady=(0, 8))
@@ -653,7 +653,7 @@ class MatchupView:
         wrap = ui.frame(self.host)
         wrap.pack()  # sin «fill»: la tabla queda centrada y cada fila se lee de una vez
         head = ui.frame(wrap)
-        head.pack(fill="x", padx=10, pady=(0, 2))
+        head.pack(fill="x", padx=12, pady=(0, 2))
         cols = [("", 26), ("", 34), ("Campeón", 130)] + ([("Victorias", 156), ("", 64), ("Ventaja", 78)] if lv >= 2 else [("Victorias", 64)])
         cols += [("Partidas", 74), ("Tú", 170)]
         for t, w in cols:
@@ -666,10 +666,10 @@ class MatchupView:
             slot = ui.frame(box)
             slot.pack(fill="x")
             inner = ui.frame(row)
-            inner.pack(fill="x", padx=10, pady=5)
+            inner.pack(fill="x", padx=12, pady=4)
             ok = r["wr"] >= 50
             ui.lbl(inner, str(start + i), 11, "dim", True, True, width=26, anchor="w").pack(side="left")
-            ui.champ(inner, r["cid"], 28, False).pack(side="left", padx=(0, 6))
+            ui.champ(inner, r["cid"], 28, False).pack(side="left", padx=(0, 8))
             ui.lbl(inner, ui.champs[r["cid"]]["name"], 12, "fg", True, width=130 - 0, anchor="w").pack(side="left")
             if lv >= 2:
                 mini_bar(ui, inner, (r["wr"] - 40) / 25, "good" if ok else "bad", 140).pack(side="left", padx=(0, 16))
@@ -680,9 +680,9 @@ class MatchupView:
             ui.lbl(inner, f"{r['games']}", 11, "dim", width=74, anchor="w").pack(side="left")
             tag, color = self.tag_of(r, g, owned)
             ui.chip(inner, tag, col(color) if color != "dim" else "dim").pack(side="left")
-            self.small_chip(inner, r, dict(side="left", padx=(6, 0)))
+            self.small_chip(inner, r, dict(side="left", padx=(8, 0)))
             small_btn(ui, inner, "Lolalytics", lambda c=r["cid"]: open_url(matchups.vs_url(ui.champs[c], ui.champs[enemy], lane)), 72).pack(side="right")
-            small_btn(ui, inner, "Build", lambda s=slot, c=r["cid"]: self.toggle_panel(s, c, enemy, lane), 54).pack(side="right", padx=(0, 6))
+            small_btn(ui, inner, "Build", lambda s=slot, c=r["cid"]: self.toggle_panel(s, c, enemy, lane), 54).pack(side="right", padx=(0, 8))
             if (r["cid"], enemy, lane) in self.opened:
                 self.opened.discard((r["cid"], enemy, lane))
                 self.toggle_panel(slot, r["cid"], enemy, lane)
@@ -696,9 +696,9 @@ class MatchupView:
             return
         self.opened.add(key)
         panel = ctk.CTkFrame(slot, fg_color=PAL["card"], corner_radius=10, border_width=1, border_color=PAL["border"])
-        panel.pack(fill="x", padx=10, pady=(0, 6))
+        panel.pack(fill="x", padx=12, pady=(0, 8))
         inner = self.ui.frame(panel)
-        inner.pack(fill="x", padx=12, pady=10)
+        inner.pack(fill="x", padx=12, pady=12)
         build_panel(self.ui, inner, cid, lane, enemy, min(self.width - 140, 720)).pack(fill="x")
 
     def toggle_pod(self, cid, enemy, lane):
@@ -710,36 +710,36 @@ class MatchupView:
             return
         self.pod_open = cid
         panel = ctk.CTkFrame(self.pod_slot, fg_color=PAL["card2"], corner_radius=12)
-        panel.pack(fill="x", padx=4, pady=(0, 6))
+        panel.pack(fill="x", padx=4, pady=(0, 8))
         inner = self.ui.frame(panel)
-        inner.pack(fill="x", padx=14, pady=12)
+        inner.pack(fill="x", padx=16, pady=12)
         build_panel(self.ui, inner, cid, lane, enemy, min(self.width - 150, 760)).pack(fill="x")
 
     def result_card(self, cell, n, r, g, owned, enemy, lane):
         ui = self.ui
         inner = ui.frame(cell)
-        inner.pack(fill="x", padx=10, pady=8)
+        inner.pack(fill="x", padx=12, pady=8)
         top = ui.frame(inner)
         top.pack(fill="x")
         ui.lbl(top, str(n), 11, "dim", True, True, width=24, anchor="w").pack(side="left")
         ui.champ(top, r["cid"], 36, False).pack(side="left")
         ok = r["wr"] >= 50
         mid = ui.frame(top)
-        mid.pack(side="left", padx=10)
+        mid.pack(side="left", padx=12)
         ui.lbl(mid, ui.champs[r["cid"]]["name"], 13, "fg", True, anchor="w").pack(anchor="w")
         ui.lbl(mid, f"{'+' if r['delta'] >= 0 else '−'}{pct_es(abs(r['delta']))} sobre su media · {r['games']} partidas", 9, "dim",
                anchor="w").pack(anchor="w")
         ui.lbl(top, f"{pct_es(r['wr'])} %", 15, "good" if ok else "bad", True, True).pack(side="right")
-        ui.bar(inner, [(min(max(r["wr"], 0), 100) / 100, "good" if ok else "bad")], 5).pack(fill="x", pady=(6, 6))
+        ui.bar(inner, [(min(max(r["wr"], 0), 100) / 100, "good" if ok else "bad")], 5).pack(fill="x", pady=(8, 8))
         foot = ui.frame(inner)
         foot.pack(fill="x")
         tag, color = self.tag_of(r, g, owned)
         ui.chip(foot, tag, col(color) if color != "dim" else "dim").pack(side="left")
-        self.small_chip(foot, r, dict(side="left", padx=(6, 0)))
+        self.small_chip(foot, r, dict(side="left", padx=(8, 0)))
         small_btn(ui, foot, "Lolalytics", lambda c=r["cid"]: open_url(matchups.vs_url(ui.champs[c], ui.champs[enemy], lane)), 72).pack(side="right")
         slot = ui.frame(inner)
         slot.pack(fill="x")
-        small_btn(ui, foot, "Build", lambda s=slot, c=r["cid"]: self.toggle_panel(s, c, enemy, lane), 54).pack(side="right", padx=(0, 6))
+        small_btn(ui, foot, "Build", lambda s=slot, c=r["cid"]: self.toggle_panel(s, c, enemy, lane), 54).pack(side="right", padx=(0, 8))
         if (r["cid"], enemy, lane) in self.opened:
             self.opened.discard((r["cid"], enemy, lane))
             self.toggle_panel(slot, r["cid"], enemy, lane)
@@ -824,22 +824,22 @@ class DataView:
         for sid, name, gives, uses, optional in params.SOURCES:
             on, state = self.status_of(sid)
             row = ctk.CTkFrame(c, fg_color=PAL["card2"], corner_radius=10)
-            row.pack(fill="x", pady=3)
+            row.pack(fill="x", pady=4)
             inner = ui.frame(row)
-            inner.pack(fill="x", padx=12, pady=9)
+            inner.pack(fill="x", padx=12, pady=8)
             head = ui.frame(inner)
             head.pack(fill="x")
             ui.lbl(head, name, 13, "fg", True, True).pack(side="left")
             ui.chip(head, "Activa" if on else "Desactivada", "good" if on else "dim").pack(side="right")
             if state:
                 ui.lbl(head, state + "   ", 10, "dim").pack(side="right")
-            ui.lbl(inner, "Qué da: " + gives, 10, "dim", anchor="w", justify="left", wraplength=self.wl).pack(anchor="w", pady=(3, 0))
+            ui.lbl(inner, "Qué da: " + gives, 10, "dim", anchor="w", justify="left", wraplength=self.wl).pack(anchor="w", pady=(4, 0))
             ui.lbl(inner, "Para qué se usa: " + uses, 10, "fg", anchor="w", justify="left", wraplength=self.wl).pack(anchor="w")
             if optional:
                 key = toggles[sid]
                 var = ctk.BooleanVar(value=bool(ui.conf[key]))
                 ctk.CTkSwitch(inner, text="Usar esta fuente", variable=var, font=ui.font(11), progress_color=ui.acc,
-                              command=lambda key=key, var=var, sid=sid: self.toggle_source(key, var.get(), sid)).pack(anchor="w", pady=(6, 0))
+                              command=lambda key=key, var=var, sid=sid: self.toggle_source(key, var.get(), sid)).pack(anchor="w", pady=(8, 0))
 
     def toggle_source(self, key, on, sid):
         self.gui.set(key, on, recalc=True)
@@ -861,7 +861,7 @@ class DataView:
 
     def lock_strip(self, parent):
         host = ctk.CTkFrame(parent, fg_color=PAL["card2"], corner_radius=12)
-        host.pack(fill="x", pady=(0, 10))
+        host.pack(fill="x", pady=(0, 12))
         self.lock_hosts.append(host)
         self.paint_lock(host)
 
@@ -870,7 +870,7 @@ class DataView:
         self.ui.clear(host)
         narrow = self.wl < 420
         inner = ui.frame(host)
-        inner.pack(fill="x", padx=12, pady=10)
+        inner.pack(fill="x", padx=12, pady=12)
         padlock(inner, ui, self.locked).pack(side="left", padx=(0, 12))
         txt = ui.frame(inner)
         txt.pack(side="left", fill="x", expand=True)
@@ -883,14 +883,14 @@ class DataView:
         ui.lbl(txt, msg, 10, "dim", anchor="w", justify="left", wraplength=max(200, self.wl - (110 if narrow else 230))).pack(anchor="w")
         btns = ui.frame(host if narrow else inner)
         if narrow:
-            btns.pack(fill="x", padx=12, pady=(0, 10))
+            btns.pack(fill="x", padx=12, pady=(0, 12))
         else:
-            btns.pack(side="right", padx=(10, 0))
+            btns.pack(side="right", padx=(12, 0))
         for text, cmd, pad in (("Desbloquear" if self.locked else "Bloquear", self.toggle_lock, (0, 4)), ("Restablecer todo", self.reset_all, 0)):
             b = ctk.CTkButton(btns, text=text, height=26, width=110, corner_radius=8, font=ui.font(10), fg_color=PAL["border"],
                               text_color=PAL["fg"], hover_color=PAL["border"], command=cmd)
             ui.smooth_btn(b, PAL["border"], PAL["card"])
-            b.pack(side="left" if narrow else "top", padx=(0, 6) if narrow else 0, pady=0 if narrow else pad)
+            b.pack(side="left" if narrow else "top", padx=(0, 8) if narrow else 0, pady=0 if narrow else pad)
 
     def toggle_lock(self):
         if self.locked and not messagebox.askyesno(
@@ -924,14 +924,14 @@ class DataView:
                   "dividida por un máximo realista. Mueve un peso y verás al instante cómo cambia el orden.", 10, "dim", anchor="w",
                justify="left", wraplength=self.wl).pack(anchor="w", pady=(0, 8))
         top = ui.frame(c)
-        top.pack(fill="x", pady=(0, 6))
+        top.pack(fill="x", pady=(0, 8))
         ui.lbl(top, "Estilo", 11, "dim").pack(side="left", padx=(0, 8))
         names = {v[0]: k for k, v in core.PRESET_INFO.items()}
         self.names = names
         self.preset_seg = ui.seg(top, list(names), core.PRESET_INFO[ui.conf["preset"]][0], self.pick_preset, height=26)
         self.preset_seg.pack(side="left", fill="x", expand=True)
         self.preset_desc = ui.lbl(c, core.PRESET_INFO[ui.conf["preset"]][1], 10, "dim", anchor="w", wraplength=self.wl, justify="left")
-        self.preset_desc.pack(anchor="w", pady=(0, 6))
+        self.preset_desc.pack(anchor="w", pady=(0, 8))
         for key, (label, what, up, down) in params.WEIGHT_INFO.items():
             self.slider_row(c, key, label, what, up, down, ui.conf["weights"].get(key, 0.0), 0.0, 6.0, 0.1, True)
         small_btn(ui, c, "Volver al estilo «Equilibrado»", lambda: self.pick_preset("Equilibrado"), 200).pack(anchor="w", pady=(8, 0))
@@ -953,7 +953,7 @@ class DataView:
                           button_hover_color=ui.acc, command=lambda v, key=key: self.on_slide(key, v, is_weight, fmt))
         s.set(value)
         self.style_slider(s)
-        s.pack(fill="x", pady=(3, 2))
+        s.pack(fill="x", pady=(4, 2))
         ui.lbl(row, what, 10, "dim", anchor="w", justify="left", wraplength=self.wl).pack(anchor="w")
         ui.lbl(row, f"Subirlo: {up}", 10, "good", anchor="w", justify="left", wraplength=self.wl).pack(anchor="w")
         ui.lbl(row, f"Bajarlo: {down}", 10, "info", anchor="w", justify="left", wraplength=self.wl).pack(anchor="w")
@@ -999,7 +999,7 @@ class DataView:
         ui = self.ui
         c = r["cands"][0]
         ui.lbl(parent, f"EJEMPLO EN VIVO: {ui.champs[c['cid']]['name'].upper()} (la primera recomendación ahora mismo)", 10, "dim", True).pack(
-            anchor="w", pady=(14, 4))
+            anchor="w", pady=(16, 4))
         breakdown_rows(ui, parent, c["parts"], c["score"], r["pct_scale"])
 
     # ---- umbrales ----
@@ -1040,7 +1040,7 @@ class DataView:
                 ("Fuera de rol", "Campeón que no se suele jugar en tu línea y que tú no has jugado ahí las veces necesarias."),
                 ("Enfrentamiento", "Resultado de un campeón contra otro concreto en la misma línea."),
                 ("Estos datos no son oficiales", "LOL-E no es de Riot Games. Las estadísticas de terceros pueden cambiar o fallar.")):
-            ui.lbl(c, term, 11, "fg", True, anchor="w").pack(anchor="w", pady=(6, 0))
+            ui.lbl(c, term, 11, "fg", True, anchor="w").pack(anchor="w", pady=(8, 0))
             ui.lbl(c, text, 10, "dim", anchor="w", justify="left", wraplength=self.wl).pack(anchor="w")
 
 
@@ -1057,7 +1057,7 @@ def breakdown_rows(ui, parent, parts, total, scale, width=170):
             continue
         v = parts[k]
         row = ui.frame(parent)
-        row.pack(fill="x", pady=1)
+        row.pack(fill="x", pady=2)
         ui.lbl(row, LABELS[k], 10, "fg", width=92, anchor="w").pack(side="left")
         track = tk.Frame(row, width=int(width * sx), height=int(7 * sx), bg=ui.hexm(PAL["card2"] if ui.bg(parent) != ui.hexm(PAL["card2"]) else PAL["border"]))
         track.pack(side="left", padx=(0, 8))
