@@ -958,6 +958,37 @@ class PaginasDeRunas(unittest.TestCase):
         self.assertEqual(builds.parse_rune_pages(d), [])
 
 
+class PatronesRepetidos(unittest.TestCase):
+    def partida(self, win, muertes_pronto, cs_dif=0, oro_dif=0):
+        mins = list(range(0, 21))
+        pl = lambda pid, team, cs, gold: {"pid": pid, "team": team, "role": "MIDDLE", "k": 0, "d": 0, "a": 0, "dmg": 1, "gold": 1, "cs": 1, "lvl": 1,
+                                         "cs_s": [cs * m / 20 for m in mins], "gold_s": [gold * m / 20 for m in mins],
+                                         "xp_s": [0] * 21, "lvl_s": [1] * 21}
+        return {"queue": 420, "win": win, "me": 1, "team": 100, "minutes": mins,
+                "players": {"1": pl(1, 100, 200 + cs_dif * 2, 10000 + oro_dif * 20 / 15 * 0 + oro_dif * 4 / 3), "2": pl(2, 200, 200, 10000)},
+                "kills": [{"t": 3 + i, "killer": 2, "victim": 1, "assists": []} for i in range(muertes_pronto)]}
+
+    def test_patron_en_derrotas(self):
+        import patrones
+        g = [self.partida(False, 2) for _ in range(5)] + [self.partida(True, 0) for _ in range(4)] + [self.partida(False, 0)]
+        p = patrones.find(g)
+        self.assertEqual(p["clave"], "muertes_pronto")
+        self.assertEqual((p["derrotas"], p["victorias"]), ((5, 6), (0, 4)))
+        self.assertIn("5 de 6", patrones.sentence(p))
+
+    def test_sin_muestra_o_sin_diferencia_no_dice_nada(self):
+        import patrones
+        self.assertIsNone(patrones.find([self.partida(False, 2) for _ in range(5)]))                              # solo 5 partidas
+        mix = [self.partida(w, 2) for w in (False, True) * 5]
+        self.assertIsNone(patrones.find(mix))                                                                      # igual en victorias que en derrotas
+        self.assertIsNone(patrones.sentence(None))
+
+    def test_ignora_colas_sin_linea(self):
+        import patrones
+        g = [dict(self.partida(False, 2), queue=450) for _ in range(10)]
+        self.assertIsNone(patrones.find(g))
+
+
 class PicosDelRival(unittest.TestCase):
     def snap(self, t, lvl, value, mine=5):
         mk = lambda cid, team, me, level, v: {"cid": cid, "team": team, "me": me, "level": level, "value": v, "items": [], "k": 0, "d": 0, "a": 0}

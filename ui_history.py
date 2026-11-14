@@ -5,6 +5,7 @@ from collections import Counter
 import customtkinter as ctk
 
 import history
+import patrones
 import sesion
 import lol_advisor as core
 from ui_kit import PAL, ROLES_ES, ON_FILL
@@ -351,6 +352,12 @@ class HistoryView:
         best = sesion.best_slot(sesion.by_hour(games))
         if best:
             lines.append((f"Tu mejor franja horaria es la {best[0]}: {round(best[1] * 100)} % de victorias en {best[2]} partidas.", "dim"))
+        try:   # el patrón que se repite en tus derrotas (solo con suficientes partidas analizadas)
+            pat = patrones.sentence(patrones.find(patrones.load(core.CACHE)))
+        except Exception:
+            pat = None
+        if pat:
+            lines.append((pat, "warn"))
         for text, col in lines:
             ui.lbl(self.summary_host, text, 10, col, anchor="w", justify="left", wraplength=max(240, self.width - 60)).pack(anchor="w", padx=4, pady=(6, 0))
 
