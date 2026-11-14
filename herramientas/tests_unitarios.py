@@ -989,6 +989,16 @@ class PatronesRepetidos(unittest.TestCase):
         self.assertIn("minuto 15", patrones.goal(patrones.find(g)))
         self.assertIsNone(patrones.goal(None))
 
+    def test_resultado_del_objetivo(self):
+        import patrones
+        p = {"clave": "muertes_pronto"}
+        ok, txt = patrones.result(self.partida(True, 1), p)
+        self.assertTrue(ok)
+        self.assertTrue(txt.startswith("Objetivo cumplido"))
+        self.assertFalse(patrones.result(self.partida(False, 3), p)[0])
+        self.assertIsNone(patrones.result(self.partida(True, 0), None))
+        self.assertIsNone(patrones.result(dict(self.partida(True, 0), queue=450), p))
+
     def test_ignora_colas_sin_linea(self):
         import patrones
         g = [dict(self.partida(False, 2), queue=450) for _ in range(10)]

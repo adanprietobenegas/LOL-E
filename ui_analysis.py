@@ -221,6 +221,13 @@ class AnalysisView:
             txt = f"{'+' if d > 0 else '−' if d < 0 else ''}{abs(d)} PL"
             ui.lbl(mid, txt, 13, "good" if d > 0 else "bad" if d < 0 else "dim", True).pack(pady=(2, 0))
             ui.lbl(mid, (lp["move"] + " · " if lp.get("move") else "") + f"ahora {lp['tier']} · {lp['now']} PL", 9, "dim").pack()
+        try:   # el objetivo que llevabas (sacado de tu patrón de derrotas): ¿se cumplió?
+            import patrones
+            res = patrones.result(a, patrones.find(patrones.load(core.CACHE)))
+        except Exception:
+            res = None
+        if res:
+            ui.lbl(host, res[1], 11, "good" if res[0] else "warn", True, anchor="w", justify="left", wraplength=max(240, gv.width - 110)).pack(anchor="w", pady=(0, 6))
         if opp is None:
             return
         o = analysis.player(a, opp)

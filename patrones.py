@@ -83,6 +83,19 @@ def goal(p):
     return "Tu objetivo: " + GOAL[p["clave"]] if p and p.get("clave") in GOAL else None
 
 
+def result(a, p):
+    """¿Se cumplió el objetivo en esta partida? (cumplido, frase), o None si no hay patrón, no es de la Grieta o no se puede saber."""
+    try:
+        if not p or p.get("clave") not in GOAL or a.get("queue") not in QUEUES or str(a.get("me")) not in a["players"]:
+            return None
+        bad = _checks(a).get(p["clave"])
+    except Exception:
+        return None
+    if bad is None:
+        return None
+    return (not bad), ("Objetivo cumplido: " if not bad else "Objetivo no cumplido: ") + GOAL[p["clave"]]
+
+
 _CACHE = {}
 
 
