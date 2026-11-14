@@ -36,7 +36,7 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
 |---|---|---|---|---|---|
 | 1.1 | ~~**«Puedes comprar…»**~~ HECHO en `main` (`shopping.py`): siguiente objeto de tu build y lo que te falta restando componentes. Falta verlo en una partida real y el aviso con sonido al poder comprarlo ya está (`GUI.buy_alert`, ajuste `buy_alert`) | A | S | b | Una partida real |
 | 1.2 | ~~**Objeto según lo que llevan los rivales**~~ HECHO en `main` sin publicar (`shopping.counter_item`, línea en el bloque en vivo): UN objeto de la cantera de tu campeón, penetración si acumulan una defensa o defensa contra su daño dominante; solo con 2.500+ de oro rival. Falta verlo en partida real y ligarlo a «Situaciones» (heridas graves, tenacidad) | A | M | m | Partidas reales; que el consejo cambie con la partida |
-| 1.3 | **Temporizadores de objetivos** (dragón, barón, heraldo, inhibidores) a partir de los eventos. **Verificar los tiempos de reaparición del parche actual antes de mostrarlos**; mostrarlos como «estimado» | A | M | m | Comparar con el reloj del juego en 2–3 partidas |
+| 1.3 | **Temporizadores de objetivos**: HECHO en `main` el Barón (20:00, 6 min) y las larvas del Vacío (8:00–14:45, confirmado en la wiki) como «estimado» (`live.timers`); FALTAN dragón, heraldo e inhibidores: la wiki del dragón dio 404 y las fuentes discrepan; confirmar antes de mostrar. Original: (dragón, barón, heraldo, inhibidores) a partir de los eventos. **Verificar los tiempos de reaparición del parche actual antes de mostrarlos**; mostrarlos como «estimado» | A | M | m | Comparar con el reloj del juego en 2–3 partidas |
 | 1.4 | ~~**Resumen de la partida al terminar, comparado contigo**~~ HECHO en `main` (KDA y farmeo frente a tu media con ese campeón). Daño por minuto y visión por minuto añadidos en `main` (visión solo en la Grieta) | M | S | b | Con partidas guardadas |
 | 1.5 | ~~**Gráfico de PL/rango en el tiempo**~~ REHECHO en `main` sin publicar (`lpseries.py` + `ui_lp.py`: fechas, rango real, filtros por tramo y cola, cuadro al pasar el ratón, fotos diarias de op.gg). Falta: marcas de subida/bajada de división y ver el historial real | M | M | b | Con el `lp.json` real del usuario |
 | 1.6 | ~~**Repertorio: «qué aprender»**~~ HECHO en `main` sin publicar (`learn.py`, tarjeta en Repertorio): si una línea con 8+ partidas depende ≥70 % de un campeón, propone hasta 3 que ya tienes con buena tasa en el parche (Lolalytics). Falta: huecos por rivales difíciles y por línea nunca jugada | M | M | m | El usuario decide si le sirve; con su historial real |
@@ -57,6 +57,11 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
 | 2.8 | ~~**Informe de diagnóstico con un clic** más completo~~ HECHO en `main` sin publicar (`lol_advisor.health_lines`: esquema, partidas con línea de regla antigua o sin línea, PL guardados, edad del meta y de las builds, ajustes relevantes). Guía de «qué enviar» en la nota del botón (Ajustes) | M | S | b | Un compañero lo usa |
 
 ## P3 · Ideas a explorar (sin prometer)
+
+- **Hecho el 14/11/2026, de las propuestas de los expertos** (ver `HISTORIAL_DE_SESIONES.md`): sesión y forma tras derrotas (`sesion.py`), patrón repetido en
+  derrotas + objetivo + evaluación (`patrones.py`), picos del rival en vivo (`live.spikes`), rango estimado hacia atrás (`lpseries.estimate`).
+  Siguen sin hacer: mapa de dónde mueres (necesita la posición de las muertes de la línea de tiempo), analizar el historial en segundo plano para
+  tener más partidas con las que sacar patrones, y un resumen tipo «Wrapped» de fin de temporada.
 
 - **Coaching con IA**: un resumen en lenguaje natural de la partida o de tu semana. Pide decidir dónde corre el modelo, clave de API o coste, y
   qué datos salen del PC (privacidad). Esfuerzo L, riesgo a. Solo si el usuario lo quiere y con consentimiento claro.
