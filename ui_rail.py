@@ -12,7 +12,7 @@ from ui_kit import PAL, hexc, rgb
 
 # (clave de la página, icono, nombre en la barra, nombre en modo en vivo)
 ITEMS = [("Asesor", "home", "Inicio", None), ("Partida", "live", "Partida", "En vivo"), ("Enfrentamiento", "swords", "Enfrentamiento", None),
-         ("Repertorio", "star", "Repertorio", None), ("Historial", "list", "Historial", None)]
+         ("Repertorio", "star", "Campeones", None), ("Historial", "list", "Historial", None)]
 
 
 def icon(kind, color, size=22):

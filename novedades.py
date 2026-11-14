@@ -12,7 +12,7 @@ TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("
 NOTES = [
     {"v": "1.22.21", "fecha": "15 de noviembre de 2026", "titulo": "Navegación lateral, tarjeta de tu partida y tu estilo de juego", "items": [
         ("nuevo", "En el análisis de cada partida, «Guardar tarjeta de la partida»: una imagen sobria con tu campeón, el resultado, tus cifras, los PL y cómo fuiste frente a tu media, para compartirla."),
-        ("nuevo", "Navegación nueva: una barra lateral con iconos (y los nombres si la ventana es ancha) sustituye a las pestañas de arriba. «Partida» pasa a «En vivo» y se tiñe de ámbar durante la cola, la selección y la partida; una banda ámbar arriba dice la fase y el campeón, con un botón para ir y volver entre la partida y la consulta. Los atajos Ctrl+1…6 no cambian."),
+        ("nuevo", "Navegación nueva: una barra lateral con iconos (y los nombres si la ventana es ancha) sustituye a las pestañas de arriba. «Partida» pasa a «En vivo» y se tiñe de ámbar durante la cola, la selección y la partida; una banda ámbar arriba dice la fase y el campeón, con el reloj y un botón para ir y volver entre la partida y la consulta. «Repertorio» se llama «Campeones» y «Datos» se abre desde Ajustes. Los atajos Ctrl+1…6 no cambian."),
         ("nuevo", "En «Tu año en LoL» sale ahora tu estilo de juego (el kamikaze, el superviviente, el granjero, el vigía, el asistente o el todoterreno), con el dato que lo justifica. Es un guiño: sale de tus cifras por minuto."),
     ]},
     {"v": "1.22.20", "fecha": "14 de noviembre de 2026", "titulo": "Tu año en LoL y una interfaz más uniforme", "items": [

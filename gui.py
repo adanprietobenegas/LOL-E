@@ -223,14 +223,24 @@ class GUI:
         plan = self.ctx.get("plan") or {}
         champ = core.name(plan["cid"], self.champs) if plan.get("cid") in self.champs else ""
         label = self.PHASE_ES.get(phase) or ("En selección" if self.advisor == "select" else "")
-        sig = (live, label, champ, self.page == "partida")
+        clock = ""
+        try:   # el reloj de la banda: el tiempo de tu turno en la selección, o el de la partida (de la última lectura en directo, avanzado con el reloj local)
+            if self.advisor == "select" and self.ctx.get("session"):
+                secs, inf = core.timer_left(self.ctx["session"], self.ctx["got"])
+                clock = "" if inf else f"{int(secs) // 60}:{int(secs) % 60:02d}"
+            elif phase in ("InProgress", "GameStart", "Reconnect") and self.ctx.get("live") and self.ctx.get("live_at"):
+                t = int(self.ctx["live"]["t"] + time.time() - self.ctx["live_at"])
+                clock = f"{t // 60}:{t % 60:02d}"
+        except Exception:
+            clock = ""
+        sig = (live, label, champ, self.page == "partida", clock)
         if sig == self.band_sig:
             return
         self.band_sig = sig
         if not live:
             self.band.pack_forget()
             return
-        self.band_txt.configure(text=f"●  {label}" + (f"  ·  {champ}" if champ else ""))
+        self.band_txt.configure(text=f"●  {label}" + (f"  ·  {clock}" if clock else "") + (f"  ·  {champ}" if champ else ""))
         self.band_btn.configure(text="Consultar" if self.page == "partida" else "Volver a la partida")
         if not self.band.winfo_ismapped():
             self.band.pack(fill="x", padx=16, pady=(8, 0), before=self.mid)
@@ -444,6 +454,7 @@ class GUI:
                         self.game_view.refresh(self.make_ctx(), True)
                 elif kind == "live":
                     self.ctx["live"] = ev[1]
+                    self.ctx["live_at"] = time.time()
                     self.buy_alert(ev[1])
                     if self.view == "game":
                         if self.hidden():   # ventana minimizada: no se repinta nada (el PC es del juego); al volver se pinta de una vez
@@ -692,8 +703,7 @@ class GUI:
         self.datos_btn = ctk.CTkButton(bar, text="Datos", width=74, height=32, corner_radius=10, font=k.font(12), border_width=1,
                                        border_color=k.acc if self.page == "datos" else PAL["edge"], fg_color=PAL["card"], hover_color=PAL["card"],
                                        text_color=PAL["fg"], command=lambda: self.set_page("Datos"))
-        self.datos_btn.pack(side="right", padx=(0, 8))
-        k.smooth_btn(self.datos_btn, PAL["card"], PAL["card2"])
+        # (ya no está en la cabecera: «Datos» se abre desde el panel de Ajustes; el botón existe solo para que `set_page` pueda marcarlo)
         self.link_lbl = k.clbl(bar, "", 11, "warn", True)
         self.link_lbl.pack(side="right", padx=(12, 12))
         vol = k.frame(bar)
@@ -1196,13 +1206,17 @@ class GUI:
         d.pack_propagate(False)
         head = k.frame(d)
         head.pack(fill="x", padx=24, pady=(16, 0))
-        k.clbl(head, "Ajustes", 20, "fg", True, True).pack(side="left")
+        k.clbl(head, "Ajustes y datos", 20, "fg", True, True).pack(side="left")
         close = ctk.CTkButton(head, text="Cerrar", width=70, height=30, corner_radius=9, font=k.font(12), fg_color=PAL["card2"],
                               hover_color=PAL["card2"], text_color=PAL["fg"], command=self.close_dock)
         close.pack(side="right")
         k.smooth_btn(close, PAL["card2"], PAL["border"])
         k.clbl(d, "Los cambios se aplican al instante y se guardan solos.", 10, "dim", anchor="w", wraplength=self.note_w(),
                justify="left").pack(anchor="w", padx=24, pady=(2, 0))
+        datos = ctk.CTkButton(d, text="Datos y fuentes de información  ›", height=34, corner_radius=10, font=k.font(12, True),
+                              fg_color=PAL["card2"], hover_color=PAL["border"], text_color=PAL["fg"], anchor="w",
+                              command=lambda: (self.close_dock(), self.set_page("Datos")))
+        datos.pack(fill="x", padx=24, pady=(10, 0))
         sc = ctk.CTkScrollableFrame(d, fg_color="transparent")
         self.dock_scroll = sc   # lo usan las capturas de prueba para paginar el panel
         calm(getattr(sc, "_scrollbar", None))
