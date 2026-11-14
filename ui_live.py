@@ -109,7 +109,7 @@ def paint(ui, host, snap, width, opp_cid=0, plan=None):
     ui.lbl(grid, t_mine, 9, "dim", True).grid(row=0, column=0, sticky="e", padx=8)
     ui.lbl(grid, t_other, 9, "dim", True).grid(row=0, column=2, sticky="w", padx=8)
     lines = [("Bajas", a.get("kills", 0), b.get("kills", 0), str), ("Oro en objetos", a.get("value", 0), b.get("value", 0), live.money)]
-    for title, key in (("Torres", "towers"), ("Inhibidores", "inhibs"), ("Dragones", "dragons"), ("Heraldos", "heralds"), ("Barones", "barons")):
+    for title, key in (("Torres", "towers"), ("Inhibidores", "inhibs"), ("Dragones", "dragons"), ("Heraldos", "heralds"), ("Larvas", "grubs"), ("Barones", "barons")):
         if a.get(key) or b.get(key):
             lines.append((title, a.get(key, 0), b.get(key, 0), str))
     for i, (title, va, vb, fmt) in enumerate(lines, 1):

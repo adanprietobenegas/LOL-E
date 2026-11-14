@@ -64,6 +64,9 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 - **Objeto contra los rivales** en el bloque en vivo (`shopping.counter_item`, `ui_live.counter_hint`): un solo objeto de tu cantera (penetración si acumulan defensa; si no, armadura o RM contra su daño dominante). Solo datos en vivo inventados; captura 10d.
 - **Informe de diagnóstico más completo** (`health_lines` y los ajustes relevantes en `copy_diagnostics`): esquema de datos, partidas de la Grieta con línea de regla antigua o sin línea, PL guardados, edad del meta y de las builds.
 
+**En `main` sin publicar** (candidata a 1.22.14), hallado con una partida real el 14/11/2026:
+- **Torres e inhibidores contaban 0 en partidas reales**: el código real es `Turret_TOrder_…` / `Inhib_TChaos_…` y `live._side` esperaba `_T1_/_T2_`. Corregido (acepta ambos formatos), con la muestra real: 3 y 7 torres, 2 inhibidores. Los eventos `DragonKill`, `HeraldKill` y `BaronKill` SÍ eran correctos (nombre y equipo por `KillerName`); además existe `HordeKill` (larvas del vacío), ahora se cuenta («Larvas»).
+
 ***Pendiente de ver en la realidad*** (no se puede cerrar sin el usuario o sin otra partida):
 1. La instalación del usuario corría la 1.22.9 el 13/11 a las 17:59: basta con cerrar y abrir LOL-E fuera de cola para pasar a la
    1.22.10. Después, en su `diag.log` debe aparecer «Partidas antiguas recalculadas con su detalle…», y su Historial/Repertorio no deben

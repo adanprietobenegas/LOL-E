@@ -167,7 +167,9 @@ def live_sample(t=916.0):
                 pl("Leona", "CHAOS", "UTILITY", 10, 1, 5, 9, 18, [it(3190, 2200, 0), it(3047, 1100, 1)])],
             "events": {"Events": [
                 {"EventID": 0, "EventName": "GameStart", "EventTime": 0.0},
-                {"EventID": 1, "EventName": "TurretKilled", "EventTime": 700.0, "TurretKilled": "Turret_T2_L_03_A", "KillerName": "Yo"},
-                {"EventID": 2, "EventName": "TurretKilled", "EventTime": 800.0, "TurretKilled": "Turret_T1_C_05_A", "KillerName": "Khazix"},
+                {"EventID": 1, "EventName": "TurretKilled", "EventTime": 700.0, "TurretKilled": "Turret_TChaos_L0_P3_1234567890_0", "KillerName": "Yo"},
+                {"EventID": 2, "EventName": "TurretKilled", "EventTime": 800.0, "TurretKilled": "Turret_TOrder_L1_P2_1234567891_0", "KillerName": "Khazix"},
                 {"EventID": 3, "EventName": "DragonKill", "EventTime": 850.0, "DragonType": "Earth", "KillerName": "Khazix", "Stolen": "False"},
-                {"EventID": 4, "EventName": "HeraldKill", "EventTime": 900.0, "KillerName": "LeeSin", "Stolen": "False"}]}}
+                {"EventID": 4, "EventName": "HeraldKill", "EventTime": 900.0, "KillerName": "LeeSin", "Stolen": "False"},
+                {"EventID": 5, "EventName": "HordeKill", "EventTime": 520.0, "KillerName": "Khazix", "Stolen": "False"},
+                {"EventID": 6, "EventName": "InhibKilled", "EventTime": 1000.0, "InhibKilled": "Inhib_TChaos_L2_P1_1234567892_0", "KillerName": "Yo"}]}}

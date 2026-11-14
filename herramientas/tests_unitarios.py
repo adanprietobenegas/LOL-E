@@ -1272,7 +1272,8 @@ class PartidaEnVivo(unittest.TestCase):
         t = self.live.summarize(self.d, self.champs)["teams"]
         self.assertEqual((t["ORDER"]["kills"], t["CHAOS"]["kills"]), (4 + 5 + 6 + 3 + 0, 6 + 9 + 4 + 5 + 1))
         self.assertEqual(t["ORDER"]["value"], (2700 + 1100 + 1300) + (3000 + 1100) + (3000 + 1100 + 850) + (3400 + 1100) + (2200 + 1000))
-        self.assertEqual((t["ORDER"]["towers"], t["CHAOS"]["towers"]), (1, 1))   # la T2 que cae la tumba ORDER; la T1, CHAOS
+        self.assertEqual((t["ORDER"]["towers"], t["CHAOS"]["towers"]), (1, 1))   # cae una torre de cada equipo: la suma el equipo contrario (formato real «Turret_TChaos_…»)
+        self.assertEqual((t["ORDER"]["inhibs"], t["CHAOS"]["inhibs"], t["ORDER"]["grubs"], t["CHAOS"]["grubs"]), (1, 0, 0, 1))   # inhibidor de CHAOS lo gana ORDER; la larva la mata CHAOS
         self.assertEqual((t["CHAOS"]["dragons"], t["ORDER"]["heralds"], t["ORDER"]["barons"]), (1, 1, 0))   # por el equipo de quien lo mata
 
     def test_lectura_de_los_objetos_rivales(self):

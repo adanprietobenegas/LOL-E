@@ -4,14 +4,14 @@ para la pantalla. Sin red ni ventana: solo datos, para poder probarlo.
 Entrada: el JSON de /liveclientdata/allgamedata. Salida de `summarize`:
   {"t": segundos de partida, "mode": «CLASSIC», «KIWI»…, "gold": tu oro, "me_team": «ORDER»|«CHAOS»|«»,
    "players": [{"cid", "name", "team", "me", "level", "k", "d", "a", "cs", "dead", "respawn", "items": [ids], "value", "pos"}],
-   "teams": {"ORDER": {"kills", "value", "towers", "inhibs", "dragons", "barons", "heralds"}, "CHAOS": {…}}}
+   "teams": {"ORDER": {"kills", "value", "towers", "inhibs", "dragons", "barons", "heralds", "grubs"}, "CHAOS": {…}}}
 «value» es el oro gastado en objetos que lleva ahora (suma de los precios de lo que tiene en el inventario): una estimación, no el
 oro total que ha ganado. Todo lo que falte en los datos queda en 0 o vacío: la API cambia entre modos y parches.
 """
 
 PREFIX = "game_character_displayname_"
 ORDER = {"TOP": 0, "JUNGLE": 1, "MIDDLE": 2, "BOTTOM": 3, "UTILITY": 4, "SUPPORT": 4}
-EMPTY_TEAM = {"kills": 0, "value": 0, "towers": 0, "inhibs": 0, "dragons": 0, "barons": 0, "heralds": 0}
+EMPTY_TEAM = {"kills": 0, "value": 0, "towers": 0, "inhibs": 0, "dragons": 0, "barons": 0, "heralds": 0, "grubs": 0}
 
 
 def champ_id(p, champs):
@@ -42,8 +42,9 @@ def team_of_name(name, players):
 
 
 def _side(code):
-    """«Turret_T1_C_05_A» / «Barracks_T2_R1»: T1 es el lado azul (ORDER). Devuelve el equipo AL QUE PERTENECÍA la estructura."""
-    for tag, team in (("_T1_", "ORDER"), ("_T2_", "CHAOS")):
+    """Equipo AL QUE PERTENECÍA la estructura destruida. Formato real (comprobado en una partida de la Grieta): «Turret_TOrder_L0_P3_…» y
+    «Inhib_TChaos_L2_P1_…»; se aceptan también «_T1_» (azul) y «_T2_» (rojo) por si algún modo los usa."""
+    for tag, team in (("_TOrder_", "ORDER"), ("_TChaos_", "CHAOS"), ("_T1_", "ORDER"), ("_T2_", "CHAOS")):
         if tag in (code or ""):
             return team
     return ""
@@ -77,10 +78,10 @@ def summarize(d, champs):
             gainer = {"ORDER": "CHAOS", "CHAOS": "ORDER"}.get(lost)
             if gainer:
                 teams[gainer]["towers" if n == "TurretKilled" else "inhibs"] += 1
-        elif n in ("DragonKill", "BaronKill", "HeraldKill"):
+        elif n in ("DragonKill", "BaronKill", "HeraldKill", "HordeKill"):   # HordeKill: una larva del vacío (salen tres juntas)
             who = team_of_name(e.get("KillerName"), players)
             if who:
-                teams[who][{"DragonKill": "dragons", "BaronKill": "barons", "HeraldKill": "heralds"}[n]] += 1
+                teams[who][{"DragonKill": "dragons", "BaronKill": "barons", "HeraldKill": "heralds", "HordeKill": "grubs"}[n]] += 1
     for p in players:
         p.pop("names", None)
     me = next((p for p in players if p["me"]), None)
