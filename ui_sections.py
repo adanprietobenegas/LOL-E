@@ -401,7 +401,13 @@ class SummaryCard(Section):
         if getattr(self, "lp", None):   # tu rango en el tiempo: siempre visible, sin pulsar nada
             import ui_lp
             try:
-                self.lp_chart = ui_lp.LpChart(ui, parent, self.ctx["width"], self.hist, self.lp[0], self.lp[1])
+                marks = []
+                for key, name in (("peak", "Pico de la temporada"), ("prev", "Fin de la temporada anterior")):
+                    r = ex.get(key)
+                    v = lpseries.value_of(r["key"], r.get("div") or "", 0) if r else None
+                    if v is not None:
+                        marks.append((v, name))
+                self.lp_chart = ui_lp.LpChart(ui, parent, self.ctx["width"], self.hist, self.lp[0], self.lp[1], marks=marks)
                 ui.frame(parent, height=10).pack()
             except Exception:
                 core.log_exc("Gráfica de rango")

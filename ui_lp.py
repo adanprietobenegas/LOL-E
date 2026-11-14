@@ -21,8 +21,9 @@ def fecha(ms, hora=False):
 
 
 class LpChart:
-    def __init__(self, ui, parent, width, hist, lp, snaps, now=None):
-        self.ui, self.width, self.now = ui, width, now or int(time.time() * 1000)
+    def __init__(self, ui, parent, width, hist, lp, snaps, now=None, marks=()):
+        """`marks`: [(valor de la escala, nombre)] de referencias oficiales del cliente (el pico de la temporada, cómo acabó la anterior)."""
+        self.ui, self.width, self.now, self.marks = ui, width, now or int(time.time() * 1000), list(marks)
         self.hist, self.lp, self.snaps = hist, lp, snaps
         self.imgs = []
         self.pts = []
@@ -105,6 +106,13 @@ class LpChart:
             cv.create_line(S(LEFT), y, S(self.W - RIGHT), y, fill=edge, dash=(2, 4))
             if i % step == 0:
                 cv.create_text(S(LEFT - 8), y, text=name, anchor="e", fill=dim, font=ui.tkf(9, False, False))
+        # referencias del cliente: solo si caen dentro de lo que se ve (no se estira la gráfica para llegar a ellas)
+        acc = ui.hexm(ui.acc)
+        for v, name in self.marks:
+            if vmin <= v <= vmax:
+                y = py(v)
+                cv.create_line(S(LEFT), y, S(self.W - RIGHT), y, fill=acc, dash=(6, 3))
+                cv.create_text(S(self.W - RIGHT), y - S(8), text=name, anchor="e", fill=acc, font=ui.tkf(9, False, False))
         # fechas
         for k in range(5):
             t = t0 + (t1 - t0) * k / 4

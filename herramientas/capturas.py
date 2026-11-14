@@ -44,7 +44,7 @@ champs = l.load_champions()
 P = l.load_player_data(SinCliente(), l.load_season(champs, conf))
 P["profile"] = {"name": "Jugador", "tag": "EUW", "level": 214, "icon": 29, "puuid": "yo",
                 "solo": {"key": "GOLD", "tier": "Oro", "div": "II", "lp": 47, "w": 58, "l": 51, "wr": 58 / 109},
-                "flex": {"key": "SILVER", "tier": "Plata", "div": "I", "lp": 12, "w": 9, "l": 7, "wr": 9 / 16}, "prem": None, "extra": {}}
+                "flex": {"key": "SILVER", "tier": "Plata", "div": "I", "lp": 12, "w": 9, "l": 7, "wr": 9 / 16}, "prem": None, "extra": {"peak": {"key": "GOLD", "tier": "Oro", "div": "I"}, "prev": {"key": "GOLD", "tier": "Oro", "div": "III"}}}
 P["rank"], P["record"], P["puuid"] = "Oro II · 47 PL", "58V · 51D · 53%", "yo"
 l.META["data"] = meta.load(l.CACHE, l.DD_VERSION or "16.21.1", meta.tier_for("GOLD"))
 import lpseries, time as _t   # una serie de rango de ejemplo (el cache del proyecto no tiene lp.json): la gráfica sale en el inicio
