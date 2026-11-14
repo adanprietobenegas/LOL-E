@@ -961,7 +961,7 @@ class PaginasDeRunas(unittest.TestCase):
 class TemporizadorDelBaron(unittest.TestCase):
     def test_avisa_cerca_del_spawn_y_tras_una_muerte(self):
         import live
-        s = lambda t, kills=(): {"mode": "CLASSIC", "t": t, "baron_kills": list(kills)}
+        s = lambda t, kills=(): {"mode": "CLASSIC", "t": t, "baron_kills": list(kills), "teams": {"ORDER": {"grubs": 3}}}   # larvas ya matadas: aquí solo cuenta el Barón
         self.assertIsNone(live.timers(s(600)))                                   # lejos
         self.assertIn("aparece en 0:45", live.timers(s(1155)))
         self.assertIn("disponible", live.timers(s(1230)))
@@ -969,6 +969,14 @@ class TemporizadorDelBaron(unittest.TestCase):
         self.assertIn("reaparece en 0:50", live.timers(s(1510, [1200])))         # murió a los 20:00: vuelve a los 26:00 (1560)
         self.assertIsNone(live.timers(s(1300, [1200])))                          # aún falta mucho
         self.assertIsNone(live.timers({"mode": "ARAM", "t": 1190}))              # ARAM no tiene Barón
+
+    def test_larvas_del_vacio(self):
+        import live
+        s = lambda t, grubs=0: {"mode": "CLASSIC", "t": t, "teams": {"ORDER": {"grubs": grubs}, "CHAOS": {"grubs": 0}}}
+        self.assertIn("aparecen en 0:30", live.timers(s(450)))
+        self.assertIn("hasta el 14:45", live.timers(s(600)))
+        self.assertIsNone(live.timers(s(600, 3)))          # ya las han matado
+        self.assertIsNone(live.timers(s(900)))             # ya se fueron
 
     def test_resumen_trae_las_muertes_del_baron(self):
         import live

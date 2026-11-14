@@ -152,6 +152,7 @@ def duel(snap, opp_cid):
 
 BARON_SPAWN, BARON_RESPAWN = 1200, 360   # el Barón sale a los 20:00 y 6 min después de caer (parche 26.x; las fuentes coinciden). El dragón y las larvas NO se
 # incluyen: las fuentes discrepan y no se ha podido confirmar el tiempo actual
+GRUBS_SPAWN, GRUBS_END = 480, 885         # larvas del Vacío: aparecen a los 8:00, una sola vez por partida, y se van a los 14:45 (wiki oficial, parche 25.09 en adelante)
 BARON_WARN = 60                           # se avisa cuando falta menos de este tiempo
 
 
@@ -162,13 +163,20 @@ def timers(snap):
         return None
     t = snap.get("t", 0)
     kills = snap.get("baron_kills") or []
+    out = []
     due = (kills[-1] + BARON_RESPAWN) if kills else BARON_SPAWN
     left = due - t
-    if left > BARON_WARN:
-        return None
-    if left > 0:
-        return f"El Barón {'reaparece' if kills else 'aparece'} en {clock(left)} (estimado)."
-    return "El Barón debería estar disponible (estimado)." if left > -300 else None
+    if 0 < left <= BARON_WARN:
+        out.append(f"El Barón {'reaparece' if kills else 'aparece'} en {clock(left)} (estimado).")
+    elif -300 < left <= 0:
+        out.append("El Barón debería estar disponible (estimado).")
+    grubs = sum((tm or {}).get("grubs", 0) for tm in (snap.get("teams") or {}).values())
+    gl = GRUBS_SPAWN - t
+    if 0 < gl <= BARON_WARN:
+        out.append(f"Las larvas del Vacío aparecen en {clock(gl)} (estimado).")
+    elif gl <= 0 < GRUBS_END - t and not grubs:
+        out.append(f"Las larvas del Vacío siguen en la fosa hasta el {clock(GRUBS_END)} (estimado).")
+    return " ".join(out) or None
 
 
 SPIKE_LEVELS = (6, 11, 16)
