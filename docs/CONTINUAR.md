@@ -163,6 +163,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 | Herramienta | Para qué |
 |---|---|
 | `estado.py` | Foto del estado real (versión, qué está sin publicar, git, cliente, instalación del usuario, documentos). `--pruebas` |
+| `espaciado.py` | Pasa los `padx/pady` de la interfaz a la escala 0/2/4/8/12/16/24; sin argumentos solo cuenta, con `--aplicar` reescribe (idempotente). |
 | `comprobar_todo.py` | **Antes de publicar** (~10 min, sin cliente): pruebas + recorrido de TODAS las pantallas a 560 y 1340 px + la app entera contra el cliente falso |
 | `publicar.py` | Prepara una publicación de principio a fin (sección 5); no publica por sí solo. `--verificar`, `--ensayo` |
 | `tests_unitarios.py` | Pruebas sin ventana ni cliente (incluye el bucle principal contra el cliente falso y la regla de líneas) |
