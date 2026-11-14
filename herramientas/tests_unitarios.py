@@ -958,6 +958,48 @@ class PaginasDeRunas(unittest.TestCase):
         self.assertEqual(builds.parse_rune_pages(d), [])
 
 
+class ResumenDelAnio(unittest.TestCase):
+    NOW = 1_800_000_000_000
+
+    def g(self, i, dias, w, c=86, d=1800, k=5, de=3, a=7):
+        return {"id": str(i), "t": self.NOW - int(dias * 86_400_000), "d": d, "c": c, "w": w, "k": k, "de": de, "a": a}
+
+    def test_cifras(self):
+        import wrapped
+        games = [self.g(i, i, i % 3 != 0, c=86 if i % 2 else 122) for i in range(1, 13)]
+        s = wrapped.compute(games, self.NOW, "all")
+        self.assertEqual((s["n"], s["wins"], s["losses"]), (12, 8, 4))
+        self.assertAlmostEqual(s["hours"], 12 * 1800 / 3600)
+        self.assertEqual(s["kills"], 60)
+        self.assertEqual(s["top"][0][1], 6)
+        self.assertGreaterEqual(s["best_streak"][0], 2)
+        self.assertTrue(wrapped.lines(s, lambda c: str(c)))
+
+    def test_pocas_partidas_o_fuera_del_anio(self):
+        import wrapped
+        games = [self.g(i, i, True) for i in range(1, 9)]
+        self.assertIsNone(wrapped.compute(games, self.NOW, "all"))                         # solo 8
+        viejas = [self.g(i, 700 + i, True) for i in range(1, 15)]
+        self.assertIsNone(wrapped.compute(viejas, self.NOW, "year"))                       # de hace casi 2 años
+        self.assertIsNotNone(wrapped.compute(viejas, self.NOW, "all"))
+
+    def test_remakes_y_entradas_sin_detalle(self):
+        import wrapped
+        games = [self.g(i, i, True) for i in range(1, 12)] + [dict(self.g(99, 1, False), rm=True)]
+        games.append({"id": "x", "t": self.NOW - 1000, "d": 0, "c": 86, "w": False, "k": None, "de": None, "a": None})
+        s = wrapped.compute(games, self.NOW, "all")
+        self.assertEqual(s["n"], 12)                                                      # sin el remake
+        self.assertEqual(s["kda_n"], 11)                                                  # y la entrada sin detalle no cuenta para el KDA
+
+    def test_imagen(self):
+        import wrapped, tempfile, os
+        games = [self.g(i, i, i % 2 == 0, c=[86, 122, 54][i % 3]) for i in range(1, 20)]
+        s = wrapped.compute(games, self.NOW, "all")
+        out = os.path.join(tempfile.mkdtemp(), "r.png")
+        wrapped.render(s, lambda c: str(c), lambda c: None, out)
+        self.assertGreater(os.path.getsize(out), 5000)
+
+
 class DondeMueres(unittest.TestCase):
     def test_zonas_del_mapa(self):
         import patrones

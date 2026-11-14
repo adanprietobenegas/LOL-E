@@ -229,6 +229,7 @@ PASOS = [
     ("12_enfrentamiento", lambda: ui.set_page("Enfrentamiento"), 4000),
     ("13_enfrentamiento_rival", lambda: ui.matchup_view.select(157), 4000),
     ("14_historial", lambda: ui.set_page("Historial"), 4000),
+    ("14b_historial_anio", lambda: (ui.conf.setdefault("folds", {}).__setitem__("hist_wrapped", True), ui.set_page("Historial"), ui.refresh_current(True)), 5000),   # el resumen «Tu año en LoL» desplegado
     ("15_datos", lambda: ui.set_page("Datos"), 4000),
     ("17_inicio_modos", lambda: (ui.set_page("Asesor"), ui.idle(l.player_info(P), "Conectado al cliente. Entra en una cola cuando quieras."),
                                  ui.root.after(900, lambda: ui.idle_secs[2].switch("Modos"))), 3500),

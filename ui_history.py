@@ -7,6 +7,7 @@ import customtkinter as ctk
 import history
 import patrones
 import sesion
+import wrapped
 import lol_advisor as core
 from ui_kit import PAL, ROLES_ES, ON_FILL
 from ui_views import small_btn, mini_bar
@@ -284,6 +285,7 @@ class HistoryView:
         ui.lbl(strip, "ÚLTIMAS 20", 9, "dim", True).pack(side="left", padx=(4, 10))
         ui.dots(strip, [e["w"] for e in ordered[:20][::-1]]).pack(side="left")
         self.session_lines(self.all)
+        self.wrapped_block()
         # campeones más jugados y reparto por modo
         two = ui.frame(self.summary_host)
         if self.level >= 1:
@@ -339,6 +341,74 @@ class HistoryView:
             mini_bar(ui, row, g / modes.most_common(1)[0][1], "good" if wr >= .5 else "bad", 90 if self.level else 60).pack(side="left", padx=(0, 8))
             ui.lbl(row, f"{g}", 10, "dim", width=34, anchor="w").pack(side="left")
             ui.lbl(row, f"{round(wr * 100)} %", 11, "good" if wr >= .5 else "bad", True, width=44, anchor="w").pack(side="left")
+
+    def wrapped_block(self):
+        """«Tu año en LoL»: un resumen sobrio de la temporada, plegado, y un botón que lo guarda como imagen para compartirlo."""
+        ui = self.ui
+        folds = ui.conf.setdefault("folds", {})
+        mode = {"w": "year"}
+        head = ui.lbl(self.summary_host, "", 10, "info", True, anchor="w")
+        head.pack(anchor="w", padx=4, pady=(8, 0))
+        body = ui.frame(self.summary_host)
+
+        def stats():
+            return wrapped.compute(self.all, int(time.time() * 1000), mode["w"])
+
+        def champ_name(cid):
+            return ui.champs.get(cid, {}).get("name", "?")
+
+        def fill():
+            ui.clear(body)
+            top = ui.frame(body)
+            top.pack(fill="x", pady=(6, 4))
+            ui.seg(top, ["Este año", "Todo el historial"], "Este año" if mode["w"] == "year" else "Todo el historial", pick, height=24).pack(side="left")
+            s = stats()
+            if not s:
+                ui.lbl(body, "Aún no hay suficientes partidas guardadas (hacen falta 10) para un resumen.", 10, "dim", anchor="w").pack(anchor="w", pady=(6, 0))
+                return
+            ui.lbl(body, f"{s['n']} partidas · {round(s['wr'] * 100)} % de victorias · {s['hours']:.0f} h jugadas"
+                         + (f" · KDA {s['kda']:.2f}".replace(".", ",") if s.get("kda") is not None else ""), 11, "fg", True, anchor="w").pack(anchor="w", pady=(4, 2))
+            for title, text in wrapped.lines(s, champ_name):
+                ui.lbl(body, f"{title}: {text}", 10, "dim", anchor="w", justify="left", wraplength=max(240, self.width - 60)).pack(anchor="w", pady=1)
+            msg = ui.lbl(body, "", 10, "good", anchor="w")
+
+            def save():
+                from tkinter import filedialog
+                year = s["year"] if s["mode"] == "year" else "historial"
+                path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("Imagen PNG", "*.png")], initialfile=f"LOL-E-{year}.png",
+                                                    title="Guardar el resumen como imagen")
+                if not path:
+                    return
+                try:
+                    icon = lambda cid: os.path.join(core.CACHE, "icons", f"{ui.champs[cid]['icon']}.png") if cid in ui.champs and ui.champs[cid].get("icon") else None
+                    wrapped.render(s, champ_name, icon, path)
+                    msg.configure(text=f"Guardada en {path}")
+                except Exception as e:
+                    core.log_exc("Guardar el resumen del año")
+                    msg.configure(text=f"No se ha podido guardar ({type(e).__name__}).", text_color=ui.hexm(PAL["bad"]))
+            small_btn(ui, body, "Guardar como imagen", save, 170).pack(anchor="w", pady=(8, 0))
+            msg.pack(anchor="w", pady=(4, 0))
+
+        def pick(v):
+            mode["w"] = "year" if v == "Este año" else "all"
+            fill()
+
+        def paint():
+            opened = bool(folds.get("hist_wrapped"))
+            head.configure(text=("▾ " if opened else "▸ ") + "Tu año en LoL (resumen para compartir)")
+            if opened:
+                fill()
+                body.pack(fill="x", padx=4)
+            else:
+                body.pack_forget()
+
+        def flip(_e=None):
+            folds["hist_wrapped"] = not folds.get("hist_wrapped")
+            core.save_conf(ui.conf)
+            paint()
+        head.configure(cursor="hand2")
+        head.bind("<Button-1>", flip)
+        paint()
 
     def session_lines(self, games):
         """Tu sesión y tu forma: derrotas seguidas con tu propio dato, y la franja horaria en la que mejor rindes. Solo si hay muestra suficiente."""
