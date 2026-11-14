@@ -10,6 +10,14 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.14", "fecha": "14 de noviembre de 2026", "titulo": "Partida en vivo rediseñada, tu rango en el tiempo y más runas", "items": [
+        ("nuevo", "«Tu rango en el tiempo»: una gráfica en el inicio con tus PL por fecha y el rango real (divisiones marcadas), con filtros por tramo (20 partidas, 7, 30, 90 días, este año, todo) y por cola. Al pasar el ratón por un punto ves el campeón, el resultado y los PL de esa partida. Marca tu pico de la temporada y cómo acabaste la anterior. Usa tus partidas vistas por LOL-E y las fotos diarias de rango de op.gg, que se guardan y van sumando."),
+        ("nuevo", "Runas con opciones: «Más usada» y «Mayor % de victorias», cada una con su % de victorias, su uso y sus partidas."),
+        ("mejora", "La partida en vivo ya no se recarga entera cada pocos segundos: se actualiza en sitio, sin parpadeos. Arriba, una tira compacta (reloj, barras de bajas y de oro en objetos, objetivos, tu siguiente compra y tu rival directo) y los diez jugadores en un pliegue, emparejados por línea, debajo de tu build y tus runas, que ahora se ven en la primera pantalla."),
+        ("arreglo", "Las torres y los inhibidores salían siempre a 0 en el marcador en vivo (el formato real de la API era otro). Ahora cuentan bien, y se añaden las larvas del vacío."),
+        ("arreglo", "Al acabar la partida la pestaña «Partida» podía quedarse en blanco si estabas desplazado hacia abajo. Ahora vuelve arriba al cambiar a «Análisis»."),
+        ("arreglo", "La variación de PL de una partida no se guardaba si el rango no se había leído al arrancar. Ahora se lee al encontrar partida y se reintenta hasta que empieza."),
+    ]},
     {"v": "1.22.13", "fecha": "13 de noviembre de 2026", "titulo": "Un objeto contra tus rivales, aviso de compra y datos que aguantan sin red", "items": [
         ("nuevo", "En el bloque en vivo, un objeto concreto de tu build contra lo que llevan los rivales (penetración si acumulan armadura o resistencia mágica; si no, defensa contra su tipo de daño). Orientativo."),
         ("nuevo", "Un sonido suave, una vez por objeto, cuando tu oro ya llega para el siguiente de tu build. Se apaga en Ajustes («Aviso al poder comprar el siguiente objeto») o con los avisos sonoros."),

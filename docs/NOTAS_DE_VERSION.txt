@@ -7,6 +7,17 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.14   (14 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Hallazgos de una partida real (14/11): live._side aceptaba «_T1_/_T2_» y el formato real es «Turret_TOrder_…»/«Inhib_TChaos_…» (torres e
+    inhibidores a 0); nueva clave «grubs» (HordeKill). GameView vuelve arriba al cambiar de pestaña o de partida. lol_advisor.rank_snapshot
+    lee el rango en ReadyCheck (y reintenta en ChampSelect/GameStart/InProgress) para la variación de PL.
+  · ui_live.LiveView (construida una vez, update() en sitio; BarRow, Hint, PlayerCell) + pliegue «Los 10 jugadores en directo» bajo la build.
+  · builds.parse_rune_pages / fetch_rune_pages (ep=rune de Lolalytics) y selector en ui_build.render.
+  · lpseries.py + ui_lp.py (gráfica de rango); lol_advisor.parse_lp_histories / save_lp_snapshots (opgg_lp.json). analysis.lp_series retirada.
+  · 132 pruebas + comprobar_todo en verde.
+
 VERSIÓN 1.22.13   (13 de noviembre de 2026)
 ---------------------------------------------------------------------
 
