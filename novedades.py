@@ -10,6 +10,10 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.21", "fecha": "15 de noviembre de 2026", "titulo": "Tarjeta de tu partida y tu estilo de juego", "items": [
+        ("nuevo", "En el análisis de cada partida, «Guardar tarjeta de la partida»: una imagen sobria con tu campeón, el resultado, tus cifras, los PL y cómo fuiste frente a tu media, para compartirla."),
+        ("nuevo", "En «Tu año en LoL» sale ahora tu estilo de juego (el kamikaze, el superviviente, el granjero, el vigía, el asistente o el todoterreno), con el dato que lo justifica. Es un guiño: sale de tus cifras por minuto."),
+    ]},
     {"v": "1.22.20", "fecha": "14 de noviembre de 2026", "titulo": "Tu año en LoL y una interfaz más uniforme", "items": [
         ("nuevo", "En el Historial, «Tu año en LoL»: un resumen sobrio de tu temporada (partidas, victorias, horas, rachas, día más intenso, mejor franja, tu mejor campeón y el que más te mata) que puedes guardar como imagen para compartirlo."),
         ("mejora", "Los espaciados de toda la interfaz siguen ahora una escala única, así que las pantallas respiran igual."),

@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.22.20). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.22.21). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -22,11 +22,15 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 2. Estado (actualizar al terminar cada conversación)
 
-**Publicado en GitHub: 1.22.19** (14/11/2026; la 1.22.18 fue la anterior).
+**Publicado en GitHub: 1.22.20** (14/11/2026; la 1.22.19 fue la anterior).
 
-**En `main` sin publicar** (candidata a 1.22.20; ya con versión y notas preparadas):
+**En `main` sin publicar** (candidata a 1.22.21; ya con versión y notas preparadas):
+- **Tarjeta de la partida y estilo de juego** (`wrapped.render_game`, `wrapped.style`, `ui_analysis.share_button`; «sorpréndeme» del usuario el 15/11): botón en el análisis que guarda una imagen sobria de esa partida; y en «Tu año en LoL» un estilo de juego con nombre (kamikaze ≥0,42 muertes/min, superviviente ≤0,22, granjero ≥7 cs/min, vigía ≥1,5 visión/min, asistente ≥2,4 asistencias por baja, todoterreno) — guiño con umbrales aproximados.
+- El usuario dijo «en general me gusta» tras ver el prototipo v3 y la app, pero no pidió expresamente implementar la barra lateral: NO se ha tocado la navegación; confirmar antes de hacerlo (cambio grande).
+**Incluido en la 1.22.20** (publicada):
 - **«Tu año en LoL»** (`wrapped.py`, `ui_history.wrapped_block`; decisión del usuario del 14/11): pliegue en el resumen del Historial con cifras de «Este año» o «Todo el historial» (partidas, victorias, horas, KDA, mejor/peor racha, día más intenso, mejor franja, mejor campeón, el que más te mata, partida más larga) y botón «Guardar como imagen» (PNG 1080×1350, sobrio, `wrapped.render`). Necesita 10 partidas. Probado con datos de ejemplo y con el historial del proyecto; falta que el usuario vea la imagen con SUS datos y diga si quiere otros datos o diseño.
 - **Espaciado único** (decisión del usuario del 14/11): `herramientas/espaciado.py` pasó los `padx/pady` de `ui*.py` y `gui.py` a la escala 0/2/4/8/12/16/24 (340 cambios, al valor más cercano y en empate al mayor; idempotente: se puede volver a ejecutar). Capturas antes/después en `herramientas/salida/espaciado_antes_*`, `espaciado_despues_*` y `espaciado_comparacion/`; sin errores a 560 y 1340. PENDIENTE: que el usuario apruebe el aspecto antes de publicar (queda algo más aireado: 6→8, 10→12). Tamaños fijos (`height=`, `width=`, `wraplength`) no se tocaron.
+
 
 **Incluido en la 1.22.19** (publicada):
 - **Temporizador del Barón** (`live.timers`, `LiveView.timer`): «El Barón aparece/reaparece en m:ss (estimado)» el último minuto antes de salir (20:00; 6 min tras caer; muertes de `BaronKill.EventTime`), solo CLASSIC. Larvas del Vacío: confirmado en la wiki oficial (aparecen a las 8:00, una sola vez, y se van a las 14:45; cambio del parche 25.09), así que `timers` avisa un minuto antes y mientras siguen sin matar. Dragón elemental: wiki oficial («Dragon pit», texto literal): aparece a los 5:00 y reaparece 5 min tras caer; `timers` lo avisa un minuto antes (muertes de `DragonKill.EventTime`) y deja de avisar con 4 dragones o un Ancestral (tiempos no confirmados). Heraldo e inhibidores siguen sin temporizador. La ficha final de las tarjetas de Inicio, si queda sola, ocupa todo el ancho (como en Historial).

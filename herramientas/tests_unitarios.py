@@ -958,6 +958,31 @@ class PaginasDeRunas(unittest.TestCase):
         self.assertEqual(builds.parse_rune_pages(d), [])
 
 
+class EstiloYTarjeta(unittest.TestCase):
+    def g(self, i, de=3, k=5, a=8, cs=150, d=1800, v=20, r="MIDDLE"):
+        return {"id": str(i), "t": 1_800_000_000_000 - i * 86_400_000, "d": d, "c": 86, "w": True, "k": k, "de": de, "a": a, "cs": cs, "v": v, "r": r, "gm": "CLASSIC"}
+
+    def test_estilos(self):
+        import wrapped
+        n = lambda **kw: wrapped.style([self.g(i, **kw) for i in range(12)])[0]
+        self.assertEqual(n(de=15), "El kamikaze")                      # 15 muertes en 30 min = 0,5 por minuto
+        self.assertEqual(n(de=2), "El superviviente")
+        self.assertEqual(n(de=8, cs=240), "El granjero")               # 8 cs/min
+        self.assertEqual(n(de=8, cs=100, v=60), "El vigía")            # 2 de visión por minuto
+        self.assertEqual(n(de=8, cs=100, v=10, k=3, a=9), "El asistente")
+        self.assertEqual(n(de=8, cs=100, v=10, k=5, a=8), "El todoterreno")
+        self.assertIsNone(wrapped.style([self.g(i) for i in range(5)]))   # pocas partidas
+
+    def test_tarjeta_de_partida(self):
+        import wrapped, tempfile, os
+        out = os.path.join(tempfile.mkdtemp(), "p.png")
+        wrapped.render_game(dict(self.g(1), dm=23000), lambda c: "Ahri", lambda c: None, out, {"d": 21, "now": 45, "tier": "Oro II"}, ["KDA 3,1 frente a tu media de 2,4."])
+        self.assertGreater(os.path.getsize(out), 5000)
+        out2 = os.path.join(tempfile.mkdtemp(), "q.png")
+        wrapped.render_game({"id": "9", "t": 1_800_000_000_000, "c": 1, "w": False, "rm": True, "k": None}, lambda c: "?", lambda c: None, out2)   # sin detalle ni PL: no falla
+        self.assertTrue(os.path.exists(out2))
+
+
 class ResumenDelAnio(unittest.TestCase):
     NOW = 1_800_000_000_000
 

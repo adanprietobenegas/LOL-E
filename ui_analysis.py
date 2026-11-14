@@ -1,6 +1,7 @@
 """Pestaña «Partida → Análisis»: cabecera con tu rival directo, cifras clave, gráficos minuto a minuto, comparación en cada fase,
 marcador de los dos equipos, consejos con su dato y momentos clave. Los datos salen de analysis.py (línea de tiempo del cliente)."""
 import math
+import os
 import tkinter as tk
 
 import customtkinter as ctk
@@ -185,14 +186,41 @@ class AnalysisView:
             self.ui.lbl(host, txt, 12, "fg", True, anchor="w", justify="left",
                         wraplength=max(260, self.gv.width - 110)).pack(anchor="w", pady=(0, 12))
 
+    def share_button(self, host, e, extra):
+        """«Guardar tarjeta de la partida»: una imagen sobria de esta partida para compartirla."""
+        ui = self.ui
+        msg = ui.lbl(host, "", 10, "good", anchor="w")
+
+        def save():
+            from tkinter import filedialog
+            import wrapped
+            path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("Imagen PNG", "*.png")], initialfile=f"LOL-E-partida-{e['id']}.png",
+                                                title="Guardar la tarjeta de la partida")
+            if not path:
+                return
+            try:
+                champs = ui.champs
+                icon = lambda cid: os.path.join(core.CACHE, "icons", f"{champs[cid]['icon']}.png") if cid in champs and champs[cid].get("icon") else None
+                wrapped.render_game(e, lambda cid: champs.get(cid, {}).get("name", "?"), icon, path, analysis.lp_for(core.CACHE, e["id"]), extra)
+                msg.configure(text=f"Guardada en {path}")
+            except Exception as ex:
+                core.log_exc("Guardar la tarjeta de la partida")
+                msg.configure(text=f"No se ha podido guardar ({type(ex).__name__}).", text_color=ui.hexm(PAL["bad"]))
+        from ui_views import small_btn
+        small_btn(ui, host, "Guardar tarjeta de la partida", save, 220).pack(anchor="w", pady=(4, 8))
+        msg.pack(anchor="w")
+
     def media(self, host, a):
         """Tu partida frente a tu media (con ese campeón si hay partidas suficientes): una o dos líneas bajo el titular."""
         try:
             todas = history.load_all(history.hpath(core.CACHE), history.gpath(core.CACHE))
             este = next((g for g in todas if str(g["id"]) == str(self.gv.gid)), None)
             nombre = self.ui.champs.get((este or {}).get("c"), {}).get("name", "")
-            for txt, tono in analysis.average_lines(analysis.vs_average(este, todas), nombre):
+            lineas = analysis.average_lines(analysis.vs_average(este, todas), nombre)
+            for txt, tono in lineas:
                 self.ui.lbl(host, txt, 11, tono, anchor="w", justify="left", wraplength=max(260, self.gv.width - 110)).pack(anchor="w", pady=(0, 4))
+            if este:
+                self.share_button(host, este, [t for t, _ in lineas])
         except Exception:
             core.log_exc("Tu partida frente a tu media")
 

@@ -66,7 +66,35 @@ def compute(games, now_ms, mode="year"):
         "slot": sesion.best_slot(sesion.by_hour(g)),
         "most_deaths": dead.most_common(1)[0] if dead else None,
         "longest": (longest.get("d") or 0, longest.get("c"), bool(longest["w"])),
+        "style": style(g),
     }
+
+
+def style(games):
+    """Tu estilo de juego, con un nombre simpático y el dato que lo justifica: (nombre, frase) o None si no hay datos de detalle suficientes.
+    Es un guiño, no un diagnóstico: usa cifras tuyas (por minuto) y umbrales aproximados, y el primero que se cumple gana."""
+    det = [e for e in games if e.get("k") is not None and e.get("de") is not None and e.get("a") is not None and e.get("d")]
+    if len(det) < MIN_GAMES:
+        return None
+    mins = sum(e["d"] for e in det) / 60
+    dpm = sum(e["de"] for e in det) / mins
+    kills, assists = sum(e["k"] for e in det), sum(e["a"] for e in det)
+    cs = [e for e in det if e.get("cs") is not None and e.get("r") not in ("SUPPORT", "", None) and e.get("gm") != "ARAM"]
+    cspm = sum(e["cs"] for e in cs) / (sum(e["d"] for e in cs) / 60) if len(cs) >= MIN_GAMES else None
+    vis = [e for e in det if e.get("v") is not None and e.get("gm") != "ARAM"]
+    vpm = sum(e["v"] for e in vis) / (sum(e["d"] for e in vis) / 60) if len(vis) >= MIN_GAMES else None
+    f = lambda x, d=1: f"{x:.{d}f}".replace(".", ",")
+    if dpm >= 0.42:
+        return ("El kamikaze", f"mueres {f(dpm, 2)} veces por minuto: vives al límite")
+    if dpm <= 0.22:
+        return ("El superviviente", f"solo {f(dpm, 2)} muertes por minuto: casi nunca regalas nada")
+    if cspm and cspm >= 7:
+        return ("El granjero", f"{f(cspm)} súbditos por minuto en tus líneas")
+    if vpm and vpm >= 1.5:
+        return ("El vigía", f"{f(vpm)} de visión por minuto: tu equipo ve por ti")
+    if kills and assists / kills >= 2.4:
+        return ("El asistente", f"{f(assists / kills)} asistencias por cada baja: juegas para el equipo")
+    return ("El todoterreno", f"{f(dpm, 2)} muertes por minuto y un juego equilibrado")
 
 
 def _date(ms_or_date):
@@ -78,6 +106,8 @@ def lines(s, name):
     """Los datos curiosos, como frases: [(titulo, texto)]. `name(cid)` da el nombre del campeón."""
     out = []
     bs, ws = s["best_streak"], s["worst_streak"]
+    if s.get("style"):
+        out.append(("Tu estilo", f"{s['style'][0]}: {s['style'][1]}"))
     if bs[0] >= 3:
         out.append(("Mejor racha", f"{bs[0]} victorias seguidas (hasta el {_date(bs[1])})"))
     if ws[0] >= 3:
@@ -93,6 +123,53 @@ def lines(s, name):
     if d[0]:
         out.append(("Partida más larga", f"{d[0] // 60} min con {name(d[1])} ({'victoria' if d[2] else 'derrota'})"))
     return out
+
+
+def render_game(e, name, icon_path, path, lp=None, extra=()):
+    """La tarjeta de UNA partida (1080×1080, sobria) para compartirla. `e`: registro del historial; `lp`: {d, now, tier} de analysis.lp_for o None;
+    `extra`: hasta 3 frases cortas (p. ej. tu partida frente a tu media)."""
+    from PIL import Image, ImageDraw
+    from ui_kit import pil_font
+    W, H = 1080, 1080
+    bg, card, ink, dim, gold = (5, 10, 16), (17, 27, 40), (240, 232, 214), (150, 162, 178), (200, 169, 110)
+    good, bad = (61, 220, 132), (255, 90, 99)
+    col = dim if e.get("rm") else good if e["w"] else bad
+    im = Image.new("RGB", (W, H), bg)
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 0, 18, H), fill=col)
+    d.text((72, 64), "MI PARTIDA", font=pil_font("med", 28), fill=gold)
+    p = icon_path(e.get("c"))
+    if p and os.path.exists(p):
+        im.paste(Image.open(p).convert("RGB").resize((200, 200), Image.LANCZOS), (72, 120))
+        d.rectangle((72, 120, 272, 320), outline=col, width=5)
+    d.text((310, 124), name(e.get("c")), font=pil_font("bold", 76), fill=ink)
+    res = "Remake" if e.get("rm") else "Victoria" if e["w"] else "Derrota"
+    d.text((310, 218), res, font=pil_font("bold", 64), fill=col)
+    if lp and lp.get("d"):
+        d.text((310, 292), f"{lp['d']:+d} PL".replace("-", "−") + f" · {lp.get('tier', '')} {lp.get('now', '')} PL", font=pil_font("med", 28), fill=dim)
+    cells = []
+    if e.get("k") is not None:
+        cells.append((f"{e['k']} / {e['de']} / {e['a']}", "bajas / muertes / asistencias"))
+    if e.get("cs") is not None and e.get("d"):
+        cells.append((f"{e['cs']}", f"súbditos ({e['cs'] / (e['d'] / 60):.1f} por min)".replace(".", ",")))
+    if e.get("dm"):
+        cells.append((f"{e['dm'] / 1000:.1f}k".replace(".", ","), "de daño a campeones"))
+    if e.get("d"):
+        cells.append((f"{e['d'] // 60}:{e['d'] % 60:02d}", "de duración"))
+    for i, (big, small) in enumerate(cells[:4]):
+        x, y = 72 + (i % 2) * 490, 380 + (i // 2) * 190
+        d.rounded_rectangle((x, y, x + 466, y + 166), radius=22, fill=card)
+        d.text((x + 28, y + 24), big, font=pil_font("bold", 64), fill=ink)
+        d.text((x + 28, y + 108), small, font=pil_font("med", 26), fill=dim)
+    y = 780
+    for t in list(extra)[:3]:
+        d.text((72, y), t if len(t) < 70 else t[:67] + "…", font=pil_font("bold", 28), fill=ink)
+        y += 52
+    d.text((72, H - 90), "LOL-E", font=pil_font("bold", 30), fill=gold)
+    d.text((W - 72, H - 84), datetime.datetime.fromtimestamp(e["t"] / 1000).strftime("%d/%m/%Y"), font=pil_font("med", 24), fill=dim, anchor="ra")
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    im.save(path)
+    return path
 
 
 def render(s, name, icon_path, path, theme=None):
