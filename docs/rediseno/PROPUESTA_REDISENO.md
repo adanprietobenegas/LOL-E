@@ -2,7 +2,7 @@
 
 Estado: **NADA de esto está implementado.** Es la síntesis de una auditoría externa (tres expertos independientes: arquitectura y UX,
 diseño visual y densidad, y jugador competitivo/analista de producto) más un prototipo interactivo para que lo revise el usuario.
-Prototipo: `docs/rediseno/prototipo_v1.html` (ábrelo en el navegador; botones «Simular» para recorrer cola, selección, carga, partida y fin).
+Prototipo de navegación ACTUAL (14/11/2026): **`docs/rediseno/prototipo_v3.html`** (barra lateral que se expande, pantalla «En vivo» separada de la consulta, botones para simular cola, selección, partida y fin; incluye lo que existe hoy: sesión, gráfica de rango, «Tu año en LoL», avisos del rival y temporizadores). Antes: `docs/rediseno/prototipo_v1.html` (ábrelo en el navegador; botones «Simular» para recorrer cola, selección, carga, partida y fin).
 
 ## Lo que pidió el usuario
 - Separar totalmente el **modo en partida** (detectado: cola, selección, carga, partida) de las **consultas** (historial, builds, matchups…) y que se note en qué modo está.

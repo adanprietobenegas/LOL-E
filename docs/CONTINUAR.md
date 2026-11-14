@@ -104,8 +104,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
    con `PrintWindow` (la captura normal sale con lo que tape la ventana).
 3. El compañero a quien «no le salen» los jugadores de la partida: sin reproducir. Pedirle el informe de diagnóstico (Ajustes).
 4. **Decisiones del usuario del 14/11/2026** (las pidió una por una): (a) **espaciado único: SÍ, en todo**, con una escala corta (4/8/12/16/24) y capturas de
-   antes y después que él apruebe antes de publicar; (b) **rediseño de navegación: PROTOTIPO PRIMERO**: actualizar `docs/rediseno/prototipo_v2.html` con el
-   estado actual y enseñárselo; NO tocar código hasta que lo apruebe; (c) **instalador firmado: DEJARLO PARA MÁS ADELANTE** (solo lo usan él y compañeros de
+   antes y después que él apruebe antes de publicar; (b) **rediseño de navegación: PROTOTIPO PRIMERO**: hecho `docs/rediseno/prototipo_v3.html` (14/11/2026, ábrelo en el navegador; simula las fases); falta que el usuario lo revise; NO tocar código hasta que lo apruebe; (c) **instalador firmado: DEJARLO PARA MÁS ADELANTE** (solo lo usan él y compañeros de
    confianza; se retoma si quiere compartir LOL-E con más gente); (d) **«Wrapped» de fin de temporada: HACERLO AHORA**, sobrio (prefiere diseños limpios), con captura
    para que lo apruebe y exportable como imagen. Pendiente aparte: el rendimiento del pintado (pide menos elementos por pantalla).
 

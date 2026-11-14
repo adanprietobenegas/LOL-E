@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LOL-E · prototipo de navegación v3</title>
+<style>
+:root{--bg:#04080d;--card:#111b28;--card2:#1a2a3d;--edge:#2a3d55;--fg:#f0e8d6;--dim:#96a2b2;--gold:#c8a96e;--good:#3ddc84;--bad:#ff5a63;--warn:#ff9f43;--info:#5aa9ff;--side:#0a121c}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--fg);font:14px/1.45 "Segoe UI",system-ui,sans-serif}
+.note{background:#1b1f27;color:#b9c2cf;padding:10px 16px;font-size:12.5px;border-bottom:1px solid #2b313b}
+.note b{color:#fff}
+.sim{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 16px;background:#10151c;border-bottom:1px solid #2b313b;font-size:12.5px;color:#9aa5b4}
+.sim button{background:#1d2530;color:#dfe6ef;border:1px solid #34404f;border-radius:8px;padding:5px 10px;cursor:pointer}
+.sim button.on{background:var(--gold);color:#111;border-color:var(--gold)}
+.app{display:flex;height:720px;max-width:1180px;margin:14px auto;background:var(--bg);border:1px solid #222c3a;border-radius:14px;overflow:hidden}
+.side{width:64px;background:var(--side);border-right:1px solid var(--edge);display:flex;flex-direction:column;padding:10px 8px;gap:4px;transition:width .15s;overflow:hidden}
+.side:hover,.side.pin{width:196px}
+.logo{font-weight:700;color:var(--gold);padding:8px 10px 14px;white-space:nowrap}
+.nav{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:10px;color:var(--dim);cursor:pointer;white-space:nowrap;border:1px solid transparent}
+.nav i{font-style:normal;width:20px;text-align:center;font-size:16px}
+.nav:hover{background:var(--card)}
+.nav.on{background:var(--card2);color:var(--fg);border-color:var(--edge)}
+.nav.live{color:var(--warn)}
+.nav.live.on{border-color:var(--warn)}
+.nav.off{opacity:.35;pointer-events:none}
+.sp{flex:1}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.band{padding:9px 18px;font-size:13px;display:flex;gap:14px;align-items:center;background:var(--card);border-bottom:1px solid var(--edge)}
+.band.live{background:#3a2a10;border-bottom-color:#7a5420;color:#ffd9a3}
+.band .sp{flex:1}
+.band button{background:transparent;border:1px solid currentColor;color:inherit;border-radius:8px;padding:3px 10px;cursor:pointer;font-size:12.5px}
+.content{flex:1;overflow:auto;padding:18px 22px}
+h2{margin:0 0 12px;font-size:20px}
+.eyebrow{font-size:11px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;font-weight:600}
+.card{background:var(--card);border:1px solid var(--edge);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.tile{background:var(--card2);border-radius:12px;padding:10px 14px}
+.tile b{display:block;font-size:22px}
+.good{color:var(--good)}.bad{color:var(--bad)}.dim{color:var(--dim)}.warn{color:var(--warn)}.gold{color:var(--gold)}.info{color:var(--info)}
+.row{display:flex;align-items:center;gap:12px;background:var(--card2);border-radius:10px;padding:8px 12px;margin-bottom:6px;border-left:6px solid var(--dim)}
+.row.w{border-left-color:var(--good)}.row.l{border-left-color:var(--bad)}
+.av{width:38px;height:38px;border-radius:9px;background:#243247;display:grid;place-items:center;font-weight:700;color:var(--gold);border:2px solid var(--dim)}
+.row.w .av{border-color:var(--good)}.row.l .av{border-color:var(--bad)}
+.spacer{flex:1}
+.pill{display:inline-block;border-radius:8px;padding:2px 10px;font-size:12px;font-weight:700;color:#04080d}
+.pill.g{background:var(--good)}.pill.r{background:var(--bad)}
+.strip{border:1px solid #7a5420;background:#171109}
+.bar{height:8px;border-radius:4px;background:var(--bad);overflow:hidden}.bar i{display:block;height:100%;background:var(--good)}
+.hint{margin:6px 0;color:var(--fg)}
+.fold{cursor:pointer;color:var(--info);font-weight:600;margin-top:8px}
+.hidden{display:none}
+.toast{position:absolute;right:24px;bottom:24px;background:var(--card2);border:1px solid var(--edge);border-radius:12px;padding:12px 16px;box-shadow:0 8px 30px #000a}
+.toast button{margin-right:8px;background:var(--gold);border:0;border-radius:8px;padding:5px 12px;cursor:pointer}
+.toast button.ghost{background:transparent;color:var(--dim);border:1px solid var(--edge)}
+svg{display:block}
+</style>
+</head>
+<body>
+<div class="note"><b>LOL-E · prototipo de navegación v3 (NO implementado).</b> Barra lateral de iconos que se expande, con una pantalla «En vivo» separada de las de consulta. Datos de ejemplo.
+Usa los botones de abajo para simular lo que haría la app: al entrar en cola, selección o partida cambia sola a «En vivo»; al terminar avisa y deja elegir. Sustituye a la v2 en lo de la navegación (la v2 sigue siendo la referencia de temas y estilos).</div>
+<div class="sim">
+  <span>Simular:</span>
+  <button data-ph="idle" class="on">Fuera de partida</button>
+  <button data-ph="queue">En cola</button>
+  <button data-ph="select">Selección</button>
+  <button data-ph="game">En partida</button>
+  <button data-ph="end">Fin de partida</button>
+  <span style="margin-left:14px">Barra:</span><button id="pin">Fijar abierta</button>
+</div>
+
+<div class="app" id="app" style="position:relative">
+  <div class="side" id="side">
+    <div class="logo">▣ <span class="lbl">LOL-E</span></div>
+    <div class="nav live off" data-pg="live"><i>◉</i><span>En vivo</span></div>
+    <div class="nav on" data-pg="home"><i>⌂</i><span>Inicio</span></div>
+    <div class="nav" data-pg="champs"><i>★</i><span>Campeones</span></div>
+    <div class="nav" data-pg="vs"><i>⚔</i><span>Enfrentamientos</span></div>
+    <div class="nav" data-pg="hist"><i>☰</i><span>Historial</span></div>
+    <div class="sp"></div>
+    <div class="nav" data-pg="set"><i>⚙</i><span>Ajustes y datos</span></div>
+  </div>
+  <div class="main">
+    <div class="band" id="band"></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let phase='idle', page='home', pinned=false, tick=0, timer=null;
+const PHASES={idle:'Fuera de partida',queue:'En cola',select:'En selección',game:'Partida en curso',end:'Partida terminada'};
+function band(){
+  const b=$('#band'), live=['queue','select','game'].includes(phase);
+  b.className='band'+(live?' live':'');
+  if(phase==='idle'||phase==='end'){ b.innerHTML=`<span class="good">●</span> <b>${PHASES[phase]}</b> <span class="dim">· modo consulta</span><span class="sp"></span><span class="dim">Conectado al cliente</span>`; return;}
+  const t=phase==='queue'?'0:'+String(18+tick).padStart(2,'0'):phase==='select'?'0:'+String(Math.max(0,27-tick)).padStart(2,'0'):(12+Math.floor(tick/2))+':'+String((tick*17)%60).padStart(2,'0');
+  b.innerHTML=`<span>◉</span> <b>${PHASES[phase]}</b> <span>· ${t}</span>${phase!=='queue'?'<span>· Malphite · superior</span>':''}<span class="sp"></span>`+
+    (page!=='live'?'<button onclick="go(\'live\')">Volver a la partida</button>':'<button onclick="go(\'home\')">Consultar</button>');
+}
+const PAGES={
+home:()=>`<h2>Inicio</h2>
+ <div class="card"><div style="display:flex;gap:14px;align-items:center"><div class="av" style="width:56px;height:56px">J</div><div><div class="eyebrow">Tú</div><b style="font-size:20px">Jugador</b> <span class="dim">#EUW · Nivel 214</span></div><span class="spacer"></span><div>${['V','V','D','V','V'].map(x=>`<span class="pill ${x=='V'?'g':'r'}">${x}</span>`).join(' ')}</div></div>
+ <div class="grid" style="margin-top:12px"><div class="tile"><div class="eyebrow">Solo / Dúo</div><b class="gold">Oro II</b><span class="dim">47 PL · 58V 51D</span></div><div class="tile"><div class="eyebrow">Flexible</div><b class="gold">Plata I</b><span class="dim">12 PL · 9V 7D</span></div></div></div>
+ <div class="card"><div class="eyebrow">Sesión</div><div class="warn">Llevas 2 derrotas seguidas. Tras 2 o más seguidas ganas el 38 % de tus partidas (24), frente al 49 %: quizá toque parar un rato.</div></div>
+ <div class="card"><div class="eyebrow">Tu rango en el tiempo</div>
+  <svg viewBox="0 0 600 130" width="100%" height="130"><polyline fill="none" stroke="#3ddc84" stroke-width="2" points="0,110 50,96 100,100 150,74 200,80 250,56 300,64 350,40 400,48 450,26 500,34 560,16"/><line x1="0" y1="18" x2="600" y2="18" stroke="#c8a96e" stroke-dasharray="6 4"/><text x="470" y="13" fill="#c8a96e" font-size="10">Pico de la temporada</text></svg></div>
+ <div class="card"><b>Tu año en LoL</b> <span class="dim">· resumen para compartir</span> <button style="float:right">Guardar como imagen</button></div>`,
+champs:()=>`<h2>Campeones</h2><div class="card"><div class="eyebrow">Recomendado para ti (superior)</div><div class="grid"><div class="tile"><b>Malphite</b><span class="good">68 afinidad · 52,6 %</span></div><div class="tile"><b>Ornn</b><span class="good">61 afinidad · 51,9 %</span></div><div class="tile"><b>Sion</b><span class="dim">57 afinidad · 51,2 %</span></div></div></div>
+ <div class="card"><div class="eyebrow">Tu repertorio</div><div class="row"><div class="av">Hw</div><b>Hwei</b><span class="spacer"></span><span class="dim">13 partidas</span><span class="good">62 %</span></div><div class="row"><div class="av">Zy</div><b>Zyra</b><span class="spacer"></span><span class="dim">5 partidas</span><span class="good">60 %</span></div><div class="row"><div class="av">Ya</div><b>Yasuo</b><span class="spacer"></span><span class="dim">5 partidas</span><span class="bad">20 %</span></div></div>
+ <div class="card"><div class="eyebrow">Builds y runas</div><span class="dim">Elige un campeón para ver su build, runas con % de victoria y de uso, y las variantes.</span></div>`,
+vs:()=>`<h2>Enfrentamientos</h2><div class="card"><div class="eyebrow">1 · Tu campeón</div><b>Malphite</b><div class="eyebrow" style="margin-top:10px">2 · El rival</div><span class="dim">Elige un rival o toca uno de tus últimos rivales:</span><div style="margin-top:8px"><span class="pill" style="background:#243247;color:var(--fg)">Yasuo</span> <span class="pill" style="background:#243247;color:var(--fg)">Tryndamere</span> <span class="pill" style="background:#243247;color:var(--fg)">Fiora</span></div></div>`,
+hist:()=>`<h2>Historial</h2><div class="grid"><div class="tile"><div class="eyebrow">Partidas</div><b>220</b></div><div class="tile"><div class="eyebrow">Victorias</div><b class="bad">46 %</b></div><div class="tile"><div class="eyebrow">KDA medio</div><b class="good">3,28</b></div><div class="tile"><div class="eyebrow">Racha</div><b class="good">2 victorias</b></div></div>
+ <p class="dim">Dónde mueres (aprox.): el 55 % de tus 20 muertes localizadas ocurren en el río. · Patrón en tus derrotas: en 5 de 6 moriste 2 o más veces antes del minuto 15.</p>
+ <div class="fold">▸ Tu año en LoL (resumen para compartir)</div>
+ <div style="margin-top:12px"><div class="row w"><div class="av">Ze</div><div><b>Zyra</b><div class="dim">Flexible · Apoyo</div></div><span class="spacer"></span><b>4 / 11 / 27</b><span class="pill g">Victoria</span></div><div class="row l"><div class="av">Th</div><div><b>Thresh</b><div class="dim">Solo/Dúo · Apoyo</div></div><span class="spacer"></span><b>2 / 10 / 22</b><span class="pill r">Derrota</span></div></div>`,
+set:()=>`<h2>Ajustes y datos</h2><div class="card"><div class="eyebrow">Ajustes</div><span class="dim">Avisos sonoros · Ventana siempre visible · Animaciones · Actualizaciones</span></div><div class="card"><div class="eyebrow">De dónde sale la información</div><span class="dim">7 de 7 fuentes al día · op.gg, Lolalytics, Data Dragon, tu cliente… (la antigua pestaña «Datos» vive aquí, plegada)</span></div>`,
+live:()=>{
+ if(phase==='queue') return `<h2>En cola</h2><div class="card"><div class="eyebrow">Tu rol asignado</div><b>Superior</b><div class="hint dim">Mejor campeón para ese rol con tu historial:</div><div class="grid"><div class="tile"><b>Malphite</b><span class="good">68</span></div><div class="tile"><b>Ornn</b><span class="good">61</span></div></div></div>`;
+ if(phase==='select') return `<h2>Te toca elegir</h2><div class="card"><div class="eyebrow">Tu rival de línea</div><b>Yasuo</b> <span class="dim">· 47 % de victorias de Malphite contra él</span></div><div class="grid"><div class="tile"><div class="eyebrow">1.ª opción</div><b>Malphite</b><span class="good">52,6 % contra el rival</span></div><div class="tile"><div class="eyebrow">2.ª</div><b>Ornn</b></div><div class="tile"><div class="eyebrow">3.ª</div><b>Sion</b></div></div>
+   <div class="card" style="margin-top:12px"><div class="eyebrow">Bans · equilibrio de daño</div><span class="dim">Tu equipo hace sobre todo daño mágico: considera una defensa física.</span></div>`;
+ return `<h2>Partida en curso</h2>
+ <div class="card strip"><div style="display:flex"><b class="warn">EN VIVO · ${12+Math.floor(tick/2)}:${String((tick*17)%60).padStart(2,'0')}</b><span class="spacer"></span><span class="dim">Tu oro: 1.240</span></div>
+  <div class="eyebrow" style="margin-top:8px">Bajas 9 · 6</div><div class="bar"><i style="width:60%"></i></div>
+  <div class="hint warn">Tu objetivo: no mueras más de una vez antes del minuto 15.</div>
+  <div class="hint info">El dragón reaparece en 0:40 (estimado). Las larvas del Vacío siguen en la fosa hasta el 14:45 (estimado).</div>
+  <div class="hint warn">Tu rival directo ha llegado al nivel 6 y tú aún no: ojo al intercambio.</div>
+  <div class="hint">Siguiente objeto: <b>Anillo de Doran</b> · te faltan 310 de oro.</div></div>
+ <div class="grid"><div class="card"><div class="eyebrow">Tu build</div>Botas · Piedra lunar · Núcleo glacial…</div><div class="card"><div class="eyebrow">Runas</div>Más usada 54 % · Mayor % de victorias 56 %</div></div>
+ <div class="fold">▸ Los 10 jugadores en directo</div>`;
+}};
+function render(){
+  $$('.nav').forEach(n=>n.classList.toggle('on',n.dataset.pg===page));
+  const live=['queue','select','game'].includes(phase);
+  $('.nav.live').classList.toggle('off',!live);
+  $('#content').innerHTML=PAGES[page]();
+  band();
+}
+function go(p){page=p;render()}
+function setPhase(p){
+  phase=p; tick=0; $$('.sim button[data-ph]').forEach(b=>b.classList.toggle('on',b.dataset.ph===p));
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  if(['queue','select','game'].includes(p)) page='live';
+  else if(p==='idle'&&page==='live') page='home';
+  if(p==='end'){ page='home';
+    const t=document.createElement('div');t.className='toast';t.innerHTML='<b>Partida terminada</b> · +21 PL<br><span class="dim">Objetivo cumplido.</span><div style="margin-top:8px"><button onclick="this.parentNode.parentNode.remove();go(\'hist\')">Ver análisis</button><button class="ghost" onclick="this.parentNode.parentNode.remove()">Quedarme aquí</button></div>';
+    $('#app').appendChild(t);}
+  render();
+  clearInterval(timer); timer=setInterval(()=>{tick++; if(['queue','select','game'].includes(phase)){band(); if(page==='live'&&phase==='game') render();}},1000);
+}
+$$('.nav').forEach(n=>n.onclick=()=>go(n.dataset.pg));
+$$('.sim button[data-ph]').forEach(b=>b.onclick=()=>setPhase(b.dataset.ph));
+$('#pin').onclick=()=>{pinned=!pinned;$('#side').classList.toggle('pin',pinned)};
+render();
+</script>
+</body>
+</html>
