@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.22.14). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.22.15). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -22,7 +22,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 2. Estado (actualizar al terminar cada conversación)
 
-**Publicado en GitHub: 1.22.14** (14/11/2026; la 1.22.13 fue la anterior). La actualización automática funciona (el usuario pasó solo de 1.22.5 a 1.22.9).
+**Publicado en GitHub: 1.22.15** (14/11/2026; la 1.22.14 fue la anterior). La actualización automática funciona (el usuario pasó solo de 1.22.5 a 1.22.9).
 
 **Incluido en la 1.22.11** (publicada; `python herramientas/estado.py` muestra si hay algo nuevo sin publicar):
 - **Pestaña Repertorio propia**, entre Enfrentamiento e Historial (antes estaba escondida en la tarjeta de logros del inicio). Ctrl+1…6;
@@ -65,7 +65,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 - **Informe de diagnóstico más completo** (`health_lines` y los ajustes relevantes en `copy_diagnostics`): esquema de datos, partidas de la Grieta con línea de regla antigua o sin línea, PL guardados, edad del meta y de las builds.
 
 **Incluido en la 1.22.14** (publicada), hallado con una partida real el 14/11/2026:
-**En `main` sin publicar** (candidata a 1.22.15):
+**Incluido en la 1.22.15** (publicada):
 - **Gráfica de rango: el tramo no cambiaba nada** (aviso del usuario con su historial real: solo 6 puntos de Solo/Dúo, todos entre el 09 y el 11/11, así que 7, 30, 90 días, año y todo contenían lo mismo). Ahora el eje es el tramo elegido aunque el historial sea más corto, y una nota dice desde cuándo hay datos guardados. Idea pendiente: reconstruir hacia atrás una estimación de PL con las victorias y derrotas del historial (225 partidas) marcada como estimada; no se ha hecho por la imprecisión (LP por partida varía ~14 a 26).
 
 - **Gráfica «Tu rango en el tiempo»** (`lpseries.py` + `ui_lp.py`; sustituye a la ficha «Tus PL guardados» y a `analysis.lp_series`): visible siempre en Inicio › Rango y logros, con eje de fechas, rango real (divisiones marcadas), filtros 20 partidas / 7 / 30 / 90 días / este año / todo, cola Solo-Dúo o Flexible, y al pasar el ratón un cuadro con el icono del campeón, resultado y PL de la partida (no se dibujan iconos por partida: no cabrían). Dos fuentes: `lp.json` (partidas vistas por LOL-E) y las FOTOS DIARIAS de rango del perfil de op.gg (`lpHistories`, solo trae ~10 jornadas; `save_lp_snapshots` las acumula en `opgg_lp.json` cada vez que se actualiza op.gg). Líneas de referencia del cliente (pico de la temporada y fin de la anterior) si caen dentro del tramo. **Rango de todas las temporadas: no hay fuente viable** (League of Graphs está tras Cloudflare y se apunta solo mientras sigue la cuenta; el cliente solo da la temporada actual y la anterior; op.gg ~10 jornadas; la API de Riot no tiene historial de PL). Pendiente de ver con datos reales; el formato de la etiqueta de división de op.gg en rangos no apex (`label`) no se ha visto (solo Maestro+ en la muestra pública).
@@ -179,6 +179,6 @@ vivo en una partida real, y las decisiones pendientes del usuario de la sección
 - 13/11/2026 (noche, 2): partida en vivo ampliada (rival directo), comparación con tu media, corrección del cierre tras esquivar, escenarios del bucle; plan y
   estado al día.
 - 13/11/2026 (noche): reorganizado en capas (este archivo + `PLAN_DE_FUTURO.md` + `HISTORIAL_DE_SESIONES.md` + `herramientas/estado.py`); añadidas pruebas de
-  frescura de documentos. Estado: 1.22.14 publicada.
+  frescura de documentos. Estado: 1.22.15 publicada.
 - 13/11/2026 (tarde): 1.22.5 a 1.22.10 publicadas (actualizador, certificados, regla de líneas v2, recálculo de partidas antiguas). Ver el historial.
 - 12/11/2026: auditoría visual, textos, etapa 1 (historial por cuenta, diagnóstico, cliente falso), rendimiento. Ver el historial.

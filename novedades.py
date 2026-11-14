@@ -10,6 +10,9 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.15", "fecha": "14 de noviembre de 2026", "titulo": "La gráfica de rango respeta el tramo que eliges", "items": [
+        ("arreglo", "En «Tu rango en el tiempo», cambiar de tramo (7, 30, 90 días, este año, todo) no parecía hacer nada cuando el historial guardado era corto. Ahora el eje es el tramo elegido y una nota dice desde cuándo hay datos guardados."),
+    ]},
     {"v": "1.22.14", "fecha": "14 de noviembre de 2026", "titulo": "Partida en vivo rediseñada, tu rango en el tiempo y más runas", "items": [
         ("nuevo", "«Tu rango en el tiempo»: una gráfica en el inicio con tus PL por fecha y el rango real (divisiones marcadas), con filtros por tramo (20 partidas, 7, 30, 90 días, este año, todo) y por cola. Al pasar el ratón por un punto ves el campeón, el resultado y los PL de esa partida. Marca tu pico de la temporada y cómo acabaste la anterior. Usa tus partidas vistas por LOL-E y las fotos diarias de rango de op.gg, que se guardan y van sumando."),
         ("nuevo", "Runas con opciones: «Más usada» y «Mayor % de victorias», cada una con su % de victorias, su uso y sus partidas."),
