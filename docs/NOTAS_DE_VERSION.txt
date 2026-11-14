@@ -7,6 +7,15 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.16   (14 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · lpseries.estimate: puntos «est» para las partidas de la cola sin PL guardado. Hacia atrás desde el primer punto seguro (partida con PL real
+    o foto de op.gg) restando la mediana propia de PL por victoria/derrota (21/19 si hay menos de 3 de cada); entre dos puntos seguros reparte
+    el residuo para que cuadre; no baja de 0 ni inventa sin ancla. ui_lp: a trazos, punto hueco, interruptor «Con estimación / Solo reales», «≈» en el resumen.
+  · Fuentes de historial revisadas: LCU solo da el rango actual; op.gg solo ~10 días (se acumulan); League of Graphs bloquea (Cloudflare).
+    137 pruebas.
+
 VERSIÓN 1.22.15   (14 de noviembre de 2026)
 ---------------------------------------------------------------------
 

@@ -55,7 +55,12 @@ for _i, _d in enumerate([18, -17, 19, 20, -16, -19, 17, 21, -18, 16, 19, -15, 20
     _pts.append({"t": _now - (26 - _i) * 86400000 * 2 // 1 + _i * 1000, "v": _v, "d": _d, "w": _d > 0, "cid": [86, 122, 875, 54][_i % 4],
                  "tier": lpseries.label_of(_v // 100 * 100).replace("Maestro+", "Maestro"), "lp": _v % 100, "src": "game"})
 _pts.insert(5, {"t": _pts[4]["t"] + 86400000, "v": _pts[4]["v"] + 5, "d": None, "cid": None, "w": None, "tier": "Oro II", "lp": 70, "src": "day"})
-lpseries.series = lambda lp, hist, snaps, queue="solo": _pts if queue == "solo" else []
+_est, _ev = [], _pts[0]["v"] - _pts[0]["d"]
+for _i, _d in enumerate([-17, 19, 18, -16, 20, -18, 19, 17]):   # estimadas, antes de lo guardado
+    _est.insert(0, {"t": _pts[0]["t"] - (_i + 1) * 86400000, "v": _ev, "d": _d, "w": _d > 0, "cid": [54, 86][_i % 2], "tier": lpseries.label_of(_ev // 100 * 100),
+                    "lp": _ev % 100, "src": "est"})
+    _ev -= _d
+lpseries.series = lambda lp, hist, snaps, queue="solo", with_estimate=False: (_est + _pts if with_estimate else _pts) if queue == "solo" else []
 lpseries.load_all = lambda cache_dir: ({"a": 1, "b": 2, "c": 3}, {})
 import learn   # «Qué aprender» de ejemplo (el cache del proyecto no tiene partidas con línea)
 learn.advice = lambda *a, **k: [{"role": "TOP", "n": 14, "main": 86, "main_g": 12, "main_wr": .58, "cands": [(122, 53.4), (875, 52.9), (54, 52.1)]}]

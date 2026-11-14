@@ -10,6 +10,9 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.16", "fecha": "14 de noviembre de 2026", "titulo": "Tu rango hacia atrás, estimado", "items": [
+        ("nuevo", "En «Tu rango en el tiempo», las partidas de las que LOL-E no guardó los PL se estiman con tus victorias y derrotas (a trazos y con el punto hueco) para que la gráfica llegue más atrás. Se apoyan en tus puntos reales y en las fotos de op.gg, y cuadran con ellos. Puedes ocultarlas con «Solo reales»."),
+    ]},
     {"v": "1.22.15", "fecha": "14 de noviembre de 2026", "titulo": "La gráfica de rango respeta el tramo que eliges", "items": [
         ("arreglo", "En «Tu rango en el tiempo», cambiar de tramo (7, 30, 90 días, este año, todo) no parecía hacer nada cuando el historial guardado era corto. Ahora el eje es el tramo elegido y una nota dice desde cuándo hay datos guardados."),
     ]},

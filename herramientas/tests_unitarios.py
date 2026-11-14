@@ -958,6 +958,57 @@ class PaginasDeRunas(unittest.TestCase):
         self.assertEqual(builds.parse_rune_pages(d), [])
 
 
+class EstimacionDeRango(unittest.TestCase):
+    NOW = 1_800_000_000_000
+
+    def g(self, i, dias, w, q=420):
+        return {"id": str(i), "t": self.NOW - int(dias * 86_400_000), "q": q, "c": 86, "w": w}
+
+    def test_hacia_atras_desde_el_primer_punto_real(self):
+        import lpseries as ls
+        # partida 3 con PL real: acaba en Oro II 50 PL tras ganar 20 (venía de 30). Las 1 y 2 no tienen PL: se estiman hacia atrás.
+        lp = {"3": {"d": 20, "now": 50, "tier": "Oro II"}}
+        games = [self.g(1, 5, True), self.g(2, 4, False), self.g(3, 3, True)]
+        est = ls.estimate(lp, games, {})
+        self.assertEqual([p["id"] for p in est], ["2", "1"])
+        base = 3 * 400 + 2 * 100
+        self.assertEqual(est[0]["v"], base + 30)                    # tras la 2 estaba donde empezó la 3
+        self.assertEqual(est[1]["v"], base + 30 + ls.LOSS)          # y tras la 1 estaba una derrota típica más arriba
+        self.assertTrue(all(p["src"] == "est" for p in est))
+        self.assertEqual(est[0]["tier"], "Oro II")
+
+    def test_entre_dos_puntos_reales_cuadra(self):
+        import lpseries as ls
+        lp = {"1": {"d": 20, "now": 50, "tier": "Oro II"}, "4": {"d": 18, "now": 70, "tier": "Oro II"}}
+        games = [self.g(1, 4, True), self.g(2, 3, True), self.g(3, 2, False), self.g(4, 1, True)]
+        est = ls.estimate(lp, games, {})
+        self.assertEqual(len(est), 2)
+        self.assertAlmostEqual(est[-1]["v"], 3 * 400 + 200 + 70 - 18, delta=1)   # la última estimada acaba donde empezó la partida 4 real
+        self.assertEqual(sum(p["d"] for p in est), (70 - 18) - 50)
+
+    def test_sin_ancla_no_inventa_y_no_baja_de_cero(self):
+        import lpseries as ls
+        self.assertEqual(ls.estimate({}, [self.g(1, 2, True)], {}), [])
+        lp = {"9": {"d": 10, "now": 15, "tier": "Hierro IV"}}
+        games = [self.g(i, 30 - i, True) for i in range(1, 9)] + [self.g(9, 1, True)]
+        self.assertTrue(all(p["v"] >= 0 for p in ls.estimate(lp, games, {})))
+
+    def test_series_solo_incluye_estimadas_si_se_piden_y_el_resumen_las_cuenta(self):
+        import lpseries as ls
+        lp = {"3": {"d": 20, "now": 50, "tier": "Oro II"}}
+        games = [self.g(1, 5, True), self.g(2, 4, False), self.g(3, 3, True)]
+        self.assertEqual([p["src"] for p in ls.series(lp, games, {}, "solo")], ["game"])
+        full = ls.series(lp, games, {}, "solo", with_estimate=True)
+        self.assertEqual([p["src"] for p in full], ["est", "est", "game"])
+        self.assertEqual(ls.summary(full)[1], 3)
+
+    def test_medianas_propias(self):
+        import lpseries as ls
+        real = [{"w": True, "d": d} for d in (24, 25, 26)] + [{"w": False, "d": d} for d in (-14, -15, -16)]
+        self.assertEqual(ls.typical(real), (25, 15))
+        self.assertEqual(ls.typical([]), (ls.GAIN, ls.LOSS))
+
+
 class SerieDeRango(unittest.TestCase):
     NOW = 1_800_000_000_000      # un «ahora» fijo en ms
 
