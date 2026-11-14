@@ -6,7 +6,7 @@ import customtkinter as ctk
 
 import history
 import lol_advisor as core
-from ui_kit import PAL, ROLES_ES, ON_FILL, mix
+from ui_kit import PAL, ROLES_ES, ON_FILL
 from ui_views import small_btn, mini_bar
 
 STEP = 20
@@ -536,9 +536,9 @@ class HistoryView:
         cv = tk.Canvas(box, width=cw, height=int(H * sx), bg=ui.bg(parent), highlightthickness=0, bd=0, cursor="hand2")
         cv.pack(fill="x" if lv == 0 else None)
         color = "dim" if e.get("rm") else "good" if e["w"] else "bad"
-        # el resultado se ve a primera vista, sin mirar al chip de la derecha: fondo con un toque del color, franja a la izquierda y aro en la foto
-        ui.rrect(cv, 0, 0, cw - 1, int(H * sx) - 1, int(10 * sx), fill=mix(ui.hexm(PAL["card2"]), ui.hexm(PAL[color]), 0.0 if color == "dim" else 0.12), outline="")
-        ui.rrect(cv, int(2 * sx), int(7 * sx), int(7 * sx), int(H * sx) - int(8 * sx), int(2 * sx), fill=ui.hexm(PAL[color]), outline="")
+        # el resultado se ve a primera vista, sin mirar al chip de la derecha: franja gruesa a la izquierda y aro en la foto
+        ui.rrect(cv, 0, 0, cw - 1, int(H * sx) - 1, int(10 * sx), fill=ui.hexm(PAL["card2"]), outline="")
+        ui.rrect(cv, int(2 * sx), int(6 * sx), int(8 * sx), int(H * sx) - int(7 * sx), int(3 * sx), fill=ui.hexm(PAL[color]), outline="")
         f12b, f10, f12 = ui.tkf(12, True, False), ui.tkf(10, False, False), ui.tkf(12, False, False)
         fg, dim = ui.hexm(PAL["fg"]), ui.hexm(PAL["dim"])
         ph = ui.champ_photo(e["c"], 38) if e["c"] else None
