@@ -27,6 +27,18 @@ DOCK_W = 360
 
 MAX_W = 1240  # ancho máximo del contenido (se centra en pantallas más grandes)
 
+
+
+def lower_priority():
+    """LOL-E pasa a prioridad «por debajo de lo normal»: si Windows tiene que repartir CPU, el juego va primero. Sin efecto si falla."""
+    try:
+        import ctypes
+        k = ctypes.WinDLL("kernel32", use_last_error=True)
+        k.GetCurrentProcess.restype = ctypes.c_void_p
+        k.SetPriorityClass.argtypes = (ctypes.c_void_p, ctypes.c_uint32)
+        k.SetPriorityClass(k.GetCurrentProcess(), 0x00004000)   # BELOW_NORMAL_PRIORITY_CLASS
+    except Exception:
+        pass
 
 class GUI:
     def __init__(self, conf, champs):
@@ -65,6 +77,8 @@ class GUI:
         self.root.bind("<Left>", lambda e: self.key_go(-1))
         self.root.bind("<Right>", lambda e: self.key_go(1))
         self.root.bind("<Configure>", self.on_resize)
+        self.root.bind("<Map>", self.on_map)
+        lower_priority()
         self.kit = Kit(self.root, conf, champs, lambda ev: self.q.put((ev,)))
         self.kit.goto_history, self.kit.goto_matchup = self.goto_history, self.goto_matchup
         self.kit.set_opp, self.kit.opp_now = self.set_opp, lambda: self.opp_choice
@@ -193,6 +207,20 @@ class GUI:
                 save_conf(self.conf)
         except Exception:
             pass
+
+    def hidden(self):
+        """La ventana está minimizada u oculta: repintarla no la ve nadie."""
+        try:
+            return self.root.state() in ("iconic", "withdrawn")
+        except Exception:
+            return False
+
+    def on_map(self, e):
+        """La ventana vuelve a verse: si llegaron datos en vivo mientras estaba minimizada, se pintan ahora."""
+        if e.widget is self.root and getattr(self, "_live_pending", False):
+            self._live_pending = False
+            if self.view == "game":
+                self.root.after(50, lambda: self.game_view.refresh(self.make_ctx(), True))
 
     def ensure_normal(self):
         """Si Windows dejó la ventana maximizada sin que lo pidas, la devolvemos a su tamaño."""
@@ -391,7 +419,10 @@ class GUI:
                     self.ctx["live"] = ev[1]
                     self.buy_alert(ev[1])
                     if self.view == "game":
-                        self.game_view.on_live(self.make_ctx())
+                        if self.hidden():   # ventana minimizada: no se repinta nada (el PC es del juego); al volver se pinta de una vez
+                            self._live_pending = True
+                        else:
+                            self.game_view.on_live(self.make_ctx())
                 elif kind == "live_aug":
                     self.ctx["live_aug"] = ev[1]
                     if self.view == "game":
