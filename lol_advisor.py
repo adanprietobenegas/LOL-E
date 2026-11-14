@@ -1327,6 +1327,9 @@ def run(conf, champs, ui):
                                 continue
                             if dl:
                                 analysis.save_lp(CACHE, g["gameId"], dl)
+                                diag(f"Variación de PL ({qkey}): {dl['d']:+d} PL, ahora {dl['tier']} {dl['now']} PL" + (f" ({dl['move']})" if dl["move"] else ""))
+                            else:
+                                diag(f"Variación de PL ({qkey}): no se pudo calcular (antes {rank_before.get(qkey)}, después {(P.get('profile') or {}).get(qkey)})")
                         diag(f"Partida terminada: {g['gameId']} (cola {g.get('queueId')}), esperas {end_tries}")
                         rank_before, cur_gid, end_tries, played = None, None, 0, False
                         getattr(ui, "analysis", lambda *a: None)(str(g["gameId"]), analysis.load(lcu, g["gameId"], my_puuid, CACHE))

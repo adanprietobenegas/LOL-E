@@ -5,6 +5,7 @@ from collections import Counter
 import customtkinter as ctk
 
 import history
+import sesion
 import lol_advisor as core
 from ui_kit import PAL, ROLES_ES, ON_FILL
 from ui_views import small_btn, mini_bar
@@ -281,6 +282,7 @@ class HistoryView:
         strip.pack(fill="x", pady=(8, 0))
         ui.lbl(strip, "ÚLTIMAS 20", 9, "dim", True).pack(side="left", padx=(4, 10))
         ui.dots(strip, [e["w"] for e in ordered[:20][::-1]]).pack(side="left")
+        self.session_lines(self.all)
         # campeones más jugados y reparto por modo
         two = ui.frame(self.summary_host)
         if self.level >= 1:
@@ -336,6 +338,21 @@ class HistoryView:
             mini_bar(ui, row, g / modes.most_common(1)[0][1], "good" if wr >= .5 else "bad", 90 if self.level else 60).pack(side="left", padx=(0, 8))
             ui.lbl(row, f"{g}", 10, "dim", width=34, anchor="w").pack(side="left")
             ui.lbl(row, f"{round(wr * 100)} %", 11, "good" if wr >= .5 else "bad", True, width=44, anchor="w").pack(side="left")
+
+    def session_lines(self, games):
+        """Tu sesión y tu forma: derrotas seguidas con tu propio dato, y la franja horaria en la que mejor rindes. Solo si hay muestra suficiente."""
+        ui = self.ui
+        sess = sesion.current(games, int(time.time() * 1000))
+        after = sesion.after_losses(games)
+        lines = []
+        if sess and sess["n"] >= 2:
+            note = sesion.tilt_note(sess, after)
+            lines.append((note or f"Sesión de hoy: {sess['w']}V {sess['l']}D en {sess['n']} partidas seguidas.", "bad" if note else "dim"))
+        best = sesion.best_slot(sesion.by_hour(games))
+        if best:
+            lines.append((f"Tu mejor franja horaria es la {best[0]}: {round(best[1] * 100)} % de victorias en {best[2]} partidas.", "dim"))
+        for text, col in lines:
+            ui.lbl(self.summary_host, text, 10, col, anchor="w", justify="left", wraplength=max(240, self.width - 60)).pack(anchor="w", padx=4, pady=(6, 0))
 
     # ---- lista por días ----
     def col_header(self, wrap):

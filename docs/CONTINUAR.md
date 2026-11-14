@@ -24,6 +24,12 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 **Publicado en GitHub: 1.22.17** (14/11/2026; la 1.22.16 fue la anterior).
 
+**En `main` sin publicar** (candidata a 1.22.18):
+- **Tu sesión y tu forma** (`sesion.py`, `ui_history.session_lines`; propuesta del experto coach): en el resumen del Historial, si llevas 2+ derrotas seguidas lo dice con TU dato (victorias tras 2+ derrotas frente a normales, solo con 8+ partidas y diferencia ≥ 8 puntos) y tu mejor franja horaria (diferencia ≥ 12 puntos). Sin conclusiones con muestras pequeñas. Pendiente de la misma idea: banner en el lobby/selección.
+- **Registro de PL**: `diag.log` apunta ahora «Variación de PL (cola): +x PL, ahora …» o «no se pudo calcular (antes…, después…)» para cazar por qué falta el PL de algunas partidas reales (sin confirmar la causa).
+- Ideas de los expertos aún sin hacer: patrones repetidos entre partidas y objetivo por partida (coach), temporizadores de objetivos (plan 1.3), alerta de picos del rival, mapa de muertes; de diseño: compactar el resumen del Historial en estrecho, ficha «Racha» sola, controles de Selección en una barra, pie de op.gg más tenue.
+
+
 **Incluido en la 1.22.17** (publicada): Historial: el resultado se ve sin mirar al chip de la derecha (franja gruesa a la izquierda y aro de color en la foto, fondo liso; `ui_history.row`). La actualización automática funciona (el usuario pasó solo de 1.22.5 a 1.22.9).
 
 **Incluido en la 1.22.11** (publicada; `python herramientas/estado.py` muestra si hay algo nuevo sin publicar):

@@ -958,6 +958,49 @@ class PaginasDeRunas(unittest.TestCase):
         self.assertEqual(builds.parse_rune_pages(d), [])
 
 
+class SesionDeJuego(unittest.TestCase):
+    H = 3600 * 1000
+    NOW = 1_800_000_000_000
+
+    def g(self, horas, w, d=1800):
+        return {"t": self.NOW - int(horas * self.H), "d": d, "w": w}
+
+    def test_sesion_en_curso_y_rachas(self):
+        import sesion
+        games = [self.g(30, True), self.g(5, True), self.g(3.5, False), self.g(2.5, False), self.g(1.5, False)]
+        s = sesion.current(games, self.NOW)
+        self.assertEqual((s["n"], s["w"], s["l"], s["loss_streak"]), (4, 1, 3, 3))     # la de hace 30 h es otra sesión
+        self.assertIsNone(sesion.current(games, self.NOW + 6 * self.H))                 # ya pasaron más de 2 h: no hay sesión
+        self.assertIsNone(sesion.current([], self.NOW))
+
+    def test_remakes_no_cuentan(self):
+        import sesion
+        games = [self.g(3, False), dict(self.g(2, False), rm=True), self.g(1, True)]
+        self.assertEqual(sesion.current(games, self.NOW)["n"], 2)
+
+    def test_despues_de_perder(self):
+        import sesion
+        # sesión A: D D D V ; sesión B (otro día): V
+        games = [self.g(100, False), self.g(99, False), self.g(98, False), self.g(97, True), self.g(5, True)]
+        a = sesion.after_losses(games)
+        self.assertEqual(a[0], (2, 1))      # la 1.ª de A (derrota) y la de B (victoria)
+        self.assertEqual(a[1], (1, 0))      # la 2.ª de A venía de 1 derrota
+        self.assertEqual(a[2], (2, 1))      # la 3.ª (D) y la 4.ª (V) venían de 2 o más
+
+    def test_aviso_solo_con_muestra_y_diferencia(self):
+        import sesion
+        sess = {"n": 3, "w": 1, "l": 2, "loss_streak": 2, "win_streak": 0}
+        self.assertIn("quizá", sesion.tilt_note(sess, {0: (30, 18), 2: (10, 3)}))
+        self.assertNotIn("quizá", sesion.tilt_note(sess, {0: (30, 18), 2: (5, 1)}))     # pocas partidas: solo el hecho
+        self.assertNotIn("quizá", sesion.tilt_note(sess, {0: (30, 15), 2: (12, 6)}))    # sin diferencia: sin consejo
+        self.assertIsNone(sesion.tilt_note(dict(sess, loss_streak=1), {}))
+
+    def test_mejor_franja(self):
+        import sesion
+        self.assertEqual(sesion.best_slot({"noche": (20, 14), "tarde": (20, 8), "mañana": (3, 3)})[0], "noche")
+        self.assertIsNone(sesion.best_slot({"noche": (20, 11), "tarde": (20, 10)}))
+
+
 class EstimacionDeRango(unittest.TestCase):
     NOW = 1_800_000_000_000
 
