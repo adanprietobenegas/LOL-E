@@ -958,6 +958,28 @@ class PaginasDeRunas(unittest.TestCase):
         self.assertEqual(builds.parse_rune_pages(d), [])
 
 
+class PicosDelRival(unittest.TestCase):
+    def snap(self, t, lvl, value, mine=5):
+        mk = lambda cid, team, me, level, v: {"cid": cid, "team": team, "me": me, "level": level, "value": v, "items": [], "k": 0, "d": 0, "a": 0}
+        return {"t": t, "players": [mk(1, "ORDER", True, mine, 3000), mk(2, "CHAOS", False, lvl, value)]}
+
+    def test_nivel_y_compra(self):
+        import live
+        a, b = self.snap(300, 5, 3000), self.snap(310, 6, 5000)
+        out = live.spikes(a, b, 2)
+        self.assertEqual(len(out), 2)
+        self.assertIn("nivel 6 y tú aún no", out[0])
+        self.assertIn("2.0", out[1].replace(",", "."))
+
+    def test_sin_aviso_sin_cambios_o_sin_rival(self):
+        import live
+        a = self.snap(300, 6, 3000)
+        self.assertEqual(live.spikes(a, self.snap(310, 6, 3500), 2), [])      # ya era 6 y la compra es pequeña
+        self.assertEqual(live.spikes(None, a, 2), [])
+        self.assertEqual(live.spikes(a, a, 0), [])                            # no se sabe quién es el rival
+        self.assertEqual(live.spikes(self.snap(400, 5, 0), self.snap(300, 6, 9999), 2), [])   # una lectura más vieja: no se mezcla
+
+
 class SesionDeJuego(unittest.TestCase):
     H = 3600 * 1000
     NOW = 1_800_000_000_000

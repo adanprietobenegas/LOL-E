@@ -149,6 +149,30 @@ def duel(snap, opp_cid):
     return (yo, rival) if rival else None
 
 
+SPIKE_LEVELS = (6, 11, 16)
+SPIKE_GOLD = 1800        # lo que sube el oro en objetos del rival entre dos lecturas para avisar de una compra importante (≈ un objeto completo)
+SPIKE_SHOW = 45          # segundos de partida que dura el aviso en pantalla
+
+
+def spikes(prev, cur, opp_cid):
+    """Avisos de pico de poder de tu rival directo entre dos lecturas seguidas: sube a nivel 6, 11 o 16, o compra objetos por mucho oro.
+    Solo usa lo que el marcador del propio juego ya enseña a todos. Lista de frases (vacía si no hay nada)."""
+    if not prev or not cur or cur.get("t", 0) < prev.get("t", 0):
+        return []
+    a, b = duel(prev, opp_cid), duel(cur, opp_cid)
+    if not a or not b:
+        return []
+    (_y0, r0), (yo, r1) = a, b
+    out = []
+    for lv in SPIKE_LEVELS:
+        if r0["level"] < lv <= r1["level"]:
+            out.append(f"Tu rival directo ha llegado al nivel {lv}" + (" y tú aún no" if yo["level"] < lv else "") + ": ojo al intercambio.")
+    gain = r1["value"] - r0["value"]
+    if gain >= SPIKE_GOLD:
+        out.append(f"Tu rival directo acaba de comprar objetos por {money(gain)}: su poder ha subido.")
+    return out
+
+
 def duel_line(yo, rival, name=""):
     """Una frase con cómo vas frente a tu rival directo: nivel, objetos y marcador. Solo opina de los objetos si la diferencia es clara
     (15 % o más y al menos 500 de oro): con menos, es ruido."""
