@@ -6,10 +6,41 @@ import customtkinter as ctk
 
 import history
 import lol_advisor as core
-from ui_kit import PAL, ROLES_ES, ON_FILL, mix
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageTk
+
+from ui_kit import PAL, ROLES_ES, ON_FILL, mix, rgb
 from ui_views import small_btn, mini_bar
 
 STEP = 20
+_BACK = {}   # fondos de fila ya dibujados (el mismo campeón, resultado y tamaño se reutilizan)
+
+
+def back_photo(ui, cid, w, h, color, radius, bg):
+    """Fondo de una fila del historial: el color del resultado como degradado desde la izquierda y, tras él, el icono del campeón muy ampliado,
+    desenfocado y desvanecido. Así el resultado se ve de un vistazo y la fila tiene un motivo propio. Se guarda en memoria por campeón/color/tamaño."""
+    key = (cid, w, h, color, radius, bg, ui.mode_dark())
+    if key in _BACK:
+        return _BACK[key]
+    if len(_BACK) > 150:
+        _BACK.pop(next(iter(_BACK)))
+    base, tint, bg = rgb(ui.hexm(PAL["card2"])), rgb(color), rgb(bg)
+    im = Image.new("RGB", (w, h), base)
+    pil = ui.pils.get(("c", cid, 38, None))
+    if pil is not None:
+        big = pil.convert("RGB").resize((int(w * .55), int(w * .55)), Image.BICUBIC).filter(ImageFilter.GaussianBlur(max(2, h // 8)))
+        top = max(0, (big.height - h) // 2)
+        art = big.crop((0, top, big.width, top + h)).resize((int(w * .55), h))
+        fade = Image.linear_gradient("L").rotate(270).resize((art.width, h))      # opaco a la izquierda, transparente a la derecha
+        fade = fade.point(lambda v: int(v * .55))
+        im.paste(art, (0, 0), fade)
+    wash = Image.linear_gradient("L").rotate(270).resize((int(w * .7), h)).point(lambda v: int(v * .42))
+    im.paste(Image.new("RGB", wash.size, tint), (0, 0), wash)
+    mask = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, w - 1, h - 1), radius=radius, fill=255)
+    out = Image.new("RGB", (w, h), bg)
+    out.paste(im, (0, 0), mask)
+    _BACK[key] = ImageTk.PhotoImage(out)
+    return _BACK[key]
 RANGES = [("Últimas 50", 50), ("Últimas 100", 100), ("Últimas 200", 200), ("Últimas 500", 500)]
 MODES = ["Todos"] + [g for g in core.MODE_ORDER if g != "Otros"] + ["Personalizada", "Otros"]
 RESULTS = ["Todas", "Victorias", "Derrotas"]
@@ -537,7 +568,11 @@ class HistoryView:
         cv.pack(fill="x" if lv == 0 else None)
         color = "dim" if e.get("rm") else "good" if e["w"] else "bad"
         # el resultado se ve a primera vista, sin mirar al chip de la derecha: fondo con un toque del color, franja a la izquierda y aro en la foto
-        ui.rrect(cv, 0, 0, cw - 1, int(H * sx) - 1, int(10 * sx), fill=mix(ui.hexm(PAL["card2"]), ui.hexm(PAL[color]), 0.0 if color == "dim" else 0.12), outline="")
+        ui.champ_photo(e["c"], 38) if e["c"] else None   # deja listo el icono que usa el fondo
+        try:
+            cv.create_image(0, 0, image=back_photo(ui, e["c"], cw, int(H * sx), ui.hexm(PAL[color]), int(10 * sx), ui.bg(parent)), anchor="nw")
+        except Exception:
+            ui.rrect(cv, 0, 0, cw - 1, int(H * sx) - 1, int(10 * sx), fill=ui.hexm(PAL["card2"]), outline="")
         ui.rrect(cv, int(2 * sx), int(7 * sx), int(7 * sx), int(H * sx) - int(8 * sx), int(2 * sx), fill=ui.hexm(PAL[color]), outline="")
         f12b, f10, f12 = ui.tkf(12, True, False), ui.tkf(10, False, False), ui.tkf(12, False, False)
         fg, dim = ui.hexm(PAL["fg"]), ui.hexm(PAL["dim"])
