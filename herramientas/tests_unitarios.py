@@ -983,6 +983,12 @@ class PatronesRepetidos(unittest.TestCase):
         self.assertIsNone(patrones.find(mix))                                                                      # igual en victorias que en derrotas
         self.assertIsNone(patrones.sentence(None))
 
+    def test_objetivo_sale_del_patron(self):
+        import patrones
+        g = [self.partida(False, 2) for _ in range(5)] + [self.partida(True, 0) for _ in range(4)] + [self.partida(False, 0)]
+        self.assertIn("minuto 15", patrones.goal(patrones.find(g)))
+        self.assertIsNone(patrones.goal(None))
+
     def test_ignora_colas_sin_linea(self):
         import patrones
         g = [dict(self.partida(False, 2), queue=450) for _ in range(10)]

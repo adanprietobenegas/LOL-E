@@ -71,6 +71,18 @@ def sentence(p):
     return f"Patrón en tus derrotas: en {a} de {b} {p['texto']}; en tus victorias, en {c} de {d}."
 
 
+GOAL = {
+    "muertes_pronto": "no mueras más de una vez antes del minuto 15.",
+    "farmeo_10": "llega al minuto 10 a menos de 10 súbditos de tu rival.",
+    "oro_15": "no vayas 1.000 de oro por detrás en el minuto 15: si pierdes la línea, juega seguro y cede el farmeo.",
+}
+
+
+def goal(p):
+    """Un objetivo medible para la próxima partida, sacado del patrón (None si no hay patrón)."""
+    return "Tu objetivo: " + GOAL[p["clave"]] if p and p.get("clave") in GOAL else None
+
+
 _CACHE = {}
 
 
