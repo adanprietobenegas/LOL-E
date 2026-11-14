@@ -112,8 +112,17 @@ class ProfileCard(Section):
 
 
 class WaitCard(Section):
+    def tilt(self):
+        """Aviso de sesión (2+ derrotas seguidas) con tu propio dato, para antes de entrar en otra cola; None si no toca."""
+        try:
+            import sesion
+            games = history.load_all(history.hpath(core.CACHE), history.gpath(core.CACHE))
+            return sesion.tilt_note(sesion.current(games, int(time.time() * 1000)), sesion.after_losses(games))
+        except Exception:
+            return None
+
     def key(self, ctx):
-        return (ctx["msg"], ctx["linked"])
+        return (ctx["msg"], ctx["linked"], self.tilt())
 
     def build(self, ctx):
         ui = self.ui
@@ -126,6 +135,9 @@ class WaitCard(Section):
         hint = ("Entra en una cola: esta ventana se activa sola al empezar la selección." if ctx["linked"]
                 else "Después entra en una cola: esta ventana se activa sola al empezar la selección.")
         ui.autowrap(ui.lbl(c, hint, 10, "dim", anchor="w", justify="left"), c).pack(anchor="w", pady=(4, 0))
+        note = self.tilt()
+        if note and ctx["linked"]:
+            ui.autowrap(ui.lbl(c, note, 10, "warn", True, anchor="w", justify="left"), c).pack(anchor="w", pady=(6, 0))
         msg = ctx["msg"] or ""
         if msg and not any(s in msg for s in ("Conectado al cliente", "Abre el cliente", "Esperando al cliente")):
             ui.autowrap(ui.lbl(c, msg, 10, "dim", anchor="w", justify="left"), c).pack(anchor="w", pady=(2, 0))
