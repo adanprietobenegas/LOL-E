@@ -7,6 +7,14 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.19   (14 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · live.timers: dragón (5:00, 5 min), larvas (8:00–14:45) y Barón (20:00, 6 min) como «estimado»; muertes de BaronKill/DragonKill (EventTime).
+  · patrones.zone/death_map: zonas aproximadas de tus muertes; patrones.result: objetivo cumplido; patrones.current: cacheado 30 s.
+  · ui_sections.WaitCard.tilt: aviso de sesión en Inicio. Fichas finales a todo el ancho.
+    Solo probado con datos de ejemplo y pruebas unitarias (155); umbrales por ajustar con partidas reales.
+
 VERSIÓN 1.22.18   (14 de noviembre de 2026)
 ---------------------------------------------------------------------
 

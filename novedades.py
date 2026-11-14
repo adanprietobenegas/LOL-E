@@ -10,6 +10,13 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.19", "fecha": "14 de noviembre de 2026", "titulo": "Objetivos de la Grieta, dónde mueres y tu objetivo cumplido", "items": [
+        ("nuevo", "En directo: avisos estimados de cuándo salen el dragón, las larvas del Vacío y el Barón (el último minuto antes), con los tiempos de la wiki oficial."),
+        ("nuevo", "Historial: «Dónde mueres (aprox.)», con las zonas del mapa donde más caes (río, jungla propia o rival), cuando hay muertes suficientes."),
+        ("nuevo", "El análisis de cada partida dice si cumpliste el objetivo que te marcó tu patrón de derrotas."),
+        ("nuevo", "Inicio: si llevas 2 o más derrotas seguidas, el aviso aparece también antes de entrar en otra cola, con tu propio dato."),
+        ("mejora", "Las fichas de Inicio ocupan todo el ancho cuando la última queda sola, y el patrón de derrotas se calcula como mucho cada 30 s para pesar menos."),
+    ]},
     {"v": "1.22.18", "fecha": "14 de noviembre de 2026", "titulo": "Tu sesión, tus patrones y menos coste para el juego", "items": [
         ("nuevo", "En el Historial: si llevas 2 o más derrotas seguidas, LOL-E lo dice con tu propio dato (cómo te va tras perder) y te indica tu mejor franja horaria, solo cuando hay partidas suficientes."),
         ("nuevo", "Patrón repetido en tus derrotas (muertes tempranas, farmeo o oro por detrás) a partir de tus análisis guardados, y en la pestaña Partida un objetivo medible sacado de él."),
