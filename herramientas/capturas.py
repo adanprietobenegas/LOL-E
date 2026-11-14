@@ -134,6 +134,17 @@ def tab_partida(v):
     ui.game_view.set_tab(v)
 
 
+def vivo2():
+    """Una segunda lectura en vivo con cambios (30 s después, tres bajas más tuyas, un objeto menos): la vista debe actualizarse sin repintarse."""
+    s = __import__("live").summarize(__import__("cliente_falso").live_sample(), champs)
+    s["t"] += 30
+    me = next(p for p in s["players"] if p["me"])
+    me["k"] += 3
+    me["items"] = me["items"][:-1]
+    s["teams"][s["me_team"] or "ORDER"]["kills"] += 3
+    return s
+
+
 def fin_partida():
     ui.phase("EndOfGame")
 
@@ -201,6 +212,8 @@ PASOS = [
     ("10c_partida_en_vivo", lambda: (ui.ctx["plan"].__setitem__("opp", next(c for c, v in champs.items() if v["name"] == "Darius")),   # tu rival de línea: el de la muestra
                                      ui.live(__import__("live").summarize(__import__("cliente_falso").live_sample(), champs))), 3000),
     ("10d_vivo_compra", lambda: ui.live(__import__("live").summarize(__import__("cliente_falso").live_sample(), champs)), 3500),   # 2.ª lectura: ya con la build cargada
+    ("10f_vivo_detalle", lambda: (ui.conf.setdefault("folds", {}).__setitem__("live_board", True), ui.game_view.refresh(ui.make_ctx(), True),
+                                  ui.root.after(1200, lambda: ui.live(vivo2()))), 4500),   # el pliegue de los diez abierto y una segunda lectura con cambios: se actualiza en sitio
     ("10e_fin_con_scroll", lambda: (ui.body._parent_canvas.yview_moveto(1.0), ui.root.after(300, lambda: (ui.idle(l.player_info(P), "Partida terminada. Historial actualizado. Esperando la siguiente…"), ui.phase("None"), analisis_guardado()))), 3500),   # el usuario miraba la parte baja del bloque en vivo cuando acabó la partida: no debe quedar la pantalla en blanco
     ("11_partida_analisis", lambda: (fin_partida(), tab_partida("Análisis")), 5000),
     ("11b_analisis_guardado", analisis_guardado, 5000),

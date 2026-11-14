@@ -471,28 +471,12 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
         row.after(400, go_auto)
 
 
-def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
-    rd = ui.runedata or {}
-    title = f"BUILD MÁS USADA DE {champs[cid]['name'].upper()}" + (f" CONTRA {champs[enemy]['name'].upper()}" if d.get("vs") and enemy else "")
-    ui.lbl(parent, title, 10, "dim", True, anchor="w").pack(anchor="w", pady=(0, 4))
-    # hechizos
-    sp = d.get("spells") or []
-    if sp:
-        b = _row(ui, parent, "Hechizos")
-        for sid in sp:
-            img = ui.spell_icon(sid, 28)
-            lab = ctk.CTkLabel(b, image=img, text="", width=28, height=28) if img is not None else _ph(ui, b, 28)
-            info = (rd.get("spells") or {}).get(sid)
-            if info:
-                ui.tip(lab, info["n"])
-            lab.pack(side="left", padx=2)
-        names = [(rd.get("spells") or {}).get(s, {}).get("n") for s in sp]
-        if all(names):
-            ui.lbl(b, "  " + " + ".join(names), 11, "fg").pack(side="left")
-    # runas
-    rn = d["runes"]
-    b = _row(ui, parent, "Runas")
-    line = ui.frame(b)
+_RUNE_PICK = {}   # (campeón, línea, rival) -> página de runas elegida (se recuerda al repintar)
+
+
+def rune_icons(ui, parent, rn, rd, width):
+    """Una página de runas: piedra angular, las tres del árbol, las dos del secundario y los tres fragmentos, con su nombre al pasar el ratón."""
+    line = ui.frame(parent)
     line.pack(anchor="w")
     groups = [([rn["keystone"]], 38), (rn.get("primary") or [], 26), (rn.get("secondary") or [], 26)]
     for gi, (ids, size) in enumerate(groups):
@@ -519,7 +503,49 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
     tree = (rd.get("trees") or {}).get((rd.get("runes") or {}).get(rn["keystone"], {}).get("t"))
     if kn:
         txt = f"{kn}" + (f" ({tree})" if tree else "") + (f"  +  {(rd.get('trees') or {}).get(sec_tree)}" if sec_tree else "")
-        ui.lbl(b, txt, 10, "dim", anchor="w", wraplength=max(200, width - 140), justify="left").pack(anchor="w", pady=(3, 0))
+        ui.lbl(parent, txt, 10, "dim", anchor="w", wraplength=max(200, width - 140), justify="left").pack(anchor="w", pady=(3, 0))
+
+
+def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
+    rd = ui.runedata or {}
+    title = f"BUILD MÁS USADA DE {champs[cid]['name'].upper()}" + (f" CONTRA {champs[enemy]['name'].upper()}" if d.get("vs") and enemy else "")
+    ui.lbl(parent, title, 10, "dim", True, anchor="w").pack(anchor="w", pady=(0, 4))
+    # hechizos
+    sp = d.get("spells") or []
+    if sp:
+        b = _row(ui, parent, "Hechizos")
+        for sid in sp:
+            img = ui.spell_icon(sid, 28)
+            lab = ctk.CTkLabel(b, image=img, text="", width=28, height=28) if img is not None else _ph(ui, b, 28)
+            info = (rd.get("spells") or {}).get(sid)
+            if info:
+                ui.tip(lab, info["n"])
+            lab.pack(side="left", padx=2)
+        names = [(rd.get("spells") or {}).get(s, {}).get("n") for s in sp]
+        if all(names):
+            ui.lbl(b, "  " + " + ".join(names), 11, "fg").pack(side="left")
+    # runas: la página más usada y la de mayor % de victorias (si la fuente las da), con su % y su uso
+    b = _row(ui, parent, "Runas")
+    pages = d.get("rune_pages") or [{"id": "pick", "label": "Más usada", "runes": d["runes"]}]
+    holder = ui.frame(b)
+    holder.pack(anchor="w", fill="x")
+    pick_key = (cid, lane, enemy)
+
+    def paint_runes(sel=None):
+        ui.clear(holder)
+        names = [p["label"] for p in pages]
+        cur = sel or _RUNE_PICK.get(pick_key) or names[0]
+        cur = cur if cur in names else names[0]
+        _RUNE_PICK[pick_key] = cur
+        if len(pages) > 1:
+            ui.seg(holder, names, cur, lambda v: paint_runes(v), height=26).pack(fill="x", pady=(0, 6))
+        page = next(p for p in pages if p["label"] == cur)
+        rune_icons(ui, holder, page["runes"], rd, width)
+        if page.get("wr"):
+            es = lambda x: f"{x:.1f}".replace(".", ",")
+            partes = [f"{es(page['wr'])} % de victorias"] + ([f"{es(page['pr'])} % de uso"] if page.get("pr") else []) + [f"{page['n']:,} partidas".replace(",", ".")]
+            ui.lbl(holder, "  ·  ".join(partes), 10, "dim", anchor="w").pack(anchor="w", pady=(3, 0))
+    paint_runes()
     if d.get("skills"):
         b = _row(ui, parent, "Habilidades")
         ui.lbl(b, "  ›  ".join(SKILLS[s] for s in d["skills"]), 12, ui.acc, True, True).pack(side="left")

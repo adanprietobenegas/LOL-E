@@ -105,6 +105,43 @@ def parse(html):
     return out if out["runes"].get("keystone") and out["items"].get("core") else None
 
 
+RUNE_URL = "https://a1.lolalytics.com/mega/?ep=rune&p=d&v=1&c={champ}&lane={lane}&tier={tier}&queue=420&region=all"
+
+
+def parse_rune_pages(d):
+    """Páginas de runas de la respuesta de Lolalytics (`ep=rune`): la MÁS USADA y la de MAYOR % DE VICTORIAS, cada una con su % de victorias, su uso
+    y sus partidas. [{id, label, wr, n, pr, runes: {keystone, primary[3], secondary[2], shards[3]}}]; vacía si la forma no es la esperada
+    (así un cambio de formato no pinta datos falsos). Si las dos páginas son la misma, queda una con las dos etiquetas."""
+    try:
+        runes = d["summary"]["runes"]
+        total = (d.get("header") or {}).get("n") or 0
+    except (KeyError, TypeError):
+        return []
+    out = []
+    for key, label in (("pick", "Más usada"), ("win", "Mayor % de victorias")):
+        r = runes.get(key) or {}
+        s = r.get("set") or {}
+        pri, sec, mod = s.get("pri") or [], s.get("sec") or [], s.get("mod") or []
+        if len(pri) < 4 or len(sec) < 2 or not isinstance(r.get("wr"), (int, float)) or not 30 <= r["wr"] <= 70 or not isinstance(r.get("n"), int):
+            continue
+        page = {"keystone": pri[0], "primary": pri[1:4], "secondary": sec[:2], "shards": mod[:3]}
+        if out and out[-1]["runes"] == page:
+            out[-1]["label"] += " y " + label[0].lower() + label[1:]
+            continue
+        out.append({"id": key, "label": label, "wr": r["wr"], "n": r["n"], "pr": round(100 * r["n"] / total, 1) if total else None, "runes": page})
+    return out
+
+
+def fetch_rune_pages(champ, lane, tier):
+    """Las páginas de runas del campeón en esa línea y rango; [] si la fuente no responde o cambió (la build sigue con la suya)."""
+    try:
+        u = RUNE_URL.format(champ=matchups.slug(champ), lane=lane, tier="all" if tier == "all" else "emerald_plus")
+        with urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=25) as r:
+            return parse_rune_pages(json.loads(r.read().decode("utf8")))
+    except Exception:
+        return []
+
+
 def _path(cache_dir, champ, lane, enemy):
     tag = f"{matchups.slug(champ)}_{lane}" + (f"_vs_{matchups.slug(enemy)}" if enemy else "")
     return os.path.join(cache_dir, "builds", tag + ".json")
@@ -135,6 +172,7 @@ def load(cache_dir, champ, lane, enemy=None, force=False):
             if data and enemy and ((data.get("stats") or {}).get("core") or {}).get("games", 10 ** 6) < MIN_VS:
                 data = None  # muy pocas partidas contra ese rival: es mejor la build general que una cifra sin respaldo
             if data:
+                data["rune_pages"] = fetch_rune_pages(champ, lane, tier)
                 data["tier"] = tier or "default"
                 data["vs"] = bool(enemy)
                 os.makedirs(os.path.dirname(path), exist_ok=True)

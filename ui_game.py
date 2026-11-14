@@ -144,30 +144,38 @@ class GameView:
                anchor="w", justify="left", wraplength=max(260, self.width - 110)).pack(anchor="w", pady=(6, 10))
 
     def on_live(self, ctx):
-        """Llegó un resumen nuevo de la partida en vivo: se repinta SOLO su bloque (la pestaña entera cuesta más de un segundo).
-        La primera vez, o si no se está en el plan, se hace el refresco completo."""
-        box = getattr(self, "live_host", None)
+        """Llegó un resumen nuevo de la partida en vivo: se ACTUALIZA en sitio la vista que ya existe (solo cambia lo que ha cambiado; repintar
+        la pestaña entera cuesta más de un segundo y parpadeaba). La primera vez, o si no se está en el plan, se hace el refresco completo."""
+        view = getattr(self, "live_view", None)
         try:
-            if self.tab == "Plan" and box is not None and box.winfo_exists() and ctx.get("live"):
-                import ui_live
-                ui_live.paint(self.ui, box, ctx["live"], self.width, (ctx.get("plan") or {}).get("opp") or 0, ctx.get("plan"))
+            if self.tab == "Plan" and view is not None and view.alive() and ctx.get("live"):
+                view.update(ctx["live"], (ctx.get("plan") or {}).get("opp") or 0, ctx.get("plan"))
                 return
         except Exception:
-            core.log_exc("Bloque en vivo")
+            core.log_exc("Vista en vivo")
         self.sig = None
         self.refresh(ctx, True)
 
     def live_block(self, ctx):
-        self.live_host = None
+        """La tira compacta de «en vivo» (arriba). El pliegue con los diez jugadores se crea aquí pero se coloca más abajo (`place_live_detail`),
+        debajo de tu build y tus runas, que son lo que se consulta durante la partida."""
+        self.live_view = self.live_detail = None
         if not ctx.get("live"):
             return
         try:
             import ui_live
-            self.live_host = self.ui.frame(self.host)
-            self.live_host.pack(fill="x", pady=(0, 8))
-            ui_live.paint(self.ui, self.live_host, ctx["live"], self.width, (ctx.get("plan") or {}).get("opp") or 0, ctx.get("plan"))
+            strip = self.ui.frame(self.host)
+            strip.pack(fill="x", pady=(0, 8))
+            self.live_detail = self.ui.frame(self.host)
+            self.live_view = ui_live.LiveView(self.ui, strip, self.live_detail, self.width)
+            self.live_view.update(ctx["live"], (ctx.get("plan") or {}).get("opp") or 0, ctx.get("plan"))
         except Exception:
             core.log_exc("Bloque en vivo")
+            self.live_view = self.live_detail = None
+
+    def place_live_detail(self):
+        if getattr(self, "live_detail", None) is not None:
+            self.live_detail.pack(fill="x", pady=(0, 8))
 
     def plan_tab(self, ctx):
         ui, host = self.ui, self.host
@@ -178,9 +186,9 @@ class GameView:
         # ventana estrecha: la lista de 10 jugadores ocupa tres pantallas, así que con plan va al final (primero tu build y tu rival);
         # en ancho es un tablero plegable y se queda arriba
         late = has_plan and bool(ctx.get("roster")) and (self.width < ui_vs.MIN_WIDTH or (plan.get("kind") or "sr") != "sr")
-        if not late:
-            self.roster_block(ctx, plan)
         if not has_plan:
+            self.place_live_detail()
+            self.roster_block(ctx, plan)
             if ctx.get("roster"):
                 return
             ui.lbl(host, "Cuando elijas campeón en una selección, aquí tendrás su build, sus runas, el enfrentamiento y consejos, "
@@ -210,8 +218,6 @@ class GameView:
             pk = ui_opp.picker(ui, host, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 110)
             if pk is not None:
                 pk.pack(fill="x", pady=(0, 8))
-        import ui_claves
-        ui_claves.block(ui, host, cid, self.width - 110)   # claves del campeón (evoluciones, acumulaciones, formas…) en cualquier modo
         if plan.get("mayhem"):
             import ui_mayhem
             self.load_games()
@@ -227,6 +233,12 @@ class GameView:
             self.ui.lbl(self.host, "", 4, "dim").pack()
             build_panel(ui, host, cid, lane, opp or None, self.width - 110,
                         core.comp_stats(plan.get("enemies") or [], ui.champs, True)).pack(fill="x")
+        # tras tu build y tus runas (lo que se consulta durante la partida): los diez jugadores en directo, el tablero y las claves
+        self.place_live_detail()
+        if not late:
+            self.roster_block(ctx, plan)
+        import ui_claves
+        ui_claves.block(ui, host, cid, self.width - 110)   # claves del campeón (evoluciones, acumulaciones, formas…) en cualquier modo
         self.matchup_block(plan, lane)
         if lane and plan.get("kind") in (None, "sr"):
             import ui_guide

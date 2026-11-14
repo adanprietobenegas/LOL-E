@@ -927,6 +927,37 @@ class ReservaSoloSiEncaja(unittest.TestCase):
         self.assertAlmostEqual(r["vpm"][1], 30 / 90)                  # (0+0+30) puntos en 90 minutos: los ceros cuentan
 
 
+class PaginasDeRunas(unittest.TestCase):
+    D = {"header": {"n": 1000}, "summary": {"runes": {
+        "pick": {"wr": 52.5, "n": 600, "set": {"pri": [8010, 9111, 9105, 8299], "sec": [8451, 8444], "mod": [5008, 5008, 5001]}},
+        "win": {"wr": 53.3, "n": 300, "set": {"pri": [8230, 8224, 8234, 8236], "sec": [8444, 8451], "mod": [5008, 5010, 5013]}}}}}
+
+    def test_dos_paginas_con_su_porcentaje_y_uso(self):
+        import builds
+        r = builds.parse_rune_pages(self.D)
+        self.assertEqual([p["label"] for p in r], ["Más usada", "Mayor % de victorias"])
+        self.assertEqual((r[0]["wr"], r[0]["n"], r[0]["pr"]), (52.5, 600, 60.0))
+        self.assertEqual(r[1]["runes"], {"keystone": 8230, "primary": [8224, 8234, 8236], "secondary": [8444, 8451], "shards": [5008, 5010, 5013]})
+
+    def test_si_son_la_misma_pagina_queda_una_con_las_dos_etiquetas(self):
+        import builds, copy
+        d = copy.deepcopy(self.D)
+        d["summary"]["runes"]["win"] = copy.deepcopy(d["summary"]["runes"]["pick"])
+        r = builds.parse_rune_pages(d)
+        self.assertEqual(len(r), 1)
+        self.assertEqual(r[0]["label"], "Más usada y mayor % de victorias")
+
+    def test_una_forma_distinta_no_pinta_datos_falsos(self):
+        import builds, copy
+        self.assertEqual(builds.parse_rune_pages({}), [])
+        self.assertEqual(builds.parse_rune_pages({"summary": {"runes": {}}}), [])
+        d = copy.deepcopy(self.D)
+        d["summary"]["runes"]["pick"]["wr"] = 0.525                       # otra escala
+        self.assertEqual([p["id"] for p in builds.parse_rune_pages(d)], ["win"])
+        d["summary"]["runes"]["win"]["set"]["pri"] = [1, 2]               # y una página incompleta
+        self.assertEqual(builds.parse_rune_pages(d), [])
+
+
 class ParcheDeLaBuild(unittest.TestCase):
     def test_el_parche_se_lee_de_la_pagina(self):
         import builds
