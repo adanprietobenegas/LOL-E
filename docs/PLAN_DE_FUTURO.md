@@ -66,7 +66,7 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
 - **Coaching con IA**: un resumen en lenguaje natural de la partida o de tu semana. Pide decidir dónde corre el modelo, clave de API o coste, y
   qué datos salen del PC (privacidad). Esfuerzo L, riesgo a. Solo si el usuario lo quiere y con consentimiento claro.
 - **Varias cuentas**: el historial ya es por cuenta; falta una interfaz para ver/cambiar de cuenta y comparar. M.
-- **Fin de temporada** (resumen estilo «Wrapped»: campeón del año, mejor racha, rango máximo). S–M, ideal para compartir.
+- **Fin de temporada**: DECIDIDO el 14/11/2026 hacerlo ya (sobrio, con captura para aprobar, exportable como imagen). Instalador firmado (2.6): más adelante. Idea original: (resumen estilo «Wrapped»: campeón del año, mejor racha, rango máximo). S–M, ideal para compartir.
 - **Dúo/compañeros**: «Juntos 3V 2D» ya existe; ampliarlo a una ficha del dúo habitual (campeones, líneas, % juntos). M.
 - **Otros idiomas y regiones**: hoy español (EUW). i18n de los textos y selección de región. L.
 - **Compartir**: exportar el análisis o el repertorio como imagen. S–M.
@@ -98,9 +98,9 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
 ## Qué necesita decidir el usuario
 
 1. ¿Publicar la 1.22.11 ya, o esperar a ver el bloque en vivo en una partida?
-2. ¿Espaciado único de la interfaz? (cambio estético: se enseña antes/después).
+2. ~~¿Espaciado único de la interfaz?~~ DECIDIDO el 14/11/2026: sí, en todo, con capturas antes/después para que lo apruebe.
 3. ¿Rendimiento del pintado ahora (P2.1, trabajo grande) o seguir con valor en partida (P1)?
-4. ¿Se quiere el rediseño de navegación del prototipo v2 (P2.5)?
+4. ~~¿Rediseño de navegación (P2.5)?~~ DECIDIDO el 14/11/2026: prototipo primero; no se toca código hasta que lo apruebe.
 5. ¿Hay interés en compartir LOL-E con más gente además de los compañeros? Eso sube la prioridad del instalador firmado (2.6), de las fuentes
    externas robustas (2.3) y de revisar la política de Riot.
 
