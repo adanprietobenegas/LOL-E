@@ -1710,6 +1710,12 @@ def seed_cache():
 
 def main():
     sys.modules.setdefault("lol_advisor", sys.modules[__name__])  # si se lanza como script, que gui.py comparta este modulo
+    if "--demo" in sys.argv:   # la demostración: la app con datos inventados, en otra ventana y sin tocar los datos reales
+        install_error_hooks()
+        install_certs()
+        import demo_mode
+        demo_mode.run(os.environ.get("LOLE_DEMO_SCENE") or None)
+        return
     if "--consola" not in sys.argv and not single_instance():
         return
     install_error_hooks()
