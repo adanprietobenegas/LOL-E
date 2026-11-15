@@ -514,6 +514,7 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
     sp = d.get("spells") or []
     if sp:
         b = _row(ui, parent, "Hechizos")
+        ui.reg("build.hechizos", b.master)
         for sid in sp:
             img = ui.spell_icon(sid, 28)
             lab = ctk.CTkLabel(b, image=img, text="", width=28, height=28) if img is not None else _ph(ui, b, 28)
@@ -526,6 +527,7 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
             ui.lbl(b, "  " + " + ".join(names), 11, "fg").pack(side="left")
     # runas: la página más usada y la de mayor % de victorias (si la fuente las da), con su % y su uso
     b = _row(ui, parent, "Runas")
+    ui.reg("build.runas", b.master)
     pages = d.get("rune_pages") or [{"id": "pick", "label": "Más usada", "runes": d["runes"]}]
     holder = ui.frame(b)
     holder.pack(anchor="w", fill="x")

@@ -53,7 +53,7 @@ def prepare_cache(core, now_ms):
 class Demo:
     """La app en modo demostración. `ui` es la ventana (gui.GUI)."""
 
-    def __init__(self):
+    def __init__(self, menu=True):
         import lol_advisor as core
         self.core = core
         now = int(time.time() * 1000)
@@ -85,6 +85,10 @@ class Demo:
         self.ui.root.title(TITLE)
         self.banner()
         self.scene("idle")
+        import tour
+        self.tour = tour.Tour(self)
+        if menu:
+            self.ui.root.after(900, self.tour.menu)   # al abrir: ¿recorrido completo, una lección o explorar?
 
     # ---- jugadores de ejemplo (aliados y rivales de la selección) ----
     def make_players(self, players):
@@ -182,10 +186,14 @@ class Demo:
         self.ui.set_page(page)
 
 
-def run(scene=None):
-    """Abre la demostración y la deja funcionando hasta que se cierre la ventana."""
-    d = Demo()
+def run(scene=None, lessons=None):
+    """Abre la demostración y la deja funcionando hasta que se cierre la ventana. `lessons`: ids de lecciones (tour.LESSONS) que empiezan solas; sin ellas sale el menú de bienvenida."""
+    import tour
+    lessons = [x for x in (lessons or []) if x in tour.LESSONS]
+    d = Demo(menu=not lessons)
     if scene:
         d.scene(scene)
+    if lessons:
+        d.ui.root.after(900, lambda: d.tour.start(lessons))
     d.ui.root.mainloop()
     shutil.rmtree(os.path.dirname(d.tmp), ignore_errors=True)

@@ -1169,6 +1169,44 @@ class PicosDelRival(unittest.TestCase):
         self.assertEqual(live.spikes(self.snap(400, 5, 0), self.snap(300, 6, 9999), 2), [])   # una lectura más vieja: no se mezcla
 
 
+class TourDeLaDemostracion(unittest.TestCase):
+    def test_las_lecciones_son_validas(self):
+        import tour
+        self.assertEqual(set(tour.RECORRIDO) - set(tour.LESSONS), set())
+        validos = set(tour.TARGETS) | set(tour.REGISTRADOS)
+        for lid, lesson in tour.LESSONS.items():
+            self.assertTrue(lesson["steps"], lid)
+            for i, s in enumerate(lesson["steps"]):
+                donde = f"{lid} paso {i + 1}"
+                self.assertIn(s["scene"], (None,) + tour.SCENES, donde)
+                self.assertIn(s["page"], (None,) + tour.PAGES, donde)
+                self.assertTrue(s["target"] is None or s["target"] in validos, f"{donde}: el elemento «{s['target']}» no existe")
+                self.assertLessEqual(len(s["title"].split()), 5, f"{donde}: el título debe tener de 3 a 5 palabras")
+                self.assertLessEqual(tour.words(s["text"]), 30, f"{donde}: el texto debe ser corto (unas 25 palabras)")
+
+    def test_las_preguntas_de_la_ayuda_enlazan_con_lecciones_reales(self):
+        import ayuda, tour
+        ids = {t[0] for t in ayuda.TOPICS}
+        for pregunta, leccion in tour.PREGUNTAS.items():
+            self.assertIn(pregunta, ids)
+            self.assertIn(leccion, tour.LESSONS)
+        self.assertIn("runas_builds", tour.PREGUNTAS)       # la pregunta estrella tiene su lección
+        self.assertIn("en_partida", tour.PREGUNTAS)
+
+    def test_todos_los_ids_registrados_se_anotan_en_alguna_pantalla(self):
+        import tour
+        codigo = " ".join(open(os.path.join(ROOT, f), encoding="utf-8").read() for f in os.listdir(ROOT) if f.startswith("ui_") and f.endswith(".py"))
+        for tid in tour.REGISTRADOS:
+            self.assertIn(f'reg("{tid}"', codigo, f"nadie anota «{tid}»: el tour no lo encontraría")
+
+    def test_los_datos_de_ejemplo_son_deterministas_y_no_son_de_nadie(self):
+        import demo_data
+        a, b = demo_data.history_entries(1_800_000_000_000), demo_data.history_entries(1_800_000_000_000)
+        self.assertEqual(a, b)
+        self.assertEqual(len(a), 80)
+        self.assertEqual(demo_data.PROFILE["name"], "Jugador")
+
+
 class AyudaDeLaApp(unittest.TestCase):
     def test_cada_pregunta_apunta_a_una_pagina_que_existe(self):
         import ayuda

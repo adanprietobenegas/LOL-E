@@ -3,6 +3,7 @@ Cada pregunta se despliega con su respuesta y un botón «Enséñamelo» que lle
 import customtkinter as ctk
 
 import ayuda
+import tour
 from ui_kit import PAL
 
 
@@ -39,6 +40,9 @@ class HelpWindow:
         k.clbl(head, "Ayuda", 22, "fg", True, True).pack(side="left")
         ctk.CTkButton(head, text="Cerrar", width=70, height=30, corner_radius=9, font=k.font(12), fg_color=PAL["card2"], hover_color=PAL["border"],
                       text_color=PAL["fg"], command=self.close).pack(side="right")
+        demo = ctk.CTkButton(win, text="Ver la demostración guiada (la app con datos de ejemplo)  ›", height=38, corner_radius=10, font=k.font(12, True), fg_color=k.acc,
+                             text_color=PAL["bg"], hover_color=k.acc, command=lambda: self.gui.launch_demo())
+        demo.pack(fill="x", padx=20, pady=(12, 0))
         self.here = k.frame(win)
         self.here.pack(fill="x", padx=20, pady=(12, 0))
         self.paint_here()
@@ -104,8 +108,14 @@ class HelpWindow:
                 body.pack(fill="x", padx=14, pady=(0, 10))
                 k.clbl(body, answer, 11, "fg", wraplength=470, justify="left").pack(anchor="w")
                 label = "Enséñamelo: abrir Ajustes ›" if dest == "ajustes" else f"Enséñamelo: ir a {ayuda.PAGES[dest][0]} ›"
-                ctk.CTkButton(body, text=label, height=30, corner_radius=9, font=k.font(11, True), fg_color=k.acc, text_color=PAL["bg"], hover_color=k.acc,
-                              command=lambda d=dest: self.go(d)).pack(anchor="w", pady=(8, 0))
+                row = k.frame(body)
+                row.pack(anchor="w", pady=(8, 0))
+                ctk.CTkButton(row, text=label, height=30, corner_radius=9, font=k.font(11, True), fg_color=k.acc, text_color=PAL["bg"], hover_color=k.acc,
+                              command=lambda d=dest: self.go(d)).pack(side="left")
+                lesson = tour.PREGUNTAS.get(tid)
+                if lesson:   # esa pregunta tiene su lección en la demostración
+                    ctk.CTkButton(row, text="Verlo en la demostración", height=30, corner_radius=9, font=k.font(11, True), fg_color=PAL["card2"], text_color=PAL["fg"],
+                                  hover_color=PAL["border"], command=lambda l=lesson: self.gui.launch_demo([l])).pack(side="left", padx=(8, 0))
 
     def toggle(self, tid):
         self.open_id = None if self.open_id == tid else tid

@@ -224,6 +224,7 @@ class LiveView:
         W = max(240, min(width - 100, 980))
         card = tk.Frame(strip, bg=ui.hexm(PAL["card2"]))
         card.pack(fill="x")
+        ui.reg("vivo.tira", card)
         box = tk.Frame(card, bg=ui.hexm(PAL["card2"]))
         box.pack(fill="x", padx=12, pady=12)
         head = ui.frame(box)
@@ -237,6 +238,7 @@ class LiveView:
         self.bar_gold = BarRow(ui, box, "Oro en objetos", W)
         self.bar_gold.cv.pack(anchor="w", pady=(2, 0))
         objs = ui.frame(box)
+        ui.reg("vivo.objetivos", objs)
         objs.pack(fill="x", pady=(8, 0))
         self.obj = {}
         for key, title in OBJECTIVES:
@@ -250,6 +252,7 @@ class LiveView:
         for s in slots:
             s.pack(fill="x")
         self.buy = Hint(ui, slots[0], wrap)
+        ui.reg("vivo.objeto", self.buy.row)
         self.counter = Hint(ui, slots[1], wrap)
         self.duel = ui.lbl(slots[2], "", 11, "fg", anchor="w", justify="left", wraplength=max(240, width - 110))
         self.reading = ui.lbl(slots[3], "", 10, "dim", anchor="w", justify="left", wraplength=max(240, width - 110))

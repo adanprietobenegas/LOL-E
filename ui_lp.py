@@ -28,6 +28,7 @@ class LpChart:
         self.imgs = []
         self.pts = []
         self.box = ui.frame(parent)
+        ui.reg("inicio.grafica", self.box)
         self.box.pack(fill="x")
         self.series = {q: lpseries.series(lp, hist, snaps, q, with_estimate=True) for q in ("solo", "flex")}
         if len(self.real("solo")) < 3 and len(self.real("flex")) >= 3:

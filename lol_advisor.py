@@ -1714,7 +1714,8 @@ def main():
         install_error_hooks()
         install_certs()
         import demo_mode
-        demo_mode.run(os.environ.get("LOLE_DEMO_SCENE") or None)
+        lessons = [x for a in sys.argv if a.startswith("--leccion=") for x in a.split("=", 1)[1].split(",") if x]
+        demo_mode.run(os.environ.get("LOLE_DEMO_SCENE") or None, lessons)
         return
     if "--consola" not in sys.argv and not single_instance():
         return

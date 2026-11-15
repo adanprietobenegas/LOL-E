@@ -3,7 +3,7 @@
 Las pantallas están formadas por secciones independientes (ui_sections.py) que solo se repintan cuando cambian
 sus propios datos; las imágenes y utilidades comunes viven en ui_kit.py.
 """
-import copy, gc, os, queue, shutil, threading, time, tkinter as tk, tkinter.messagebox as messagebox
+import copy, gc, os, queue, shutil, sys, threading, time, tkinter as tk, tkinter.messagebox as messagebox
 from concurrent.futures import ThreadPoolExecutor
 
 import customtkinter as ctk
@@ -219,6 +219,19 @@ class GUI:
         if not hasattr(self, "help_win"):
             self.help_win = HelpWindow(self)
         self.help_win.open(self.tab_names.get(self.page))
+
+    def launch_demo(self, lessons=None):
+        """Abre la demostración en otra ventana (otro proceso, con datos inventados). `lessons`: ids de lecciones para empezar directamente por ellas."""
+        import subprocess
+        cmd = [sys.executable] if getattr(sys, "frozen", False) else [sys.executable, os.path.join(os.path.dirname(os.path.abspath(core.__file__)), "app.py")]
+        cmd.append("--demo")
+        if lessons:
+            cmd.append("--leccion=" + ",".join(lessons))
+        try:
+            subprocess.Popen(cmd, close_fds=True, **{k: v for k, v in core.quiet().items() if k != "stdin"})
+        except Exception as e:
+            core.log_exc("Abrir la demostración")
+            self.status(f"No se ha podido abrir la demostración ({type(e).__name__}).")
 
     def help_go(self, dest):
         """«Enséñamelo»: lleva a la pantalla de una pregunta de la ayuda (o abre Ajustes)."""
@@ -727,6 +740,7 @@ class GUI:
         ayuda_btn = ctk.CTkButton(bar, text="?", width=32, height=32, corner_radius=16, font=k.font(14, True), border_width=1, border_color=PAL["edge"],
                                   fg_color=PAL["card"], hover_color=PAL["card2"], text_color=PAL["fg"], command=self.open_help)
         ayuda_btn.pack(side="right", padx=(0, 8))
+        self.ayuda_btn, self.ajustes_btn = ayuda_btn, ajustes   # los usa el tour de la demostración para señalarlos
         k.tip(ayuda_btn, "Ayuda: qué es cada pantalla y preguntas frecuentes (F1)")
         self.link_lbl = k.clbl(bar, "", 11, "warn", True)
         self.link_lbl.pack(side="right", padx=(12, 12))

@@ -207,7 +207,9 @@ class AnalysisView:
                 core.log_exc("Guardar la tarjeta de la partida")
                 msg.configure(text=f"No se ha podido guardar ({type(ex).__name__}).", text_color=ui.hexm(PAL["bad"]))
         from ui_views import small_btn
-        small_btn(ui, host, "Guardar tarjeta de la partida", save, 220).pack(anchor="w", pady=(4, 8))
+        btn = small_btn(ui, host, "Guardar tarjeta de la partida", save, 220)
+        btn.pack(anchor="w", pady=(4, 8))
+        ui.reg("analisis.tarjeta", btn)
         msg.pack(anchor="w")
 
     def media(self, host, a):
@@ -228,6 +230,7 @@ class AnalysisView:
         ui, gv = self.ui, self.gv
         m = analysis.me(a)
         card = ctk.CTkFrame(host, fg_color=PAL["card2"], corner_radius=14)
+        ui.reg("analisis.cabecera", card)
         card.pack(fill="x", pady=(0, 8))
         row = ui.frame(card)
         row.pack(fill="x", padx=16, pady=12)

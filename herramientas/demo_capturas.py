@@ -18,7 +18,7 @@ import lol_advisor as core
 import demo_mode
 
 errs = []
-d = demo_mode.Demo()
+d = demo_mode.Demo(menu=False)
 ui = d.ui
 ui.root.report_callback_exception = lambda *a: (errs.append(a[1]), print("ERROR en callback:", repr(a[1]), flush=True))
 _log = core.log_exc
@@ -69,6 +69,20 @@ PASOS = [
     ("09_enfrentamiento", lambda: d.go("Enfrentamiento"), 3000),
     ("10_datos", lambda: d.go("Datos"), 3000),
 ]
+import tour as _tour
+if os.environ.get("LOLE_TOUR"):   # el recorrido completo: una captura por paso (y comprueba que cada paso se pinta)
+    ids = _tour.RECORRIDO
+    PASOS = [("00_menu", lambda: d.tour.menu(), 1200)]
+    PASOS.append(("00b_inicio_recorrido", lambda: d.tour.start(ids), 2200))
+    k = 0
+    for li, lid in enumerate(ids):
+        for si in range(len(_tour.LESSONS[lid]["steps"])):
+            if li or si:
+                PASOS.append((f"{k:02d}_{lid}_{si + 1}", lambda: d.tour.next(), 2400))
+            else:
+                PASOS.append((f"{k:02d}_{lid}_{si + 1}", lambda: None, 100))
+            k += 1
+    PASOS.append(("99_fin", lambda: d.tour.exit(), 800))
 t = 600
 for nombre, accion, espera in PASOS:
     ui.root.after(t, accion)

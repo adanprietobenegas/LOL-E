@@ -79,6 +79,7 @@ class ProfileCard(Section):
         info = ctx["info"] or {}
         pr = info.get("profile") or {}
         c = ui.card(self.box)
+        ui.reg("inicio.perfil", c)
         top = ui.frame(c)
         top.pack(fill="x")
         img = ui.profile_icon(pr["icon"], 56) if pr.get("icon") else None
@@ -1357,9 +1358,12 @@ class Recs(Section):
             ctk.CTkButton(row, text=txt, width=aw, height=150, corner_radius=12, font=ui.font(24, True), fg_color=PAL["card2"],
                           hover_color=PAL["border"], text_color=PAL["fg"], command=lambda d=d: self.go(d)).pack(side=side)
         self.hero_lab = ctk.CTkLabel(row, text="")
+        ui.reg("recs.hero", self.hero_lab)
         self.hero_lab.pack(side="left", padx=8)
         self.build_strip()   # las otras opciones van justo bajo la imagen: debajo del desglose quedaban fuera de la primera pantalla
-        ui.seg(self.dyn, self.tabs(), self.tab, self.set_tab).pack(fill="x", pady=(12, 8))
+        tabs_seg = ui.seg(self.dyn, self.tabs(), self.tab, self.set_tab)
+        tabs_seg.pack(fill="x", pady=(12, 8))
+        ui.reg("recs.pestanas", tabs_seg)
         self.info_host = ctk.CTkFrame(self.dyn, fg_color=PAL["card2"], corner_radius=12)
         self.info_host.pack(fill="x")
         self.hero = None

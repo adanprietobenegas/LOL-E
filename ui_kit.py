@@ -226,6 +226,7 @@ class Kit:
         self.items = {}  # objetos del juego (id -> nombre, coste, descripción), cargados en segundo plano
         self.epoch = 0   # sube cuando cambia tema, acento o imágenes: obliga a las secciones a repintarse
         self.anim = False
+        self.tour_ids = {}   # id estable -> elemento de la pantalla (ver `reg`)
 
     @property
     def acc(self):
@@ -828,6 +829,11 @@ class Kit:
             st["t"] = t
         cv.tag_bind(item, "<Enter>", show, add="+")
         cv.tag_bind(item, "<Leave>", hide, add="+")
+
+    def reg(self, tid, widget):
+        """Anota un elemento de la pantalla con un id estable («build.runas»). Lo usa el tour de la demostración para señalarlo: apunta a ids, no a posiciones ni a textos."""
+        self.tour_ids[tid] = widget
+        return widget
 
     def tip(self, w, text):
         """Globo de ayuda al pasar el ratón."""

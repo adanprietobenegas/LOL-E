@@ -100,6 +100,7 @@ class HistoryView:
         wl = min(self.width - 90, 780)
         self.sum_card = ui.card(self.box, "Resumen")
         self.summary_host = ui.frame(self.sum_card)
+        ui.reg("hist.resumen", self.summary_host)
         self.summary_host.pack(fill="x")
         desde = fecha(self.all[-1]["t"], False) if n else ""
         self.filter_fold = ui.fold(self.box, "Buscar y filtrar", lambda c: self.filters(c, n, wl, desde), self.filter_summary(), "hist_filters", False,
@@ -349,6 +350,7 @@ class HistoryView:
         mode = {"w": "year"}
         head = ui.lbl(self.summary_host, "", 10, "info", True, anchor="w")
         head.pack(anchor="w", padx=4, pady=(8, 0))
+        ui.reg("hist.anio", head)
         body = ui.frame(self.summary_host)
 
         def stats():
