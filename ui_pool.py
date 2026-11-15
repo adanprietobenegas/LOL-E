@@ -115,7 +115,7 @@ class PoolPanel:
         ui = self.ui
         top = ui.frame(self.root)
         top.pack(fill="x")
-        ui.lbl(top, "Tu repertorio", 16, "fg", True, True, anchor="w").pack(side="left")
+        ui.lbl(top, "Tus campeones", 16, "fg", True, True, anchor="w").pack(side="left")
         ui.seg(top, SCOPES, self.scope, self.set_scope, height=26).pack(side="right")
         if not rows:
             return
