@@ -7,6 +7,13 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.22   (15 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · wrapped.py: compute/useful/curious (datos con muestra y fechas: campeón a revisar, línea y franja mejor/peor, último mes, tras 2 derrotas, rachas con inicio y fin,
+    «con el que más mueres»); ui_history.wrapped_block en fichas y colocado con after=head; render en dos columnas con el periodo. Título «Tus campeones».
+    Solo visto con datos de ejemplo. 162 pruebas.
+
 VERSIÓN 1.22.21   (15 de noviembre de 2026)
 ---------------------------------------------------------------------
 

@@ -10,6 +10,12 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.22", "fecha": "15 de noviembre de 2026", "titulo": "«Tu año en LoL» más claro y concreto", "items": [
+        ("mejora", "«Tu año en LoL» ahora separa lo útil para mejorar (campeón a revisar, mejor y peor línea y franja, qué pasa tras perder dos seguidas, el último mes) de las curiosidades (rachas, partida más larga, tu estilo), en fichas, y cada dato dice sobre cuántas partidas se calcula y cuándo fue."),
+        ("mejora", "«El que más te mata» pasa a llamarse «Con el que más mueres», porque se refiere a tu propio campeón, y la imagen para compartir lleva el periodo y dos columnas."),
+        ("arreglo", "El desplegable «Tu año en LoL» ya no cambia de sitio al abrirlo: queda siempre bajo su título."),
+        ("mejora", "La página «Campeones» se titula igual que su botón de la barra lateral."),
+    ]},
     {"v": "1.22.21", "fecha": "15 de noviembre de 2026", "titulo": "Navegación lateral, tarjeta de tu partida y tu estilo de juego", "items": [
         ("nuevo", "En el análisis de cada partida, «Guardar tarjeta de la partida»: una imagen sobria con tu campeón, el resultado, tus cifras, los PL y cómo fuiste frente a tu media, para compartirla."),
         ("nuevo", "Navegación nueva: una barra lateral con iconos (y los nombres si la ventana es ancha) sustituye a las pestañas de arriba. «Partida» pasa a «En vivo» y se tiñe de ámbar durante la cola, la selección y la partida; una banda ámbar arriba dice la fase y el campeón, con el reloj y un botón para ir y volver entre la partida y la consulta. «Repertorio» se llama «Campeones» y «Datos» se abre desde Ajustes. Los atajos Ctrl+1…6 no cambian."),
