@@ -42,6 +42,6 @@ paso("La app entera contra el cliente falso", [PY, os.path.join(D, "demo_falso.p
      bien=lambda s: "errores de ventana: 0 | registro de errores: vacío" in s and "Partida terminada" in s)
 paso("La app entera contra el cliente falso, en ARAM", [PY, os.path.join(D, "demo_falso.py"), "5", "comprobacion_demo_aram"], {"LOLE_MODO": "aram"},
      bien=lambda s: "errores de ventana: 0 | registro de errores: vacío" in s and "Partida terminada" in s)
-paso("La demostración guiada: todas las lecciones del recorrido", [PY, os.path.join(D, "demo_capturas.py"), "1100", "760", "comprobacion_tour"], {"LOLE_TOUR": "1"},
+paso("La demostración guiada: todas las lecciones del recorrido", [PY, os.path.join(D, "demo_capturas.py"), "1100", "760", "comprobacion_tour"], {"LOLE_TOUR": "todo"},
      bien=lambda s: "errores: 0" in s and "capturada 99_fin" in s)
 print("\nTODO BIEN: se puede publicar (si el usuario lo confirma).")

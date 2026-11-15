@@ -71,7 +71,7 @@ PASOS = [
 ]
 import tour as _tour
 if os.environ.get("LOLE_TOUR"):   # el recorrido completo: una captura por paso (y comprueba que cada paso se pinta)
-    ids = _tour.RECORRIDO
+    ids = list(_tour.LESSONS) if os.environ.get("LOLE_TOUR") == "todo" else _tour.RECORRIDO
     PASOS = [("00_menu", lambda: d.tour.menu(), 1200)]
     PASOS.append(("00b_inicio_recorrido", lambda: d.tour.start(ids), 2200))
     k = 0

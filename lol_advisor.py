@@ -70,6 +70,7 @@ DEFAULT_CONF = {
     "opgg_enabled": True,    # actualiza tus stats de temporada y matchups desde op.gg
     "opgg_auto": True,       # toma tu Riot ID y region del cliente de LoL
     "topmost_mode": "seleccion",
+    "tour_offered": False,   # ya se ofreció el recorrido guiado al instalar (o se descartó)
     "rail_mode": "auto",   # barra lateral: «auto» (nombres si la ventana es ancha), «nombres» o «iconos»
     "opgg_region": "",
     "opgg_name": "",

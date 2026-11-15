@@ -38,8 +38,9 @@ SCENES = ("idle", "queue", "select", "locked", "game", "end")
 PAGES = ("Asesor", "Partida", "Enfrentamiento", "Repertorio", "Historial", "Datos")
 
 
-def step(title, text, scene=None, page=None, target=None, when=None, source=None):
-    return {"title": title, "text": text, "scene": scene, "page": page, "target": target, "when": when, "source": source}
+def step(title, text, scene=None, page=None, target=None, when=None, source=None, act=None):
+    """`act`: una acción de la demostración antes de enseñar el paso (demo.act): «rival» elige un rival en Enfrentamiento, «ajustes» abre Ajustes y «cerrar_ajustes» lo cierra."""
+    return {"title": title, "text": text, "scene": scene, "page": page, "target": target, "when": when, "source": source, "act": act}
 
 
 LESSONS = {
@@ -83,10 +84,35 @@ LESSONS = {
     ]},
 }
 
+LESSONS.update({
+    "sin_datos": {"title": "No veo datos", "steps": [
+        step("Conecta con League of Legends", "Abre LoL e inicia sesión: arriba debe poner «Conectado a LoL». LOL-E se conecta solo en unos segundos.", scene="idle", page="Asesor", target="cuerpo",
+             when="Siempre que abras LOL-E.", source="El cliente local de LoL, que LOL-E busca en tu PC."),
+        step("Si ya está abierto", "Si no conecta, reinicia LOL-E. Sin partidas guardadas, el Historial y las estadísticas están vacíos hasta que juegues.", page="Historial", target="nav.historial"),
+        step("El informe de diagnóstico", "En Ajustes, «Copiar informe de diagnóstico» recoge lo que falla, sin datos personales, para que puedas compartirlo.", target="boton.ajustes"),
+    ]},
+    "enfrentamiento": {"title": "Comparar un enfrentamiento", "steps": [
+        step("Elige a tu rival", "Escribe su nombre o toca uno reciente; en la selección se rellena solo con tu rival de línea.", scene="idle", page="Enfrentamiento", target="cuerpo",
+             when="Cuando quieras preparar un cruce, en o fuera de partida.", source="Lolalytics (todos los jugadores) y tu historial."),
+        step("Qué campeón le gana", "Con un rival elegido, ves qué campeones le ganan más, con tu porcentaje si ya jugaste ese cruce.", act="rival", target="cuerpo"),
+    ]},
+    "aprender": {"title": "Qué campeón aprender", "steps": [
+        step("Tu repertorio", "Con qué campeones juegas y cómo te va con cada uno, en la Grieta o en todos los modos.", scene="idle", page="Repertorio", target="cuerpo",
+             when="Cuando quieras revisar tus campeones.", source="Tu historial guardado."),
+        step("Qué aprender", "Si en una línea dependes mucho de un solo campeón, te propone hasta tres alternativas con buena tasa en el parche.", target="cuerpo", source="Lolalytics."),
+    ]},
+    "personalizar": {"title": "Personalizar la app", "steps": [
+        step("Ajustes y datos", "Aquí cambias el tema, el color, el tamaño, la barra lateral, los avisos sonoros y los datos en vivo.", scene="idle", page="Asesor", act="ajustes", target="boton.ajustes"),
+        step("Datos", "Arriba de Ajustes está el acceso a la página Datos, que explica de dónde sale todo.", target="boton.ajustes"),
+        step("Cerrar Ajustes", "Los cambios se aplican al instante y se guardan solos.", act="cerrar_ajustes", target="boton.ajustes"),
+    ]},
+})
+
 RECORRIDO = ["que_es", "antes", "seleccion", "partida", "terminar", "fuentes"]
+OTRAS = ["sin_datos", "enfrentamiento", "aprender", "personalizar"]   # lecciones sueltas, fuera del recorrido completo
 
 # pregunta de la Ayuda -> lección que la enseña (las que no tienen lección propia aún no aparecen)
-PREGUNTAS = {"que_es": "que_es", "seguro": "que_es", "antes": "antes", "cola": "antes", "elegir": "seleccion", "runas_builds": "seleccion", "en_partida": "partida",
+PREGUNTAS = {"sin_datos": "sin_datos", "enfrentamiento": "enfrentamiento", "aprender": "aprender", "personalizar": "personalizar", "que_es": "que_es", "seguro": "que_es", "antes": "antes", "cola": "antes", "elegir": "seleccion", "runas_builds": "seleccion", "en_partida": "partida",
              "terminar": "terminar", "historial": "terminar", "fuentes": "fuentes"}
 
 
@@ -158,7 +184,7 @@ class Tour:
                              font=k.font(13, True), fg_color=k.acc, text_color=PAL["bg"], hover_color=k.acc, command=lambda: self.start(RECORRIDO))
         full.pack(fill="x", pady=(12, 6))
         k.clbl(inner, "O UNA LECCIÓN", 9, "dim", True).pack(anchor="w", pady=(6, 2))
-        for lid in RECORRIDO:
+        for lid in RECORRIDO + OTRAS:
             ctk.CTkButton(inner, text=f"{LESSONS[lid]['title']}  ·  {len(LESSONS[lid]['steps'])} pasos", height=32, corner_radius=9, font=k.font(12), anchor="w",
                           fg_color=PAL["card2"], text_color=PAL["fg"], hover_color=PAL["border"], command=lambda l=lid: self.start([l])).pack(fill="x", pady=2)
         ctk.CTkButton(inner, text="Explorar por mi cuenta", height=32, corner_radius=9, font=k.font(12), fg_color="transparent", border_width=1, border_color=PAL["edge"],
@@ -208,6 +234,8 @@ class Tour:
             self.demo.scene(s["scene"])
         if s["page"]:
             self.demo.go(s["page"])
+        if s.get("act"):
+            self.demo.act(s["act"])
         self.ui.root.after(450, self.paint)   # la pantalla tarda un instante en pintarse: el resalte y la tarjeta van después
 
     def paint(self, tries=0):

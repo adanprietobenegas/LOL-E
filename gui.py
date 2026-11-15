@@ -21,7 +21,7 @@ from ui_kit import REC_VIEWS, ACCENTS, DISPLAY, Kit, PAL, THEMES, calm, res
 from ui_game import GameView
 from ui_draft import DraftCard
 from ui_mayhem import AramBuild
-from ui_sections import (SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
+from ui_sections import (TourOffer, SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
                          WaitCard)
 
 DOCK_W = 360
@@ -84,6 +84,7 @@ class GUI:
         lower_priority()
         self.kit = Kit(self.root, conf, champs, lambda ev: self.q.put((ev,)))
         self.kit.goto_history, self.kit.goto_matchup = self.goto_history, self.goto_matchup
+        self.kit.launch_demo = self.launch_demo
         self.kit.set_opp, self.kit.opp_now = self.set_opp, lambda: self.opp_choice
         self.apply_window()
         self.build_shell()
@@ -777,7 +778,7 @@ class GUI:
     def build_views(self):
         k = self.kit
         self.idle_view, self.select_view = k.frame(self.body), k.frame(self.body)
-        self.idle_secs = [ProfileCard(k, self.idle_view), WaitCard(k, self.idle_view), SummaryCard(k, self.idle_view)]
+        self.idle_secs = [TourOffer(k, self.idle_view), ProfileCard(k, self.idle_view), WaitCard(k, self.idle_view), SummaryCard(k, self.idle_view)]
         # (la fila de rango y racha ya no se muestra en la selección: ahí no ayuda a decidir)
         self.turn = TurnCard(k, self.select_view)
         self.draft = DraftCard(k, self.select_view)   # el orden de creación es el orden en pantalla

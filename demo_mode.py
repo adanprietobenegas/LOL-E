@@ -56,6 +56,7 @@ class Demo:
     def __init__(self, menu=True):
         import lol_advisor as core
         self.core = core
+        core.DEMO_MODE = True   # los demás módulos lo consultan (p. ej. para no ofrecer la demostración dentro de la demostración)
         now = int(time.time() * 1000)
         self.tmp, self.hist, self.wins = prepare_cache(core, now)
         import history, meta, players
@@ -184,6 +185,18 @@ class Demo:
 
     def go(self, page):
         self.ui.set_page(page)
+
+    def act(self, name):
+        """Acciones sueltas que piden algunos pasos del tour."""
+        ui = self.ui
+        if name == "rival":
+            ui.matchup_view.select(157)
+        elif name == "ajustes":
+            if not ui.dock_open:
+                ui.open_dock()
+        elif name == "cerrar_ajustes":
+            if ui.dock_open:
+                ui.close_dock()
 
 
 def run(scene=None, lessons=None):

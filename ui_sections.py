@@ -112,6 +112,44 @@ class ProfileCard(Section):
             rank_block(ui, grid, "Clasificatorias de 5", pr["prem"]).grid(row=1, column=0, columnspan=2, sticky="ew", pady=(8, 0))
 
 
+class TourOffer(Section):
+    """Una tarjeta pequeña, una sola vez, para quien acaba de instalar la app (sin historial guardado): ofrece el recorrido guiado de la demostración. «Ahora no» no vuelve a preguntar
+    (el botón «?» de la cabecera siempre lleva a la guía). Nunca sale en la propia demostración ni con partidas ya guardadas."""
+
+    def wanted(self):
+        try:
+            if self.ui.conf.get("tour_offered") or getattr(core, "DEMO_MODE", False):
+                return False
+            return not history.load_all(history.hpath(core.CACHE), history.gpath(core.CACHE))
+        except Exception:
+            return False
+
+    def key(self, ctx):
+        return self.wanted()
+
+    def build(self, ctx):
+        if not self.wanted():
+            return
+        ui = self.ui
+        c = ui.card(self.box, pad=4)
+        ui.lbl(c, "¿Primera vez en LOL-E?", 15, "fg", True, True).pack(anchor="w")
+        ui.autowrap(ui.lbl(c, "Te enseño la app en 3 o 4 minutos con una demostración: datos de ejemplo, todo lo que verás al buscar partida, elegir campeón, jugar y revisar. "
+                              "No toca tus datos.", 11, "dim", anchor="w", justify="left"), c).pack(anchor="w", pady=(4, 8))
+        row = ui.frame(c)
+        row.pack(anchor="w")
+
+        def done(launch):
+            ui.conf["tour_offered"] = True
+            core.save_conf(ui.conf)
+            if launch:
+                ui.launch_demo()
+            self.refresh(ctx, force=True)
+        ctk.CTkButton(row, text="Ver el recorrido guiado", height=34, corner_radius=10, font=ui.font(12, True), fg_color=ui.acc, text_color=PAL["bg"], hover_color=ui.acc,
+                      command=lambda: done(True)).pack(side="left")
+        ctk.CTkButton(row, text="Ahora no", height=34, corner_radius=10, font=ui.font(12), fg_color=PAL["card2"], text_color=PAL["fg"], hover_color=PAL["border"],
+                      command=lambda: done(False)).pack(side="left", padx=(8, 0))
+
+
 class WaitCard(Section):
     def tilt(self):
         """Aviso de sesión (2+ derrotas seguidas) con tu propio dato, para antes de entrar en otra cola; None si no toca."""
