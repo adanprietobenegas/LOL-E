@@ -27,6 +27,12 @@ core.log_exc = lambda where, exc_info=None: (print("ERROR registrado:", where, r
 
 def grab(name):
     ui.root.update_idletasks()
+    if os.environ.get("LOLE_PANTALLA"):   # foto de la pantalla real en vez de PrintWindow (para distinguir fallos de captura de fallos de pintado)
+        from PIL import ImageGrab
+        x, y, w, h = ui.root.winfo_rootx(), ui.root.winfo_rooty(), ui.root.winfo_width(), ui.root.winfo_height()
+        ImageGrab.grab(bbox=(x, y, x + w, y + h), all_screens=True).save(os.path.join(OUT, name + ".png"))
+        print("capturada (pantalla)", name, flush=True)
+        return
     try:
         import ctypes
         from ctypes import wintypes as wt
@@ -71,14 +77,14 @@ PASOS = [
 ]
 import tour as _tour
 if os.environ.get("LOLE_TOUR"):   # el recorrido completo: una captura por paso (y comprueba que cada paso se pinta)
-    ids = list(_tour.LESSONS) if os.environ.get("LOLE_TOUR") == "todo" else _tour.RECORRIDO
+    ids = list(_tour.LESSONS) if os.environ.get("LOLE_TOUR") == "todo" else [os.environ["LOLE_TOUR"]] if os.environ["LOLE_TOUR"] in _tour.LESSONS else _tour.RECORRIDO
     PASOS = [("00_menu", lambda: d.tour.menu(), 1200)]
     PASOS.append(("00b_inicio_recorrido", lambda: d.tour.start(ids), 2200))
     k = 0
     for li, lid in enumerate(ids):
         for si in range(len(_tour.LESSONS[lid]["steps"])):
             if li or si:
-                PASOS.append((f"{k:02d}_{lid}_{si + 1}", lambda: d.tour.next(), 2400))
+                PASOS.append((f"{k:02d}_{lid}_{si + 1}", lambda: d.tour.next(), 3600))
             else:
                 PASOS.append((f"{k:02d}_{lid}_{si + 1}", lambda: None, 100))
             k += 1

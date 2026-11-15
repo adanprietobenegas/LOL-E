@@ -4,6 +4,8 @@ Cada sección calcula una clave con los datos que usa; si la clave no cambia, no
 un dato nuevo (un aliado que elige, un jugador que carga…) solo se repinta su parte y no toda la pantalla.
 """
 import json, os, threading, time, tkinter as tk, re
+
+import ayuda
 from collections import Counter
 
 import customtkinter as ctk
@@ -176,7 +178,9 @@ class WaitCard(Section):
         ui.autowrap(ui.lbl(c, hint, 10, "dim", anchor="w", justify="left"), c).pack(anchor="w", pady=(4, 0))
         note = self.tilt()
         if note and ctx["linked"]:
-            ui.autowrap(ui.lbl(c, note, 10, "warn", True, anchor="w", justify="left"), c).pack(anchor="w", pady=(8, 0))
+            lab = ui.autowrap(ui.lbl(c, note, 10, "warn", True, anchor="w", justify="left"), c)
+            lab.pack(anchor="w", pady=(8, 0))
+            ui.reg("inicio.sesion", lab)
         msg = ctx["msg"] or ""
         if msg and not any(s in msg for s in ("Conectado al cliente", "Abre el cliente", "Esperando al cliente")):
             ui.autowrap(ui.lbl(c, msg, 10, "dim", anchor="w", justify="left"), c).pack(anchor="w", pady=(2, 0))
@@ -1038,6 +1042,8 @@ class Recs(Section):
                           text_color=ON_FILL if on else PAL["fg"], hover_color=PAL["border"])
         b.configure(command=lambda: self.flip(b, key))
         b.pack(side="left", padx=(0, 8))
+        if ayuda.glossary(text):
+            ui.tip(b, ayuda.glossary(text))
         self.toggles[key] = b
 
     def flip(self, btn, key):

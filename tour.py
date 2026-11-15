@@ -19,11 +19,12 @@ TARGETS = {
     "boton.ajustes": lambda ui: ui.ajustes_btn,
     "cuerpo": lambda ui: ui.body,
     "pagina.datos": lambda ui: ui.data_view.box,
+    "nav.todo": lambda ui: ui.tab_seg.frame,
 }
 # además de los de arriba, los elementos anotados con `kit.reg(id, widget)` en las pantallas: inicio.perfil, inicio.grafica, recs.hero, recs.pestanas, build.runas, build.hechizos,
 # vivo.tira, vivo.objetivos, vivo.objeto, analisis.cabecera, analisis.tarjeta, hist.resumen, hist.anio
 REGISTRADOS = ("inicio.perfil", "inicio.grafica", "recs.hero", "recs.pestanas", "build.runas", "build.hechizos", "vivo.tira", "vivo.objetivos", "vivo.objeto",
-               "analisis.cabecera", "analisis.tarjeta", "hist.resumen", "hist.anio")
+               "analisis.cabecera", "analisis.tarjeta", "hist.resumen", "hist.anio", "partida.jugadores", "partida.rival", "partida.objetivo", "inicio.sesion", "hist.patron")
 
 
 def find(ui, tid):
@@ -34,13 +35,14 @@ def find(ui, tid):
     except Exception:
         return None
 
-SCENES = ("idle", "queue", "select", "locked", "game", "end")
+SCENES = ("idle", "queue", "select", "locked", "aram", "arena", "game", "end")
+ACTS = ("rival", "ajustes", "cerrar_ajustes", "abrir_jugadores", "abrir_anio")
 PAGES = ("Asesor", "Partida", "Enfrentamiento", "Repertorio", "Historial", "Datos")
 
 
-def step(title, text, scene=None, page=None, target=None, when=None, source=None, act=None):
+def step(title, text, scene=None, page=None, target=None, when=None, source=None, act=None, try_it=None):
     """`act`: una acción de la demostración antes de enseñar el paso (demo.act): «rival» elige un rival en Enfrentamiento, «ajustes» abre Ajustes y «cerrar_ajustes» lo cierra."""
-    return {"title": title, "text": text, "scene": scene, "page": page, "target": target, "when": when, "source": source, "act": act}
+    return {"title": title, "text": text, "scene": scene, "page": page, "target": target, "when": when, "source": source, "act": act, "try_it": try_it}
 
 
 LESSONS = {
@@ -53,13 +55,15 @@ LESSONS = {
     "antes": {"title": "Antes de jugar", "steps": [
         step("Inicio: tu perfil y rango", "Aquí ves tu rango en cada cola y tus últimas cinco partidas.", scene="idle", page="Asesor", target="inicio.perfil",
              when="Siempre que no haya partida en marcha.", source="Tu cliente de LoL."),
-        step("Tu rango en el tiempo", "La gráfica muestra tus PL partida a partida. Puedes cambiar el tramo y ver solo datos reales o también estimados.", target="inicio.grafica"),
+        step("Tu rango en el tiempo", "La gráfica muestra tus PL partida a partida. Puedes cambiar el tramo y ver solo datos reales o también estimados.", target="inicio.grafica",
+             try_it="pulsa «7 días» o «Todo» y mira cómo cambia el eje."),
         step("Al buscar partida", "Al entrar en cola, «Partida» pasa a «En vivo» y aparece esta banda con la fase. Desde aquí vas y vuelves a consultar.", scene="queue", target="banda.vivo"),
     ]},
     "seleccion": {"title": "Selección, runas y builds", "steps": [
         step("Te toca elegir", "En la selección, Inicio te recomienda campeones para tu línea con una afinidad de 0 a 100 y filtros.", scene="select", page="Asesor", target="recs.hero",
              when="Solo durante la selección de campeón.", source="Lolalytics, op.gg y tu historial."),
-        step("Mira cada campeón", "Resumen, Contra rival, Sinergias y Meta y build: cada pestaña te cuenta algo distinto del campeón elegido.", target="recs.pestanas"),
+        step("Mira cada campeón", "Resumen, Contra rival, Sinergias y Meta y build: cada pestaña te cuenta algo distinto del campeón elegido.", target="recs.pestanas",
+             try_it="pulsa «Contra rival» y luego «Sinergias»."),
         step("Tus runas recomendadas", "Con tu campeón elegido, «En vivo» muestra sus runas: la más usada o la de mayor % de victorias, con su uso.", scene="locked", page="Partida",
              target="build.runas", when="Desde que eliges campeón y durante toda la partida.", source="Lolalytics y op.gg, con tu rango y tu línea."),
         step("Hechizos, habilidades y objetos", "Debajo siguen hechizos, orden de habilidades y objetos, con pestañas Variantes y Situaciones.", target="build.hechizos"),
@@ -94,7 +98,8 @@ LESSONS.update({
     "enfrentamiento": {"title": "Comparar un enfrentamiento", "steps": [
         step("Elige a tu rival", "Escribe su nombre o toca uno reciente; en la selección se rellena solo con tu rival de línea.", scene="idle", page="Enfrentamiento", target="cuerpo",
              when="Cuando quieras preparar un cruce, en o fuera de partida.", source="Lolalytics (todos los jugadores) y tu historial."),
-        step("Qué campeón le gana", "Con un rival elegido, ves qué campeones le ganan más, con tu porcentaje si ya jugaste ese cruce.", act="rival", target="cuerpo"),
+        step("Qué campeón le gana", "Con un rival elegido, ves qué campeones le ganan más, con tu porcentaje si ya jugaste ese cruce.", act="rival", target="cuerpo",
+             try_it="prueba el filtro «Los que tengo» o cambia el orden."),
     ]},
     "aprender": {"title": "Qué campeón aprender", "steps": [
         step("Tu repertorio", "Con qué campeones juegas y cómo te va con cada uno, en la Grieta o en todos los modos.", scene="idle", page="Repertorio", target="cuerpo",
@@ -108,11 +113,53 @@ LESSONS.update({
     ]},
 })
 
+LESSONS.update({
+    "primera_partida": {"title": "Tu primera partida", "steps": [
+        step("Tus datos aparecen solos", "El rango y tus estadísticas salen del cliente al conectar. Lo que LOL-E guarda por su cuenta empieza cuando juegas con la app abierta.", scene="idle", page="Asesor",
+             target="inicio.perfil", when="Desde el primer arranque.", source="Tu cliente de LoL."),
+        step("El historial crece contigo", "El cliente solo entrega las partidas más recientes: LOL-E guarda cada una que ve y así el historial va creciendo.", page="Historial", target="nav.historial"),
+        step("El análisis llega solo", "Al terminar cada partida, unos segundos después, aparece su análisis en «En vivo».", scene="end", page="Partida", target="analisis.cabecera"),
+        step("Con unas diez partidas", "Ya hay resumen, patrones y tu año en LoL. Con menos, la app lo dice en vez de inventar.", scene="idle", page="Historial", target="hist.resumen"),
+    ]},
+    "afinidad": {"title": "Cómo leer la afinidad", "steps": [
+        step("Qué es la afinidad", "Un número de 0 a 100: cuánto encaja un campeón contigo ahora mismo. No es una probabilidad de ganar.", scene="select", page="Asesor", target="recs.hero"),
+        step("Qué cuenta", "Suma varios factores, cada uno con su peso: tu historial con el campeón, el parche, tu equipo y tu rival. Los pesos se ven en Datos.", target="recs.hero",
+             source="Tu historial, Lolalytics y lo que ya han elegido en la selección."),
+        step("Qué hacer con ella", "Úsala para ordenar, no para obedecer: con los filtros y las pestañas ves el porqué de cada recomendación.", target="recs.pestanas",
+             try_it="pulsa las flechas del carrusel y compara la afinidad de cada campeón."),
+    ]},
+    "jugadores": {"title": "Los 10 jugadores", "steps": [
+        step("Quién juega", "Rango, rachas y lo que más juega cada uno, de tu equipo y del rival. Es plegable para centrarte en la build.", scene="game", page="Partida",
+             act="abrir_jugadores", target="partida.jugadores", when="Desde la pantalla de carga y durante la partida.", source="El cliente de LoL, igual que en la selección."),
+        step("Tu rival de línea", "Confírmalo o elígelo aquí: la build y los porcentajes se ajustan contra él.", target="partida.rival"),
+    ]},
+    "patron": {"title": "Tu sesión y tu patrón", "steps": [
+        step("El aviso de sesión", "Si llevas dos derrotas seguidas, te lo dice con tu propio dato antes de entrar en otra cola.", scene="idle", page="Asesor", target="inicio.sesion"),
+        step("Tu patrón de derrotas", "Con tus partidas analizadas, detecta qué se repite al perder: muertes tempranas, farmeo u oro por detrás.", page="Historial", target="hist.patron"),
+        step("Tu objetivo de la partida", "De ese patrón sale un objetivo medible para cada partida; al acabar, el análisis dice si lo cumpliste.", scene="game", page="Partida", target="partida.objetivo"),
+    ]},
+    "otros_modos": {"title": "ARAM, Arena y otros modos", "steps": [
+        step("ARAM: sin líneas", "En ARAM no hay línea ni rival directo: LOL-E muestra tu campeón, su build y el banquillo.", scene="aram", page="Asesor", target="cuerpo"),
+        step("Arena y otros modos", "Fuera de la Grieta no hay plan de línea ni build recomendada, pero el análisis al terminar sí sale.", scene="arena", target="cuerpo"),
+    ]},
+    "compartir": {"title": "Compartir tus partidas", "steps": [
+        step("La tarjeta de una partida", "En el análisis, «Guardar tarjeta de la partida» crea una imagen con tu campeón, el resultado y tus cifras.", scene="end", page="Partida", target="analisis.tarjeta"),
+        step("Tu año en LoL", "En el Historial, un resumen de tu temporada que también puedes guardar como imagen para compartir.", scene="idle", page="Historial", act="abrir_anio", target="hist.anio"),
+    ]},
+    "atajos": {"title": "Atajos y accesibilidad", "steps": [
+        step("La barra lateral", "Ctrl+1 a Ctrl+6 o las flechas cambian de pantalla. Con la ventana ancha ves los nombres; con la estrecha, solo iconos.", scene="idle", page="Asesor", target="nav.todo"),
+        step("Ayuda con F1", "F1 o el botón ? abren la ayuda de la pantalla y las preguntas frecuentes.", target="boton.ayuda"),
+        step("Tamaño y colores", "En Ajustes: tamaño de la interfaz de 90 a 130 %, tema claro u oscuro y paletas revisadas por contraste.", act="ajustes", target="boton.ajustes"),
+        step("Listo", "Los cambios se aplican al instante y se guardan solos.", act="cerrar_ajustes", target="boton.ajustes"),
+    ]},
+})
+
 RECORRIDO = ["que_es", "antes", "seleccion", "partida", "terminar", "fuentes"]
-OTRAS = ["sin_datos", "enfrentamiento", "aprender", "personalizar"]   # lecciones sueltas, fuera del recorrido completo
+OTRAS = ["primera_partida", "sin_datos", "afinidad", "jugadores", "patron", "otros_modos", "compartir", "enfrentamiento", "aprender", "personalizar", "atajos"]   # sueltas, fuera del recorrido
 
 # pregunta de la Ayuda -> lección que la enseña (las que no tienen lección propia aún no aparecen)
-PREGUNTAS = {"sin_datos": "sin_datos", "enfrentamiento": "enfrentamiento", "aprender": "aprender", "personalizar": "personalizar", "que_es": "que_es", "seguro": "que_es", "antes": "antes", "cola": "antes", "elegir": "seleccion", "runas_builds": "seleccion", "en_partida": "partida",
+PREGUNTAS = {"primera": "primera_partida", "afinidad": "afinidad", "jugadores": "jugadores", "patron": "patron", "modos": "otros_modos", "compartir": "compartir",
+             "atajos": "atajos", "sin_datos": "sin_datos", "enfrentamiento": "enfrentamiento", "aprender": "aprender", "personalizar": "personalizar", "que_es": "que_es", "seguro": "que_es", "antes": "antes", "cola": "antes", "elegir": "seleccion", "runas_builds": "seleccion", "en_partida": "partida",
              "terminar": "terminar", "historial": "terminar", "fuentes": "fuentes"}
 
 
@@ -184,9 +231,13 @@ class Tour:
                              font=k.font(13, True), fg_color=k.acc, text_color=PAL["bg"], hover_color=k.acc, command=lambda: self.start(RECORRIDO))
         full.pack(fill="x", pady=(12, 6))
         k.clbl(inner, "O UNA LECCIÓN", 9, "dim", True).pack(anchor="w", pady=(6, 2))
-        for lid in RECORRIDO + OTRAS:
-            ctk.CTkButton(inner, text=f"{LESSONS[lid]['title']}  ·  {len(LESSONS[lid]['steps'])} pasos", height=32, corner_radius=9, font=k.font(12), anchor="w",
-                          fg_color=PAL["card2"], text_color=PAL["fg"], hover_color=PAL["border"], command=lambda l=lid: self.start([l])).pack(fill="x", pady=2)
+        grid = k.frame(inner)
+        grid.pack(fill="x")
+        for c in (0, 1):
+            grid.columnconfigure(c, weight=1, uniform="les")
+        for n, lid in enumerate(RECORRIDO + OTRAS):
+            ctk.CTkButton(grid, text=f"{LESSONS[lid]['title']}", height=30, corner_radius=9, font=k.font(11), anchor="w",
+                          fg_color=PAL["card2"], text_color=PAL["fg"], hover_color=PAL["border"], command=lambda l=lid: self.start([l])).grid(row=n // 2, column=n % 2, sticky="ew", padx=2, pady=2)
         ctk.CTkButton(inner, text="Explorar por mi cuenta", height=32, corner_radius=9, font=k.font(12), fg_color="transparent", border_width=1, border_color=PAL["edge"],
                       text_color=PAL["dim"], hover_color=PAL["card2"], command=self.exit).pack(fill="x", pady=(10, 0))
         card.place(relx=0.5, rely=0.5, anchor="center")
@@ -236,7 +287,7 @@ class Tour:
             self.demo.go(s["page"])
         if s.get("act"):
             self.demo.act(s["act"])
-        self.ui.root.after(450, self.paint)   # la pantalla tarda un instante en pintarse: el resalte y la tarjeta van después
+        self.ui.root.after(900, self.paint)   # la pantalla tarda un instante en pintarse: el resalte y la tarjeta van después
 
     def paint(self, tries=0):
         """Pinta la tarjeta y resalta el elemento. Si aún no está en pantalla (las builds y runas tardan en llegar) se reintenta unas veces; si queda fuera de la vista, se desplaza hasta él."""
@@ -331,6 +382,8 @@ class Tour:
         k.clbl(head, f"{lesson['title'].upper()}  ·  PASO {self.si + 1} DE {n}" + (f"  ·  LECCIÓN {self.li + 1} DE {len(self.ids)}" if len(self.ids) > 1 else ""), 9, "dim", True).pack(side="left")
         k.clbl(inner, s["title"], 17, "fg", True, True).pack(anchor="w", pady=(4, 0))
         k.clbl(inner, s["text"], 12, "fg", wraplength=w - 48, justify="left").pack(anchor="w", pady=(2, 0))
+        if s.get("try_it"):   # opcional: nada espera a que lo hagas, «Siguiente» siempre vale
+            k.clbl(inner, "PRUÉBALO TÚ: " + s["try_it"], 11, "info", True, wraplength=w - 48, justify="left").pack(anchor="w", pady=(6, 0))
         if s.get("when") or s.get("source"):
             more = k.frame(inner)
             btn = k.clbl(inner, "▸ Más: cuándo lo verás y de dónde sale", 10, "info", True)

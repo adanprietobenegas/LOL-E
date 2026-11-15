@@ -17,7 +17,7 @@ import demo_data
 
 PERSONAL = ("history*", "games*", "account*", "analysis", "last_*", "*.log", "live_samples", "lp.json", "opgg*", "*.tmp", "error*", "diag*", "archive*")
 TITLE = "LOL-E · Demostración"
-SCENES = ("idle", "queue", "select", "locked", "game", "end")
+SCENES = ("idle", "queue", "select", "locked", "aram", "arena", "game", "end")
 
 
 class SinCliente:
@@ -39,14 +39,15 @@ def prepare_cache(core, now_ms):
         json.dump(hist, f)
     with open(os.path.join(tmp, "lp.json"), "w", encoding="utf-8") as f:
         json.dump(demo_data.lp_entries(hist, lpseries.label_of), f)
-    wins = [e for e in sorted(hist.values(), key=lambda e: -e["t"]) if e["q"] == 420 and e["w"]][:2]
-    for e in wins:   # las partidas con análisis son de Garen arriba: el análisis y la lista del historial cuentan lo mismo
+    solo = [e for e in sorted(hist.values(), key=lambda e: -e["t"]) if e["q"] == 420][:14]
+    wins = [e for e in solo if e["w"]]
+    for e in solo:   # las partidas con análisis son de Garen arriba: el análisis y la lista del historial cuentan lo mismo
         e["c"], e["r"] = 86, "TOP"
     with open(os.path.join(tmp, "history.json"), "w", encoding="utf-8") as f:
         json.dump(hist, f)
-    for e in wins:
+    for e in solo:   # con las derrotas peor: más muertes antes del minuto 15, y de ahí sale el patrón y el objetivo
         with open(os.path.join(tmp, "analysis", f"{e['id']}.json"), "w", encoding="utf-8") as f:
-            json.dump(demo_data.analysis_sample(e["id"], e["t"], 86), f)
+            json.dump(demo_data.analysis_sample(e["id"], e["t"], 86, win=e["w"], early_deaths=0 if e["w"] else 3), f)
     return tmp, hist, wins
 
 
@@ -155,6 +156,13 @@ class Demo:
             ui.link(True)
             ui.idle(self.info(), "En cola…")
             ui.phase("Matchmaking")
+        elif name in ("aram", "arena"):
+            ui.link(True)
+            ui.phase("ChampSelect")
+            if name == "aram":
+                self.push(demo_data.ARAM_SESSION, {"id": 450, "group": "ARAM", "kind": "aram"})
+            else:
+                self.push(demo_data.SESSION, {"id": 1700, "group": "Arena", "kind": "other"})
         elif name in ("select", "locked"):
             ui.link(True)
             ui.phase("ChampSelect")
@@ -197,6 +205,12 @@ class Demo:
         elif name == "cerrar_ajustes":
             if ui.dock_open:
                 ui.close_dock()
+        elif name == "abrir_jugadores":
+            ui.conf.setdefault("folds", {})["game_roster"] = True
+            ui.game_view.refresh(ui.make_ctx(), True)
+        elif name == "abrir_anio":
+            ui.conf.setdefault("folds", {})["hist_wrapped"] = True
+            ui.refresh_current(True)
 
 
 def run(scene=None, lessons=None):

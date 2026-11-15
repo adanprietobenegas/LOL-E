@@ -116,7 +116,7 @@ class GameView:
                 except Exception:
                     core.log_exc("Tablero de jugadores")
                     ui.lbl(c, "No se pudo dibujar el tablero de jugadores. El motivo queda en Ajustes › «Abrir el registro de errores».", 10, "dim").pack(anchor="w")
-            ui_vs.collapsible(ui, self.host, "Jugadores de la partida", summ, "game_roster", fill)
+            ui.reg("partida.jugadores", ui_vs.collapsible(ui, self.host, "Jugadores de la partida", summ, "game_roster", fill))
             return
         from ui_sections import Lobby
         pl, r = ctx.get("roster_pl") or {}, ctx.get("r") or {}
@@ -221,7 +221,7 @@ class GameView:
         ui.lbl(txt, sub or "sin línea asignada", 10, "dim").pack(anchor="w")
         goal = self.goal_text(plan) if plan.get("state") in ("select", "game") else None
         if goal:   # un solo objetivo medible, sacado de lo que te pasa en tus derrotas
-            ui.lbl(host, goal, 11, "warn", True, anchor="w", justify="left", wraplength=max(240, self.width - 110)).pack(anchor="w", pady=(0, 8))
+            ui.reg("partida.objetivo", ui.lbl(host, goal, 11, "warn", True, anchor="w", justify="left", wraplength=max(240, self.width - 110))).pack(anchor="w", pady=(0, 8))
         go_roster = None
         if late:   # enlace que baja hasta ellos: al final de una pantalla larga había quien no los encontraba
             go_roster = ui.lbl(txt, "▾ Ver los jugadores de la partida (al final)", 10, "info", True)
@@ -231,6 +231,7 @@ class GameView:
             pk = ui_opp.picker(ui, host, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 110)
             if pk is not None:
                 pk.pack(fill="x", pady=(0, 8))
+                ui.reg("partida.rival", pk)
         if plan.get("mayhem"):
             import ui_mayhem
             self.load_games()

@@ -1180,6 +1180,7 @@ class TourDeLaDemostracion(unittest.TestCase):
                 donde = f"{lid} paso {i + 1}"
                 self.assertIn(s["scene"], (None,) + tour.SCENES, donde)
                 self.assertIn(s["page"], (None,) + tour.PAGES, donde)
+                self.assertIn(s.get("act"), (None,) + tour.ACTS, donde)
                 self.assertTrue(s["target"] is None or s["target"] in validos, f"{donde}: el elemento «{s['target']}» no existe")
                 self.assertLessEqual(len(s["title"].split()), 5, f"{donde}: el título debe tener de 3 a 5 palabras")
                 self.assertLessEqual(tour.words(s["text"]), 30, f"{donde}: el texto debe ser corto (unas 25 palabras)")
@@ -1223,6 +1224,14 @@ class AyudaDeLaApp(unittest.TestCase):
             self.assertIn(key, ayuda.PAGES)
             self.assertEqual(len(ayuda.PAGES[key]), 4)
         self.assertIn("Datos", ayuda.PAGES)
+
+    def test_glosario(self):
+        import ayuda
+        for termino, texto in ayuda.GLOSARIO.items():
+            self.assertEqual(termino, termino.upper())
+            self.assertLessEqual(len(texto), 140, termino)       # un globo, no un párrafo
+        self.assertIsNotNone(ayuda.glossary("kda medio"))
+        self.assertIsNone(ayuda.glossary("cosa inventada"))
 
     def test_buscador_sin_acentos_y_con_varias_palabras(self):
         import ayuda

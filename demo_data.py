@@ -40,6 +40,11 @@ def history_entries(now_ms, n=80):
                     "lv": rnd.randint(13, 18), "dm": rnd.randint(11000, 34000), "g": rnd.randint(8000, 17000), "v": rnd.randint(6, 45), "rm": False,
                     "it": [3068, 3071, 6694, 3047, 0, 0, 3340], "gm": "ARAM" if aram else "CLASSIC", "gt": "MATCHED_GAME", "pl": 0, "au": []}
         t -= rnd.randint(2, 20) * 3_600_000 // 2
+    recent = sorted(out.values(), key=lambda e: -e["t"])[:2]
+    for e in recent:   # las dos más recientes son derrotas de Solo/Dúo: el aviso de sesión sale en el inicio
+        e["q"], e["w"], e["gm"] = 420, False, "CLASSIC"
+        e["cs"] = e["cs"] or 150
+        e["r"] = e["r"] or "TOP"
     return out
 
 
@@ -60,7 +65,7 @@ def lp_entries(hist, label_of):
     return out
 
 
-def analysis_sample(gid, created_ms, my_champ=86):
+def analysis_sample(gid, created_ms, my_champ=86, win=True, early_deaths=0):
     """Un análisis de partida (la forma de analysis.compute): 10 jugadores con series por minuto. Tú eres el jugador 1, arriba del equipo azul (100)."""
     rnd = random.Random(int(gid) % 10_007)
     dur = 28 * 60 + 14
@@ -80,15 +85,19 @@ def analysis_sample(gid, created_ms, my_champ=86):
         players[str(pid)] = {"pid": pid, "champ": champs[pid - 1], "team": team, "role": roles[pid - 1], "spells": [4, 12 if roles[pid - 1] == "TOP" else 14],
                              "k": rnd.randint(1, 9), "d": rnd.randint(1, 9), "a": rnd.randint(2, 14), "dmg": rnd.randint(9000, 36000), "taken": rnd.randint(11000, 40000),
                              "gold": gold[-1], "cs": cs[-1], "jcs": 0, "vision": rnd.randint(8, 50), "lvl": lvl[-1], "items": [3068, 3047, 6694, 3071, 0, 0, 3340],
-                             "win": team == 100, "gold_s": gold, "xp_s": xp, "cs_s": cs, "lvl_s": lvl,
+                             "win": (team == 100) == win, "gold_s": gold, "xp_s": xp, "cs_s": cs, "lvl_s": lvl,
                              "pos": [[rnd.randint(1200, 13500), rnd.randint(1200, 13500)] for _ in mins]}
     kills = []
-    for _ in range(26):
-        victim = rnd.randint(1, 10)
+    for i in range(26):
+        victim = rnd.randint(2, 10)
         killer = rnd.choice([p for p in range(1, 11) if (p <= 5) != (victim <= 5)])
         kills.append({"t": round(rnd.uniform(2, 27), 2), "killer": killer, "victim": victim, "assists": []})
+    for i in range(early_deaths):   # tus muertes antes del minuto 15
+        kills.append({"t": round(rnd.uniform(3, 13), 2), "killer": rnd.randint(6, 10), "victim": 1, "assists": []})
+    for _ in range(2):              # y alguna más tarde
+        kills.append({"t": round(rnd.uniform(18, 27), 2), "killer": rnd.randint(6, 10), "victim": 1, "assists": []})
     kills.sort(key=lambda k: k["t"])
-    return {"v": 3, "gid": int(gid), "dur": dur, "me": 1, "team": 100, "win": True, "queue": 420, "created": created_ms, "minutes": mins, "players": players, "kills": kills,
+    return {"v": 3, "gid": int(gid), "dur": dur, "me": 1, "team": 100, "win": win, "queue": 420, "created": created_ms, "minutes": mins, "players": players, "kills": kills,
             "objectives": [{"t": 7.8, "killer": 2, "assists": [], "team": 100, "what": "dragón", "type": "DRAGON"},
                            {"t": 14.1, "killer": 3, "assists": [2], "team": 100, "what": "heraldo", "type": "RIFTHERALD"},
                            {"t": 21.4, "killer": 8, "assists": [], "team": 200, "what": "dragón", "type": "DRAGON"}],
@@ -111,3 +120,7 @@ ROSTER = ([{"team": "ally", "cid": 86, "puuid": "yo", "role": "TOP", "spells": [
              for n, (c, r) in enumerate(((64, "JUNGLE"), (103, "MIDDLE"), (222, "BOTTOM"), (89, "SUPPORT")))]
           + [{"team": "enemy", "cid": c, "puuid": f"fake{n}", "role": r, "spells": [4, 14], "me": False, "icon": 1 + n}
              for n, (c, r) in ((5, (157, "TOP")), (6, (23, "JUNGLE")), (7, (134, "MIDDLE")), (8, (51, "BOTTOM")), (9, (412, "SUPPORT")))])
+
+ARAM_SESSION = {"localPlayerCellId": 0, "myTeam": [{"cellId": 0, "championId": 103}, {"cellId": 1, "championId": 64}, {"cellId": 2, "championId": 222}],
+                "theirTeam": [], "benchChampions": [{"championId": 1}, {"championId": 51}, {"championId": 69}, {"championId": 99}],
+                "bans": {"myTeamBans": [], "theirTeamBans": []}, "timer": {"phase": "BAN_PICK", "adjustedTimeLeftInPhase": 40000, "totalTimeInPhase": 60000}, "actions": []}

@@ -60,6 +60,26 @@ TOPICS = [
     ("aprender", "¿Qué campeones me conviene aprender?",
      "En Campeones, «Qué aprender»: si en una línea dependes mucho de un solo campeón, te propone hasta tres que ya tienes con buena tasa en el parche.", "Repertorio",
      "aprender campeones repertorio alternativa ban"),
+    ("primera", "¿Qué pasa en mi primera partida con LOL-E?",
+     "Tu rango y estadísticas salen solos del cliente. El historial propio empieza a guardarse desde que juegas con LOL-E abierto, y al terminar cada partida aparece su análisis.", "Historial",
+     "primera partida empezar nuevo historial instalar"),
+    ("afinidad", "¿Qué significa la afinidad?",
+     "Un número de 0 a 100: cuánto encaja un campeón contigo ahora mismo (tu historial, el parche, tu equipo y tu rival). No es una probabilidad de ganar; los pesos se ven en Datos.", "Datos",
+     "afinidad puntos recomendacion numero que significa"),
+    ("jugadores", "¿Qué veo de los otros nueve jugadores?",
+     "En «En vivo» hay un tablero plegable con los 10: rango, rachas y lo que más juega cada uno, y tu rival de línea. Los datos salen del cliente.", "Partida",
+     "jugadores equipo rival tablero carga rango racha"),
+    ("patron", "¿Qué es el patrón de mis derrotas y mi objetivo?",
+     "Con tus partidas analizadas, LOL-E busca qué se repite cuando pierdes (muertes tempranas, farmeo, oro). Si hay patrón, te marca un objetivo para la partida y luego dice si lo cumpliste.", "Historial",
+     "patron derrotas objetivo muertes sesion tilt"),
+    ("modos", "¿Y en ARAM, Arena u otros modos?",
+     "Sin líneas ni rival directo: en ARAM ves tu campeón, su build y el banquillo; en Arena y otros, el análisis al terminar. La build de línea es solo de la Grieta.", "Asesor",
+     "aram arena mayhem modos sin linea otros"),
+    ("compartir", "¿Cómo comparto mis partidas?",
+     "En el análisis, «Guardar tarjeta de la partida»; en el Historial, «Tu año en LoL» con «Guardar como imagen». Las dos crean un PNG.", "Historial",
+     "compartir imagen tarjeta año png guardar"),
+    ("atajos", "¿Hay atajos de teclado?",
+     "Ctrl+1 a Ctrl+6 cambian de pantalla, las flechas también, F1 abre la ayuda y Esc cierra Ajustes o la guía.", "Asesor", "atajos teclado ctrl f1 flechas"),
     ("fuentes", "¿De dónde sale la información y cuánto me puedo fiar?",
      "Builds y porcentajes: Lolalytics y op.gg. Tu historial y rango: tu cliente. El marcador en vivo: la API local del juego. Los datos con pocas partidas se marcan, y "
      "los avisos de objetivos son estimaciones.", "Datos", "fuentes de donde sale informacion fiable lolalytics opgg datos"),
@@ -70,6 +90,26 @@ TOPICS = [
      "Abre League of Legends e inicia sesión: LOL-E se conecta solo (arriba debe poner «Conectado a LoL»). Si ya está abierto y no conecta, reinicia LOL-E. "
      "Sin partidas guardadas, el Historial y las estadísticas están vacíos hasta que juegues.", "ajustes", "no veo datos no detecta cliente conectado vacio error diagnostico"),
 ]
+
+
+# término (en mayúsculas, como sale en la pantalla) -> explicación corta, para el globo al pasar el ratón
+GLOSARIO = {
+    "KDA MEDIO": "(bajas + asistencias) entre muertes, sumando todas las partidas (no es la media de cada una).",
+    "KDA": "(bajas + asistencias) entre muertes. Por encima de 3 se considera bueno.",
+    "RACHA": "Las victorias o derrotas seguidas más recientes.",
+    "VICTORIAS": "Porcentaje de partidas ganadas dentro de lo que ves ahora (según los filtros).",
+    "DURACIÓN MEDIA": "Lo que dura de media tu partida, en minutos.",
+    "PL": "Puntos de liga: al llegar a 100 subes de división; si bajas de 0, pierdes la división (con protección al subir).",
+    "AFINIDAD": "De 0 a 100: cuánto encaja un campeón contigo ahora mismo. No es una probabilidad de ganar.",
+    "MI ROL": "Solo campeones que se juegan en tu línea asignada.",
+    "MIS CAMPEONES": "Solo los campeones que tienes desbloqueados.",
+    "META FUERTE": "Solo campeones con buena tasa de victoria en este parche (Lolalytics).",
+}
+
+
+def glossary(term):
+    """La explicación de un término, o None."""
+    return GLOSARIO.get((term or "").upper())
 
 
 def _norm(text):

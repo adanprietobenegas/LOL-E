@@ -5,6 +5,7 @@ from collections import Counter
 import customtkinter as ctk
 
 import history
+import ayuda
 import patrones
 import sesion
 import wrapped
@@ -242,7 +243,10 @@ class HistoryView:
         cell.grid(row=i // cols, column=i % cols, columnspan=span, sticky="nsew", padx=4, pady=4)
         inner = ui.frame(cell)
         inner.pack(fill="x", padx=12, pady=8)
-        ui.lbl(inner, label.upper(), 9, "dim", True, anchor="w").pack(anchor="w")
+        lab = ui.lbl(inner, label.upper(), 9, "dim", True, anchor="w")
+        lab.pack(anchor="w")
+        if ayuda.glossary(label):
+            ui.tip(lab, ayuda.glossary(label))
         ui.lbl(inner, value, 17, color, True, True, anchor="w").pack(anchor="w", pady=(2, 0))
         if sub:
             ui.lbl(inner, sub, 9, "dim", anchor="w", wraplength=170, justify="left").pack(anchor="w")
@@ -453,7 +457,10 @@ class HistoryView:
         if dsent:
             lines.append((dsent, "dim"))
         for text, col in lines:
-            ui.lbl(self.summary_host, text, 10, col, anchor="w", justify="left", wraplength=max(240, self.width - 60)).pack(anchor="w", padx=4, pady=(8, 0))
+            lab = ui.lbl(self.summary_host, text, 10, col, anchor="w", justify="left", wraplength=max(240, self.width - 60))
+            lab.pack(anchor="w", padx=4, pady=(8, 0))
+            if text.startswith("Patrón"):
+                ui.reg("hist.patron", lab)
 
     # ---- lista por días ----
     def col_header(self, wrap):
