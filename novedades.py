@@ -10,6 +10,9 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.23", "fecha": "15 de noviembre de 2026", "titulo": "Ayuda dentro de la app", "items": [
+        ("nuevo", "Un botón «?» en la cabecera (o la tecla F1) abre la Ayuda: arriba te explica la pantalla en la que estás (qué es, cuándo la verás y de dónde salen sus datos) y debajo hay 14 preguntas frecuentes con buscador, como «¿Dónde encuentro las runas y builds recomendadas?» o «¿Cómo uso la app durante la partida?». Cada una tiene un botón «Enséñamelo» que te lleva a la pantalla."),
+    ]},
     {"v": "1.22.22", "fecha": "15 de noviembre de 2026", "titulo": "«Tu año en LoL» más claro y concreto", "items": [
         ("mejora", "«Tu año en LoL» ahora separa lo útil para mejorar (campeón a revisar, mejor y peor línea y franja, qué pasa tras perder dos seguidas, el último mes) de las curiosidades (rachas, partida más larga, tu estilo), en fichas, y cada dato dice sobre cuántas partidas se calcula y cuándo fue."),
         ("mejora", "«El que más te mata» pasa a llamarse «Con el que más mueres», porque se refiere a tu propio campeón, y la imagen para compartir lleva el periodo y dos columnas."),
