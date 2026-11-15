@@ -886,7 +886,8 @@ class GUI:
             mw = int(self.main._apply_widget_scaling(MAX_W))
             w = min(avail, mw)
             tk.Place.place_configure(self.main, x=(avail - w) // 2, y=0, relwidth=0, width=w, relheight=1.0)
-            self.tab_seg.set_expanded(w / self.kit.scale_px() >= 900)   # con la ventana ancha la barra lateral enseña también los nombres
+            mode = self.conf.get("rail_mode", "auto")   # «auto»: con la ventana ancha la barra lateral enseña también los nombres
+            self.tab_seg.set_expanded(mode == "nombres" or (mode == "auto" and w / self.kit.scale_px() >= 900))
         except Exception:
             pass
 
@@ -1272,6 +1273,11 @@ class GUI:
         cur = f"{round(conf['scale'] * 100)}%"
         seg(["90%", "100%", "115%", "130%"], cur if cur in ("90%", "100%", "115%", "130%") else "100%",
             lambda v: (ctk.set_widget_scaling(int(v[:-1]) / 100), self.set("scale", int(v[:-1]) / 100)))
+        label("Barra lateral")
+        rails = {"Automática": "auto", "Con nombres": "nombres", "Solo iconos": "iconos"}
+        seg(list(rails), {v: k_ for k_, v in rails.items()}.get(conf.get("rail_mode", "auto"), "Automática"),
+            lambda v: (self.set("rail_mode", rails[v], redraw=False), self.layout_main()))
+        note("«Automática»: muestra los nombres si la ventana es ancha y solo iconos si es estrecha.")
         switch("Animaciones y transiciones", "animations")
         note("Desactívalas si prefieres cambios instantáneos o tu equipo va justo.")
         label("Ventana siempre por encima de las demás")
@@ -1286,7 +1292,7 @@ class GUI:
         note("Un sonido suave, una vez por objeto, cuando tu oro ya llega para el siguiente de tu build. Necesita los avisos sonoros y los datos en vivo.")
 
         section("Al abrir")
-        starts = {"Última usada": "ultima", "Asesor": "asesor", "Enfrentamiento": "enfrentamiento", "Repertorio": "repertorio", "Historial": "historial", "Datos": "datos"}
+        starts = {"Última usada": "ultima", "Inicio": "asesor", "Enfrentamiento": "enfrentamiento", "Campeones": "repertorio", "Historial": "historial", "Datos": "datos"}   # los nombres de la barra lateral
         label("Pestaña inicial")
         k.menu(sc, list(starts), {v: k_ for k_, v in starts.items()}.get(conf["start_tab"], "Última usada"),
                lambda v: self.set("start_tab", starts[v], redraw=False), 300).pack(anchor="w", padx=12, pady=2)
