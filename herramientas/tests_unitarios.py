@@ -1169,6 +1169,39 @@ class PicosDelRival(unittest.TestCase):
         self.assertEqual(live.spikes(self.snap(400, 5, 0), self.snap(300, 6, 9999), 2), [])   # una lectura más vieja: no se mezcla
 
 
+class AyudaDeLaApp(unittest.TestCase):
+    def test_cada_pregunta_apunta_a_una_pagina_que_existe(self):
+        import ayuda
+        ids = [t[0] for t in ayuda.TOPICS]
+        self.assertEqual(len(ids), len(set(ids)))
+        for tid, q, a, dest, kw in ayuda.TOPICS:
+            self.assertTrue(dest == "ajustes" or dest in ayuda.PAGES, tid)
+            self.assertLessEqual(len(a), 330, f"{tid}: la respuesta es larga; una o dos frases")
+            self.assertTrue(q.startswith("¿") and q.endswith("?"), tid)
+
+    def test_todas_las_paginas_de_la_barra_tienen_ayuda(self):
+        import ayuda, ui_rail
+        for key, _icon, _label, _live in ui_rail.ITEMS:
+            self.assertIn(key, ayuda.PAGES)
+            self.assertEqual(len(ayuda.PAGES[key]), 4)
+        self.assertIn("Datos", ayuda.PAGES)
+
+    def test_buscador_sin_acentos_y_con_varias_palabras(self):
+        import ayuda
+        self.assertEqual(len(ayuda.search("")), len(ayuda.TOPICS))
+        self.assertIn("runas_builds", [t[0] for t in ayuda.search("RUNAS")])
+        self.assertIn("seguro", [t[0] for t in ayuda.search("sancion")])           # sin tilde
+        self.assertIn("seguro", [t[0] for t in ayuda.search("sanción riot")])      # con tilde y dos palabras
+        self.assertEqual(ayuda.search("zzzz nada"), [])
+        self.assertEqual([t[0] for t in ayuda.search("datos")][0], "que_es")       # respeta el orden del catálogo
+
+    def test_los_nombres_de_la_barra_coinciden_con_la_ayuda(self):
+        import ayuda, ui_rail
+        for key, _icon, label, live in ui_rail.ITEMS:
+            esperado = "En vivo" if key == "Partida" else label    # la ayuda llama a la página por el nombre que tiene en modo en vivo
+            self.assertEqual(ayuda.PAGES[key][0], esperado)
+
+
 class SesionDeJuego(unittest.TestCase):
     H = 3600 * 1000
     NOW = 1_800_000_000_000

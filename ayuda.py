@@ -1,0 +1,95 @@
+"""Ayuda de LOL-E: qué es cada pantalla, cuándo la verás y de dónde salen sus datos, y las preguntas que se hace quien acaba de instalarla.
+
+Solo datos y búsqueda (sin ventana), para poder probarlos. Es la capa A de la «guía»: ayuda contextual y un panel de preguntas con buscador. Las mismas preguntas servirán
+de menú para la demostración en vivo cuando se construya (cada una podrá enlazar a una lección). Los textos describen lo que la app hace hoy: si cambia una pantalla,
+hay que cambiar aquí su frase (una prueba comprueba que cada pregunta apunta a una página que existe)."""
+import unicodedata
+
+# clave de página -> (nombre en la barra, qué es, cuándo la verás, de dónde sale)
+PAGES = {
+    "Asesor": ("Inicio", "Tu perfil, tu rango y cómo ha ido (gráfica), tus últimas partidas y tu sesión. En la selección de campeón se convierte en el asesor con los campeones recomendados.",
+               "Siempre. Con el cliente abierto verás tus datos y, al entrar en selección, cambia sola.",
+               "Tu cliente de LoL (perfil, rango, historial) y, para las recomendaciones, Lolalytics y op.gg."),
+    "Partida": ("En vivo", "El plan de tu partida: campeón, rival de línea, build y runas recomendadas y, ya jugando, marcador, objetivos y los 10 jugadores. Al terminar, el análisis.",
+                "Desde que hay cola, selección o partida (la barra se tiñe de ámbar); después, el análisis de la última.",
+                "Lolalytics y op.gg para builds y runas; tu cliente y la API local del propio juego para el marcador en vivo."),
+    "Enfrentamiento": ("Enfrentamiento", "Qué campeón le gana a cuál en cada línea, con porcentajes de todos los jugadores y cómo te va a ti.",
+                       "Cuando quieras preparar o revisar un cruce. En la selección se rellena con tu rival de línea.",
+                       "Lolalytics (todos los jugadores) y tu historial guardado."),
+    "Repertorio": ("Campeones", "Tu repertorio: con qué campeones juegas, cómo te va con cada uno y a cuál conviene sumar si dependes mucho de uno.",
+                   "Siempre que quieras revisar tus campeones.", "Tu historial guardado y Lolalytics."),
+    "Historial": ("Historial", "Todas tus partidas guardadas, con filtros, resumen, patrón de derrotas, dónde mueres y «Tu año en LoL».",
+                  "Cuando quieras revisar o buscar partidas.",
+                  "El cliente solo entrega las más recientes: LOL-E guarda cada partida que ve para que el historial crezca."),
+    "Datos": ("Datos", "De dónde sale cada dato, cómo se calcula la afinidad, los umbrales y un glosario.",
+              "Cuando quieras saber cuánto fiarte de algo.", "Es la propia documentación de la app."),
+}
+
+# (id, pregunta, respuesta de una o dos frases, destino: nombre de página, «ajustes» o None, palabras clave)
+TOPICS = [
+    ("que_es", "¿Qué es LOL-E y qué lee de mi PC?",
+     "Es un asesor que lee tu cliente de LoL (y la API local del juego durante la partida) para recomendarte campeones y builds y analizar tus partidas. "
+     "No modifica el juego; para las estadísticas consulta Lolalytics y op.gg.", "Datos", "que es lee pc privacidad datos cliente"),
+    ("seguro", "¿Es seguro? ¿Me pueden sancionar?",
+     "LOL-E solo lee: el cliente local y la API local de la partida (la de la tabla de puntuación). No inyecta nada ni automatiza el juego. "
+     "Aun así, la última palabra la tiene Riot y no hay garantía formal.", "Datos", "seguro baneo ban sancion riot vanguard permitido"),
+    ("antes", "¿Qué veo antes de jugar?",
+     "En Inicio: tu perfil, tu rango, la gráfica de tu rango en el tiempo, tus últimas partidas y, si llevas derrotas seguidas, un aviso de sesión.", "Asesor",
+     "inicio perfil rango grafica sesion antes"),
+    ("cola", "¿Qué pasa cuando busco partida?",
+     "La barra «Partida» pasa a llamarse «En vivo» y se tiñe de ámbar, y arriba aparece una banda con la fase (cola, selección, partida) y un botón para ir y volver "
+     "entre la partida y la consulta.", "Partida", "cola buscar partida banda ambar en vivo fase"),
+    ("elegir", "¿Cómo elijo campeón?",
+     "En la selección, Inicio te recomienda campeones para tu línea con una afinidad de 0 a 100. Puedes filtrar (Mi rol, Mis campeones, Meta fuerte) y mirar "
+     "Resumen, Contra rival, Sinergias y Meta y build.", "Asesor", "elegir campeon recomendado afinidad seleccion filtros"),
+    ("runas_builds", "¿Dónde encuentro las runas y builds recomendadas?",
+     "En la selección, en «Meta y build» del campeón. Con tu campeón marcado, también en «En vivo»: hechizos, runas (más usada o mayor % de victorias), habilidades, "
+     "objetos y botas, con pestañas Más usada, Variantes y Situaciones.", "Partida", "runas build objetos botas hechizos habilidades recomendadas"),
+    ("en_partida", "¿Cómo uso la app durante la partida?",
+     "Mira «En vivo»: arriba el marcador, los objetivos (con avisos estimados de dragón, larvas y Barón), tu siguiente objeto y tu objetivo; los 10 jugadores van "
+     "plegados y tu build y runas, debajo. Si no quieres los datos en vivo, se apagan en Ajustes.", "Partida", "partida jugando en vivo marcador objetivos dragon barón siguiente objeto"),
+    ("terminar", "¿Qué veo al terminar la partida?",
+     "En «En vivo › Análisis»: el resultado, los PL, la comparación con tu rival de línea y con tu media, si cumpliste tu objetivo y un botón para guardar la tarjeta "
+     "de la partida.", "Partida", "terminar fin analisis pl resultado tarjeta objetivo"),
+    ("historial", "¿Cómo reviso mis partidas?",
+     "En Historial: busca y filtra, mira tu resumen (sesión, patrón de derrotas, dónde mueres) y abre «Tu año en LoL». Cada partida se despliega con su detalle.", "Historial",
+     "historial revisar partidas filtros patron donde mueres año"),
+    ("enfrentamiento", "¿Cómo comparo un enfrentamiento?",
+     "En Enfrentamiento: elige a tu rival (o toca uno reciente) y verás qué campeón le gana más, con datos de todos los jugadores y los tuyos.", "Enfrentamiento",
+     "enfrentamiento rival comparar counter contra"),
+    ("aprender", "¿Qué campeones me conviene aprender?",
+     "En Campeones, «Qué aprender»: si en una línea dependes mucho de un solo campeón, te propone hasta tres que ya tienes con buena tasa en el parche.", "Repertorio",
+     "aprender campeones repertorio alternativa ban"),
+    ("fuentes", "¿De dónde sale la información y cuánto me puedo fiar?",
+     "Builds y porcentajes: Lolalytics y op.gg. Tu historial y rango: tu cliente. El marcador en vivo: la API local del juego. Los datos con pocas partidas se marcan, y "
+     "los avisos de objetivos son estimaciones.", "Datos", "fuentes de donde sale informacion fiable lolalytics opgg datos"),
+    ("personalizar", "¿Cómo la personalizo?",
+     "En Ajustes y datos: tema y color, tamaño, barra lateral, avisos sonoros, si la ventana va siempre encima y los datos en vivo.", "ajustes",
+     "personalizar ajustes tema color tamaño sonido barra"),
+    ("sin_datos", "¿Por qué no veo datos o no detecta el cliente?",
+     "Abre League of Legends e inicia sesión: LOL-E se conecta solo (arriba debe poner «Conectado a LoL»). Si ya está abierto y no conecta, reinicia LOL-E. "
+     "Sin partidas guardadas, el Historial y las estadísticas están vacíos hasta que juegues.", "ajustes", "no veo datos no detecta cliente conectado vacio error diagnostico"),
+]
+
+
+def _norm(text):
+    """Minúsculas y sin acentos, para buscar sin preocuparse de ellos."""
+    return "".join(c for c in unicodedata.normalize("NFD", (text or "").lower()) if unicodedata.category(c) != "Mn")
+
+
+def search(query):
+    """Las preguntas que encajan con lo escrito (todas las palabras, en la pregunta, la respuesta o las claves); sin texto, todas. Mantiene el orden del catálogo."""
+    words = _norm(query).split()
+    if not words:
+        return list(TOPICS)
+    out = []
+    for t in TOPICS:
+        hay = _norm(" ".join((t[1], t[2], t[4])))
+        if all(w in hay for w in words):
+            out.append(t)
+    return out
+
+
+def page_help(key):
+    """(nombre, qué es, cuándo, de dónde sale) de una página, o None."""
+    return PAGES.get(key)

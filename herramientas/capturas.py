@@ -229,6 +229,7 @@ PASOS = [
     ("12_enfrentamiento", lambda: ui.set_page("Enfrentamiento"), 4000),
     ("13_enfrentamiento_rival", lambda: ui.matchup_view.select(157), 4000),
     ("14_historial", lambda: ui.set_page("Historial"), 4000),
+    ("14c_ayuda", lambda: (ui.set_page("Historial"), ui.open_help(), ui.root.after(600, lambda: (ui.help_win.toggle("runas_builds")))), 3500),   # la ayuda abierta con una pregunta desplegada
     ("14b_historial_anio", lambda: (ui.conf.setdefault("folds", {}).__setitem__("hist_wrapped", True), ui.set_page("Historial"), ui.refresh_current(True)), 5000),   # el resumen «Tu año en LoL» desplegado
     ("15_datos", lambda: ui.set_page("Datos"), 4000),
     ("17_inicio_modos", lambda: (ui.set_page("Asesor"), ui.idle(l.player_info(P), "Conectado al cliente. Entra en una cola cuando quieras."),
@@ -260,14 +261,14 @@ SOLO = [x for x in os.environ.get("LOLE_SOLO", "").split(",") if x]
 MAXP = int(os.environ.get("LOLE_PAGINAS", "4"))
 
 
-def pw_grab(x, y, w, h):
+def pw_grab(x, y, w, h, widget=None):
     """La ventana de LOL-E con PrintWindow: sale bien aunque otra ventana (p. ej. la de quien mira) la tape; None si no se puede (entonces se usa ImageGrab)."""
     try:
         import ctypes
         from ctypes import wintypes as wt
         u, g = ctypes.windll.user32, ctypes.windll.gdi32
         u.GetAncestor.restype = wt.HWND
-        hwnd = u.GetAncestor(wt.HWND(ui.root.winfo_id()), 2)
+        hwnd = u.GetAncestor(wt.HWND((widget or ui.root).winfo_id()), 2)
         r = wt.RECT()
         u.GetWindowRect(hwnd, ctypes.byref(r))
         W, H = r.right - r.left, r.bottom - r.top
@@ -302,6 +303,12 @@ def grab(name):
     x, y, w, h = ui.root.winfo_rootx(), ui.root.winfo_rooty(), ui.root.winfo_width(), ui.root.winfo_height()
     im = pw_grab(x, y, w, h) or ImageGrab.grab(bbox=(x, y, x + w, y + h), all_screens=True)
     im.save(os.path.join(OUT, name + ".png"))
+    hw = getattr(ui, "help_win", None)
+    if hw is not None and hw.alive():   # la ventana de ayuda es otra ventana: se guarda aparte
+        hw.win.update_idletasks()
+        sub = pw_grab(hw.win.winfo_rootx(), hw.win.winfo_rooty(), hw.win.winfo_width(), hw.win.winfo_height(), hw.win)
+        if sub is not None:
+            sub.save(os.path.join(OUT, name + "_ventana.png"))
     print("capturada", name, w, h, flush=True)
 
 

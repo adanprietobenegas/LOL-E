@@ -15,6 +15,7 @@ from lol_advisor import APP_NAME, APP_VERSION, CACHE, DATA_DIR, PRESET_INFO, rea
 from ui_history import HistoryView
 from ui_pool import PoolView
 from ui_rail import RailNav
+from ui_help import HelpWindow
 from ui_views import DataView, MatchupView
 from ui_kit import REC_VIEWS, ACCENTS, DISPLAY, Kit, PAL, THEMES, calm, res
 from ui_game import GameView
@@ -75,6 +76,7 @@ class GUI:
         self.root.report_callback_exception = lambda t, v, tb: core.log_exc("Error en la ventana", (t, v, tb))
         for i, nm in enumerate(("Asesor", "Partida", "Enfrentamiento", "Repertorio", "Historial", "Datos"), 1):  # Ctrl+1…6 cambian de pestaña (en el orden de arriba)
             self.root.bind(f"<Control-Key-{i}>", lambda e, n=nm: self.set_page(n))
+        self.root.bind("<F1>", lambda e: self.open_help())
         self.root.bind("<Left>", lambda e: self.key_go(-1))
         self.root.bind("<Right>", lambda e: self.key_go(1))
         self.root.bind("<Configure>", self.on_resize)
@@ -211,6 +213,24 @@ class GUI:
 
     PHASE_ES = {"Matchmaking": "En cola", "ReadyCheck": "Partida encontrada", "ChampSelect": "En selección", "GameStart": "Empieza la partida",
                 "InProgress": "Partida en curso", "Reconnect": "Reconectando"}
+
+    def open_help(self):
+        """La ayuda de la pantalla actual y las preguntas frecuentes (F1)."""
+        if not hasattr(self, "help_win"):
+            self.help_win = HelpWindow(self)
+        self.help_win.open(self.tab_names.get(self.page))
+
+    def help_go(self, dest):
+        """«Enséñamelo»: lleva a la pantalla de una pregunta de la ayuda (o abre Ajustes)."""
+        self.root.deiconify()
+        if dest == "ajustes":
+            if not self.dock_open:
+                self.open_dock()
+        else:
+            self.set_page(dest)
+        self.root.lift()
+        if hasattr(self, "help_win") and self.help_win.alive():
+            self.help_win.refresh_page(self.tab_names.get(self.page))
 
     def band_click(self):
         self.set_page("Asesor" if self.page == "partida" else "Partida")
@@ -704,6 +724,10 @@ class GUI:
                                        border_color=k.acc if self.page == "datos" else PAL["edge"], fg_color=PAL["card"], hover_color=PAL["card"],
                                        text_color=PAL["fg"], command=lambda: self.set_page("Datos"))
         # (ya no está en la cabecera: «Datos» se abre desde el panel de Ajustes; el botón existe solo para que `set_page` pueda marcarlo)
+        ayuda_btn = ctk.CTkButton(bar, text="?", width=32, height=32, corner_radius=16, font=k.font(14, True), border_width=1, border_color=PAL["edge"],
+                                  fg_color=PAL["card"], hover_color=PAL["card2"], text_color=PAL["fg"], command=self.open_help)
+        ayuda_btn.pack(side="right", padx=(0, 8))
+        k.tip(ayuda_btn, "Ayuda: qué es cada pantalla y preguntas frecuentes (F1)")
         self.link_lbl = k.clbl(bar, "", 11, "warn", True)
         self.link_lbl.pack(side="right", padx=(12, 12))
         vol = k.frame(bar)
