@@ -1000,6 +1000,20 @@ class ResumenDelAnio(unittest.TestCase):
         self.assertGreaterEqual(s["best_streak"][0], 2)
         self.assertTrue(wrapped.lines(s, lambda c: str(c)))
 
+    def test_util_y_curiosidades_dicen_muestra_y_fecha(self):
+        import wrapped
+        games = [self.g(i, i, i % 5 != 0, c=86 if i % 2 else 122, d=1800 + i * 60) for i in range(1, 25)]   # rachas de 4 victorias
+        s = wrapped.compute(games, self.NOW, "all")
+        util, cur = wrapped.useful(s, lambda c: f"C{c}"), wrapped.curious(s, lambda c: f"C{c}")
+        self.assertTrue(all({"title", "value", "detail", "tone"} <= set(r) for r in util + cur))
+        mejor = next(r for r in util if r["title"] == "Tu mejor campeón")
+        self.assertRegex(mejor["detail"], r"en \d+ partidas")                              # dice sobre cuántas partidas
+        larga = next(r for r in cur if r["title"] == "Partida más larga")
+        self.assertRegex(larga["detail"], r"\d\d/\d\d/\d{4}")                              # y cuándo fue
+        racha = next(r for r in cur if r["title"] == "Mejor racha")
+        self.assertIn(" al ", racha["detail"])                                              # con inicio y fin
+        self.assertIn("Periodo", "Periodo " + wrapped.period(s))
+
     def test_pocas_partidas_o_fuera_del_anio(self):
         import wrapped
         games = [self.g(i, i, True) for i in range(1, 9)]

@@ -366,10 +366,26 @@ class HistoryView:
             if not s:
                 ui.lbl(body, "Aún no hay suficientes partidas guardadas (hacen falta 10) para un resumen.", 10, "dim", anchor="w").pack(anchor="w", pady=(8, 0))
                 return
-            ui.lbl(body, f"{s['n']} partidas · {round(s['wr'] * 100)} % de victorias · {s['hours']:.0f} h jugadas"
-                         + (f" · KDA {s['kda']:.2f}".replace(".", ",") if s.get("kda") is not None else ""), 11, "fg", True, anchor="w").pack(anchor="w", pady=(4, 2))
-            for title, text in wrapped.lines(s, champ_name):
-                ui.lbl(body, f"{title}: {text}", 10, "dim", anchor="w", justify="left", wraplength=max(240, self.width - 60)).pack(anchor="w", pady=2)
+            ui.lbl(body, f"Periodo: {wrapped.period(s)}", 10, "dim", anchor="w").pack(anchor="w", pady=(2, 6))
+            cols = 1 if self.width < 640 else 2
+            tw = max(200, (self.width - 110) // cols - 24)
+
+            def section(title, rows):
+                ui.lbl(body, title, 9, "dim", True, anchor="w").pack(anchor="w", pady=(6, 2))
+                grid = ui.frame(body)
+                grid.pack(fill="x")
+                for k in range(cols):
+                    grid.columnconfigure(k, weight=1, uniform="wr")
+                for n, r in enumerate(rows):
+                    cell = ctk.CTkFrame(grid, fg_color=PAL["card2"], corner_radius=12)
+                    cell.grid(row=n // cols, column=n % cols, sticky="nsew", padx=4, pady=4)
+                    inner = ui.frame(cell)
+                    inner.pack(fill="x", padx=12, pady=8)
+                    ui.lbl(inner, r["title"].upper(), 9, "dim", True, anchor="w").pack(anchor="w")
+                    ui.lbl(inner, r["value"], 15, r["tone"] if r["tone"] != "dim" else "fg", True, True, anchor="w", wraplength=tw, justify="left").pack(anchor="w")
+                    ui.lbl(inner, r["detail"], 9, "dim", anchor="w", wraplength=tw, justify="left").pack(anchor="w")
+            section("LO ÚTIL PARA MEJORAR", wrapped.useful(s, champ_name))
+            section("CURIOSIDADES", wrapped.curious(s, champ_name))
             msg = ui.lbl(body, "", 10, "good", anchor="w")
 
             def save():
@@ -398,7 +414,7 @@ class HistoryView:
             head.configure(text=("▾ " if opened else "▸ ") + "Tu año en LoL (resumen para compartir)")
             if opened:
                 fill()
-                body.pack(fill="x", padx=4)
+                body.pack(fill="x", padx=4, after=head)   # justo debajo de su título, no al final de todo el resumen
             else:
                 body.pack_forget()
 
