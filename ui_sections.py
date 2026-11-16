@@ -1807,6 +1807,120 @@ class Enemies(Section):
                           bool(pl), None, "#ff5a5f", r["mode"]["id"])
 
 
+class CounterPicks(Section):
+    """«Mejores contra tus rivales»: para tu rival de línea (y, abajo, para el resto de rivales ya elegidos) los campeones que más le ganan según Lolalytics,
+    con las partidas de cada cruce. Va aparte de la afinidad (que mezcla tu historial, tu equipo y el parche): aquí solo cuenta el enfrentamiento.
+    Solo se fía de cruces con muestra suficiente (MIN partidas); si no hay tres, baja el listón y lo dice."""
+    MIN, FALLBACK = 200, 50
+    LANE_OF = {"TOP": "top", "JUNGLE": "jungle", "MIDDLE": "middle", "BOTTOM": "bottom", "UTILITY": "support", "SUPPORT": "support"}
+
+    def targets(self, ctx):
+        r, champs = ctx["r"], self.ui.champs
+        out = []
+        lane = matchups.LANES.get(r.get("role") or "")
+        if r.get("lane_opp") and lane:
+            out.append((r["lane_opp"], lane, True))
+        for cid in r["enemies"]:
+            if cid == r.get("lane_opp") or cid not in champs:
+                continue
+            pos = (champs[cid].get("pos") or [])
+            ln = self.LANE_OF.get(pos[0]) if pos else None
+            if ln and not any(t[0] == cid for t in out):
+                out.append((cid, ln, False))
+        return out
+
+    def key(self, ctx):
+        if ctx["r"]["mode"]["kind"] != "sr":
+            return ("no",)
+        t = self.targets(ctx)
+        return (tuple(t), tuple(str(Recs.COUNTERS.get((c, ln)))[:14] for c, ln, _ in t), self.ui.conf["compact"], tuple((ctx.get("info") or {}).get("owned") or ())[:3],
+                ctx["width"] // 150)
+
+    def fetch(self, cid, lane):
+        key = (cid, lane)
+        st = Recs.COUNTERS.get(key)
+        if isinstance(st, tuple) and time.time() - st[2] > 90:
+            st = None
+        if st is None:
+            Recs.COUNTERS[key] = "cargando"
+            ui = self.ui
+
+            def go():
+                try:
+                    rows = matchups.best_against(ui.champs, cid, lane, core.CACHE, min_games=50)
+                except Exception as e:
+                    rows = ("error", str(e), time.time())
+                Recs.COUNTERS[key] = rows
+                ui.notify("recs_data")
+            threading.Thread(target=go, daemon=True).start()
+            return "cargando"
+        return st
+
+    def build(self, ctx):
+        ui, r = self.ui, ctx["r"]
+        if r["mode"]["kind"] != "sr" or ui.conf["compact"]:
+            return
+        tg = self.targets(ctx)
+        if not tg:
+            return
+        owned = set((ctx.get("info") or {}).get("owned") or [])
+        c = ui.card(self.box)
+        head = ui.frame(c)
+        head.pack(fill="x", pady=(0, 6))
+        ctk.CTkFrame(head, width=3, height=14, corner_radius=2, fg_color=ui.acc).pack(side="left", padx=(0, 8))
+        ui.lbl(head, "MEJORES CAMPEONES CONTRA TUS RIVALES", 10, "fg", True).pack(side="left")
+        ui.reg("sel.contra_rivales", head)
+        ui.lbl(c, "Solo cuenta el enfrentamiento (Lolalytics, todos los jugadores): no usa tu historial ni tu equipo, a diferencia de la afinidad.", 9, "dim",
+               anchor="w", justify="left", wraplength=max(260, ctx["width"] - 110)).pack(anchor="w", pady=(0, 6))
+        cols = 2 if ctx["width"] < 620 else 3 if ctx["width"] < 980 else 5
+        for cid, lane, mine in tg:
+            ln = matchups.LANE_NAMES.get(lane, lane)
+            row = ui.frame(c)
+            row.pack(fill="x", pady=(8, 2))
+            ui.champ(row, cid, 28, False, "#ff5a5f").pack(side="left", padx=(0, 8))
+            ui.lbl(row, ("Tu rival de línea: " if mine else "") + name(cid, ui.champs), 12, "fg", True).pack(side="left")
+            ui.lbl(row, f"   {ln.lower()}" + ("" if mine else " · según su línea habitual"), 10, "dim").pack(side="left")
+            st = self.fetch(cid, lane)
+            if st == "cargando":
+                ui.lbl(c, "Cargando…", 10, "dim", anchor="w").pack(anchor="w")
+                continue
+            if isinstance(st, tuple):
+                ui.lbl(c, f"Sin datos de este enfrentamiento ({st[1]}).", 10, "dim", anchor="w", justify="left", wraplength=max(260, ctx["width"] - 110)).pack(anchor="w")
+                continue
+            n = 5 if mine else 3
+            good = [x for x in st if x["games"] >= self.MIN]
+            low = len(good) < 3
+            rows = (good if not low else [x for x in st if x["games"] >= self.FALLBACK])[:n]
+            if not rows:
+                ui.lbl(c, "Ningún campeón tiene partidas suficientes contra él en este parche.", 10, "dim", anchor="w").pack(anchor="w")
+                continue
+            grid = tk.Frame(c, bg=ui.bg(c))
+            grid.pack(fill="x")
+            for k in range(cols):
+                grid.columnconfigure(k, weight=1, uniform="cp")
+            card, fg, dim = ui.hexm(PAL["card2"]), ui.hexm(PAL["fg"]), ui.hexm(PAL["dim"])
+            for i, x in enumerate(rows):
+                cell = tk.Frame(grid, bg=card)
+                cell.grid(row=i // cols, column=i % cols, sticky="ew", padx=3, pady=3)
+                ph = ui.champ_photo(x["cid"], 34)
+                ic = tk.Label(cell, image=ph, bd=0, bg=card) if ph is not None else tk.Frame(cell, width=34, height=34, bg=ui.hexm(PAL["card"]))
+                ic.image = ph
+                ic.pack(side="left", padx=(8, 8), pady=8)
+                mid = tk.Frame(cell, bg=card)
+                mid.pack(side="left", fill="x", expand=True)
+                tk.Label(mid, text=f"{i + 1}. {name(x['cid'], ui.champs)}", font=ui.tkf(11, True, False), fg=fg, bg=card, anchor="w").pack(anchor="w")
+                tk.Label(mid, text=f"{x['games']:,} partidas".replace(",", ".") + ("  ·  lo tienes" if x["cid"] in owned else ""), font=ui.tkf(9, False, False),
+                         fg=dim, bg=card, anchor="w").pack(anchor="w")
+                tk.Label(cell, text=f"{x['wr']:.1f} %".replace(".", ","), font=ui.tkf(13, True, True), fg=ui.hexm(PAL["good" if x["wr"] >= 50 else "bad"]),
+                         bg=card).pack(side="right", padx=10)
+            mine_best = next((x for x in (good if not low else st) if x["cid"] in owned), None) if owned and mine else None
+            if mine_best and mine_best["cid"] not in [x["cid"] for x in rows]:
+                wr_txt, g_txt = f"{mine_best['wr']:.1f}".replace(".", ","), f"{mine_best['games']:,}".replace(",", ".")
+                ui.lbl(c, f"El mejor que tienes: {name(mine_best['cid'], ui.champs)} ({wr_txt} % en {g_txt} partidas)", 10, "info", anchor="w").pack(anchor="w", pady=(2, 0))
+            if low:
+                ui.lbl(c, f"Pocas partidas con cada cruce (mínimo {self.FALLBACK}): tómalo como orientativo.", 9, "warn", anchor="w").pack(anchor="w")
+
+
 class BansRow(Section):
     def key(self, ctx):
         return (tuple(ctx["r"]["bans"]), self.ui.conf["show_bans"], self.ui.conf["compact"])

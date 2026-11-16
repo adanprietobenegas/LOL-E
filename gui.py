@@ -21,7 +21,7 @@ from ui_kit import REC_VIEWS, ACCENTS, DISPLAY, Kit, PAL, THEMES, calm, res
 from ui_game import GameView
 from ui_draft import DraftCard
 from ui_mayhem import AramBuild
-from ui_sections import (TourOffer, SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
+from ui_sections import (CounterPicks, TourOffer,SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
                          WaitCard)
 
 DOCK_W = 360
@@ -372,8 +372,34 @@ class GUI:
         elif (self.ctx.get("plan") or {}).get("state") != "select":
             self.ctx["plan"] = plan
 
+    def new_cycle(self):
+        """Empieza una cola nueva (buscando, partida encontrada o selección): la pestaña «Partida» olvida lo de la anterior (plan, marcador en vivo, mejoras de
+        Mayhem, jugadores, pestaña Análisis). Antes cada cosa se reiniciaba en un sitio distinto y, según cómo acabara la partida, quedaba algo suelto.
+        Si ya hay un plan de ESTA selección o partida en curso no se toca."""
+        c = self.ctx
+        pl = c.get("plan")
+        if pl and pl.get("state") in ("select", "game"):
+            return
+        c["plan"] = None
+        for k in ("live", "live_at", "live_aug", "roster"):
+            c[k] = None
+        c["roster_pl"] = {}
+        self.buy_notified = set()
+        self.opp_choice = 0
+        gv = self.game_view
+        gv.tab, gv.sig, gv.auto_try = "Plan", None, 0
+        try:
+            os.remove(os.path.join(CACHE, "last_plan.json"))
+        except OSError:
+            pass
+        if self.view == "game":
+            gv.refresh(self.make_ctx(), True)
+
     def on_phase(self, flow):
         plan = self.ctx.get("plan")
+        if flow in ("Matchmaking", "ReadyCheck", "ChampSelect") and self.ctx.get("phase") not in ("Matchmaking", "ReadyCheck", "ChampSelect"):
+            self.new_cycle()
+            plan = self.ctx.get("plan")
         self.ctx["phase"] = flow
         if not plan:
             return
@@ -435,8 +461,9 @@ class GUI:
                     first = self.advisor != "select"
                     self.advisor = "select"
                     if first:
-                        self.opp_choice = 0   # selección nueva: el rival que elegiste a mano en la anterior ya no vale
-                        self.ctx["roster"], self.ctx["roster_pl"] = None, {}   # y los jugadores de la partida anterior tampoco
+                        self.new_cycle()   # selección nueva: lo de la partida anterior ya no vale (rival elegido a mano, jugadores, marcador, plan…)
+                        self.opp_choice = 0
+                        self.ctx["roster"], self.ctx["roster_pl"] = None, {}
                     self.apply_opp(r)
                     self.update_plan(r)
                     self.infer_lane_opp()
@@ -523,6 +550,7 @@ class GUI:
                     self.on_phase(ev[1])
                 elif kind == "recs_data" and self.view == "select":
                     self.recs.render()
+                    self.counter_picks.refresh(self.make_ctx())
                 elif kind == "matchup" and self.view == "matchup":
                     self.matchup_view.update(self.make_ctx())
                 elif kind == "history":
@@ -653,7 +681,23 @@ class GUI:
                     self.root.after(120000, lambda: self.auto_install(info))
         threading.Thread(target=go, daemon=True).start()
 
+    def ver_note(self, text, color="dim", ms=8000):
+        """Mensaje junto al número de versión (resultado de buscar actualizaciones); a los pocos segundos vuelve a ser solo «vX.Y.Z»."""
+        lab = getattr(self, "ver_lbl", None)
+        if lab is None:
+            return
+        try:
+            lab.configure(text=f"v{APP_VERSION}" + (f"  ·  {text}" if text else ""), text_color=PAL[color])
+            self._ver_seq = getattr(self, "_ver_seq", 0) + 1
+            n = self._ver_seq
+            if text and ms:
+                self.root.after(ms, lambda: n == self._ver_seq and self.ver_note("", "dim"))
+        except Exception:
+            pass
+
     def check_updates(self, manual):
+        if manual:
+            self.ver_note("buscando…", "info", 0)
         def go():
             try:
                 info = updater.check(self.conf["update_url"], APP_VERSION)
@@ -668,6 +712,8 @@ class GUI:
         if err:
             # también en la comprobación automática: antes fallaba en silencio y no se reintentaba hasta 3 horas después
             self.status(f"No se ha podido comprobar si hay actualizaciones: {err}")
+            if manual:
+                self.ver_note("sin conexión con el servidor de actualizaciones", "warn")
             self.update_fails = getattr(self, "update_fails", 0) + 1
             if not manual and self.update_fails <= 5:
                 self.root.after(120000, lambda: self.check_updates(False))
@@ -676,7 +722,10 @@ class GUI:
         if info is None:
             if manual:
                 self.status(f"Estás al día: la versión {APP_VERSION} es la más reciente.")
+                self.ver_note("al día ✓", "good")
             return
+        if manual:
+            self.ver_note(f"hay una nueva: {info['version']}", "info")
         self.update_info = info
         self.update_btn.configure(text=f"Actualizar a {info['version']}")
         self.update_btn.pack(side="right", padx=(0, 12))
@@ -727,7 +776,10 @@ class GUI:
         except Exception:
             pass
         k.clbl(bar, APP_NAME, 22, "fg", True, True).pack(side="left")
-        k.clbl(bar, f"v{APP_VERSION}", 10, "dim").pack(side="left", padx=(8, 0), pady=(8, 0))
+        self.ver_lbl = k.clbl(bar, f"v{APP_VERSION}", 10, "dim")
+        self.ver_lbl.pack(side="left", padx=(8, 0), pady=(8, 0))
+        k.clickable(self.ver_lbl, lambda: self.check_updates(True))   # pulsar la versión busca actualizaciones sin cerrar nada
+        k.tip(self.ver_lbl, "Pulsa para buscar actualizaciones")
         ajustes = ctk.CTkButton(bar, text="Ajustes", width=88, height=32, corner_radius=10, font=k.font(12), border_width=1,
                                 border_color=PAL["edge"], fg_color=PAL["card"], hover_color=PAL["card"], text_color=PAL["fg"],
                                 command=self.toggle_dock)
@@ -788,7 +840,8 @@ class GUI:
         self.recs = Recs(k, self.select_view)
         self.lobby = Lobby(k, self.select_view)
         self.enemies = Enemies(k, self.select_view)
-        self.select_secs = [self.turn, self.draft, mypick, ideas, self.aram_build, self.recs, self.lobby, self.enemies, BansRow(k, self.select_view)]
+        self.counter_picks = CounterPicks(k, self.select_view)   # los mejores campeones contra cada rival, aparte de la afinidad
+        self.select_secs = [self.turn, self.draft, mypick, ideas, self.aram_build, self.recs, self.counter_picks, self.lobby, self.enemies, BansRow(k, self.select_view)]
         self.matchup_view = MatchupView(k, self.body, self)
         self.history_view = HistoryView(k, self.body, self)
         self.pool_view = PoolView(k, self.body, self)

@@ -80,6 +80,13 @@ TOPICS = [
      "compartir imagen tarjeta año png guardar"),
     ("atajos", "¿Hay atajos de teclado?",
      "Ctrl+1 a Ctrl+6 cambian de pantalla, las flechas también, F1 abre la ayuda y Esc cierra Ajustes o la guía.", "Asesor", "atajos teclado ctrl f1 flechas"),
+    ("contra_rivales", "¿Cuáles son los mejores campeones contra mis rivales?",
+     "En la selección, la tarjeta «Mejores campeones contra tus rivales» enseña, para tu rival de línea (5) y para los demás rivales ya elegidos (3), los que más le ganan, "
+     "con el porcentaje y las partidas de cada cruce. Aparte de la afinidad: aquí solo cuenta el enfrentamiento. Marca los que tienes.", "Asesor",
+     "mejores contra rivales counter enemigos enfrentamiento seleccion picks"),
+    ("actualizar", "¿Cómo busco actualizaciones sin cerrar la app?",
+     "Pulsa el número de versión de arriba (vX.Y.Z) y verás «buscando…», «al día ✓» o «hay una nueva». También está en Ajustes › «Buscar actualizaciones ahora».", "ajustes",
+     "actualizar actualizacion version nueva buscar update"),
     ("fuentes", "¿De dónde sale la información y cuánto me puedo fiar?",
      "Builds y porcentajes: Lolalytics y op.gg. Tu historial y rango: tu cliente. El marcador en vivo: la API local del juego. Los datos con pocas partidas se marcan, y "
      "los avisos de objetivos son estimaciones.", "Datos", "fuentes de donde sale informacion fiable lolalytics opgg datos"),
