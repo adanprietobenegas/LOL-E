@@ -22,9 +22,9 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 2. Estado (actualizar al terminar cada conversación)
 
-**Publicado en GitHub: 1.22.23** (15/11/2026; la 1.22.22 fue la anterior). Incluye la guía (Ayuda, demostración y recorrido).
+**Publicado en GitHub: 1.22.24** (16/11/2026; la 1.22.23 fue la anterior). Incluye la guía (Ayuda, demostración y recorrido).
 
-**En `main` sin publicar** (16/11/2026, candidata a 1.22.24; versión y notas SIN preparar; lo pidió el usuario tras publicar la 1.22.23):
+**Ya publicado en la 1.22.24** (pedido tras la 1.22.23):
 - **Reinicio de «Partida» entre partidas**: `GUI.new_cycle()` (gui.py) se llama al empezar cola (Matchmaking/ReadyCheck/ChampSelect) y en la primera selección; borra plan, marcador en vivo (`live`, `live_at`, `live_aug`), jugadores, rival elegido a mano, avisos de compra, pestaña «Análisis» y `last_plan.json`, salvo que ya haya un plan de esta selección/partida. Antes cada cosa se reiniciaba en un sitio distinto y quedaban sueltas las mejoras de Mayhem y la pestaña Análisis. NO verificado en una partida real.
 - **«Mejores campeones contra tus rivales»** (`ui_sections.CounterPicks`, entre Recomendado y Jugadores): rival de línea (5) y resto de rivales elegidos (3, por su línea habitual), con % y partidas del cruce (mínimo 200; si hay menos de 3, baja a 50 y avisa), marca «lo tienes» y «el mejor que tienes». Comparte la caché `Recs.COUNTERS` con la lista «Contra tu rival». Visto en la demo, no con una selección real.
 - **Buscar actualizaciones sin cerrar**: pulsar el número de versión de la cabecera (`GUI.ver_note`) enseña «buscando… / al día ✓ / hay una nueva: X / sin conexión». Dos preguntas nuevas en la Ayuda (`contra_rivales`, `actualizar`).
