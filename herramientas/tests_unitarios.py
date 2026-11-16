@@ -1208,6 +1208,18 @@ class TourDeLaDemostracion(unittest.TestCase):
         self.assertEqual(demo_data.PROFILE["name"], "Jugador")
 
 
+class MejoresContraRivales(unittest.TestCase):
+    def test_objetivos_rival_de_linea_primero_y_el_resto_por_su_linea(self):
+        import ui_sections
+        champs = {1: {"pos": ["TOP"]}, 2: {"pos": ["UTILITY"]}, 3: {"pos": []}, 4: {"pos": ["MIDDLE"]}}
+        cp = ui_sections.CounterPicks.__new__(ui_sections.CounterPicks)
+        cp.ui = type("U", (), {"champs": champs})()
+        r = {"role": "TOP", "lane_opp": 4, "enemies": [1, 2, 3, 4, 99]}
+        self.assertEqual(cp.targets({"r": r}), [(4, "top", True), (1, "top", False), (2, "support", False)])
+        r["lane_opp"] = 0   # sin rival de línea conocido: solo los demás
+        self.assertEqual([t[0] for t in cp.targets({"r": r})], [1, 2, 4])
+
+
 class AyudaDeLaApp(unittest.TestCase):
     def test_cada_pregunta_apunta_a_una_pagina_que_existe(self):
         import ayuda
