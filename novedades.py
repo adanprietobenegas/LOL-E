@@ -10,6 +10,12 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.24", "fecha": "16 de noviembre de 2026", "titulo": "Mejores campeones contra tus rivales y búsqueda de actualizaciones", "items": [
+        ("nuevo", "En la selección, una tarjeta nueva «Mejores campeones contra tus rivales»: para tu rival de línea (5) y para los demás rivales ya elegidos (3) enseña los que más le ganan, con el porcentaje y las partidas de cada cruce, y marca los que tienes. Va aparte de la afinidad: aquí solo cuenta el enfrentamiento."),
+        ("nuevo", "Pulsa el número de versión de la cabecera para buscar actualizaciones sin cerrar la app: dice «buscando…», «al día ✓» o «hay una nueva»."),
+        ("arreglo", "Al empezar una cola nueva, «En vivo» olvida lo de la partida anterior (plan, marcador, jugadores, mejoras de Mayhem y la pestaña Análisis). A veces se quedaba con su información."),
+        ("mejora", "La Ayuda tiene dos preguntas nuevas: los mejores campeones contra tus rivales y cómo buscar actualizaciones."),
+    ]},
     {"v": "1.22.23", "fecha": "15 de noviembre de 2026", "titulo": "Ayuda dentro de la app", "items": [
         ("nuevo", "Un botón «?» en la cabecera (o la tecla F1) abre la Ayuda: arriba te explica la pantalla en la que estás (qué es, cuándo la verás y de dónde salen sus datos) y debajo hay 14 preguntas frecuentes con buscador, como «¿Dónde encuentro las runas y builds recomendadas?» o «¿Cómo uso la app durante la partida?». Cada una tiene un botón «Enséñamelo» que te lleva a la pantalla."),
     ]},
