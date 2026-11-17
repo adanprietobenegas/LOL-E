@@ -340,7 +340,7 @@ def _is_heading_p(tok, nxt):
 
 def _entry_name(t):
     """(etiqueta, nombre) de «NOVEDAD - Volibear» o de «Aatrox»."""
-    m = re.match(r"^\s*(%s)\s*[-–—:]\s*(.+)$" % "|".join(TAGS), t, re.I)
+    m = re.match(r"^\s*(%s)\s*[-–—:]?\s*(.+)$" % "|".join(TAGS), t, re.I)
     if m:
         return m.group(1).upper(), clean(m.group(2))
     return None, clean(t)
@@ -409,7 +409,11 @@ def parse_section(node, sid, title):
                 entry["blocks"] = [b for b in entry["blocks"] if b["lines"] or b["title"]] + [block]
         elif k == "p":
             started = True
-            if _is_heading_p(tok, nxt):
+            if entry is not None and nxt and nxt[0] == "ul" and re.match(r"^(Pasiva|P|Q|W|E|R)\s*[-–—]\s*\S|^Estad[ií]sticas", tok[2]) and len(tok[2]) < 90:
+                # «Q - Golpe de erizo de mar» como párrafo en negrita: es el título de una habilidad de la ficha abierta, no una ficha nueva
+                block = {"title": clean(tok[2]), "icon": None, "lines": []}
+                entry["blocks"] = [x for x in entry["blocks"] if x["lines"] or x["title"]] + [block]
+            elif _is_heading_p(tok, nxt):
                 tag, name = _entry_name(tok[2])
                 new_entry(name, tag)
                 if pend_note:

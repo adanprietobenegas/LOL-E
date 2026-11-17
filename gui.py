@@ -19,6 +19,7 @@ from ui_help import HelpWindow
 from ui_views import DataView, MatchupView
 from ui_kit import REC_VIEWS, ACCENTS, DISPLAY, Kit, PAL, THEMES, calm, res
 from ui_game import GameView
+from ui_patch import PatchView
 from ui_draft import DraftCard
 from ui_mayhem import AramBuild
 from ui_sections import (CounterPicks, TourOffer,SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
@@ -74,7 +75,7 @@ class GUI:
             pass
         self.root.bind("<Escape>", lambda e: self.close_dock())
         self.root.report_callback_exception = lambda t, v, tb: core.log_exc("Error en la ventana", (t, v, tb))
-        for i, nm in enumerate(("Asesor", "Partida", "Enfrentamiento", "Repertorio", "Historial", "Datos"), 1):  # Ctrl+1…6 cambian de pestaña (en el orden de arriba)
+        for i, nm in enumerate(("Asesor", "Partida", "Enfrentamiento", "Repertorio", "Historial", "Parche", "Datos"), 1):  # Ctrl+1…7 cambian de pestaña (en el orden de arriba)
             self.root.bind(f"<Control-Key-{i}>", lambda e, n=nm: self.set_page(n))
         self.root.bind("<F1>", lambda e: self.open_help())
         self.root.bind("<Left>", lambda e: self.key_go(-1))
@@ -105,6 +106,7 @@ class GUI:
         self.root.after(1500, self.ensure_normal)
         self.root.after(2500, self.prebuild_dock)  # el panel de ajustes se prepara con la ventana en reposo
         self.root.after(5000, self.auto_check)
+        self.root.after(9000, self.patch_check)
         if not os.environ.get("LOLE_GEOMETRY"):  # en las pruebas no se abre
             self.root.after(3500, self.show_notes_once)
 
@@ -557,6 +559,10 @@ class GUI:
                 elif kind == "history":
                     self.history_view.data_changed()
                     self.pool_view.data_changed()
+                elif kind == "parche":
+                    self.patch_view.data_changed()
+                elif kind == "parche_new":
+                    self.tab_seg.set_badge("Parche", True)
 
                 elif kind == "update":
                     self.on_update(ev[1], ev[2], ev[3])
@@ -654,6 +660,44 @@ class GUI:
     UPDATE_EVERY = 3 * 3600 * 1000     # se vuelve a mirar cada 3 horas: quien deja LOL-E abierto también se actualiza
     BUSY = ("Matchmaking", "ReadyCheck", "ChampSelect", "GameStart", "InProgress", "Reconnect")
     installing = False
+
+    def patch_check(self):
+        """Mira si Riot ha publicado un parche nuevo (la lista de notas, ligera) y, si es así, deja un punto de aviso en «Parche» y precarga sus notas.
+        La primera vez que se ejecuta solo apunta cuál es el último: no avisa de lo que ya existía. Con una partida en marcha espera."""
+        if self.running and not self.installing:
+            if self.ctx.get("phase") in self.BUSY or self.advisor == "select":
+                self.root.after(30 * 60 * 1000, self.patch_check)
+                return
+
+            def go():
+                try:
+                    import parche
+                    vs = parche.versions(CACHE, force=True)
+                    if vs:
+                        self.patch_view.versions = vs
+                        seen = self.conf.get("parche_visto")
+                        if not seen:
+                            self.conf["parche_visto"] = vs[0]
+                            save_conf(self.conf)
+                        elif seen != vs[0]:
+                            self.q.put(("parche_new",))
+                            self.status(f"Hay un parche nuevo: {vs[0]}. Sus notas oficiales están en «Parche».")
+                        try:
+                            parche.load(CACHE, vs[0], latest=vs[0])   # precarga: al abrir la pantalla ya están
+                        except Exception:
+                            pass
+                except Exception:
+                    core.log_exc("Comprobar parche nuevo")
+            threading.Thread(target=go, daemon=True).start()
+        self.root.after(3 * 3600 * 1000, self.patch_check)
+
+    def patch_seen(self):
+        """Se está mirando «Parche»: el aviso de parche nuevo ya está atendido."""
+        vs = self.patch_view.versions
+        if vs and self.conf.get("parche_visto") != vs[0]:
+            self.conf["parche_visto"] = vs[0]
+            save_conf(self.conf)
+        self.tab_seg.set_badge("Parche", False)
 
     def auto_check(self):
         if self.conf["auto_update"] and self.conf["update_url"] and not self.installing:
@@ -806,7 +850,7 @@ class GUI:
         self.add_volume_slider(vol, 70).pack(side="left")
         self.update_btn = ctk.CTkButton(bar, text="", height=28, corner_radius=14, font=k.font(11, True), fg_color=k.acc,
                                         text_color=PAL["bg"], hover_color=k.acc, command=self.confirm_update)
-        tabs = {"asesor": "Asesor", "partida": "Partida", "enfrentamiento": "Enfrentamiento", "repertorio": "Repertorio", "historial": "Historial"}
+        tabs = {"asesor": "Asesor", "partida": "Partida", "enfrentamiento": "Enfrentamiento", "repertorio": "Repertorio", "historial": "Historial", "parche": "Parche"}
         self.tab_names = {**tabs, "datos": "Datos"}   # «Datos» es una página más, pero se abre desde su botón de la cabecera
         # banda del modo en vivo: solo con cola, selección o partida (el prototipo v3); lleva el estado y un botón para ir y volver entre la partida y la consulta
         self.band = ctk.CTkFrame(self.main, fg_color=("#fbead0", "#2e2210"), corner_radius=10, border_width=1, border_color=PAL["warn"])
@@ -848,6 +892,7 @@ class GUI:
         self.pool_view = PoolView(k, self.body, self)
         self.data_view = DataView(k, self.body, self)
         self.game_view = GameView(k, self.body, self)
+        self.patch_view = PatchView(k, self.body, self)
 
     def make_ctx(self):
         # el ancho se da en unidades lógicas (el de diseño): con la escala de Windows o el tamaño de interfaz al 125 %, 150 %…, los
@@ -858,10 +903,10 @@ class GUI:
     def show_view(self, name):
         if self.view == name:
             return
-        for v in (self.idle_view, self.select_view, self.matchup_view.box, self.history_view.box, self.pool_view.box, self.data_view.box, self.game_view.box):
+        for v in (self.idle_view, self.select_view, self.matchup_view.box, self.history_view.box, self.pool_view.box, self.data_view.box, self.game_view.box, self.patch_view.box):
             v.pack_forget()
         {"idle": self.idle_view, "select": self.select_view, "matchup": self.matchup_view.box,
-         "history": self.history_view.box, "pool": self.pool_view.box, "data": self.data_view.box, "game": self.game_view.box}[name].pack(fill="x")
+         "history": self.history_view.box, "pool": self.pool_view.box, "data": self.data_view.box, "game": self.game_view.box, "patch": self.patch_view.box}[name].pack(fill="x")
         self.view = name
         try:
             self.body._parent_canvas.yview_moveto(0)
@@ -869,7 +914,7 @@ class GUI:
             pass
 
     def effective_view(self):
-        return {"enfrentamiento": "matchup", "historial": "history", "repertorio": "pool", "datos": "data", "partida": "game"}.get(self.page, self.advisor)
+        return {"enfrentamiento": "matchup", "historial": "history", "repertorio": "pool", "datos": "data", "partida": "game", "parche": "patch"}.get(self.page, self.advisor)
 
     def apply_page(self):
         prev = self.view
@@ -923,6 +968,9 @@ class GUI:
             self.data_view.refresh(ctx, force)
         elif self.view == "game":
             self.game_view.refresh(ctx, force)
+        elif self.view == "patch":
+            self.patch_view.refresh(ctx, force)
+            self.patch_seen()
         elif self.view == "select" and ctx["r"]:
             self.refresh_select(ctx, force)
         elif self.view == "idle":

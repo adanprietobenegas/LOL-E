@@ -12,10 +12,10 @@ from ui_kit import PAL, hexc, rgb
 
 # (clave de la página, icono, nombre en la barra, nombre en modo en vivo)
 ITEMS = [("Asesor", "home", "Inicio", None), ("Partida", "live", "Partida", "En vivo"), ("Enfrentamiento", "swords", "Enfrentamiento", None),
-         ("Repertorio", "star", "Campeones", None), ("Historial", "list", "Historial", None)]
+         ("Repertorio", "star", "Campeones", None), ("Historial", "list", "Historial", None), ("Parche", "doc", "Parche", None)]
 
 
-def icon(kind, color, size=22):
+def icon(kind, color, size=22, dot=None):
     """Un icono de línea de `size` px lógicos dibujado a 8x (suave) con el color dado (tupla RGB)."""
     S = size * 8
     im = Image.new("RGBA", (S, S), (0, 0, 0, 0))
@@ -42,9 +42,16 @@ def icon(kind, color, size=22):
             a = -math.pi / 2 + i * math.pi / 5
             pts.append(p(.5 + r * math.cos(a), .54 + r * math.sin(a)))
         d.polygon(pts, outline=c, width=w)
+    elif kind == "doc":   # una hoja con la esquina doblada y tres renglones
+        d.line([p(.22, .10), p(.60, .10), p(.80, .30), p(.80, .90), p(.22, .90), p(.22, .10)], fill=c, width=w, joint="curve")
+        d.line([p(.60, .10), p(.60, .30), p(.80, .30)], fill=c, width=w, joint="curve")
+        for y in (.50, .64, .78):
+            d.line([p(.34, y), p(.68, y)], fill=c, width=w)
     else:   # list
         for y in (.26, .50, .74):
             d.line([p(.14, y), p(.86, y)], fill=c, width=w)
+    if dot:   # punto de aviso arriba a la derecha (un parche nuevo sin mirar)
+        d.ellipse((S * .62, S * .02, S * .98, S * .38), fill=tuple(dot) + (255,))
     return im.resize((size * 2, size * 2), Image.LANCZOS)
 
 
@@ -52,6 +59,7 @@ class RailNav:
     def __init__(self, kit, parent, command, current=""):
         self.k, self.cmd, self.cur = kit, command, current
         self.expanded, self.live = False, False
+        self.badges = set()   # claves con punto de aviso
         self.cache = {}
         self.frame = kit.frame(parent)
         self.btns = {}
@@ -64,11 +72,11 @@ class RailNav:
             self.btns[key] = b
         self.paint()
 
-    def image(self, kind, color):
-        """El icono en los dos temas (CustomTkinter elige solo)."""
-        key = (kind, color)
+    def image(self, kind, color, dot=False):
+        """El icono en los dos temas (CustomTkinter elige solo). Con `dot`, lleva el punto de aviso."""
+        key = (kind, color, dot)
         if key not in self.cache:
-            imgs = [icon(kind, rgb(hexc(color, dark))) for dark in (False, True)]
+            imgs = [icon(kind, rgb(hexc(color, dark)), dot=rgb(hexc("warn", dark)) if dot else None) for dark in (False, True)]
             self.cache[key] = ctk.CTkImage(light_image=imgs[0], dark_image=imgs[1], size=(22, 22))
         return self.cache[key]
 
@@ -86,6 +94,11 @@ class RailNav:
             self.expanded = on
             self.paint()
 
+    def set_badge(self, key, on):
+        if (key in self.badges) != on:
+            (self.badges.add if on else self.badges.discard)(key)
+            self.paint()
+
     def set_live(self, on):
         if on != self.live:
             self.live = on
@@ -99,6 +112,6 @@ class RailNav:
             on = key == self.cur
             hot = self.live and live_label is not None
             tone = "warn" if hot else "fg" if on else "dim"
-            b.configure(text=f"  {name}" if self.expanded else "", image=self.image(kind, tone), width=164 if self.expanded else 44,
+            b.configure(text=f"  {name}" if self.expanded else "", image=self.image(kind, tone, key in self.badges), width=164 if self.expanded else 44,
                         anchor="w" if self.expanded else "center", fg_color=PAL["card2"] if on else "transparent", text_color=PAL[tone],
                         border_color=(PAL["warn"] if hot else k.acc) if on else PAL["bg"])

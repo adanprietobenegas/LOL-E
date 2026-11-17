@@ -147,7 +147,7 @@ LESSONS.update({
         step("Tu año en LoL", "En el Historial, un resumen de tu temporada que también puedes guardar como imagen para compartir.", scene="idle", page="Historial", act="abrir_anio", target="hist.anio"),
     ]},
     "atajos": {"title": "Atajos y accesibilidad", "steps": [
-        step("La barra lateral", "Ctrl+1 a Ctrl+6 o las flechas cambian de pantalla. Con la ventana ancha ves los nombres; con la estrecha, solo iconos.", scene="idle", page="Asesor", target="nav.todo"),
+        step("La barra lateral", "Ctrl+1 a Ctrl+7 o las flechas cambian de pantalla. Con la ventana ancha ves los nombres; con la estrecha, solo iconos.", scene="idle", page="Asesor", target="nav.todo"),
         step("Ayuda con F1", "F1 o el botón ? abren la ayuda de la pantalla y las preguntas frecuentes.", target="boton.ayuda"),
         step("Tamaño y colores", "En Ajustes: tamaño de la interfaz de 90 a 130 %, tema claro u oscuro y paletas revisadas por contraste.", act="ajustes", target="boton.ajustes"),
         step("Listo", "Los cambios se aplican al instante y se guardan solos.", act="cerrar_ajustes", target="boton.ajustes"),

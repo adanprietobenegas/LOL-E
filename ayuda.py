@@ -21,6 +21,9 @@ PAGES = {
     "Historial": ("Historial", "Todas tus partidas guardadas, con filtros, resumen, patrón de derrotas, dónde mueres y «Tu año en LoL».",
                   "Cuando quieras revisar o buscar partidas.",
                   "El cliente solo entrega las más recientes: LOL-E guarda cada partida que ve para que el historial crezca."),
+    "Parche": ("Parche", "Las notas oficiales del último parche, en español y tal como las publica Riot, y cómo se está moviendo el juego con él: qué campeones suben o bajan en victorias y uso, quién cambia de línea y qué pasó con los que tocaron las notas.",
+               "Cuando salga un parche nuevo la barra lo avisa con un punto. Las primeras horas hay pocas partidas: las estadísticas lo dicen.",
+               "Las notas, de leagueoflegends.com/es-es (Riot); las estadísticas, de Lolalytics (partidas clasificatorias en solitario de tu elo)."),
     "Datos": ("Datos", "De dónde sale cada dato, cómo se calcula la afinidad, los umbrales y un glosario.",
               "Cuando quieras saber cuánto fiarte de algo.", "Es la propia documentación de la app."),
 }
@@ -78,8 +81,11 @@ TOPICS = [
     ("compartir", "¿Cómo comparto mis partidas?",
      "En el análisis, «Guardar tarjeta de la partida»; en el Historial, «Tu año en LoL» con «Guardar como imagen». Las dos crean un PNG.", "Historial",
      "compartir imagen tarjeta año png guardar"),
+    ("parche", "¿Dónde veo las notas del parche y cómo va el parche nuevo?",
+     "En «Parche»: arriba las notas oficiales de Riot en español, con filtros por campeones, objetos o modos, y en «Estadísticas» cómo cambian victorias, uso y baneos frente al parche anterior.", "Parche",
+     "parche notas version cambios nerf buff estadisticas meta actualizacion"),
     ("atajos", "¿Hay atajos de teclado?",
-     "Ctrl+1 a Ctrl+6 cambian de pantalla, las flechas también, F1 abre la ayuda y Esc cierra Ajustes o la guía.", "Asesor", "atajos teclado ctrl f1 flechas"),
+     "Ctrl+1 a Ctrl+7 cambian de pantalla, las flechas también, F1 abre la ayuda y Esc cierra Ajustes o la guía.", "Asesor", "atajos teclado ctrl f1 flechas"),
     ("contra_rivales", "¿Cuáles son los mejores campeones contra mis rivales?",
      "En la selección, la tarjeta «Mejores campeones contra tus rivales» enseña, para tu rival de línea (5) y para los demás rivales ya elegidos (3), los que más le ganan, "
      "con el porcentaje y las partidas de cada cruce. Aparte de la afinidad: aquí solo cuenta el enfrentamiento. Marca los que tienes.", "Asesor",
