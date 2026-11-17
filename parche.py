@@ -628,3 +628,43 @@ def changes(data):
                 if e["kind"] == "champion":
                     out.append({"slug": champion_slug(e), "name": e["name"], "verdict": e["verdict"], "section": s["kind"], "entry": e})
     return out
+
+
+_EFFECT = {"mtime": None, "v": None, "by": {}}
+
+
+def latest_effect(cache_dir, champs):
+    """{id_campeón: {"v": versión, "verdict", "name", "text"}} con lo que las ÚLTIMAS notas guardadas en disco dicen de cada campeón (sin red). Sirve para avisar en la
+    selección y en «Partida» de que el campeón elegido se ha tocado. Vacío si aún no se han descargado las notas."""
+    try:
+        lst = _read(_path(cache_dir, "lista.json")) or {}
+        vs = lst.get("versions") or []
+        if not vs:
+            return {}
+        p = _path(cache_dir, f"notas_{vs[0]}.json")
+        mt = os.path.getmtime(p)
+        if _EFFECT["mtime"] == mt and _EFFECT["v"] == vs[0]:
+            return _EFFECT["by"]
+        data = _read(p)
+        if not data or data.get("schema") != VERSION:
+            return {}
+        import parche_stats
+        idx = parche_stats.champion_index(champs)
+        by = {}
+        for ch in changes(data):
+            if ch["section"] != "champions":
+                continue
+            cid = idx.get(_slug(ch["slug"])) or idx.get(_slug(ch["name"]))
+            if not cid or cid in by:
+                continue
+            e = ch["entry"]
+            first = next(((b["title"], ln) for b in e["blocks"] for ln in b["lines"] if ln.get("before")), None)
+            text = ""
+            if first:
+                title, ln = first
+                text = f"{title + ': ' if title else ''}{ln['label'] + ' ' if ln['label'] else ''}{ln['before']} → {ln['after']}"
+            by[cid] = {"v": vs[0], "verdict": ch["verdict"], "name": ch["name"], "text": text[:140]}
+        _EFFECT.update(mtime=mt, v=vs[0], by=by)
+        return by
+    except Exception:
+        return {}

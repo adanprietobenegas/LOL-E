@@ -1215,3 +1215,19 @@ class PatchView:
 def ARROW_OK(ln):
     """¿Se puede enseñar el cambio como «antes → después»? Solo si hay una flecha única (si no, el texto completo es más fiel)."""
     return ln["text"].count("⇒") == 1
+
+
+def patch_chip(ui, parent, cid, bg=None):
+    """Una línea pequeña «Tocado en el parche 26.22 · ▲ Mejora» para el campeón `cid`, o None si las últimas notas guardadas no lo tocan. No usa red."""
+    info = parche.latest_effect(core.CACHE, ui.champs).get(cid)
+    if not info:
+        return None
+    vk, vcol = VERDICT.get(info["verdict"], VERDICT["adjust"])
+    row = tk.Frame(parent, bg=bg or ui.bg(parent))
+    tk.Label(row, text=f"Parche {info['v']}: ", font=ui.tkf(10, False, False), fg=ui.hexm(PAL["dim"]), bg=row.cget("bg")).pack(side="left")
+    tk.Label(row, text=vk, font=ui.tkf(10, True, False), fg=ui.hexm(PAL[vcol]), bg=row.cget("bg")).pack(side="left")
+    if info["text"]:
+        ui.tip(row, info["text"])
+        for w in row.winfo_children():
+            ui.tip(w, info["text"])
+    return row

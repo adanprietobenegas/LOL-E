@@ -874,6 +874,13 @@ class MyPick(Section):
         txt.pack(side="left")
         ui.lbl(txt, "TU CAMPEÓN ELEGIDO" if r.get("mine_locked") else "LO ESTÁS ELIGIENDO", 10, "dim", True).pack(anchor="w")
         ui.lbl(txt, name(cid, ui.champs), 18, "fg", True, True).pack(anchor="w")
+        try:   # si las últimas notas del parche tocaron a este campeón, una línea lo dice (sin red: solo lo ya guardado)
+            import ui_patch
+            chip = ui_patch.patch_chip(ui, txt, cid)
+            if chip is not None:
+                chip.pack(anchor="w", pady=(2, 0))
+        except Exception:
+            core.log_exc("Aviso de parche en la selección")
         import ui_opp
         pk = ui_opp.picker(ui, c, cid, lane, r.get("enemies") or [], r.get("lane_opp_auto") or 0,
                            ui.opp_now(), ui.set_opp, ctx["width"] - 110)

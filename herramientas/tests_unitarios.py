@@ -1328,6 +1328,21 @@ class NotasDelParche(unittest.TestCase):
         ch = self.p.changes(self.d)
         self.assertEqual([(c["slug"], c["verdict"], c["section"]) for c in ch[:2]], [("corki", "buff", "champions"), ("yasuo", "nerf", "champions")])
 
+    def test_aviso_de_campeon_tocado_sin_red(self):
+        import tempfile, json as _j
+        d = tempfile.mkdtemp()
+        data = self.p.parse(self.page())
+        data["fetched"] = 0
+        os.makedirs(os.path.join(d, "parche"))
+        _j.dump(data, open(os.path.join(d, "parche", "notas_26.22.json"), "w", encoding="utf-8"))
+        _j.dump({"ts": 0, "schema": self.p.VERSION, "versions": ["26.22"]}, open(os.path.join(d, "parche", "lista.json"), "w", encoding="utf-8"))
+        champs = {42: {"icon": "Corki", "name": "Corki"}, 157: {"icon": "Yasuo", "name": "Yasuo"}, 1: {"icon": "Annie", "name": "Annie"}}
+        by = self.p.latest_effect(d, champs)
+        self.assertEqual((by[42]["verdict"], by[157]["verdict"], by[42]["v"]), ("buff", "nerf", "26.22"))
+        self.assertNotIn(1, by)
+        self.assertIn("→", by[42]["text"])
+        self.assertEqual(self.p.latest_effect(tempfile.mkdtemp(), champs), {})   # sin notas descargadas: nada, y sin errores
+
     def test_si_la_web_cambia_no_revienta(self):
         d = self.p.parse({"blades": [{"type": "patchNotesRichText", "richText": {"body": "<div>nada reconocible</div>"}}]})
         self.assertEqual(d["sections"], [])

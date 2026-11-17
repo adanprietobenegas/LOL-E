@@ -219,6 +219,13 @@ class GameView:
         if opp and opp in ui.champs:
             sub += f"  ·  contra {core.name(opp, ui.champs)}"
         ui.lbl(txt, sub or "sin línea asignada", 10, "dim").pack(anchor="w")
+        try:   # tocado en las últimas notas del parche (solo lo ya guardado)
+            import ui_patch
+            chip = ui_patch.patch_chip(ui, txt, cid)
+            if chip is not None:
+                chip.pack(anchor="w", pady=(2, 0))
+        except Exception:
+            core.log_exc("Aviso de parche en Partida")
         goal = self.goal_text(plan) if plan.get("state") in ("select", "game") else None
         if goal:   # un solo objetivo medible, sacado de lo que te pasa en tus derrotas
             ui.reg("partida.objetivo", ui.lbl(host, goal, 11, "warn", True, anchor="w", justify="left", wraplength=max(240, self.width - 110))).pack(anchor="w", pady=(0, 8))
