@@ -136,7 +136,8 @@ def first(n, pred):
 ARROW = "⇒"
 NUM = re.compile(r"\d+(?:[.,]\d+)?")
 LOWER_BETTER = ("enfriamiento", "coste", "recarga", "tiempo de lanzamiento", "retardo", "demora", "reutilización", "tiempo de carga",
-                "tiempo de preparación", "tiempo de canalización", "tiempo de lanzado", "tiempo de espera", "tiempo de activación", "tiempo de retraso")
+                "tiempo de acumulación", "tiempo de preparación", "tiempo de canalización", "tiempo de lanzado", "tiempo de espera", "tiempo de activación", "tiempo de retraso")
+NOT_LOWER = re.compile(r"^(recuperaci|reducci|restauraci|aceleraci|reinicio|reembolso)\w*\s+(de|del)\s+(el\s+|la\s+)?(enfriamiento|tiempo de recarga|recarga)")
 HIGHER_WORSE = ("daño recibido", "daño sufrido")   # subirlo es peor para quien lo lleva (poco habitual; el resto se lee en sentido normal)
 
 
@@ -149,12 +150,17 @@ SEQ = re.compile(r"\d+(?:[.,]\d+)?(?:\s*[/\-–]\s*\d+(?:[.,]\d+)?)*")
 
 def skeleton(s):
     """El texto sin cifras (cada serie «50/75/100» o «8-30» cuenta como una): dos textos con el mismo esqueleto son el mismo tipo de dato con otros números."""
-    return re.sub(r"\s+", "", SEQ.sub("#", (s or "").lower()))
+    s = re.sub(r"\([^()\d+\-][^()]*\)", "", (s or "").lower())   # aclaraciones como «(tarda 0,047 s más…)»
+    s = SEQ.sub("#", s)
+    s = re.sub(r"[^\W\d_]+", "", s)                              # sin palabras: «%», «s», «del PH»… no cambian el tipo de dato
+    return re.sub(r"\s+", "", s)
 
 
 def trend(label, before, after):
     """+1 si el cambio mejora lo que el campeón u objeto ofrece, -1 si lo empeora, 0 si no se sabe (cambios cualitativos, o textos que no son comparables:
     otra fórmula, otras unidades). Se compara número a número; en «enfriamiento», «coste»… bajar es mejorar. Es una estimación automática, no la opinión de Riot."""
+    if after.lstrip().startswith("(") and "(" in before:   # «120/200/280 (+35 %) ⇒ (+40 %)»: lo que no se repite es lo que no cambia
+        after = before.split("(", 1)[0].strip() + " " + after.strip()
     if skeleton(before) != skeleton(after):
         return 0
     b, a = nums(before), nums(after)
@@ -173,8 +179,10 @@ def trend(label, before, after):
     # cada serie de cifras (base, relación con la habilidad…) vota; un cambio mixto («vida 640 ⇒ 590 pero +99 ⇒ +107 por nivel») queda en 0
     d = sum(cmp(x, y) for x, y in zip(sb, sa)) if len(sb) == len(sa) else (cmp(sb[0], sa[0]) if sb and sa else 0)
     d = (d > 0) - (d < 0)
-    lab = (label or "").lower()
-    if any(k in lab for k in LOWER_BETTER) or any(k in lab for k in HIGHER_WORSE):
+    lab = (label or "").lower().strip()
+    if NOT_LOWER.match(lab):   # «Recuperación de enfriamiento»: subirlo es bueno
+        return d
+    if any(k in lab for k in LOWER_BETTER) or any(lab.startswith(k) for k in HIGHER_WORSE):
         d = -d
     return d
 
@@ -186,9 +194,12 @@ def split_change(runs_):
         return None
     left, _, right = t.partition(ARROW)
     label = ""
-    m = re.match(r"^\s*(?:(?:NOVEDAD|ELIMINADO|ACTUALIZACIÓN)\s+)?([^:⇒]{2,90}?):\s*(.*)$", left, re.S)
-    if m:
-        label, left = m.group(1).strip(), m.group(2)
+    left = re.sub(r"^\s*(?:NOVEDAD|ELIMINADO|ACTUALIZACIÓN)\s+", "", left)
+    if ":" in left:   # «Habilidad: Estadística: antes»: la etiqueta es todo lo anterior al último «:» (si no hay cifras antes de él)
+        head, _, tail = left.rpartition(":")
+        head = head.strip(" :")
+        if 2 <= len(head) <= 140 and not re.search(r"\d\s*:\s*$", head):
+            label, left = head, tail
     left = left.lstrip(": ")
     return label, clean(left), clean(right.rstrip(" .;"))
 
@@ -397,8 +408,17 @@ def parse_section(node, sid, title):
         elif k == "h4":
             _, ttl, ability, icon, skin = tok
             started = True
-            cat = (not ability) and (any(w in ttl.lower() for w in CATEGORY_WORDS) or entry is None)
-            if cat and not (entry is not None and ttl.lower().startswith("estad")):
+            low = ttl.lower()
+            is_cat = any(w in low for w in CATEGORY_WORDS)
+            heading = (not ability and not is_cat and not low.startswith("estad") and not skin and nxt is not None and len(ttl) < 70
+                       and (nxt[0] in ("quote", "ul") or (nxt[0] == "h4" and nxt[2])))
+            if heading:   # el nombre del campeón como h4 (sección Classic): abre ficha, no grupo ni bloque
+                tag, name = _entry_name(ttl)
+                new_entry(name, tag)
+                if pend_note:
+                    entry["note"].extend(pend_note)
+                    pend_note = []
+            elif (not ability) and (is_cat or entry is None) and not (entry is not None and low.startswith("estad")):
                 new_group(ttl)
             else:
                 if entry is None:
@@ -575,12 +595,14 @@ def load(cache_dir, v, latest=None, force=False):
     p = _path(cache_dir, f"notas_{v}.json")
     saved = _read(p)
     ttl = TTL_CURRENT if v == latest else TTL_OLD
-    if saved and saved.get("schema") == VERSION and not force and time.time() - saved.get("fetched", 0) < ttl:
+    closed_ok = v == latest or saved.get("final") if saved else False   # guardado siendo el último y ya no lo es: se relee una vez
+    if saved and saved.get("schema") == VERSION and not force and closed_ok and time.time() - saved.get("fetched", 0) < ttl:
         return saved
     a, b = v.split(".")
     try:
         data = parse(next_data(_get(NOTE_URL.format(a=a, b=b)))["props"]["pageProps"]["page"])
         data["fetched"] = time.time()
+        data["final"] = v != latest
         if not data["v"]:
             data["v"] = v
         _write(p, data)

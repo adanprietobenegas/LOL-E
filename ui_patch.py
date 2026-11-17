@@ -75,6 +75,11 @@ class PatchView:
         self._tok = 0
         self._qjob = None
         self._mine = None
+        self._mine_src = ""
+        self.focus = ""
+        self._list_try = 0
+        self._retry_job = None
+        self.entries_host = self.stats_host = None
         self._item_idx = None
         self._aug_idx = None
         self._wraps = []
@@ -86,6 +91,7 @@ class PatchView:
         if getattr(self, "_listing", False):
             return
         self._listing = True
+        self._list_try = time.time()
 
         def go():
             try:
@@ -126,24 +132,35 @@ class PatchView:
         st = self.stats.get(key)
         if isinstance(st, tuple) and len(st) == 3 and time.time() - st[2] > 120:
             st = None
+        if isinstance(st, dict) and time.time() - st.get("at", 0) > (600 if not st["cur"] else 4 * 3600):   # sin datos: se mira de nuevo a los 10 min; con datos, a las 4 h
+            st = None
         if st is not None:
             return st
         self.stats[key] = "cargando"
         latest = self.versions[0] if self.versions else None
         tier = key[1]
+        vs = list(self.versions)
 
         def go():
             try:
                 cur = parche_stats.snapshot(core.CACHE, v, tier, current=(v == latest))
-                pv = parche_stats.prev_version(v)
+                pv = vs[vs.index(v) + 1] if v in vs and vs.index(v) + 1 < len(vs) else parche_stats.prev_version(v)   # el anterior real (27.1 -> 26.24)
                 prev = parche_stats.snapshot(core.CACHE, pv, tier) if pv else None
-                self.stats[key] = {"cur": cur, "prev": prev}
+                self.stats[key] = {"cur": cur, "prev": prev, "pv": pv, "at": time.time()}
             except Exception as e:
                 core.log_exc("Estadísticas del parche")
                 self.stats[key] = ("error", str(e), time.time())
             self.ui.notify("parche")
         threading.Thread(target=go, daemon=True).start()
         return "cargando"
+
+    def retry_later(self, ms):
+        """Vuelve a pintar la pantalla pasado un rato (para reintentar lo que falló); un solo aviso pendiente a la vez."""
+        if self._retry_job is None:
+            def go():
+                self._retry_job = None
+                self.data_changed()
+            self._retry_job = self.ui.root.after(ms, go)
 
     def data_changed(self):
         self.sig = None
@@ -181,9 +198,13 @@ class PatchView:
         def pick(k):
             paint(k)
             cb(k)
-        for k, text in items:
+        per = max(2, int((self.width - 150) // 112)) if self.width < 760 else 99   # en ventanas estrechas las pastillas pasan a la fila de debajo
+        for i, (k, text) in enumerate(items):
             lab = self.pill(row, text, k == current, lambda k=k: pick(k))
-            lab.pack(side="left", padx=(0, 5), pady=2)
+            if per == 99:
+                lab.pack(side="left", padx=(0, 5), pady=2)
+            else:
+                lab.grid(row=i // per, column=i % per, padx=(0, 5), pady=2, sticky="w")
             labs[k] = lab
         self.pills[name] = paint
         return row
@@ -193,7 +214,7 @@ class PatchView:
 
     def mine(self):
         """Campeones del jugador: los que ha jugado al menos 2 veces en el historial guardado y, si no hay historial, los que tiene."""
-        if self._mine is not None:
+        if self._mine:
             return self._mine
         s = set()
         try:
@@ -201,10 +222,18 @@ class PatchView:
             s = {c for c, k in n.items() if c and k >= 2}
         except Exception:
             pass
+        self._mine_src = "hist" if s else ""
         if not s:
             s = set((self.gui.ctx.get("info") or {}).get("owned") or [])
-        self._mine = s
+            self._mine_src = "owned" if s else ""
+        if s:   # un conjunto vacío no se recuerda: la información del cliente puede llegar después
+            self._mine = s
         return s
+
+    def played(self):
+        """Los campeones que de verdad has jugado (del historial). Vacío si solo se sabe cuáles tienes: entonces no se marca nada como «tuyo»."""
+        s = self.mine()
+        return s if self._mine_src == "hist" else set()
 
     def champ_id(self, entry):
         idx = getattr(self, "_cidx", None)
@@ -225,7 +254,7 @@ class PatchView:
         """Icono de un aumento de ARAM: Caos si ya está en la caché (los baja el propio cliente de LoL al abrir su pantalla); si no, la insignia."""
         try:
             import augments
-            if self._aug_idx is None:
+            if not self._aug_idx:
                 self._aug_idx = {norm(v.get("n")): k for k, v in augments.catalog().items()}
             aid = self._aug_idx.get(norm(name))
             pth = augments.icon_path(aid) if aid else None
@@ -262,13 +291,14 @@ class PatchView:
     def refresh(self, ctx, force=False):
         ui = self.ui
         self.width = ctx["width"]
-        if not self.versions:
+        if not self.versions and not getattr(self, "_listing", False) and time.time() - self._list_try > 60:   # sin red: se reintenta como mucho una vez por minuto
             self.start()
         sig = (ui.epoch, int(self.width // 90), self.sel, self.tab, tuple(self.versions[:3]), len(self.notes), len(self.stats))
         if sig == self.sig and not force:
             return
         self.sig = sig
         self._tok += 1
+        self.cancel_query()
         self.pills = {}
         ui.clear(self.box)
         outer = ui.frame(self.box)
@@ -291,14 +321,14 @@ class PatchView:
         data = data if isinstance(data, dict) else None
         top = ui.frame(card)
         top.pack(fill="x")
-        if data and data.get("banner"):
+        if data and data.get("banner") and self.tab == "Notas":
             lab = tk.Label(top, bd=0, bg=ui.bg(top))
             lab.pack(fill="x", pady=(0, 12))
-            lab._w = 0
+            lab._bw = 0
 
             def fit(e, lab=lab, url=data["banner"], v=v):
-                if abs(e.width - lab._w) > 6 and e.width > 100:   # el banner ocupa justo el ancho de la tarjeta, sea cual sea la ventana
-                    lab._w = e.width
+                if abs(e.width - lab._bw) > 6 and e.width > 100:   # el banner ocupa justo el ancho de la tarjeta, sea cual sea la ventana
+                    lab._bw = e.width
                     bn = self.banner_image(url, v, e.width / ui.scale_px())
                     if bn is not None:
                         lab.configure(image=bn)
@@ -327,7 +357,7 @@ class PatchView:
             b = tk.Label(right, text="Abrir en la web de Riot ↗", font=ui.tkf(10, True, False), fg=self.hexm(ui.acc), bg=ui.bg(right), cursor="hand2")
             b.pack(side="left")
             b.bind("<Button-1>", lambda e, u=data["url"]: __import__("webbrowser").open(u))
-        if data and data["summary"]:
+        if data and data["summary"] and self.tab == "Notas":
             self.label(card, data["summary"], 12, "fg", wrap=max(260, self.width - 130)).pack(anchor="w", pady=(10, 0))
         bar = ui.frame(card)
         bar.pack(fill="x", pady=(12, 0))
@@ -354,24 +384,38 @@ class PatchView:
             top = max(0, int((im.height - ch) * 0.38))
             im = im.crop((0, top, im.width, min(im.height, top + ch))).resize((px, h), Image.LANCZOS)
             ph = ImageTk.PhotoImage(im)
+            for k in [k for k in self.banner if k[0] == v]:
+                del self.banner[k]   # solo se guarda el último ancho de cada parche
             self.banner[key] = ph
             return ph
         except Exception:
             return None
 
+    def cancel_query(self):
+        if self._qjob is not None:
+            try:
+                self.ui.root.after_cancel(self._qjob)
+            except Exception:
+                pass
+            self._qjob = None
+
     def pick_version(self, v):
+        self.cancel_query()
         self.sel = v
-        self.sec, self.verdict, self.lane = "all", "all", "all"
+        self.sec, self.verdict, self.lane, self.focus = "all", "all", "all", ""
         self.limits = {}
         self.sig = None
         self.refresh(self.gui.make_ctx(), True)
 
     def set_tab(self, t):
+        self.cancel_query()
         self.tab = t
         self.limits = {}
-        self.fill_content_clear()
+        self.sig = None
+        self.refresh(self.gui.make_ctx(), True)   # la cabecera cambia con la pestaña (el banner solo va en Notas)
 
     def fill_content_clear(self):
+        self.cancel_query()
         self._tok += 1
         self.pills = {}
         self.ui.clear(self.content)
@@ -429,6 +473,7 @@ class PatchView:
             if d["designers"]:
                 self.label(c, "  ·  ".join(d["designers"]), 9, "dim").pack(anchor="w", pady=(8, 0))
         self.tiles(secs)
+        self.yours(secs)
         self.glance(secs)
         # barra de filtros
         card = ui.card(self.content)
@@ -443,13 +488,20 @@ class PatchView:
         vrow = self.pill_row(r2, VERDICT_FILTERS, self.verdict, self.set_verdict, "verdict")
         vrow.pack(side="left")
         ui.reg("parche.filtros", r1)
-        tail = ui.frame(r2)
-        tail.pack(side="right")
+        tail = ui.frame(r2) if self.width >= 900 else ui.frame(card)
+        if self.width >= 900:
+            tail.pack(side="right")
+        else:
+            tail.pack(anchor="w", pady=(6, 0))
         if self.mine():
             tg = self.pill(tail, "Solo mis campeones", self.only_mine, lambda: None)
             tg.pack(side="left", padx=(0, 8))
             tg.bind("<Button-1>", lambda e, t=tg: self.flip_mine(t))
             ui.tip(tg, "Muestra solo a los campeones que has jugado (o, si aún no hay historial, los que tienes).")
+        if self.focus:
+            fc = tk.Label(tail, text=f"  Ficha: {self.focus}  ✕  ", font=ui.tkf(10, True, False), fg=self.hexm(ON_FILL), bg=self.hexm(ui.acc), cursor="hand2", pady=3)
+            fc.pack(side="left", padx=(0, 8))
+            fc.bind("<Button-1>", lambda e: (setattr(self, "focus", ""), self.fill_content_clear()))
         ent = ctk.CTkEntry(tail, width=190, height=28, placeholder_text="Buscar en el parche…", font=ui.font(11), fg_color=PAL["well"], border_width=0, text_color=PAL["fg"])
         ent.pack(side="left")
         if self.query:
@@ -458,6 +510,54 @@ class PatchView:
         self.entries_host = ui.frame(self.content)
         self.entries_host.pack(fill="x")
         self.render_entries()
+
+    def yours(self, secs):
+        """«Tus campeones en este parche»: los que has jugado y han tocado las notas, con su veredicto y el primer cambio; es la respuesta a «¿qué cambió en lo que juego?»."""
+        ui = self.ui
+        pl = self.played()
+        if not pl:
+            return
+        rows = []
+        for s in secs:
+            if s["kind"] != "champions":
+                continue
+            for g in s["groups"]:
+                for e in g["entries"]:
+                    if e["kind"] == "champion" and self.champ_id(e) in pl:
+                        rows.append(e)
+        if not rows:
+            return
+        bg = self.hexm("card2")
+        outer = tk.Frame(self.content, bg=ui.bg(self.content))
+        outer.pack(fill="x", padx=8, pady=(0, 8))
+        card = tk.Frame(outer, bg=bg, highlightthickness=1, highlightbackground=self.hexm(ui.edge_color()))
+        card.pack(fill="x")
+        tk.Frame(card, width=4, bg=self.hexm(ui.acc)).pack(side="left", fill="y")
+        inner = tk.Frame(card, bg=bg)
+        inner.pack(side="left", fill="x", expand=True, padx=14, pady=10)
+        tk.Label(inner, text="TUS CAMPEONES EN ESTE PARCHE", font=ui.tkf(9, True, False), fg=self.hexm("dim"), bg=bg).pack(anchor="w", pady=(0, 4))
+        ui.reg("parche.tuyos", card)
+        for e in rows[:6]:
+            vk, vcol = VERDICT.get(e["verdict"], VERDICT["adjust"])
+            first = next((ln for b in e["blocks"] for ln in b["lines"]), None)
+            blk = next((b["title"] for b in e["blocks"] if b["lines"]), "")
+            txt = ""
+            if first:
+                txt = (blk + ": " if blk else "") + ((first["label"] + " " + first["before"] + " → " + first["after"]) if first["before"] else first["text"])
+                txt = txt if len(txt) <= 90 else txt[:87].rsplit(" ", 1)[0] + "…"
+            row = tk.Frame(inner, bg=bg, cursor="hand2")
+            row.pack(fill="x", pady=3)
+            ph = ui.champ_photo(self.champ_id(e), 30)
+            if ph is not None:
+                ic = tk.Label(row, image=ph, bd=0, bg=bg)
+                ic.image = ph
+                ic.pack(side="left", padx=(0, 10))
+            tk.Label(row, text=e["name"], font=ui.tkf(11, True, False), fg=self.hexm("fg"), bg=bg, width=13, anchor="w").pack(side="left")
+            tk.Label(row, text=vk, font=ui.tkf(10, True, False), fg=self.hexm(vcol), bg=bg, width=15, anchor="w").pack(side="left")
+            tk.Label(row, text=txt, font=ui.tkf(10, False, False), fg=self.hexm("dim"), bg=bg, anchor="w").pack(side="left", fill="x", expand=True)
+            ui.clickable(row, lambda n=e["name"]: self.jump_to(n))
+        if len(rows) > 6:
+            tk.Label(inner, text=f"… y {len(rows) - 6} más (filtra con «Solo mis campeones»)", font=ui.tkf(9, False, False), fg=self.hexm("dim"), bg=bg).pack(anchor="w", pady=(2, 0))
 
     def glance(self, secs):
         """«De un vistazo»: los retratos de los campeones que mejoran y los que bajan; pulsar uno busca su ficha. Es lo que primero se quiere saber de un parche."""
@@ -476,7 +576,7 @@ class PatchView:
         inner = tk.Frame(card, bg=bg)
         inner.pack(fill="x", padx=14, pady=10)
         tk.Label(inner, text="DE UN VISTAZO · CAMPEONES DE LA GRIETA", font=ui.tkf(9, True, False), fg=self.hexm("dim"), bg=bg).pack(anchor="w", pady=(0, 6))
-        mine = self.mine()
+        mine = self.played()
         for title, color, es in groups:
             row = tk.Frame(inner, bg=bg)
             row.pack(fill="x", pady=3)
@@ -502,10 +602,14 @@ class PatchView:
 
     def jump_to(self, name):
         """Filtra la lista por el nombre pulsado (y vuelve arriba de la lista)."""
-        self.query = name
+        self.focus, self.query = name, ""
         self.sec = "champions"
         self.limits = {}
         self.fill_content_clear()
+        try:   # que se vea la ficha: la pantalla baja hasta la lista
+            self.ui.root.after(150, lambda: self.gui.body._parent_canvas.yview_moveto(0.28))
+        except Exception:
+            pass
 
     def counts(self, secs):
         out = {}
@@ -520,17 +624,20 @@ class PatchView:
         champs = [e for s in secs if s["kind"] in ("champions",) for g in s["groups"] for e in g["entries"] if e["kind"] == "champion"]
         ch = Counter(e["verdict"] for e in champs)
         items = [e for s in secs if s["kind"] == "items" for g in s["groups"] for e in g["entries"]]
-        augs = [e for s in secs for g in s["groups"] for e in g["entries"] if e["kind"] == "augment"]
+        augs = [e for s in secs if s["kind"] == "aram" for g in s["groups"] for e in g["entries"] if e["kind"] == "augment"]
         bugs = sum(len(g["bullets"]) for s in secs if s["kind"] == "bugs" for g in s["groups"])
         tiles = []
         if champs:
-            tiles.append((str(len(champs)), "campeones tocados", f"{ch['buff']} mejoran · {ch['nerf']} bajan" + (f" · {ch['mixed']} mixtos" if ch["mixed"] else ""), "champions"))
+            sub = f"{ch['buff']} " + ("mejora" if ch["buff"] == 1 else "mejoran") + f" · {ch['nerf']} " + ("baja" if ch["nerf"] == 1 else "bajan")
+            if ch["mixed"]:
+                sub += f" · {ch['mixed']} " + ("mixto" if ch["mixed"] == 1 else "mixtos")
+            tiles.append((str(len(champs)), "campeón tocado" if len(champs) == 1 else "campeones tocados", sub, "champions"))
         if items:
-            tiles.append((str(len(items)), "objetos", "", "items"))
+            tiles.append((str(len(items)), "objeto" if len(items) == 1 else "objetos", "", "items"))
         if augs:
-            tiles.append((str(len(augs)), "aumentos", "ARAM: Caos y Arena", "aram"))
+            tiles.append((str(len(augs)), "aumento" if len(augs) == 1 else "aumentos", "ARAM: Caos", "aram"))
         if bugs:
-            tiles.append((str(bugs), "errores corregidos", "", "bugs"))
+            tiles.append((str(bugs), "error corregido" if bugs == 1 else "errores corregidos", "", "bugs"))
         if not tiles:
             return
         row = tk.Frame(self.content, bg=ui.bg(self.content))
@@ -574,13 +681,22 @@ class PatchView:
                 pass
 
         def go():
+            self._qjob = None
+            try:
+                if self.entries_host is None or not self.entries_host.winfo_exists():
+                    return
+            except Exception:
+                return
             self.query = text.strip()
+            self.focus = ""
             self.limits = {}
             self.render_entries()
         self._qjob = self.ui.root.after(260, go)
 
     def match(self, e):
         if self.verdict != "all" and e.get("verdict") != self.verdict:
+            return False
+        if self.focus and norm(e["name"]) != norm(self.focus):
             return False
         if self.only_mine:
             cid = self.champ_id(e) if e["kind"] == "champion" else None
@@ -668,6 +784,9 @@ class PatchView:
         if entries:
             key = (s["id"], g["title"])
             lim = self.limits.get(key, LIMIT)
+            pl = self.played()
+            if pl and g.get("kind") == "champion":   # tus campeones primero (el orden entre ellos y entre el resto no cambia)
+                entries = sorted(entries, key=lambda e: self.champ_id(e) not in pl)
             shown = entries[:lim]
             cols = 2 if self.width >= 940 else 1
             cframe = ui.frame(wrap)
@@ -687,7 +806,7 @@ class PatchView:
                 more = tk.Label(wrap, text=f"Mostrar {min(LIMIT, len(entries) - lim)} más  ({len(entries) - lim} sin ver) ▾", font=ui.tkf(10, True, False),
                                 fg=self.hexm(ui.acc), bg=ui.bg(wrap), cursor="hand2")
                 more.pack(anchor="w", padx=8, pady=(4, 6))
-                more.bind("<Button-1>", lambda e, k=key, n=lim: (self.limits.__setitem__(k, n + LIMIT), self.render_entries()))
+                more.bind("<Button-1>", lambda e, k=key, n=lim: self.show_more(k, n))
         ui.root.after(40, lambda: self.settle(False))
         ui.root.after(400, self.settle)
         if bullets:
@@ -702,6 +821,28 @@ class PatchView:
                 self.line_in(row, b, max(240, self.width - 190), card_bg="card2")
             ui.root.after(40, lambda: self.settle(False))
             ui.root.after(400, self.settle)
+
+    def show_more(self, key, n):
+        """Enseña diez fichas más sin que la pantalla salte: se recuerda cuántos píxeles había por encima y se vuelve a ellos al repintar."""
+        cv = None
+        try:
+            cv = self.gui.body._parent_canvas
+            total = max(1, (cv.bbox("all") or (0, 0, 0, 1))[3])
+            off = cv.yview()[0] * total
+        except Exception:
+            off = None
+        self.limits[key] = n + LIMIT
+        self.render_entries()
+
+        def back():
+            try:
+                tot = max(1, (cv.bbox("all") or (0, 0, 0, 1))[3])
+                cv.yview_moveto(min(1.0, off / tot))
+            except Exception:
+                pass
+        if off is not None:
+            for ms in (60, 250, 700):
+                self.ui.root.after(ms, back)
 
     # ------------------------------------------------------------ una ficha
     def entry_card(self, parent, e, colw):
@@ -723,7 +864,7 @@ class PatchView:
         nm = tk.Frame(txt, bg=bg)
         nm.pack(anchor="w")
         tk.Label(nm, text=e["name"], font=ui.tkf(13, True, False), fg=self.hexm("fg"), bg=bg, anchor="w").pack(side="left")
-        if e["kind"] == "champion" and self.champ_id(e) in self.mine():
+        if e["kind"] == "champion" and self.champ_id(e) in self.played():
             mk = tk.Label(nm, text="  ★ lo juegas", font=ui.tkf(9, True, False), fg=self.hexm(ui.acc), bg=bg)
             mk.pack(side="left")
             ui.tip(mk, "Es uno de tus campeones (los que has jugado en tu historial).")
@@ -732,6 +873,8 @@ class PatchView:
             subtxt = (subtxt + " · " if subtxt else "") + e["tag"].capitalize()
         if subtxt:
             tk.Label(txt, text=subtxt, font=ui.tkf(9, False, False), fg=self.hexm("dim"), bg=bg, anchor="w").pack(anchor="w")
+        if e["verdict"] == "mixed":
+            vk = f"{vk}  {e.get('up', 0)}▲ {e.get('down', 0)}▼"
         pill = tk.Label(head, text=f" {vk} ", font=ui.tkf(9, True, False), fg=self.hexm(vcol), bg=self.hexm("well"), padx=4, pady=2)
         pill.pack(side="right", anchor="n")
         if e.get("up") or e.get("down"):
@@ -740,7 +883,7 @@ class PatchView:
         if e["note"]:
             note = " ".join(e["note"])
             short = note if len(note) <= 190 else note[:185].rsplit(" ", 1)[0] + "…"
-            nl = tk.Label(inner, text=short, font=ui.tkf(10, False, False), fg=self.hexm("dim"), bg=bg, anchor="w", justify="left", wraplength=int(wrap * ui.scale_px()))
+            nl = tk.Label(inner, text=short, font=ui.tkf(10, False, False), fg=self.hexm("fg"), bg=bg, anchor="w", justify="left", wraplength=int(wrap * ui.scale_px()))
             nl.pack(anchor="w", pady=(8, 0), fill="x")
             self.reg_wrap(nl, inner)
             if len(note) > 190:
@@ -809,6 +952,14 @@ class PatchView:
                 lb = tk.Label(row, text=ln["label"], font=ui.tkf(10, False, False), fg=self.hexm("dim"), bg=bg, anchor="w", justify="left", wraplength=w)
                 lb.pack(anchor="w", fill="x")
                 self.reg_wrap(lb, row)
+            if len(ln["before"]) + len(ln["after"]) > 38:   # largas: antes (atenuado) y debajo el nuevo valor, sin flecha lateral
+                b1 = tk.Label(row, text=ln["before"], font=ui.tkf(10, False, False), fg=self.hexm("dim"), bg=bg, anchor="w", justify="left", wraplength=w)
+                b1.pack(anchor="w", fill="x")
+                b2 = tk.Label(row, text="→  " + ln["after"], font=ui.tkf(11, True, False), fg=self.hexm(col), bg=bg, anchor="w", justify="left", wraplength=w)
+                b2.pack(anchor="w", fill="x")
+                self.reg_wrap(b1, row)
+                self.reg_wrap(b2, row)
+                return
             line = tk.Frame(row, bg=bg)
             line.pack(anchor="w", fill="x")
             b1 = tk.Label(line, text=ln["before"], font=ui.tkf(11, False, False), fg=self.hexm("dim"), bg=bg, anchor="w", justify="left", wraplength=int(w * 0.44))
@@ -832,11 +983,13 @@ class PatchView:
             self.msg("Descargando las estadísticas del parche (Lolalytics)…")
             return
         if isinstance(st, tuple):
-            self.msg("No se han podido leer las estadísticas ahora mismo. Se reintenta en un par de minutos.", "warn")
+            self.msg("No se han podido leer las estadísticas ahora mismo. Se reintenta solo en un par de minutos.", "warn")
+            self.retry_later(125000)
             return
         cur, prev = st["cur"], st["prev"]
         if not cur:
-            self.msg(f"Lolalytics aún no tiene partidas del parche {v}. Suelen aparecer a las pocas horas de salir el parche; vuelve más tarde.")
+            self.msg(f"Lolalytics aún no tiene partidas del parche {v}. Suelen aparecer a las pocas horas de salir el parche; se vuelve a mirar solo cada 10 minutos.")
+            self.retry_later(610000)
             return
         rel, warn = parche_stats.reliability(cur, prev)
         self.st_data = (cur, prev, rel)
@@ -847,7 +1000,7 @@ class PatchView:
         left = ui.frame(row)
         left.pack(side="left", fill="x", expand=True)
         self.label(left, f"{parche_stats.summary_line(cur, prev)}", 12, "fg", True).pack(anchor="w")
-        self.label(left, f"Partidas clasificatorias en solitario · {tier_name}, según tu rango · fuente: Lolalytics · se compara con el parche {parche_stats.prev_version(v) or '—'}",
+        self.label(left, f"Partidas clasificatorias en solitario · {tier_name}, según tu rango · fuente: Lolalytics · se compara con el parche {st.get('pv') or '—'}",
                    9, "dim", wrap=max(260, self.width - 200)).pack(anchor="w", pady=(2, 0))
         if warn:
             w = tk.Frame(c, bg=self.hexm("well"))
@@ -916,8 +1069,7 @@ class PatchView:
             self.stat_card(colf[i % cols], title, data, kind, color, note, wid)
         # evolución dentro del parche en curso (solo si LOL-E guardó fotos de varios días)
         if self.current() == (self.versions[0] if self.versions else None):
-            mv, d0, d1 = parche_stats.movers(parche_stats.days(core.CACHE, self.current(), self.tier()))
-            mv = [r for r in mv if (lane is None or r["lane"] == lane) and (only is None or r["cid"] in only)]
+            mv, d0, d1 = parche_stats.movers(parche_stats.days(core.CACHE, self.current(), self.tier()), lane=lane, only=only)
             if mv:
                 fmt = lambda d: f"{int(d[8:10])}/{int(d[5:7])}"
                 wid2 = max(280, self.width - 150)
@@ -926,7 +1078,7 @@ class PatchView:
                 self.stat_card(one, "EVOLUCIÓN DENTRO DEL PARCHE", mv, "wr", None, f"Victorias del {fmt(d0)} al {fmt(d1)}: solo cambios que superan el margen de error", wid2)
         # cambios de línea
         if prev:
-            shifts = [s for s in parche_stats.lane_shifts(rows) if (lane is None or s["lane"] == lane) and (only is None or s["cid"] in only)]
+            shifts = parche_stats.lane_shifts(rows, lane=lane, only=only)
             if shifts:
                 self.shift_card(host, shifts)
             # efecto de las notas

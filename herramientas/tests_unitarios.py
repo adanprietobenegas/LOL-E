@@ -1303,6 +1303,27 @@ class NotasDelParche(unittest.TestCase):
         self.assertEqual(t("Daño", "(15+5 % de velocidad)", "17 % de vida que falte"), 0)              # otra fórmula: no se compara
         self.assertEqual(self.p.verdict([{"lines": [{"trend": 1}, {"trend": -1}]}])[0], "mixed")
 
+    def test_casos_de_la_revision(self):
+        t = self.p.trend
+        self.assertEqual(t("Recuperación de enfriamiento", "70 %", "50 %"), -1)    # subir esa recuperación es bueno: bajarla es debilitar
+        self.assertEqual(t("Reducción de enfriamiento de la E", "0,5", "0,75"), 1)
+        self.assertEqual(t("Tiempo de acumulación", "10 s", "5 s"), 1)              # bajar el tiempo es mejorar
+        self.assertEqual(t("Daño por segundo", "120/200/280 (+35 % del PH)", "(+40 % del PH)"), 1)   # solo cambia la relación
+        self.assertEqual(t("Velocidad del proyectil", "3800", "3200 (tarda 0,047 s más en llegar)"), -1)   # la aclaración no cuenta como otra fórmula
+        ln = self.p.make_line([["Oscuridad lacerante: Daño: 50 % del PH ⇒ 80 % del PH", False]])
+        self.assertEqual((ln["label"], ln["before"], ln["after"], ln["trend"]), ("Oscuridad lacerante: Daño", "50 % del PH", "80 % del PH", 1))
+
+    def test_nombre_de_campeon_como_h4_en_classic(self):
+        html = ('<div id="patch-notes-container"><h2 id="patch-classic">Classic</h2><h4 class="change-detail-title">Campeones</h4>'
+                '<h4 class="change-detail-title">NOVEDAD - Akali</h4><blockquote class="blockquote context"><p>Nota de Akali.</p></blockquote>'
+                '<h4 class="change-detail-title ability-title">Q - Marca</h4><ul><li>Daño: 10 ⇒ 20.</li></ul>'
+                '<h4 class="change-detail-title">Kennen</h4><ul><li>Daño: 5 ⇒ 4.</li></ul></div>')
+        d = self.p.parse({"blades": [{"type": "patchNotesRichText", "richText": {"body": html}}]})
+        es = d["sections"][0]["groups"][0]["entries"]
+        self.assertEqual([(e["name"], e["tag"]) for e in es], [("Akali", "NOVEDAD"), ("Kennen", None)])
+        self.assertEqual(es[0]["blocks"][0]["title"], "Q - Marca")
+        self.assertEqual(es[1]["verdict"], "nerf")
+
     def test_cambios_para_cruzar_con_estadisticas(self):
         ch = self.p.changes(self.d)
         self.assertEqual([(c["slug"], c["verdict"], c["section"]) for c in ch[:2]], [("corki", "buff", "champions"), ("yasuo", "nerf", "champions")])
@@ -1374,6 +1395,17 @@ class EstadisticasDelParche(unittest.TestCase):
         self.assertEqual([(r["cid"], r["dwr"]) for r in mv], [(1, 4.0)])           # 2 es ruido y 3 tiene muy poca muestra
         self.assertEqual((a, b), ("2026-11-03", "2026-11-10"))
         self.assertEqual(self.s.movers({"2026-11-03": d["2026-11-03"]}), ([], None, None))   # con un solo día no hay con qué comparar
+
+    def test_filtros_antes_de_recortar_y_baneos_por_linea(self):
+        rows = self.s.compare(self.cur, self.prev)
+        cur = self.snap({("top", 1): (50.0, 3.0, 8.0, 30000, 90), ("support", 1): (50.0, 0.1, 8.0, 500, 3)})   # el baneo es del campeón: con «Apoyo» elegido no entra si allí casi no se juega
+        self.assertEqual(self.s.rankings(self.s.compare(cur, None), lane="support")["bans"], [])
+        self.assertEqual([r["cid"] for r in self.s.rankings(self.s.compare(cur, None), lane="top")["bans"]], [1])
+        d = {"2026-11-03": {"games": 1, "rows": {"top:1": [50.0, 3.0, 3000], "jungle:1": [50.0, 3.0, 3000]}},
+             "2026-11-10": {"games": 1, "rows": {"top:1": [54.0, 3.0, 20000], "jungle:1": [45.0, 3.0, 20000]}}}
+        self.assertEqual([r["lane"] for r in self.s.movers(d, lane="jungle")[0]], ["jungle"])
+        self.assertEqual(len(self.s.movers(d, n=1)[0]), 1)
+        self.assertEqual([s["cid"] for s in self.s.lane_shifts(self.s.compare(self.cur, self.prev), only={1})], [])
 
     def test_parche_provisional(self):
         cur = self.snap({("top", 1): (50, 3, 5, 3000, 90)})

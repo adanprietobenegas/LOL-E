@@ -106,13 +106,14 @@ def snapshot(cache_dir, public_v, tier, current=False, force=False):
     p = _path(cache_dir, f"stats_{patch}_{tier}.json")
     saved = _read(p)
     ttl = TTL_CURRENT if current else TTL_OLD
-    if saved and saved.get("schema") == VERSION and not force and time.time() - saved.get("ts", 0) < ttl:
+    # una foto guardada cuando el parche aún era el actual puede ser de sus primeros días: al cerrarse el parche se descarga otra vez, una sola vez
+    if saved and saved.get("schema") == VERSION and not force and (current or saved.get("final")) and time.time() - saved.get("ts", 0) < ttl:
         return _ints(saved)
     try:
         with ThreadPoolExecutor(max_workers=5) as ex:
             res = list(ex.map(lambda ln: _fetch_lane(patch, ln, tier), LANES))
         lanes = {ln: r[0] for ln, r in zip(LANES, res)}
-        snap = {"schema": VERSION, "ts": time.time(), "patch": public_v, "tier": tier, "lanes": lanes,
+        snap = {"schema": VERSION, "ts": time.time(), "patch": public_v, "tier": tier, "lanes": lanes, "final": not current,
                 "avg": {ln: r[1] for ln, r in zip(LANES, res)}}
         if not any(lanes.values()):
             return _ints(saved) if saved else None
@@ -193,13 +194,15 @@ def rankings(rows, lane=None, only=None, n=8, min_games=MIN_GAMES, scale=1.0):
     for r in pool:
         r["z"] = zscore(r)
     both = [r for r in pool if r["dwr"] is not None and r["games"] >= mg and r["games0"] >= 400 and r["z"] >= 1.8 and r["pr"] >= 0.3]
-    used = [r for r in pool if r["dpr"] is not None and r["pr"] >= MIN_USE and r["pr0"] is not None and r["pr0"] >= MIN_USE * 0.5]
+    used = [r for r in pool if r["dpr"] is not None and r["pr0"] is not None and max(r["pr"], r["pr0"]) >= 0.8 and abs(r["dpr"]) >= 0.4]
     wr_up = sorted((r for r in both if r["dwr"] > 0), key=lambda r: -r["dwr"])[:n]
     wr_dn = sorted((r for r in both if r["dwr"] < 0), key=lambda r: r["dwr"])[:n]
-    pr_up = sorted((r for r in used if r["dpr"] > 0), key=lambda r: -r["dpr"] / max(0.3, r["pr0"]))[:n]
-    pr_dn = sorted((r for r in used if r["dpr"] < 0), key=lambda r: r["dpr"] / max(0.3, r["pr0"]))[:n]
+    pr_up = sorted((r for r in used if r["dpr"] > 0), key=lambda r: -r["dpr"])[:n]
+    pr_dn = sorted((r for r in used if r["dpr"] < 0), key=lambda r: r["dpr"])[:n]
     main = {}
     for r in pool:   # el baneo es del campeón, no de la línea: una sola fila por campeón (la línea donde más juega)
+        if lane is not None and r["share"] < 10:   # con una línea elegida, solo los que de verdad se juegan en ella
+            continue
         if r["cid"] not in main or r["games"] > main[r["cid"]]["games"]:
             main[r["cid"]] = r
     bans = sorted((r for r in main.values() if r["br"] >= 1.0), key=lambda r: -r["br"])[:n]
@@ -207,7 +210,7 @@ def rankings(rows, lane=None, only=None, n=8, min_games=MIN_GAMES, scale=1.0):
     return {"wr_up": wr_up, "wr_dn": wr_dn, "pr_up": pr_up, "pr_dn": pr_dn, "bans": bans, "ban_up": ban_up}
 
 
-def lane_shifts(rows, n=8, min_share=6.0, jump=7.0):
+def lane_shifts(rows, n=8, min_share=6.0, jump=7.0, lane=None, only=None):
     """Campeones que cambian de sitio: su línea principal ya no es la del parche anterior, o ganan o pierden `jump` puntos del reparto de sus partidas en una línea
     en la que juegan al menos `min_share` %. [{cid, lane, share, share0, dshare, home, kind}] con kind «main» (cambia de línea principal) o «grow»/«fall»."""
     by = {}
@@ -215,6 +218,8 @@ def lane_shifts(rows, n=8, min_share=6.0, jump=7.0):
         by.setdefault(r["cid"], []).append(r)
     out = []
     for cid, rs in by.items():
+        if only is not None and cid not in only:
+            continue
         cur_main = max(rs, key=lambda r: r["games"])
         prev_rows = [r for r in rs if r["share0"] is not None]
         if len(prev_rows) < 1:
@@ -231,6 +236,8 @@ def lane_shifts(rows, n=8, min_share=6.0, jump=7.0):
             if abs(d) >= jump and max(r["share"], r["share0"]) >= min_share and r["games"] >= 150:
                 out.append({"cid": cid, "lane": r["lane"], "from": None, "share": r["share"], "share0": r["share0"], "dshare": round(d, 1),
                             "kind": "grow" if d > 0 else "fall", "games": r["games"]})
+    if lane is not None:
+        out = [x for x in out if x["lane"] == lane]
     out.sort(key=lambda x: (-abs(x["dshare"]), -x["games"]))
     return out[:n]
 
@@ -265,8 +272,8 @@ def note_effects(changes, rows, index):
         seen.add(cid)
         main = max(by[cid], key=lambda r: r["games"])
         exp = None
-        if main["dwr"] is not None and ch["verdict"] in ("buff", "nerf"):
-            exp = (main["dwr"] > 0) == (ch["verdict"] == "buff") if abs(main["dwr"]) >= 0.3 else None
+        if main["dwr"] is not None and ch["verdict"] in ("buff", "nerf") and zscore(main) >= 1.3 and main["games"] >= 1000:
+            exp = (main["dwr"] > 0) == (ch["verdict"] == "buff")
         out.append({"cid": cid, "name": ch["name"], "verdict": ch["verdict"], "lane": main["lane"], "dwr": main["dwr"], "dpr": main["dpr"], "games": main["games"],
                     "wr": main["wr"], "pr": main["pr"], "expected": exp})
     out.sort(key=lambda x: -abs(x["dwr"] if x["dwr"] is not None else 0))
@@ -284,7 +291,7 @@ def summary_line(cur, prev):
     return s
 
 
-def movers(days_d, n=6, min_first=800, min_last=1500):
+def movers(days_d, n=6, min_first=800, min_last=1500, lane=None, only=None):
     """Evolución DENTRO del parche en curso: los (campeón, línea) cuya tasa de victorias más se ha movido entre la primera foto del parche y la última (solo con ≥ 2 días
     guardados, es decir, si LOL-E estuvo abierto en esos días). Devuelve (lista, primer_día, último_día); la lista va vacía si no hay base para comparar.
     Solo cuenta lo que supera el margen de error (z ≥ 1,8): los primeros días las cifras se mueven mucho por puro azar."""
@@ -301,7 +308,9 @@ def movers(days_d, n=6, min_first=800, min_last=1500):
         d = wr1 - old[0]
         se = ((50 / g1 ** 0.5) ** 2 + (50 / old[2] ** 0.5) ** 2) ** 0.5
         if se and abs(d) / se >= 1.8:
-            lane, cid = k.split(":")
-            out.append({"cid": int(cid), "lane": lane, "wr0": old[0], "wr": wr1, "dwr": round(d, 2), "games": g1, "pr0": old[1], "pr": pr1, "dpr": round(pr1 - old[1], 2)})
+            ln, cid = k.split(":")
+            if (lane is not None and ln != lane) or (only is not None and int(cid) not in only):
+                continue
+            out.append({"cid": int(cid), "lane": ln, "wr0": old[0], "wr": wr1, "dwr": round(d, 2), "games": g1, "pr0": old[1], "pr": pr1, "dpr": round(pr1 - old[1], 2)})
     out.sort(key=lambda r: -abs(r["dwr"]))
     return out[:n], a, b

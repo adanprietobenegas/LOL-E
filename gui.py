@@ -683,7 +683,9 @@ class GUI:
                             self.q.put(("parche_new",))
                             self.status(f"Hay un parche nuevo: {vs[0]}. Sus notas oficiales están en «Parche».")
                         try:
-                            parche.load(CACHE, vs[0], latest=vs[0])   # precarga: al abrir la pantalla ya están
+                            fresh = parche.load(CACHE, vs[0], latest=vs[0])   # precarga: al abrir la pantalla ya están
+                            if isinstance(fresh, dict):
+                                self.patch_view.notes[vs[0]] = fresh   # y si Riot corrigió las notas del parche actual, se ven sin reiniciar
                         except Exception:
                             pass
                 except Exception:
