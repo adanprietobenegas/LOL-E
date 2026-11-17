@@ -1220,6 +1220,21 @@ class MejoresContraRivales(unittest.TestCase):
         self.assertEqual([t[0] for t in cp.targets({"r": r})], [1, 2, 4])
 
 
+class ParcheReservada(unittest.TestCase):
+    """La pantalla «Parche» está reservada hasta revisarla con un parche real: sin `parche.ACTIVO` no se ve en ningún sitio."""
+
+    def test_apagada_no_aparece(self):
+        import parche, ui_rail, ayuda, tour
+        if parche.ACTIVO:
+            self.skipTest("LOLE_PARCHE=1: la pantalla está encendida a propósito")
+        self.assertNotIn("Parche", [i[0] for i in ui_rail.ITEMS])
+        self.assertNotIn("Parche", ayuda.PAGES)
+        self.assertNotIn("parche", [t[0] for t in ayuda.TOPICS])
+        self.assertNotIn("parche", tour.LESSONS)
+        self.assertNotIn("parche", tour.OTRAS)
+        self.assertNotIn("parche", tour.PREGUNTAS)
+
+
 class NotasDelParche(unittest.TestCase):
     HTML = (
         '<div id="patch-notes-container"><h2 id="patch-top">&nbsp;</h2><blockquote class="blockquote context"><p>Intro uno.<br><br>Intro dos. '

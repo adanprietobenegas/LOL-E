@@ -247,8 +247,8 @@ PASOS = [
     ("19_seleccion_contra_rival", lambda: (push(ses), ui.players(team), ui.root.after(2500, lambda: ui.recs.set_tab("Contra rival"))), 6000),
     ("20_datos_abierto", lambda: (abrir_pliegues(), ui.set_page("Datos"), ui.refresh_current(True)), 5000),
     ("21_historial_filtros", lambda: (ui.set_page("Historial"), ui.refresh_current(True)), 5000),
-    ("22_parche_notas", lambda: (ui.set_page("Parche"), ui.patch_view.set_tab("Notas")), 6000),   # con red real; sin ella enseña el aviso de descarga
-    ("23_parche_estadisticas", lambda: ui.patch_view.set_tab("Estadísticas"), 5000),
+    *([("22_parche_notas", lambda: (ui.set_page("Parche"), ui.patch_view.set_tab("Notas")), 6000),   # con red real; sin ella enseña el aviso de descarga
+       ("23_parche_estadisticas", lambda: ui.patch_view.set_tab("Estadísticas"), 5000)] if __import__("parche").ACTIVO else []),   # solo con LOLE_PARCHE=1
     ("22_build_variantes", lambda: (en_partida(), ui.root.after(3500, lambda: pulsar("Variantes"))), 7000),
     ("23_build_situaciones", lambda: pulsar("Situaciones"), 3500),
     ("24_perfil_completo", lambda: (ui.kit.__dict__.update(open_prof={"fake0"}), conf["folds"].update(lobby=True, sel_team=True, team=True),

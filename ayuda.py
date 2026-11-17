@@ -5,6 +5,8 @@ de menú para la demostración en vivo cuando se construya (cada una podrá enla
 hay que cambiar aquí su frase (una prueba comprueba que cada pregunta apunta a una página que existe)."""
 import unicodedata
 
+import parche
+
 # clave de página -> (nombre en la barra, qué es, cuándo la verás, de dónde sale)
 PAGES = {
     "Asesor": ("Inicio", "Tu perfil, tu rango y cómo ha ido (gráfica), tus últimas partidas y tu sesión. En la selección de campeón se convierte en el asesor con los campeones recomendados.",
@@ -118,6 +120,11 @@ GLOSARIO = {
     "MIS CAMPEONES": "Solo los campeones que tienes desbloqueados.",
     "META FUERTE": "Solo campeones con buena tasa de victoria en este parche (Lolalytics).",
 }
+
+
+if not parche.ACTIVO:   # pantalla Parche reservada
+    PAGES.pop('Parche', None)
+    TOPICS[:] = [t for t in TOPICS if t[0] != 'parche']
 
 
 def glossary(term):

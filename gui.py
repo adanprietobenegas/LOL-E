@@ -10,6 +10,7 @@ import customtkinter as ctk
 from PIL import Image
 
 import lol_advisor as core
+import parche
 import updater
 from lol_advisor import APP_NAME, APP_VERSION, CACHE, DATA_DIR, PRESET_INFO, read_json, save_conf
 from ui_history import HistoryView
@@ -75,7 +76,7 @@ class GUI:
             pass
         self.root.bind("<Escape>", lambda e: self.close_dock())
         self.root.report_callback_exception = lambda t, v, tb: core.log_exc("Error en la ventana", (t, v, tb))
-        for i, nm in enumerate(("Asesor", "Partida", "Enfrentamiento", "Repertorio", "Historial", "Parche", "Datos"), 1):  # Ctrl+1…7 cambian de pestaña (en el orden de arriba)
+        for i, nm in enumerate([n for n in ("Asesor", "Partida", "Enfrentamiento", "Repertorio", "Historial", "Parche", "Datos") if n != "Parche" or parche.ACTIVO], 1):  # Ctrl+1…7 cambian de pestaña (en el orden de arriba)
             self.root.bind(f"<Control-Key-{i}>", lambda e, n=nm: self.set_page(n))
         self.root.bind("<F1>", lambda e: self.open_help())
         self.root.bind("<Left>", lambda e: self.key_go(-1))
@@ -669,6 +670,8 @@ class GUI:
     def patch_check(self):
         """Mira si Riot ha publicado un parche nuevo (la lista de notas, ligera) y, si es así, deja un punto de aviso en «Parche» y precarga sus notas.
         La primera vez que se ejecuta solo apunta cuál es el último: no avisa de lo que ya existía. Con una partida en marcha espera."""
+        if not parche.ACTIVO:
+            return
         if self.running and not self.installing:
             if self.ctx.get("phase") in self.BUSY or self.advisor == "select":
                 self.root.after(30 * 60 * 1000, self.patch_check)
@@ -863,7 +866,9 @@ class GUI:
         self.add_volume_slider(vol, 70).pack(side="left")
         self.update_btn = ctk.CTkButton(bar, text="", height=28, corner_radius=14, font=k.font(11, True), fg_color=k.acc,
                                         text_color=PAL["bg"], hover_color=k.acc, command=self.confirm_update)
-        tabs = {"asesor": "Asesor", "partida": "Partida", "enfrentamiento": "Enfrentamiento", "repertorio": "Repertorio", "historial": "Historial", "parche": "Parche"}
+        tabs = {"asesor": "Asesor", "partida": "Partida", "enfrentamiento": "Enfrentamiento", "repertorio": "Repertorio", "historial": "Historial"}
+        if parche.ACTIVO:
+            tabs["parche"] = "Parche"
         self.tab_names = {**tabs, "datos": "Datos"}   # «Datos» es una página más, pero se abre desde su botón de la cabecera
         # banda del modo en vivo: solo con cola, selección o partida (el prototipo v3); lleva el estado y un botón para ir y volver entre la partida y la consulta
         self.band = ctk.CTkFrame(self.main, fg_color=("#fbead0", "#2e2210"), corner_radius=10, border_width=1, border_color=PAL["warn"])
@@ -1446,7 +1451,9 @@ class GUI:
         note("Un sonido suave, una vez por objeto, cuando tu oro ya llega para el siguiente de tu build. Necesita los avisos sonoros y los datos en vivo.")
 
         section("Al abrir")
-        starts = {"Última usada": "ultima", "Inicio": "asesor", "Enfrentamiento": "enfrentamiento", "Campeones": "repertorio", "Historial": "historial", "Parche": "parche", "Datos": "datos"}   # los nombres de la barra lateral
+        starts = {"Última usada": "ultima", "Inicio": "asesor", "Enfrentamiento": "enfrentamiento", "Campeones": "repertorio", "Historial": "historial", "Datos": "datos"}   # los nombres de la barra lateral
+        if parche.ACTIVO:
+            starts["Parche"] = "parche"
         label("Pestaña inicial")
         k.menu(sc, list(starts), {v: k_ for k_, v in starts.items()}.get(conf["start_tab"], "Última usada"),
                lambda v: self.set("start_tab", starts[v], redraw=False), 300).pack(anchor="w", padx=12, pady=2)

@@ -16,6 +16,10 @@ Modelo de salida de `parse`:
 import json, os, re, time, urllib.error, urllib.request
 from html.parser import HTMLParser
 
+# Reservada: la pantalla «Parche» está terminada pero NO se muestra hasta revisarla con un parche nuevo real (decisión del usuario, 17/11/2026).
+# Para verla en desarrollo: variable de entorno LOLE_PARCHE=1. Para publicarla: poner True aquí (y revisar lo que diga CONTINUAR.md).
+ACTIVO = os.environ.get("LOLE_PARCHE") == "1"
+
 BASE = "https://www.leagueoflegends.com"
 LIST_URL = BASE + "/es-es/news/tags/patch-notes/"
 NOTE_URL = BASE + "/es-es/news/game-updates/league-of-legends-patch-{a}-{b}-notes"

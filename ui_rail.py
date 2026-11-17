@@ -13,6 +13,9 @@ from ui_kit import PAL, hexc, rgb
 # (clave de la página, icono, nombre en la barra, nombre en modo en vivo)
 ITEMS = [("Asesor", "home", "Inicio", None), ("Partida", "live", "Partida", "En vivo"), ("Enfrentamiento", "swords", "Enfrentamiento", None),
          ("Repertorio", "star", "Campeones", None), ("Historial", "list", "Historial", None), ("Parche", "doc", "Parche", None)]
+import parche as _parche
+if not _parche.ACTIVO:   # la pantalla Parche está reservada (ver parche.ACTIVO)
+    ITEMS = [i for i in ITEMS if i[0] != "Parche"]
 
 
 def icon(kind, color, size=22, dot=None):

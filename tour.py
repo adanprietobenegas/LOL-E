@@ -7,6 +7,8 @@ Las lecciones (`LESSONS`) son datos: cada paso dice a qué situación llevar la 
 `Tour` es la tarjeta: Anterior, Siguiente, Salir, «Saltar lección», progreso «Paso n de N» en texto y atajos de teclado (flechas e Intro, Esc). Un clic fuera de la tarjeta no la cierra ni
 avanza; el elemento resaltado lleva un borde ámbar y la etiqueta «AQUÍ», para que el color no sea la única señal."""
 
+import parche
+
 # id de elemento -> cómo encontrarlo en la ventana (`ui` es gui.GUI)
 TARGETS = {
     "nav.inicio": lambda ui: ui.tab_seg.btns["Asesor"],
@@ -157,7 +159,7 @@ LESSONS.update({
              act="parche_estadisticas", target="cuerpo", source="Lolalytics, partidas clasificatorias en solitario de tu elo. Los primeros días hay pocas partidas y se avisa."),
     ]},
     "atajos": {"title": "Atajos y accesibilidad", "steps": [
-        step("La barra lateral", "Ctrl+1 a Ctrl+7 o las flechas cambian de pantalla. Con la ventana ancha ves los nombres; con la estrecha, solo iconos.", scene="idle", page="Asesor", target="nav.todo"),
+        step("La barra lateral", f"Ctrl+1 a Ctrl+{7 if parche.ACTIVO else 6} o las flechas cambian de pantalla. Con la ventana ancha ves los nombres; con la estrecha, solo iconos.", scene="idle", page="Asesor", target="nav.todo"),
         step("Ayuda con F1", "F1 o el botón ? abren la ayuda de la pantalla y las preguntas frecuentes.", target="boton.ayuda"),
         step("Tamaño y colores", "En Ajustes: tamaño de la interfaz de 90 a 130 %, tema claro u oscuro y paletas revisadas por contraste.", act="ajustes", target="boton.ajustes"),
         step("Listo", "Los cambios se aplican al instante y se guardan solos.", act="cerrar_ajustes", target="boton.ajustes"),
@@ -166,11 +168,16 @@ LESSONS.update({
 
 RECORRIDO = ["que_es", "antes", "seleccion", "partida", "terminar", "fuentes"]
 OTRAS = ["primera_partida", "sin_datos", "afinidad", "jugadores", "patron", "otros_modos", "compartir", "enfrentamiento", "aprender", "personalizar", "parche", "atajos"]   # sueltas, fuera del recorrido
+if not parche.ACTIVO:   # pantalla Parche reservada (parche.ACTIVO): sin su lección ni su pregunta
+    OTRAS.remove("parche")
+    LESSONS.pop("parche", None)
 
 # pregunta de la Ayuda -> lección que la enseña (las que no tienen lección propia aún no aparecen)
 PREGUNTAS = {"parche": "parche", "primera": "primera_partida", "afinidad": "afinidad", "jugadores": "jugadores", "patron": "patron", "modos": "otros_modos", "compartir": "compartir",
              "atajos": "atajos", "sin_datos": "sin_datos", "enfrentamiento": "enfrentamiento", "aprender": "aprender", "personalizar": "personalizar", "que_es": "que_es", "seguro": "que_es", "antes": "antes", "cola": "antes", "elegir": "seleccion", "runas_builds": "seleccion", "en_partida": "partida",
              "terminar": "terminar", "historial": "terminar", "fuentes": "fuentes"}
+if not parche.ACTIVO:
+    PREGUNTAS.pop("parche", None)
 
 
 def total_steps(ids):

@@ -32,6 +32,11 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
   - `GUI.patch_check` (cada 3 h, tras 9 s; espera si hay partida) apunta `parche_visto` (conf) y, si sale uno nuevo, pone el punto en la barra y precarga sus notas; abrir «Parche» lo quita.
   - Pruebas nuevas: `NotasDelParche`, `EstadisticasDelParche` (HTML y datos sintéticos). Visto en la demo con red real, no con una partida; la banda ámbar no cambia.
 
+- **PANTALLA PARCHE RESERVADA (decisión del usuario, 17/11/2026)**: está terminada en `main` pero apagada con `parche.ACTIVO` (False salvo `LOLE_PARCHE=1`). Apagada
+  no hay botón en la barra, ni Ctrl+n, ni opción de pestaña inicial, ni aviso bajo el campeón, ni comprobación de parches, ni lección ni preguntas de la Ayuda
+  (`ui_rail`, `gui`, `ui_patch.patch_chip`, `tour`, `ayuda`; prueba `ParcheReservada`). Para revisarla con un parche real: `set LOLE_PARCHE=1` y abrir la app; el parche 26.23
+  ya está en la web de Riot (`parche_vivo.py` lo lee bien). Cuando el usuario diga que se publica: `ACTIVO = True`, versión y notas, y mirar qué dice el HISTORIAL.
+
 - **Revisión de la pantalla Parche (17/11 noche)**: un experto de solo lectura dio 25 hallazgos y se corrigieron casi todos: sin red ya no se repite la petición
   en bucle (como mucho 1/min), las instantáneas guardadas siendo el parche actual se vuelven a leer al cerrarse (`final`), «Recuperación de enfriamiento» ya no se
   invierte, la sección Classic (h4 con el nombre) se lee bien, los filtros de línea y «solo mis campeones» se aplican ANTES de recortar las listas, el baneo con una línea

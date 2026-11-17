@@ -357,3 +357,5 @@ Cada versión se publicó con el sí del usuario. Lo que no está en `CONTINUAR.
 - **Aprendido**: no enganchar `<Configure>` para ajustar saltos de línea cuando las columnas se reparten el ancho (oscila sin fin y cuelga `update_idletasks`);
   se usa `reg_wrap`/`settle`, una sola vez y tras forzar la geometría. En el parche 26.22 la estimación automática coincide con la introducción de Riot
   (Corki, Rumble, Mel suben; Locke, Yasuo bajan) y con lo que se ve en Lolalytics (Corki +1,4 pts y +2,4 de uso; Locke y Yasuo bajan).
+- **Reserva (17/11, tarde)**: el usuario pide no publicar la pantalla «Parche» hasta tener un cambio de parche real para revisarla con calma. Se apaga con
+  `parche.ACTIVO` (ver CONTINUAR); el resto de arreglos de las revisiones (plan colgado tras esquivar, línea habitual del rival, reintentos) sí se publicarán.

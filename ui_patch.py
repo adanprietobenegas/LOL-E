@@ -1239,6 +1239,8 @@ def ARROW_OK(ln):
 
 def patch_chip(ui, parent, cid, bg=None):
     """Una línea pequeña «Tocado en el parche 26.22 · ▲ Mejora» para el campeón `cid`, o None si las últimas notas guardadas no lo tocan. No usa red."""
+    if not parche.ACTIVO:
+        return None
     info = parche.latest_effect(core.CACHE, ui.champs).get(cid)
     if not info:
         return None
