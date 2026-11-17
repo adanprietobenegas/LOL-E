@@ -1702,6 +1702,64 @@ class ObjetoContraLosRivales(unittest.TestCase):
         self.assertIsNone(self.s.counter_item({"ad": 7000, "ap": 1000, "armor": 0, "mr": 0}, [5], self.CAT, []))                   # nada en tu cantera sirve
 
 
+class ObjetosQueSeTransforman(unittest.TestCase):
+    """Muramana, Abrazo del serafín, El gran invierno… no se compran: aparecen al transformarse el que ya llevas (Lágrima de la diosa y su familia)."""
+    CAT = {3070: {"g": 400, "n": "Lágrima", "from": [], "t": ["Mana"], "into": [3004]},
+           3004: {"g": 2900, "n": "Manamune", "from": [3070, 3133, 1036], "t": ["Damage"]}, 3133: {"g": 1100, "n": "Martillo", "from": [], "t": []},
+           1036: {"g": 350, "n": "Espada larga", "from": [], "t": []}, 3042: {"g": 2900, "n": "Muramana", "from": [], "t": ["Damage"]},
+           3003: {"g": 2900, "n": "Bastón del arcángel", "from": [3070], "t": []}, 3040: {"g": 2900, "n": "Abrazo del serafín", "from": [], "t": []},
+           51: {"g": 400, "n": "X", "from": [], "t": []},
+           3867: {"g": 400, "n": "Botín", "from": [], "t": ["Lane", "GoldPer"]}, 3869: {"g": 400, "n": "Detracción", "from": [3867], "t": ["Lane", "GoldPer"]},
+           1001: {"g": 300, "n": "Botas", "from": [], "t": ["Boots"], "depth": None}, 3009: {"g": 1000, "n": "Rapidez", "from": [1001], "t": ["Boots"], "depth": 2},
+           3006: {"g": 1100, "n": "Grebas", "from": [1001], "t": ["Boots"], "depth": 2}}
+
+    def setUp(self):
+        import shopping
+        self.s = shopping
+
+    def sig(self, order, inv, gold=9999):
+        r = self.s.next_purchase(order, inv, gold, self.CAT)
+        return r and r["id"]
+
+    def test_con_manamune_no_se_propone_comprar_muramana(self):
+        self.assertIsNone(self.sig([3042], [3004]))
+        self.assertEqual(self.sig([3042, 51], [3004]), 51)
+
+    def test_con_muramana_no_se_propone_manamune(self):
+        self.assertEqual(self.sig([3004, 51], [3042]), 51)
+        self.assertEqual(self.sig([3003, 51], [3040]), 51)
+
+    def test_con_la_lagrima_la_build_con_muramana_propone_su_forma_comprable(self):
+        r = self.s.next_purchase([3042], [3070], 9999, self.CAT)
+        self.assertEqual((r["id"], r["partial"]), (3004, [3070]))
+        self.assertEqual(r["remaining"], 2900 - 400)
+
+    def test_los_objetos_de_mision_no_se_proponen(self):
+        self.assertEqual(self.sig([3869, 51], [3867]), 51)
+
+    def test_con_botas_hechas_no_se_propone_otro_par(self):
+        self.assertIsNone(self.sig([3006], [3009]))
+        self.assertEqual(self.sig([3006], [1001]), 3006)
+
+    def test_contra_los_rivales_no_se_repite_una_forma_que_ya_llevas(self):
+        enemy = {"armor": 3000, "mr": 0, "ad": 3000, "ap": 0}
+        cat = {**self.CAT, 3004: {**self.CAT[3004], "x": ["penarm"], "t": ["Damage"]}}
+        self.assertIsNone(self.s.counter_item(enemy, [3004], cat, [3042]))
+
+    def test_el_catalogo_real_cuadra_con_la_tabla(self):
+        import json
+        p = os.path.join(ROOT, "cache", "items.json")
+        if not os.path.exists(p):
+            self.skipTest("sin catálogo guardado")
+        with open(p, encoding="utf-8") as f:
+            it = {int(k): v for k, v in json.load(f)["items"].items()}
+        for b, e in self.s.EVOLVES.items():
+            self.assertIn(b, it, b)
+            self.assertIn(e, it, e)
+        for e in (3042, 3040, 3121, 2530):   # las formas evolucionadas no tienen receta: por eso la tabla
+            self.assertEqual(it[e]["from"], [], e)
+
+
 class AvisoDeCompra(unittest.TestCase):
     def test_suena_una_vez_por_objeto_y_solo_si_esta_activado(self):
         from unittest import mock

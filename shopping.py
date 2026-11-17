@@ -6,6 +6,29 @@ componentes es su coste total menos lo que cuestan los componentes; lo que ya ll
 """
 
 
+# Objetos que NO se compran: aparecen cuando el que ya llevas se transforma (acumulando cargas o por la misión). Data Dragon no les da receta, así que sin esto
+# la app proponía «comprar» Muramana teniendo Manamune (y, al revés, comprar Manamune teniendo ya Muramana). base -> forma evolucionada
+EVOLVES = {3004: 3042,    # Manamune -> Muramana
+           3003: 3040,    # Bastón del arcángel -> Abrazo del serafín
+           3119: 3121,    # Llegada del invierno -> El gran invierno
+           2526: 2530,    # Diadema susurrante -> Diadema melodiosa
+           3865: 3866, 3866: 3867}   # Atlas mundial -> Brújula rúnica -> Botín universal (misión del apoyo)
+_BASE = {v: k for k, v in EVOLVES.items()}
+
+
+def base(iid):
+    """La forma comprable de un objeto: Muramana -> Manamune, Abrazo del serafín -> Bastón del arcángel…; los demás, ellos mismos."""
+    while iid in _BASE:
+        iid = _BASE[iid]
+    return iid
+
+
+def is_quest(iid, items):
+    """Objetos de la misión del apoyo y de la jungla (400 de oro nominales, se mejoran con oro de misión, no en la tienda)."""
+    t = (items.get(iid) or {}).get("t") or []
+    return "Lane" in t and "GoldPer" in t
+
+
 def recipe_tree(iid, items, _seen=None):
     """Todos los objetos que forman `iid` (componentes y sub-componentes), sin él mismo."""
     out = set()
@@ -57,10 +80,15 @@ def next_purchase(order, inventory, gold, items):
     """Primer objeto de `order` que todavía no tienes (ni has mejorado a otro que lo contiene), con lo que te falta y si puedes pagarlo ya.
     Devuelve {id, remaining, affordable, missing, partial} o None si no hay nada que proponer (build vacía, todo comprado o precios
     desconocidos). `partial`: componentes de esa receta que ya llevas."""
-    inv = [i for i in inventory if i]
+    inv = [base(i) for i in inventory if i]   # lo que llevas, en su forma comprable (Muramana cuenta como Manamune)
     in_stock = set(inv)
+    # con unas botas de segundo nivel o más ya puestas, no se propone otro par (la build puede traer unas distintas de las que elegiste)
+    boots_made = any("Boots" in (items.get(j) or {}).get("t", []) and (items.get(j) or {}).get("depth") not in (None, 1) for j in in_stock)
     for iid in order:
-        if iid not in items or iid in in_stock:
+        iid = base(iid)
+        if iid not in items or iid in in_stock or is_quest(iid, items):
+            continue
+        if boots_made and "Boots" in items[iid].get("t", []):
             continue
         if any(iid in recipe_tree(j, items) for j in in_stock):   # ya llevas uno mejor hecho con él
             continue
@@ -98,8 +126,8 @@ def counter_item(enemy, pool, items, inventory, minimum=2500):
     """UN objeto concreto contra lo que llevan los rivales, o None. `enemy`: resultado de live.itemization (oro en daño físico/mágico y en
     armadura/resistencia mágica). Primero la penetración si acumulan una defensa; si no, la defensa contra su tipo de daño dominante.
     Solo habla con oro suficiente (`minimum`) y entre los objetos de `pool` que aún no llevas. Devuelve {id, why}."""
-    have = set(inventory)
-    libres = [i for i in pool if i not in have]
+    have = {base(i) for i in inventory}
+    libres = list(dict.fromkeys(base(i) for i in pool if base(i) not in have and not is_quest(base(i), items)))
     defensa, ataque = enemy["armor"] + enemy["mr"], enemy["ad"] + enemy["ap"]
     if defensa >= minimum:
         for dom, otro, efecto, texto in (("armor", "mr", "penarm", "acumulan armadura"), ("mr", "armor", "penmag", "acumulan resistencia mágica")):
