@@ -74,6 +74,8 @@ PASOS = [
     ("08_campeones", lambda: d.go("Repertorio"), 4000),
     ("09_enfrentamiento", lambda: d.go("Enfrentamiento"), 3000),
     ("10_datos", lambda: d.go("Datos"), 3000),
+    ("11_parche_notas", lambda: (d.go("Parche"), ui.patch_view.set_tab("Notas")), 7000),   # necesita red la primera vez; sin ella enseña el aviso de descarga y no falla
+    ("12_parche_estadisticas", lambda: ui.patch_view.set_tab("Estadísticas"), 5000),
 ]
 import tour as _tour
 if os.environ.get("LOLE_TOUR"):   # el recorrido completo: una captura por paso (y comprueba que cada paso se pinta)
