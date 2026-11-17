@@ -63,6 +63,16 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
   Siguen sin hacer: mapa de dónde mueres (necesita la posición de las muertes de la línea de tiempo), analizar el historial en segundo plano para
   tener más partidas con las que sacar patrones, y un resumen tipo «Wrapped» de fin de temporada.
 
+- **Parche: siguientes pasos** (17/11/2026, tras la primera versión de la pantalla «Parche»):
+  1. **Nueva build por parche**: para los campeones tocados o con más cambio de uso, comparar las 3 primeras piezas y las runas del parche con las del anterior (la
+     página de builds de Lolalytics acepta `patch=`; el analizador de `builds.py` es el que habría que reutilizar). Esfuerzo M–L por el volumen de peticiones.
+  2. **«Cómo te fue antes y después»**: con tu historial, comparar tus victorias con un campeón tocado antes y después del parche (muestra pequeña: avisarla). S–M.
+  3. **Fotos diarias del parche**: ya se guardan si LOL-E está abierto; mostrar una pequeña gráfica de la evolución de un campeón (victorias y uso por día). M.
+  4. **Elo a elegir** en Estadísticas (hoy el tuyo y superiores) y filtro de región. S.
+  5. **Aviso al salir un parche** con la lista de «tus campeones» tocados (hoy solo el punto de la barra). S.
+  6. **Mismo aviso de parche en Enfrentamiento y en el análisis de partida**. S.
+  7. **Leer los parches con una prueba viva**: un paso opcional en `comprobar_todo` que descargue la última nota y compruebe que se reconoce (hoy solo hay pruebas con HTML de ejemplo);
+     avisaría el día que Riot cambie su web. S.
 - **Coaching con IA**: un resumen en lenguaje natural de la partida o de tu semana. Pide decidir dónde corre el modelo, clave de API o coste, y
   qué datos salen del PC (privacidad). Esfuerzo L, riesgo a. Solo si el usuario lo quiere y con consentimiento claro.
 - **Varias cuentas**: el historial ya es por cuenta; falta una interfaz para ver/cambiar de cuenta y comparar. M.

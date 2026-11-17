@@ -338,3 +338,22 @@ Cada versión se publicó con el sí del usuario. Lo que no está en `CONTINUAR.
   corregidos).
 - **Pendiente de la realidad**: variación de PL de las dos últimas partidas Flexible (no salía en `diag.log`; la causa NO está confirmada y la versión
   1.22.18 ya apunta «Variación de PL…» en cada partida).
+
+## Noche del 17/11/2026: pantalla «Parche» (en `main`, sin publicar)
+
+- **Petición del usuario** (se fue varias horas y dejó trabajar): sección propia con las notas del parche de LoL en español y lo más oficial posible (sin traducir),
+  más una parte de estadísticas del parche («subidas de pick, más winrate, campeón en otra posición, nueva build…»), muy cuidada visualmente, de solo lectura
+  con filtros sobre datos DEL PARCHE, solo de modos que se juegan (nada de TFT). «Debe quedar perfecta».
+- **Fuentes**: notas = `leagueoflegends.com/es-es/news/game-updates/league-of-legends-patch-26-NN-notes` (el JSON de `__NEXT_DATA__` trae el HTML de las notas;
+  la lista está en `/es-es/news/tags/patch-notes/`). Estadísticas = Lolalytics, que sirve parches pasados con `patch=16.NN` (26.22 = 16.22), así que la
+  comparación con el parche anterior funciona desde el primer día. «Nueva build» NO se hizo (habría que leer la página de builds de cada campeón en dos parches).
+- **Hecho**: `parche.py`, `parche_stats.py`, `ui_patch.py`, barra lateral con punto de aviso, `GUI.patch_check`, lección de la demostración, preguntas de la Ayuda y
+  aviso «Parche 26.22: ▲ Mejora» bajo el campeón elegido (selección y Partida; `parche.latest_effect`, sin red). Detalle técnico en `CONTINUAR.md`.
+- **Revisión por un experto** (subagente sonnet de solo lectura, 25 hallazgos; casi todos válidos y corregidos): bucle de peticiones sin red, instantáneas
+  de parches «abiertos» reutilizadas como cerrados, tendencia invertida en «recuperación de enfriamiento», sección Classic partida (nombres como h4),
+  filtros aplicados después de recortar, `mine()` cacheada vacía, búsqueda de texto por nombre que arrastraba fichas ajenas (ahora «Ficha: X ✕»),
+  callbacks sobre widgets destruidos, etc. **Error propio que se aprendió**: `label._w = …` pisa el nombre interno del widget en Tk (rompía `winfo_width` y
+  daba «invalid command name "0"»): nunca usar `_w` como atributo propio.
+- **Aprendido**: no enganchar `<Configure>` para ajustar saltos de línea cuando las columnas se reparten el ancho (oscila sin fin y cuelga `update_idletasks`);
+  se usa `reg_wrap`/`settle`, una sola vez y tras forzar la geometría. En el parche 26.22 la estimación automática coincide con la introducción de Riot
+  (Corki, Rumble, Mel suben; Locke, Yasuo bajan) y con lo que se ve en Lolalytics (Corki +1,4 pts y +2,4 de uso; Locke y Yasuo bajan).
