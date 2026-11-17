@@ -75,6 +75,7 @@ class PatchView:
         self._tok = 0
         self._qjob = None
         self._mine = None
+        self._hist = []
         self._mine_src = ""
         self.focus = ""
         self._list_try = 0
@@ -218,7 +219,9 @@ class PatchView:
             return self._mine
         s = set()
         try:
-            n = Counter(e.get("c") for e in history.load_all(history.hpath(core.CACHE), history.gpath(core.CACHE)) if not e.get("rm"))
+            hist = [e for e in history.load_all(history.hpath(core.CACHE), history.gpath(core.CACHE)) if not e.get("rm")]
+            self._hist = hist
+            n = Counter(e.get("c") for e in hist)
             s = {c for c, k in n.items() if c and k >= 2}
         except Exception:
             pass
@@ -229,6 +232,18 @@ class PatchView:
         if s:   # un conjunto vacío no se recuerda: la información del cliente puede llegar después
             self._mine = s
         return s
+
+    def before_after(self, cid, iso):
+        """Tus partidas con `cid` antes y desde la fecha del parche: (victorias, partidas) de cada tramo. Muestra pequeña: la pantalla lo dice."""
+        try:
+            cut = datetime.datetime.fromisoformat(iso.replace("Z", "+00:00")).timestamp() * 1000
+        except Exception:
+            return None
+        a = [e for e in self._hist if e.get("c") == cid and e.get("t", 0) < cut]
+        b = [e for e in self._hist if e.get("c") == cid and e.get("t", 0) >= cut]
+        if not a and not b:
+            return None
+        return (sum(1 for e in a if e.get("w")), len(a)), (sum(1 for e in b if e.get("w")), len(b))
 
     def played(self):
         """Los campeones que de verdad has jugado (del historial). Vacío si solo se sabe cuáles tienes: entonces no se marca nada como «tuyo»."""
@@ -548,7 +563,11 @@ class PatchView:
             txt = ""
             if first:
                 txt = (blk + ": " if blk else "") + ((first["label"] + " " + first["before"] + " → " + first["after"]) if first["before"] else first["text"])
-                txt = txt if len(txt) <= 90 else txt[:87].rsplit(" ", 1)[0] + "…"
+                txt = txt if len(txt) <= 70 else txt[:67].rsplit(" ", 1)[0] + "…"
+            ba = self.before_after(self.champ_id(e), self.cur_notes.get("date", ""))
+            if ba:
+                (w0, n0), (w1, n1) = ba
+                txt += ("   ·   " if txt else "") + f"tus partidas: antes {w0}V {n0 - w0}D" + (f", desde el parche {w1}V {n1 - w1}D" if n1 else ", aún ninguna desde el parche")
             row = tk.Frame(inner, bg=bg, cursor="hand2")
             row.pack(fill="x", pady=3)
             ph = ui.champ_photo(self.champ_id(e), 30)
@@ -562,6 +581,7 @@ class PatchView:
             ui.clickable(row, lambda n=e["name"]: self.jump_to(n))
         if len(rows) > 6:
             tk.Label(inner, text=f"… y {len(rows) - 6} más (filtra con «Solo mis campeones»)", font=ui.tkf(9, False, False), fg=self.hexm("dim"), bg=bg).pack(anchor="w", pady=(2, 0))
+        tk.Label(inner, text="Pocas partidas por campeón: es una referencia, no una conclusión.", font=ui.tkf(9, False, False), fg=self.hexm("dim"), bg=bg).pack(anchor="w", pady=(4, 0))
 
     def glance(self, secs):
         """«De un vistazo»: los retratos de los campeones que mejoran y los que bajan; pulsar uno busca su ficha. Es lo que primero se quiere saber de un parche."""
