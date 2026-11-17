@@ -354,8 +354,12 @@ class PatchView:
             m.pack(side="left", padx=(0, 8))
             ui.tip(m, "Otro parche")
         if data and data.get("url"):
-            b = tk.Label(right, text="Abrir en la web de Riot ↗", font=ui.tkf(10, True, False), fg=self.hexm(ui.acc), bg=ui.bg(right), cursor="hand2")
-            b.pack(side="left")
+            host_link = right if self.width >= 800 else left   # en ventanas estrechas el enlace pasa bajo el título para no quedar cortado
+            b = tk.Label(host_link, text="Abrir en la web de Riot ↗", font=ui.tkf(10, True, False), fg=self.hexm(ui.acc), bg=ui.bg(host_link), cursor="hand2")
+            if host_link is right:
+                b.pack(side="left")
+            else:
+                b.pack(anchor="w", pady=(4, 0))
             b.bind("<Button-1>", lambda e, u=data["url"]: __import__("webbrowser").open(u))
         if data and data["summary"] and self.tab == "Notas":
             self.label(card, data["summary"], 12, "fg", wrap=max(260, self.width - 130)).pack(anchor="w", pady=(10, 0))
