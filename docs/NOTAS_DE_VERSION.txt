@@ -7,6 +7,13 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.26   (17 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · gui.on_phase marca «done» el plan de una selección abandonada; check_updates con guarda _checking. ui_sections.CounterPicks: línea del rival con metamod.lane_shares,
+    clave de caché con len(owned), error en español con reintento a los 95 s. La pantalla «Parche» queda terminada pero apagada (parche.ACTIVO). 199 pruebas.
+    Solo visto con pruebas y la demo, no con una partida real.
+
 VERSIÓN 1.22.25   (17 de noviembre de 2026)
 ---------------------------------------------------------------------
 

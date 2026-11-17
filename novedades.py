@@ -10,6 +10,12 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.26", "fecha": "17 de noviembre de 2026", "titulo": "Arreglos tras una revisión", "items": [
+        ("arreglo", "Si abandonas una selección (esquivas o cancelas la cola), el plan de esa selección ya no se queda colgado como si siguiera en curso."),
+        ("arreglo", "En «Mejores campeones contra tus rivales», la línea habitual de cada rival sale de dónde se juega más este parche, no de un orden alfabético; la etiqueta «lo tienes» tiene en cuenta todos tus campeones."),
+        ("arreglo", "Si Lolalytics no responde, esa tarjeta lo dice en español y se reintenta sola al cabo de un rato."),
+        ("arreglo", "Pulsar varias veces seguidas el número de versión ya no lanza varias búsquedas de actualización."),
+    ]},
     {"v": "1.22.25", "fecha": "17 de noviembre de 2026", "titulo": "Siguiente objeto en vivo más fiable", "items": [
         ("arreglo", "Con la familia de la Lágrima (Manamune, Bastón del arcángel, Llegada del invierno) ya no se propone «comprar» Muramana, Abrazo del serafín o El gran invierno cuando solo son la transformación de lo que llevas, ni se repite Manamune si ya tienes Muramana."),
         ("arreglo", "El siguiente objeto ya no propone otro par de botas si llevas unas de segundo nivel, ni los objetos de misión del apoyo (Atlas, Brújula, Botín y sus mejoras)."),
