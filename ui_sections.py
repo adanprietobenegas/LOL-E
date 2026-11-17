@@ -1827,11 +1827,16 @@ class CounterPicks(Section):
         lane = matchups.LANES.get(r.get("role") or "")
         if r.get("lane_opp") and lane:
             out.append((r["lane_opp"], lane, True))
+        md = core.META.get("data") if hasattr(core, "META") else None
         for cid in r["enemies"]:
             if cid == r.get("lane_opp") or cid not in champs:
                 continue
             pos = (champs[cid].get("pos") or [])
-            ln = self.LANE_OF.get(pos[0]) if pos else None
+            shares = core.metamod.lane_shares(md, cid) if md else {}
+            if shares:   # la línea donde más se juega este parche
+                ln = self.LANE_OF.get(max(shares, key=shares.get))
+            else:   # sin meta: solo si el campeón tiene una única posición (el orden de `pos` es alfabético, no de uso)
+                ln = self.LANE_OF.get(pos[0]) if len(pos) == 1 else None
             if ln and not any(t[0] == cid for t in out):
                 out.append((cid, ln, False))
         return out
@@ -1840,8 +1845,7 @@ class CounterPicks(Section):
         if ctx["r"]["mode"]["kind"] != "sr":
             return ("no",)
         t = self.targets(ctx)
-        return (tuple(t), tuple(str(Recs.COUNTERS.get((c, ln)))[:14] for c, ln, _ in t), self.ui.conf["compact"], tuple((ctx.get("info") or {}).get("owned") or ())[:3],
-                ctx["width"] // 150)
+        return (tuple(t), tuple(str(Recs.COUNTERS.get((c, ln)))[:14] for c, ln, _ in t), self.ui.conf["compact"], len((ctx.get("info") or {}).get("owned") or ()), ctx["width"] // 150)
 
     def fetch(self, cid, lane):
         key = (cid, lane)
@@ -1857,6 +1861,7 @@ class CounterPicks(Section):
                     rows = matchups.best_against(ui.champs, cid, lane, core.CACHE, min_games=50)
                 except Exception as e:
                     rows = ("error", str(e), time.time())
+                    ui.root.after(95000, lambda: (Recs.COUNTERS.pop(key, None), ui.notify("recs_data")))   # reintento solo, sin esperar a otro repintado
                 Recs.COUNTERS[key] = rows
                 ui.notify("recs_data")
             threading.Thread(target=go, daemon=True).start()
@@ -1892,7 +1897,8 @@ class CounterPicks(Section):
                 ui.lbl(c, "Cargando…", 10, "dim", anchor="w").pack(anchor="w")
                 continue
             if isinstance(st, tuple):
-                ui.lbl(c, f"Sin datos de este enfrentamiento ({st[1]}).", 10, "dim", anchor="w", justify="left", wraplength=max(260, ctx["width"] - 110)).pack(anchor="w")
+                ui.lbl(c, "Ahora mismo no hay datos de este enfrentamiento (Lolalytics no responde o aún no los tiene). Se reintenta solo.", 10, "dim", anchor="w", justify="left",
+                       wraplength=max(260, ctx["width"] - 110)).pack(anchor="w")
                 continue
             n = 5 if mine else 3
             good = [x for x in st if x["games"] >= self.MIN]

@@ -399,6 +399,8 @@ class GUI:
 
     def on_phase(self, flow):
         plan = self.ctx.get("plan")
+        if plan and plan.get("state") == "select" and flow in ("Lobby", "Matchmaking", "ReadyCheck", "None", None):
+            plan["state"] = "done"   # la selección se abandonó (esquive, cola cancelada): ese plan ya no es de una selección en curso
         if flow in ("Matchmaking", "ReadyCheck", "ChampSelect") and self.ctx.get("phase") not in ("Matchmaking", "ReadyCheck", "ChampSelect"):
             self.new_cycle()
             plan = self.ctx.get("plan")
@@ -563,6 +565,9 @@ class GUI:
                     self.patch_view.data_changed()
                 elif kind == "parche_new":
                     self.tab_seg.set_badge("Parche", True)
+                elif kind == "parche_seen":
+                    self.conf["parche_visto"] = ev[1]
+                    save_conf(self.conf)
 
                 elif kind == "update":
                     self.on_update(ev[1], ev[2], ev[3])
@@ -677,11 +682,12 @@ class GUI:
                         self.patch_view.versions = vs
                         seen = self.conf.get("parche_visto")
                         if not seen:
-                            self.conf["parche_visto"] = vs[0]
-                            save_conf(self.conf)
+                            self.q.put(("parche_seen", vs[0]))   # primera vez: solo se apunta cuál es el último, sin avisar
                         elif seen != vs[0]:
                             self.q.put(("parche_new",))
-                            self.status(f"Hay un parche nuevo: {vs[0]}. Sus notas oficiales están en «Parche».")
+                            if self.__dict__.get("_patch_told") != vs[0]:
+                                self._patch_told = vs[0]
+                                self.status(f"Hay un parche nuevo: {vs[0]}. Sus notas oficiales están en «Parche».")
                         try:
                             fresh = parche.load(CACHE, vs[0], latest=vs[0])   # precarga: al abrir la pantalla ya están
                             if isinstance(fresh, dict):
@@ -744,6 +750,9 @@ class GUI:
 
     def check_updates(self, manual):
         if manual:
+            if self.__dict__.get("_checking"):
+                return
+            self._checking = True
             self.ver_note("buscando…", "info", 0)
         def go():
             try:
@@ -756,6 +765,8 @@ class GUI:
             self.status("Buscando actualizaciones…")
 
     def on_update(self, info, err, manual):
+        if manual:
+            self._checking = False
         if err:
             # también en la comprobación automática: antes fallaba en silencio y no se reintentaba hasta 3 horas después
             self.status(f"No se ha podido comprobar si hay actualizaciones: {err}")
