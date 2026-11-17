@@ -514,6 +514,7 @@ class GUI:
                     if self.view == "game":
                         self.game_view.refresh(self.make_ctx(), True)
                 elif kind == "live":
+                    self.note_unknown_items(ev[1])
                     self.ctx["live"] = ev[1]
                     self.ctx["live_at"] = time.time()
                     self.buy_alert(ev[1])
@@ -1524,6 +1525,21 @@ class GUI:
 
     def live_augments(self, found):
         self.q.put(("live_aug", found))
+
+    def note_unknown_items(self, snap):
+        """Objetos de la partida que el catálogo no conoce (parche más nuevo que el guardado, mejoras de Ornn u otra variante): se anotan una vez en el registro
+        para poder enseñar a la app a reconocerlos. Mientras tanto no cuentan para «siguiente objeto» ni para lo que llevan los rivales."""
+        try:
+            cat = self.kit.items
+            if not cat:
+                return
+            seen = self.__dict__.setdefault("_unknown_seen", {*()})
+            new = {i for p in snap.get("players", []) for i in p.get("items", []) if i and i not in cat and i not in seen}
+            if new:
+                seen |= new
+                core.diag("Objetos en la partida que no están en el catálogo: " + ", ".join(str(i) for i in sorted(new)) + f" (catálogo {len(cat)} objetos)")
+        except Exception:
+            core.log_exc("Objetos desconocidos")
 
     def buy_alert(self, snap):
         """Suena un aviso suave UNA vez por objeto cuando ya puedes pagar el siguiente de tu build (solo con los avisos sonoros y este aviso activados)."""

@@ -23,6 +23,17 @@ def base(iid):
     return iid
 
 
+def norm(iid, items):
+    """`base` más las variantes de modo (Arena, Enjambre, ARAM Caos…: mismo objeto con el id prefijado, p. ej. 323003 = 3003 con otro precio): si el id con prefijo
+    no es el comprable, se usa el del mismo nombre sin prefijo. Un id que no está en el catálogo se deja tal cual."""
+    it = (items or {}).get(iid)
+    if it and iid >= 10000:
+        b = iid % 10000
+        if b in items and items[b].get("n") == it.get("n"):
+            iid = b
+    return base(iid)
+
+
 def is_quest(iid, items):
     """Objetos de la misión del apoyo y de la jungla (400 de oro nominales, se mejoran con oro de misión, no en la tienda)."""
     t = (items.get(iid) or {}).get("t") or []
@@ -80,12 +91,12 @@ def next_purchase(order, inventory, gold, items):
     """Primer objeto de `order` que todavía no tienes (ni has mejorado a otro que lo contiene), con lo que te falta y si puedes pagarlo ya.
     Devuelve {id, remaining, affordable, missing, partial} o None si no hay nada que proponer (build vacía, todo comprado o precios
     desconocidos). `partial`: componentes de esa receta que ya llevas."""
-    inv = [base(i) for i in inventory if i]   # lo que llevas, en su forma comprable (Muramana cuenta como Manamune)
+    inv = [norm(i, items) for i in inventory if i]   # lo que llevas, en su forma comprable (Muramana cuenta como Manamune)
     in_stock = set(inv)
     # con unas botas de segundo nivel o más ya puestas, no se propone otro par (la build puede traer unas distintas de las que elegiste)
     boots_made = any("Boots" in (items.get(j) or {}).get("t", []) and (items.get(j) or {}).get("depth") not in (None, 1) for j in in_stock)
     for iid in order:
-        iid = base(iid)
+        iid = norm(iid, items)
         if iid not in items or iid in in_stock or is_quest(iid, items):
             continue
         if boots_made and "Boots" in items[iid].get("t", []):
@@ -126,8 +137,8 @@ def counter_item(enemy, pool, items, inventory, minimum=2500):
     """UN objeto concreto contra lo que llevan los rivales, o None. `enemy`: resultado de live.itemization (oro en daño físico/mágico y en
     armadura/resistencia mágica). Primero la penetración si acumulan una defensa; si no, la defensa contra su tipo de daño dominante.
     Solo habla con oro suficiente (`minimum`) y entre los objetos de `pool` que aún no llevas. Devuelve {id, why}."""
-    have = {base(i) for i in inventory}
-    libres = list(dict.fromkeys(base(i) for i in pool if base(i) not in have and not is_quest(base(i), items)))
+    have = {norm(i, items) for i in inventory}
+    libres = list(dict.fromkeys(norm(i, items) for i in pool if norm(i, items) not in have and not is_quest(norm(i, items), items)))
     defensa, ataque = enemy["armor"] + enemy["mr"], enemy["ad"] + enemy["ap"]
     if defensa >= minimum:
         for dom, otro, efecto, texto in (("armor", "mr", "penarm", "acumulan armadura"), ("mr", "armor", "penmag", "acumulan resistencia mágica")):

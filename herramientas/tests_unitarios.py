@@ -1746,6 +1746,12 @@ class ObjetosQueSeTransforman(unittest.TestCase):
         cat = {**self.CAT, 3004: {**self.CAT[3004], "x": ["penarm"], "t": ["Damage"]}}
         self.assertIsNone(self.s.counter_item(enemy, [3004], cat, [3042]))
 
+    def test_variantes_de_modo_cuentan_como_el_objeto_base(self):
+        cat = {**self.CAT, 773004: {"g": 2100, "n": "Manamune", "from": [], "t": []}}
+        self.assertEqual(self.s.norm(773004, cat), 3004)
+        self.assertIsNone(self.sig([3042], [773004]) if False else self.s.next_purchase([3042], [773004], 9999, cat))
+        self.assertEqual(self.s.norm(555555, cat), 555555)   # desconocido: tal cual
+
     def test_el_catalogo_real_cuadra_con_la_tabla(self):
         import json
         p = os.path.join(ROOT, "cache", "items.json")
