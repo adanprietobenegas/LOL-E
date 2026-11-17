@@ -22,9 +22,9 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 2. Estado (actualizar al terminar cada conversación)
 
-**Publicado en GitHub: 1.22.24** (16/11/2026; la 1.22.23 fue la anterior). Incluye la guía (Ayuda, demostración y recorrido).
+**Publicado en GitHub: 1.22.25** (17/11/2026; la 1.22.24 fue la anterior). Incluye la guía (Ayuda, demostración y recorrido).
 
-**En `main` sin publicar** (17/11/2026, candidata a 1.22.25; versión y notas SIN preparar):
+**Ya publicado en la 1.22.25:**
 - **Siguiente objeto en vivo con la familia de la Lágrima** (`shopping.py`): Muramana, Abrazo del serafín, El gran invierno y Diadema melodiosa no tienen receta en Data Dragon (se obtienen al transformarse Manamune, Bastón del arcángel, Llegada del invierno y Diadema susurrante), así que se proponía «comprar» Muramana teniendo Manamune o Manamune teniendo ya Muramana. Tabla `EVOLVES` + `base()`: lo que llevas y lo que trae la build se comparan en forma comprable. También: no se propone un segundo par de botas si ya llevas unas de nivel 2+, ni los objetos de misión del apoyo (Atlas/Brújula/Botín y sus mejoras), y «objeto contra los rivales» no repite una forma que ya llevas. 8 pruebas nuevas (`ObjetosQueSeTransforman`). Ampliado el 17/11: `shopping.norm` también reduce las variantes de modo (ids con prefijo: Arena 22xxxx, ARAM/Enjambre 32xxxx y 77xxxx…) al objeto base del mismo nombre, y `GUI.note_unknown_items` anota en el registro (diag.log) los ids de objetos de la partida que no están en el catálogo (parche 26.22 = Data Dragon 16.22.1, catálogo al día). **Mejoras de Ornn**: desde el 14.11 el objeto mejorado conserva el nombre y lleva una etiqueta «Obra maestra»; NO se sabe qué id da la API en vivo (el catálogo no trae variantes de Ornn). Si en una partida con Ornn sale la línea «Objetos en la partida que no están en el catálogo», ahí está el id para enseñárselo. NO visto en una partida real.
 
 **Ya publicado en la 1.22.24** (pedido tras la 1.22.23):
