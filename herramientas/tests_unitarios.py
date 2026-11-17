@@ -1367,6 +1367,14 @@ class EstadisticasDelParche(unittest.TestCase):
         self.assertFalse(eff["Yasuo"]["expected"])          # mejora y baja: al revés
         self.assertNotIn("Nadie", eff)
 
+    def test_evolucion_dentro_del_parche(self):
+        d = {"2026-11-03": {"games": 1000, "rows": {"top:1": [50.0, 3.0, 3000], "top:2": [50.0, 3.0, 3000], "top:3": [50.0, 0.2, 300]}},
+             "2026-11-10": {"games": 9000, "rows": {"top:1": [54.0, 3.0, 20000], "top:2": [50.4, 3.0, 20000], "top:3": [60.0, 0.2, 400]}}}
+        mv, a, b = self.s.movers(d)
+        self.assertEqual([(r["cid"], r["dwr"]) for r in mv], [(1, 4.0)])           # 2 es ruido y 3 tiene muy poca muestra
+        self.assertEqual((a, b), ("2026-11-03", "2026-11-10"))
+        self.assertEqual(self.s.movers({"2026-11-03": d["2026-11-03"]}), ([], None, None))   # con un solo día no hay con qué comparar
+
     def test_parche_provisional(self):
         cur = self.snap({("top", 1): (50, 3, 5, 3000, 90)})
         prev = self.snap({("top", 1): (50, 3, 5, 30000, 90)})

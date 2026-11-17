@@ -14,6 +14,7 @@ TARGETS = {
     "nav.enfrentamiento": lambda ui: ui.tab_seg.btns["Enfrentamiento"],
     "nav.campeones": lambda ui: ui.tab_seg.btns["Repertorio"],
     "nav.historial": lambda ui: ui.tab_seg.btns["Historial"],
+    "nav.parche": lambda ui: ui.tab_seg.btns["Parche"],
     "banda.vivo": lambda ui: ui.band,
     "boton.ayuda": lambda ui: ui.ayuda_btn,
     "boton.ajustes": lambda ui: ui.ajustes_btn,
@@ -24,7 +25,7 @@ TARGETS = {
 # además de los de arriba, los elementos anotados con `kit.reg(id, widget)` en las pantallas: inicio.perfil, inicio.grafica, recs.hero, recs.pestanas, build.runas, build.hechizos,
 # vivo.tira, vivo.objetivos, vivo.objeto, analisis.cabecera, analisis.tarjeta, hist.resumen, hist.anio
 REGISTRADOS = ("inicio.perfil", "inicio.grafica", "recs.hero", "recs.pestanas", "build.runas", "build.hechizos", "vivo.tira", "vivo.objetivos", "vivo.objeto",
-               "analisis.cabecera", "analisis.tarjeta", "hist.resumen", "hist.anio", "partida.jugadores", "partida.rival", "partida.objetivo", "inicio.sesion", "hist.patron")
+               "analisis.cabecera", "analisis.tarjeta", "hist.resumen", "hist.anio", "partida.jugadores", "partida.rival", "partida.objetivo", "inicio.sesion", "hist.patron", "parche.pestanas")
 
 
 def find(ui, tid):
@@ -36,8 +37,8 @@ def find(ui, tid):
         return None
 
 SCENES = ("idle", "queue", "select", "locked", "aram", "arena", "game", "end")
-ACTS = ("rival", "ajustes", "cerrar_ajustes", "abrir_jugadores", "abrir_anio")
-PAGES = ("Asesor", "Partida", "Enfrentamiento", "Repertorio", "Historial", "Datos")
+ACTS = ("rival", "ajustes", "cerrar_ajustes", "abrir_jugadores", "abrir_anio", "parche_notas", "parche_estadisticas")
+PAGES = ("Asesor", "Partida", "Enfrentamiento", "Repertorio", "Historial", "Parche", "Datos")
 
 
 def step(title, text, scene=None, page=None, target=None, when=None, source=None, act=None, try_it=None):
@@ -146,6 +147,15 @@ LESSONS.update({
         step("La tarjeta de una partida", "En el análisis, «Guardar tarjeta de la partida» crea una imagen con tu campeón, el resultado y tus cifras.", scene="end", page="Partida", target="analisis.tarjeta"),
         step("Tu año en LoL", "En el Historial, un resumen de tu temporada que también puedes guardar como imagen para compartir.", scene="idle", page="Historial", act="abrir_anio", target="hist.anio"),
     ]},
+    "parche": {"title": "El parche: notas y estadísticas", "steps": [
+        step("Un parche cada dos semanas", "«Parche» guarda las notas oficiales de Riot en español, tal como las publica. Cuando sale uno nuevo, la barra lo avisa con un punto.",
+             scene="idle", page="Parche", act="parche_notas", target="nav.parche", when="Cuando quieras; el punto aparece solo con un parche nuevo.",
+             source="leagueoflegends.com/es-es: las notas, sin traducir ni resumir."),
+        step("Las notas, con filtros", "Verás qué campeones mejoran o bajan, los objetos y los modos que juegas, con el cambio «antes → después» y la nota de los diseñadores.",
+             target="parche.pestanas", try_it="elige «Debilitaciones» o escribe un nombre en el buscador."),
+        step("Cómo se mueve el juego", "En «Estadísticas» se compara el parche con el anterior: victorias, uso y baneos, quién cambia de línea y qué pasó con los campeones tocados.",
+             act="parche_estadisticas", target="cuerpo", source="Lolalytics, partidas clasificatorias en solitario de tu elo. Los primeros días hay pocas partidas y se avisa."),
+    ]},
     "atajos": {"title": "Atajos y accesibilidad", "steps": [
         step("La barra lateral", "Ctrl+1 a Ctrl+7 o las flechas cambian de pantalla. Con la ventana ancha ves los nombres; con la estrecha, solo iconos.", scene="idle", page="Asesor", target="nav.todo"),
         step("Ayuda con F1", "F1 o el botón ? abren la ayuda de la pantalla y las preguntas frecuentes.", target="boton.ayuda"),
@@ -155,10 +165,10 @@ LESSONS.update({
 })
 
 RECORRIDO = ["que_es", "antes", "seleccion", "partida", "terminar", "fuentes"]
-OTRAS = ["primera_partida", "sin_datos", "afinidad", "jugadores", "patron", "otros_modos", "compartir", "enfrentamiento", "aprender", "personalizar", "atajos"]   # sueltas, fuera del recorrido
+OTRAS = ["primera_partida", "sin_datos", "afinidad", "jugadores", "patron", "otros_modos", "compartir", "enfrentamiento", "aprender", "personalizar", "parche", "atajos"]   # sueltas, fuera del recorrido
 
 # pregunta de la Ayuda -> lección que la enseña (las que no tienen lección propia aún no aparecen)
-PREGUNTAS = {"primera": "primera_partida", "afinidad": "afinidad", "jugadores": "jugadores", "patron": "patron", "modos": "otros_modos", "compartir": "compartir",
+PREGUNTAS = {"parche": "parche", "primera": "primera_partida", "afinidad": "afinidad", "jugadores": "jugadores", "patron": "patron", "modos": "otros_modos", "compartir": "compartir",
              "atajos": "atajos", "sin_datos": "sin_datos", "enfrentamiento": "enfrentamiento", "aprender": "aprender", "personalizar": "personalizar", "que_es": "que_es", "seguro": "que_es", "antes": "antes", "cola": "antes", "elegir": "seleccion", "runas_builds": "seleccion", "en_partida": "partida",
              "terminar": "terminar", "historial": "terminar", "fuentes": "fuentes"}
 

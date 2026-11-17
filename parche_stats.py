@@ -282,3 +282,26 @@ def summary_line(cur, prev):
     if prev:
         s += f" (el parche anterior: {total_games(prev):,})".replace(",", ".")
     return s
+
+
+def movers(days_d, n=6, min_first=800, min_last=1500):
+    """Evolución DENTRO del parche en curso: los (campeón, línea) cuya tasa de victorias más se ha movido entre la primera foto del parche y la última (solo con ≥ 2 días
+    guardados, es decir, si LOL-E estuvo abierto en esos días). Devuelve (lista, primer_día, último_día); la lista va vacía si no hay base para comparar.
+    Solo cuenta lo que supera el margen de error (z ≥ 1,8): los primeros días las cifras se mueven mucho por puro azar."""
+    ds = sorted(days_d or {})
+    if len(ds) < 2:
+        return [], None, None
+    a, b = ds[0], ds[-1]
+    ra, rb = days_d[a].get("rows", {}), days_d[b].get("rows", {})
+    out = []
+    for k, (wr1, pr1, g1) in rb.items():
+        old = ra.get(k)
+        if not old or g1 < min_last or old[2] < min_first:
+            continue
+        d = wr1 - old[0]
+        se = ((50 / g1 ** 0.5) ** 2 + (50 / old[2] ** 0.5) ** 2) ** 0.5
+        if se and abs(d) / se >= 1.8:
+            lane, cid = k.split(":")
+            out.append({"cid": int(cid), "lane": lane, "wr0": old[0], "wr": wr1, "dwr": round(d, 2), "games": g1, "pr0": old[1], "pr": pr1, "dpr": round(pr1 - old[1], 2)})
+    out.sort(key=lambda r: -abs(r["dwr"]))
+    return out[:n], a, b

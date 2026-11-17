@@ -208,6 +208,10 @@ class Demo:
         elif name == "abrir_jugadores":
             ui.conf.setdefault("folds", {})["game_roster"] = True
             ui.game_view.refresh(ui.make_ctx(), True)
+        elif name == "parche_notas":
+            ui.patch_view.set_tab("Notas")
+        elif name == "parche_estadisticas":
+            ui.patch_view.set_tab("Estadísticas")
         elif name == "abrir_anio":
             ui.conf.setdefault("folds", {})["hist_wrapped"] = True
             ui.refresh_current(True)

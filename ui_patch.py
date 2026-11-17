@@ -914,6 +914,16 @@ class PatchView:
             if not prev and kind in ("wr", "pr", "bru"):
                 continue
             self.stat_card(colf[i % cols], title, data, kind, color, note, wid)
+        # evolución dentro del parche en curso (solo si LOL-E guardó fotos de varios días)
+        if self.current() == (self.versions[0] if self.versions else None):
+            mv, d0, d1 = parche_stats.movers(parche_stats.days(core.CACHE, self.current(), self.tier()))
+            mv = [r for r in mv if (lane is None or r["lane"] == lane) and (only is None or r["cid"] in only)]
+            if mv:
+                fmt = lambda d: f"{int(d[8:10])}/{int(d[5:7])}"
+                wid2 = max(280, self.width - 150)
+                one = ui.frame(host)
+                one.pack(fill="x", padx=8)
+                self.stat_card(one, "EVOLUCIÓN DENTRO DEL PARCHE", mv, "wr", None, f"Victorias del {fmt(d0)} al {fmt(d1)}: solo cambios que superan el margen de error", wid2)
         # cambios de línea
         if prev:
             shifts = [s for s in parche_stats.lane_shifts(rows) if (lane is None or s["lane"] == lane) and (only is None or s["cid"] in only)]
@@ -941,7 +951,7 @@ class PatchView:
             tk.Label(inner, text="Nada destacable con los filtros actuales.", font=ui.tkf(10, False, False), fg=self.hexm("dim"), bg=bg).pack(anchor="w", pady=4)
             return
         for r in data:
-            self.stat_row(inner, r, kind, color, bg)
+            self.stat_row(inner, r, kind, color or ("good" if (r.get("dwr") or 0) > 0 else "bad"), bg)
 
     def stat_row(self, parent, r, kind, color, bg):
         ui = self.ui
