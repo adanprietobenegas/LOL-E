@@ -7,6 +7,12 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.25   (17 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · shopping.py: EVOLVES/base/norm (Muramana, Serafín, Gran invierno, Diadema melodiosa, misión del apoyo, variantes de modo), botas hechas y objetos de misión fuera de
+    «siguiente objeto». gui.note_unknown_items anota en diag.log ids fuera del catálogo (Ornn sin verificar). 180 pruebas. Solo visto con pruebas, no en una partida real.
+
 VERSIÓN 1.22.24   (16 de noviembre de 2026)
 ---------------------------------------------------------------------
 

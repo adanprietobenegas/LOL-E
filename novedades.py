@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.25", "fecha": "17 de noviembre de 2026", "titulo": "Siguiente objeto en vivo más fiable", "items": [
+        ("arreglo", "Con la familia de la Lágrima (Manamune, Bastón del arcángel, Llegada del invierno) ya no se propone «comprar» Muramana, Abrazo del serafín o El gran invierno cuando solo son la transformación de lo que llevas, ni se repite Manamune si ya tienes Muramana."),
+        ("arreglo", "El siguiente objeto ya no propone otro par de botas si llevas unas de segundo nivel, ni los objetos de misión del apoyo (Atlas, Brújula, Botín y sus mejoras)."),
+        ("mejora", "Los objetos de la partida que la app no reconoce (por ejemplo, mejorados por Ornn) se anotan en el registro para poder enseñárselos."),
+    ]},
     {"v": "1.22.24", "fecha": "16 de noviembre de 2026", "titulo": "Mejores campeones contra tus rivales y búsqueda de actualizaciones", "items": [
         ("nuevo", "En la selección, una tarjeta nueva «Mejores campeones contra tus rivales»: para tu rival de línea (5) y para los demás rivales ya elegidos (3) enseña los que más le ganan, con el porcentaje y las partidas de cada cruce, y marca los que tienes. Va aparte de la afinidad: aquí solo cuenta el enfrentamiento."),
         ("nuevo", "Pulsa el número de versión de la cabecera para buscar actualizaciones sin cerrar la app: dice «buscando…», «al día ✓» o «hay una nueva»."),
