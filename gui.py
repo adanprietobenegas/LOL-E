@@ -1433,7 +1433,7 @@ class GUI:
         note("Un sonido suave, una vez por objeto, cuando tu oro ya llega para el siguiente de tu build. Necesita los avisos sonoros y los datos en vivo.")
 
         section("Al abrir")
-        starts = {"Última usada": "ultima", "Inicio": "asesor", "Enfrentamiento": "enfrentamiento", "Campeones": "repertorio", "Historial": "historial", "Datos": "datos"}   # los nombres de la barra lateral
+        starts = {"Última usada": "ultima", "Inicio": "asesor", "Enfrentamiento": "enfrentamiento", "Campeones": "repertorio", "Historial": "historial", "Parche": "parche", "Datos": "datos"}   # los nombres de la barra lateral
         label("Pestaña inicial")
         k.menu(sc, list(starts), {v: k_ for k_, v in starts.items()}.get(conf["start_tab"], "Última usada"),
                lambda v: self.set("start_tab", starts[v], redraw=False), 300).pack(anchor="w", padx=12, pady=2)

@@ -76,6 +76,8 @@ class PatchView:
         self._qjob = None
         self._mine = None
         self._item_idx = None
+        self._aug_idx = None
+        self._wraps = []
         self.pills = {}
 
     # ------------------------------------------------------------ datos en segundo plano
@@ -219,6 +221,20 @@ class PatchView:
             self._item_idx = idx
         return self._item_idx.get(norm(name))
 
+    def augment_photo(self, name, size):
+        """Icono de un aumento de ARAM: Caos si ya está en la caché (los baja el propio cliente de LoL al abrir su pantalla); si no, la insignia."""
+        try:
+            import augments
+            if self._aug_idx is None:
+                self._aug_idx = {norm(v.get("n")): k for k, v in augments.catalog().items()}
+            aid = self._aug_idx.get(norm(name))
+            pth = augments.icon_path(aid) if aid else None
+            if not pth:
+                return None
+            return self.ui._photo(("aug", aid), Image.open(pth).convert("RGBA"), size)
+        except Exception:
+            return None
+
     def icon_for(self, parent, entry, size=40):
         """Retrato del campeón, icono del objeto, o una insignia con la inicial; todo en un cuadrado del mismo tamaño."""
         ui = self.ui
@@ -229,6 +245,8 @@ class PatchView:
         elif entry["kind"] == "item":
             iid = self.item_id(entry["name"])
             ph = ui.item_photo(iid, size) if iid else None
+        elif entry["kind"] == "augment":
+            ph = self.augment_photo(entry["name"], size)
         if ph is not None:
             lab = tk.Label(parent, image=ph, bd=0, bg=ui.bg(parent))
             lab.image = ph
@@ -411,6 +429,7 @@ class PatchView:
             if d["designers"]:
                 self.label(c, "  ·  ".join(d["designers"]), 9, "dim").pack(anchor="w", pady=(8, 0))
         self.tiles(secs)
+        self.glance(secs)
         # barra de filtros
         card = ui.card(self.content)
         counts = self.counts(secs)
@@ -440,6 +459,54 @@ class PatchView:
         self.entries_host.pack(fill="x")
         self.render_entries()
 
+    def glance(self, secs):
+        """«De un vistazo»: los retratos de los campeones que mejoran y los que bajan; pulsar uno busca su ficha. Es lo que primero se quiere saber de un parche."""
+        ui = self.ui
+        champs = [e for s in secs if s["kind"] == "champions" for g in s["groups"] for e in g["entries"] if e["kind"] == "champion"]
+        groups = [("▲  MEJORAN", "good", [e for e in champs if e["verdict"] == "buff"]), ("▼  BAJAN", "bad", [e for e in champs if e["verdict"] == "nerf"]),
+                  ("◆  MIXTOS", "warn", [e for e in champs if e["verdict"] == "mixed"])]
+        groups = [g for g in groups if g[2]]
+        if not groups:
+            return
+        bg = self.hexm("card2")
+        outer = tk.Frame(self.content, bg=ui.bg(self.content))
+        outer.pack(fill="x", padx=8, pady=(0, 8))
+        card = tk.Frame(outer, bg=bg, highlightthickness=1, highlightbackground=self.hexm(ui.edge_color()))
+        card.pack(fill="x")
+        inner = tk.Frame(card, bg=bg)
+        inner.pack(fill="x", padx=14, pady=10)
+        tk.Label(inner, text="DE UN VISTAZO · CAMPEONES DE LA GRIETA", font=ui.tkf(9, True, False), fg=self.hexm("dim"), bg=bg).pack(anchor="w", pady=(0, 6))
+        mine = self.mine()
+        for title, color, es in groups:
+            row = tk.Frame(inner, bg=bg)
+            row.pack(fill="x", pady=3)
+            tk.Label(row, text=title, font=ui.tkf(10, True, False), fg=self.hexm(color), bg=bg, width=11, anchor="w").pack(side="left", anchor="n", pady=6)
+            icons = tk.Frame(row, bg=bg)
+            icons.pack(side="left", fill="x", expand=True)
+            per_row = max(6, int((self.width - 260) // 46))
+            for j, e in enumerate(es):
+                cid = self.champ_id(e)
+                ph = ui.champ_photo(cid, 38) if cid else None
+                cell = tk.Frame(icons, bg=bg)
+                cell.grid(row=j // per_row, column=j % per_row, padx=2, pady=2)
+                if ph is not None:
+                    lab = tk.Label(cell, image=ph, bd=0, bg=bg, cursor="hand2")
+                    lab.image = ph
+                else:
+                    lab = tk.Label(cell, text=e["name"][:2], font=ui.tkf(10, True, False), fg=self.hexm("fg"), bg=self.hexm("well"), width=4, height=2, cursor="hand2")
+                lab.pack()
+                if cid in mine:
+                    tk.Frame(cell, height=3, bg=self.hexm(ui.acc)).pack(fill="x")   # una raya del acento: es uno de los tuyos
+                ui.tip(lab, e["name"] + ("  ·  lo juegas" if cid in mine else ""))
+                lab.bind("<Button-1>", lambda ev, n=e["name"]: self.jump_to(n))
+
+    def jump_to(self, name):
+        """Filtra la lista por el nombre pulsado (y vuelve arriba de la lista)."""
+        self.query = name
+        self.sec = "champions"
+        self.limits = {}
+        self.fill_content_clear()
+
     def counts(self, secs):
         out = {}
         for s in secs:
@@ -468,10 +535,11 @@ class PatchView:
             return
         row = tk.Frame(self.content, bg=ui.bg(self.content))
         row.pack(fill="x", padx=8, pady=(0, 6))
+        per = len(tiles) if self.width >= 720 else 2
         for i, (n, label, sub, key) in enumerate(tiles):
-            row.columnconfigure(i, weight=1, uniform="tiles")
+            row.columnconfigure(i % per, weight=1, uniform="tiles")
             t = tk.Frame(row, bg=self.hexm("card2"), highlightthickness=1, highlightbackground=self.hexm(ui.edge_color()), cursor="hand2")
-            t.grid(row=0, column=i, sticky="nsew", padx=(0, 8) if i < len(tiles) - 1 else 0)
+            t.grid(row=i // per, column=i % per, sticky="nsew", padx=(0, 8) if i % per < per - 1 else 0, pady=(0, 8) if per < len(tiles) else 0)
             inner = tk.Frame(t, bg=self.hexm("card2"))
             inner.pack(fill="both", expand=True, padx=14, pady=10)
             tk.Label(inner, text=n, font=ui.tkf(22, True, True), fg=self.hexm(ui.acc), bg=self.hexm("card2")).pack(anchor="w")
@@ -620,6 +688,8 @@ class PatchView:
                                 fg=self.hexm(ui.acc), bg=ui.bg(wrap), cursor="hand2")
                 more.pack(anchor="w", padx=8, pady=(4, 6))
                 more.bind("<Button-1>", lambda e, k=key, n=lim: (self.limits.__setitem__(k, n + LIMIT), self.render_entries()))
+        ui.root.after(40, lambda: self.settle(False))
+        ui.root.after(400, self.settle)
         if bullets:
             card = tk.Frame(wrap, bg=self.hexm("card2"), highlightthickness=1, highlightbackground=self.hexm(ui.edge_color()))
             card.pack(fill="x", padx=6, pady=(2, 6))
@@ -630,6 +700,8 @@ class PatchView:
                 row.pack(fill="x", pady=2)
                 tk.Label(row, text="•", font=ui.tkf(11, True, False), fg=self.hexm("dim"), bg=self.hexm("card2")).pack(side="left", anchor="n", padx=(0, 8))
                 self.line_in(row, b, max(240, self.width - 190), card_bg="card2")
+            ui.root.after(40, lambda: self.settle(False))
+            ui.root.after(400, self.settle)
 
     # ------------------------------------------------------------ una ficha
     def entry_card(self, parent, e, colw):
@@ -648,7 +720,13 @@ class PatchView:
         self.icon_for(head, e, 40).pack(side="left", padx=(0, 10))
         txt = tk.Frame(head, bg=bg)
         txt.pack(side="left", fill="x", expand=True)
-        tk.Label(txt, text=e["name"], font=ui.tkf(13, True, False), fg=self.hexm("fg"), bg=bg, anchor="w").pack(anchor="w")
+        nm = tk.Frame(txt, bg=bg)
+        nm.pack(anchor="w")
+        tk.Label(nm, text=e["name"], font=ui.tkf(13, True, False), fg=self.hexm("fg"), bg=bg, anchor="w").pack(side="left")
+        if e["kind"] == "champion" and self.champ_id(e) in self.mine():
+            mk = tk.Label(nm, text="  ★ lo juegas", font=ui.tkf(9, True, False), fg=self.hexm(ui.acc), bg=bg)
+            mk.pack(side="left")
+            ui.tip(mk, "Es uno de tus campeones (los que has jugado en tu historial).")
         subtxt = KIND_LABEL.get(e["kind"], "")
         if e.get("tag") and e["tag"] != "NOVEDAD":
             subtxt = (subtxt + " · " if subtxt else "") + e["tag"].capitalize()
@@ -664,7 +742,7 @@ class PatchView:
             short = note if len(note) <= 190 else note[:185].rsplit(" ", 1)[0] + "…"
             nl = tk.Label(inner, text=short, font=ui.tkf(10, False, False), fg=self.hexm("dim"), bg=bg, anchor="w", justify="left", wraplength=int(wrap * ui.scale_px()))
             nl.pack(anchor="w", pady=(8, 0), fill="x")
-            ui.autowrap(nl, inner, 4)
+            self.reg_wrap(nl, inner)
             if len(note) > 190:
                 st = {"open": False}
                 tg = tk.Label(inner, text="Leer la nota ▾", font=ui.tkf(9, True, False), fg=self.hexm(ui.acc), bg=bg, cursor="hand2")
@@ -683,6 +761,28 @@ class PatchView:
                 row = tk.Frame(inner, bg=bg)
                 row.pack(fill="x", pady=1)
                 self.line_in(row, ln, wrap, card_bg="card2")
+
+    def reg_wrap(self, lab, host, frac=1.0):
+        """Anota una etiqueta para ajustar sus saltos de línea al ancho real de su contenedor, UNA vez, cuando ya está colocado (`settle`).
+        No se engancha a «Configure»: con columnas que se reparten el ancho, eso oscilaba sin fin."""
+        self._wraps.append((lab, host, frac))
+
+    def settle(self, last=True):
+        pend = self._wraps
+        if last:
+            self._wraps = []
+        try:
+            self.ui.root.update_idletasks()   # que el ancho que se lea ya sea el definitivo
+        except Exception:
+            pass
+        for lab, host, frac in pend:
+            try:
+                if lab.winfo_exists() and host.winfo_exists():
+                    w = host.winfo_width()
+                    if w > 60:
+                        lab.configure(wraplength=max(80, int(w * frac - (30 if frac < 1 else 6))))
+            except Exception:
+                pass
 
     def block_title(self, parent, title, bg):
         ui = self.ui
@@ -708,7 +808,7 @@ class PatchView:
             if ln["label"]:
                 lb = tk.Label(row, text=ln["label"], font=ui.tkf(10, False, False), fg=self.hexm("dim"), bg=bg, anchor="w", justify="left", wraplength=w)
                 lb.pack(anchor="w", fill="x")
-                ui.autowrap(lb, row, 4)
+                self.reg_wrap(lb, row)
             line = tk.Frame(row, bg=bg)
             line.pack(anchor="w", fill="x")
             b1 = tk.Label(line, text=ln["before"], font=ui.tkf(11, False, False), fg=self.hexm("dim"), bg=bg, anchor="w", justify="left", wraplength=int(w * 0.44))
@@ -717,19 +817,12 @@ class PatchView:
             b2 = tk.Label(line, text=ln["after"], font=ui.tkf(11, True, False), fg=self.hexm(col), bg=bg, anchor="w", justify="left", wraplength=int(w * 0.44))
             b2.pack(side="left", anchor="n")
 
-            def fit(e, b1=b1, b2=b2, line=line):
-                try:
-                    if e.widget is line:
-                        wl = max(90, int((e.width - 60 * ui.scale_px()) / 2))
-                        b1.configure(wraplength=wl)
-                        b2.configure(wraplength=wl)
-                except Exception:
-                    pass
-            line.bind("<Configure>", fit, add="+")
+            self.reg_wrap(b1, line, 0.45)
+            self.reg_wrap(b2, line, 0.45)
             return
         tx = tk.Label(row, text=ln["text"], font=ui.tkf(11, False, False), fg=self.hexm("fg"), bg=bg, anchor="w", justify="left", wraplength=w)
         tx.pack(anchor="w", fill="x")
-        ui.autowrap(tx, row, 4)
+        self.reg_wrap(tx, row)
 
     # ------------------------------------------------------------ pestaña Estadísticas
     def stats_tab(self, v):
