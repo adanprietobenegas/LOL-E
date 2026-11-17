@@ -1220,6 +1220,162 @@ class MejoresContraRivales(unittest.TestCase):
         self.assertEqual([t[0] for t in cp.targets({"r": r})], [1, 2, 4])
 
 
+class NotasDelParche(unittest.TestCase):
+    HTML = (
+        '<div id="patch-notes-container"><h2 id="patch-top">&nbsp;</h2><blockquote class="blockquote context"><p>Intro uno.<br><br>Intro dos. '
+        '<a href="x">wiki de nuestra comunidad</a></p></blockquote>'
+        '<h2 id="patch-champions">Campeones</h2>'
+        '<div class="patch-change-block"><div><p><a class="reference-link" href="https://leagueoflegends.com/en-us/champions/corki/"><img src="c.png"></a></p>'
+        '<h3 class="change-title" id="patch-corki"><a href="https://www.leagueoflegends.com/en-us/champions/corki/">Corki</a></h3>'
+        '<blockquote class="blockquote context"><p>Nota de Corki.</p></blockquote><hr class="divider">'
+        '<h4 class="change-detail-title ability-title"><img src="q.png">R - Andanada</h4>'
+        '<ul><li><strong>Daño</strong>: 90/170/250 (+85&nbsp;% del DA) ⇒ <strong>100/190/280 (+90&nbsp;% del DA)</strong>.</li>'
+        '<li><strong>Enfriamiento</strong>: 10/9/8 s</li><li style="list-style:none;">⇒ <strong>8/7/6 s</strong>.</li></ul>'
+        '<p><strong>Coste de maná:</strong>: 60 ⇒ <strong>50</strong>.</p>'
+        '<hr class="divider"><p><a class="reference-link" href="https://leagueoflegends.com/en-us/champions/yasuo/"><img src="y.png"></a></p>'
+        '<h3 class="change-title" id="patch-yasuo"><a href="#">Yasuo</a></h3><ul><li>Daño: 105 ⇒ <strong>100</strong>.</li></ul></div></div>'
+        '<h2 id="patch-aram:-mayhem">ARAM: Caos</h2><blockquote class="blockquote context"><p>Intro de Caos.</p></blockquote><hr class="divider">'
+        '<h4 class="change-detail-title">Aumentos</h4><p>Impacto blindado</p><ul><li>Daño: 50 ⇒ 25.</li></ul>'
+        '<p>¡ABEJAS!</p><ul><li>Tiempo: 0,75 s ⇒ 1,1 s.</li></ul>'
+        '<hr class="divider"><h4 class="change-detail-title">Corrección de errores</h4><ul><li>Hemos corregido un error.</li></ul>'
+        '<h2 id="patch-classic">Classic</h2><h4 class="change-detail-title">Campeones</h4>'
+        '<p><span><strong>&nbsp; NOVEDAD &nbsp;</strong></span>&nbsp;<strong>Fizz</strong></p><blockquote class="blockquote context"><p>Nota de Fizz.</p></blockquote>'
+        '<p><br><strong>Q - Golpe de erizo</strong></p><ul><li>Se desliza.</li></ul>'
+        '<h2 id="patch-bugfixes-and-qol-changes"><strong>Corrección de errores y mejoras de calidad</strong></h2><ul><li>Error uno.</li><li>Error dos.</li></ul>'
+        '<h2 id="patch-tft-standalone-client">Cliente independiente de TFT</h2><blockquote class="blockquote context"><p>TFT.</p></blockquote></div>')
+
+    def page(self):
+        return {"url": "https://www.leagueoflegends.com/es-es/news/game-updates/league-of-legends-patch-26-22-notes", "title": "Notas de la versión 26.22 de League of Legends",
+                "blades": [{"type": "articleMasthead", "title": "Notas de la versión 26.22 de League of Legends", "publishDate": "2026-11-03T19:00:00.000Z",
+                            "description": {"body": "Resumen del <b>parche</b>."}, "banner": {"url": "b.jpg"}, "authors": [{"name": "Riot A"}]},
+                           {"type": "patchNotesRichText", "fragmentId": "26.22", "richText": {"body": self.HTML}}]}
+
+    def setUp(self):
+        import parche
+        self.p = parche
+        self.d = parche.parse(self.page())
+
+    def test_cabecera_y_versiones(self):
+        d = self.d
+        self.assertEqual((d["v"], d["date"][:10], d["summary"], d["authors"]), ("26.22", "2026-11-03", "Resumen del parche.", ["Riot A"]))
+        self.assertEqual([s["kind"] for s in d["sections"]], ["champions", "aram", "classic", "bugs", "tft"])   # el h2 vacío no es una sección
+        self.assertTrue(d["intro"][0].startswith("Intro uno"))
+        self.assertFalse(any("wiki" in p for p in d["intro"]))                  # el enlace a la wiki no es contenido del parche
+        self.assertEqual(self.p.list_versions('/league-of-legends-patch-26-9-notes /league-of-legends-patch-26-22-notes /league-of-legends-patch-26-10-notes'),
+                         ["26.22", "26.10", "26.9"])
+
+    def test_ficha_de_campeon(self):
+        corki = self.d["sections"][0]["groups"][0]["entries"][0]
+        self.assertEqual((corki["name"], corki["kind"], corki["verdict"]), ("Corki", "champion", "buff"))
+        self.assertEqual(self.p.champion_slug(corki), "corki")
+        self.assertEqual(corki["note"], ["Nota de Corki."])
+        b = corki["blocks"][0]
+        self.assertEqual(b["title"], "R - Andanada")
+        lab = [(l["label"], l["trend"]) for l in b["lines"]]
+        self.assertEqual(lab, [("Daño", 1), ("Enfriamiento", 1), ("Coste de maná", 1)])   # bajar enfriamiento y coste es mejorar; el «⇒» partido en dos <li> se une
+        self.assertEqual(b["lines"][1]["before"], "10/9/8 s")
+        self.assertEqual(b["lines"][1]["after"], "8/7/6 s")
+        yasuo = self.d["sections"][0]["groups"][0]["entries"][1]
+        self.assertEqual((yasuo["name"], yasuo["verdict"]), ("Yasuo", "nerf"))
+
+    def test_aumentos_y_errores(self):
+        aram = self.d["sections"][1]
+        self.assertEqual(aram["intro"], ["Intro de Caos."])
+        groups = {g["title"]: g for g in aram["groups"]}
+        self.assertEqual([(e["name"], e["kind"]) for e in groups["Aumentos"]["entries"]], [("Impacto blindado", "augment"), ("¡ABEJAS!", "augment")])
+        self.assertEqual(groups["Aumentos"]["entries"][0]["verdict"], "nerf")
+        self.assertEqual([b["text"] for b in groups["Corrección de errores"]["bullets"]], ["Hemos corregido un error."])
+        self.assertEqual(len(self.d["sections"][3]["groups"][0]["bullets"]), 2)
+
+    def test_novedad_y_habilidades_en_parrafo(self):
+        fizz = self.d["sections"][2]["groups"][0]["entries"][0]
+        self.assertEqual((fizz["name"], fizz["tag"], fizz["verdict"]), ("Fizz", "NOVEDAD", "new"))
+        self.assertEqual(fizz["blocks"][0]["title"], "Q - Golpe de erizo")          # no se parte en una ficha por habilidad
+
+    def test_tendencia_de_un_cambio(self):
+        t = self.p.trend
+        self.assertEqual(t("Daño", "50/75/100", "50/80/110"), 1)
+        self.assertEqual(t("Enfriamiento", "12/11/10", "10/9/8"), 1)
+        self.assertEqual(t("Coste de maná", "50", "60"), -1)
+        self.assertEqual(t("Daño", "640 + 99/nivel", "590 + 107/nivel"), 0)         # una cifra sube y otra baja: mixto
+        self.assertEqual(t("Daño", "100 (+50 % del PH)", "100 (+60 % del PH)"), 1)  # misma serie principal: manda la relación
+        self.assertEqual(t("Efecto", "visibles para todos", "visibles solo para quien lo tiene"), 0)   # sin números
+        self.assertEqual(t("Daño", "(15+5 % de velocidad)", "17 % de vida que falte"), 0)              # otra fórmula: no se compara
+        self.assertEqual(self.p.verdict([{"lines": [{"trend": 1}, {"trend": -1}]}])[0], "mixed")
+
+    def test_cambios_para_cruzar_con_estadisticas(self):
+        ch = self.p.changes(self.d)
+        self.assertEqual([(c["slug"], c["verdict"], c["section"]) for c in ch[:2]], [("corki", "buff", "champions"), ("yasuo", "nerf", "champions")])
+
+    def test_si_la_web_cambia_no_revienta(self):
+        d = self.p.parse({"blades": [{"type": "patchNotesRichText", "richText": {"body": "<div>nada reconocible</div>"}}]})
+        self.assertEqual(d["sections"], [])
+        d = self.p.parse({})
+        self.assertEqual(d["sections"], [])
+        with self.assertRaises(ValueError):
+            self.p.next_data("<html>sin datos</html>")
+
+
+class EstadisticasDelParche(unittest.TestCase):
+    def snap(self, rows):
+        lanes = {l: {} for l in ("top", "jungle", "middle", "bottom", "support")}
+        for (lane, cid), (wr, pr, br, games, share) in rows.items():
+            lanes[lane][cid] = {"wr": wr, "pr": pr, "br": br, "games": games, "share": share, "home": lane}
+        return {"lanes": lanes}
+
+    def setUp(self):
+        import parche_stats
+        self.s = parche_stats
+        self.prev = self.snap({("top", 1): (50.0, 3.0, 5.0, 30000, 90), ("top", 2): (50.0, 3.0, 1.0, 30000, 80), ("middle", 2): (50.0, 1.0, 1.0, 10000, 20),
+                               ("top", 3): (50.0, 0.1, 1.0, 400, 10)})
+        self.cur = self.snap({("top", 1): (53.0, 5.0, 8.0, 30000, 90), ("top", 2): (49.0, 2.0, 1.0, 30000, 60), ("middle", 2): (50.0, 3.0, 1.0, 20000, 40),
+                              ("top", 3): (58.0, 0.1, 1.0, 450, 10)})
+
+    def test_versiones_y_numeracion(self):
+        self.assertEqual((self.s.internal("26.22"), self.s.public("16.22"), self.s.prev_version("26.22"), self.s.prev_version("26.1")), ("16.22", "26.22", "26.21", None))
+
+    def test_comparacion_y_listas(self):
+        rows = self.s.compare(self.cur, self.prev)
+        r1 = next(r for r in rows if r["cid"] == 1)
+        self.assertEqual((r1["dwr"], r1["dpr"], r1["dbr"]), (3.0, 2.0, 3.0))
+        rk = self.s.rankings(rows)
+        self.assertEqual([r["cid"] for r in rk["wr_up"]], [1])                   # 3 es de poca muestra (450 partidas) y no pasa el margen de error
+        self.assertEqual([r["cid"] for r in rk["wr_dn"]], [2])
+        self.assertEqual({r["cid"] for r in rk["pr_up"]}, {1, 2})                 # el uso sube en los dos; primero el que más sube en proporción
+        self.assertEqual([r["cid"] for r in rk["bans"]][:1], [1])
+        self.assertEqual(len({r["cid"] for r in rk["bans"]}), len(rk["bans"]))   # el baneo es del campeón: una sola fila
+        self.assertEqual([r["cid"] for r in self.s.rankings(rows, lane="middle")["pr_up"]], [2])
+        self.assertEqual(self.s.rankings(rows, only={2})["wr_up"], [])
+
+    def test_sin_parche_anterior_no_hay_cambios(self):
+        rows = self.s.compare(self.cur, None)
+        self.assertTrue(all(r["dwr"] is None for r in rows))
+        self.assertEqual(self.s.rankings(rows)["wr_up"], [])
+
+    def test_cambios_de_linea(self):
+        rows = self.s.compare(self.cur, self.prev)
+        sh = self.s.lane_shifts(rows)
+        self.assertTrue(any(s["cid"] == 2 and s["lane"] == "middle" and s["dshare"] == 20 for s in sh))
+
+    def test_efecto_de_las_notas(self):
+        rows = self.s.compare(self.cur, self.prev)
+        idx = self.s.champion_index({1: {"icon": "Corki", "name": "Corki"}, 2: {"icon": "Yasuo", "name": "Yasuo"}})
+        ch = [{"slug": "corki", "name": "Corki", "verdict": "buff", "section": "champions"}, {"slug": "yasuo", "name": "Yasuo", "verdict": "buff", "section": "champions"},
+              {"slug": "nadie", "name": "Nadie", "verdict": "nerf", "section": "champions"}]
+        eff = {e["name"]: e for e in self.s.note_effects(ch, rows, idx)}
+        self.assertTrue(eff["Corki"]["expected"])           # mejora y sube
+        self.assertFalse(eff["Yasuo"]["expected"])          # mejora y baja: al revés
+        self.assertNotIn("Nadie", eff)
+
+    def test_parche_provisional(self):
+        cur = self.snap({("top", 1): (50, 3, 5, 3000, 90)})
+        prev = self.snap({("top", 1): (50, 3, 5, 30000, 90)})
+        r, warn = self.s.reliability(cur, prev)
+        self.assertLess(r, 0.35)
+        self.assertIn("provisionales", warn)
+        self.assertEqual(self.s.reliability(prev, prev)[1], "")
+
+
 class AyudaDeLaApp(unittest.TestCase):
     def test_cada_pregunta_apunta_a_una_pagina_que_existe(self):
         import ayuda
