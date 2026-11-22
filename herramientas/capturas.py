@@ -61,7 +61,7 @@ for _i, _d in enumerate([-17, 19, 18, -16, 20, -18, 19, 17]):   # estimadas, ant
                     "lp": _ev % 100, "src": "est"})
     _ev -= _d
 lpseries.series = lambda lp, hist, snaps, queue="solo", with_estimate=False: (_est + _pts if with_estimate else _pts) if queue == "solo" else []
-lpseries.load_all = lambda cache_dir: ({"a": 1, "b": 2, "c": 3}, {})
+lpseries.load_all = lambda cache_dir, snaps_file=None: ({"a": 1, "b": 2, "c": 3}, {})
 import learn   # «Qué aprender» de ejemplo (el cache del proyecto no tiene partidas con línea)
 learn.advice = lambda *a, **k: [{"role": "TOP", "n": 14, "main": 86, "main_g": 12, "main_wr": .58, "cands": [(122, 53.4), (875, 52.9), (54, 52.1)]}]
 
