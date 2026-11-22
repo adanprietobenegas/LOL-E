@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.23.0, sin publicar). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.23.0). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -22,7 +22,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 2. Estado (actualizar al terminar cada conversación)
 
-**Publicado en GitHub: 1.22.27** (22/11/2026; la 1.22.26 fue la anterior). Cola, partida en vivo, datos del usuario, recomendaciones y actualización más robustos; la autoprueba del exe (`--autotest`) pasó en `publicar.py`. La pantalla «Parche» va APAGADA (`parche.ACTIVO`), pendiente de decidir cuándo encenderla (ya se revisó con el 26.23 real).
+**Publicado en GitHub: 1.23.0** (22/11/2026; la 1.22.27 fue la anterior): pantalla «Parche» ENCENDIDA (notas oficiales y estadísticas), relectura de jugadores si faltaba uno, temporizadores del Heraldo e inhibidores, menos CPU en la selección. **Antes, 1.22.27** (22/11/2026; la 1.22.26 fue la anterior). Cola, partida en vivo, datos del usuario, recomendaciones y actualización más robustos; la autoprueba del exe (`--autotest`) pasó en `publicar.py`. La pantalla «Parche» va APAGADA (`parche.ACTIVO`), pendiente de decidir cuándo encenderla (ya se revisó con el 26.23 real).
 
 **En `main` sin publicar** (17/11/2026 noche, candidata a 1.22.26 o 1.23.0; versión y notas SIN preparar; NO publicar sin el sí del usuario):
 - **Pantalla «Parche»** (petición del usuario del 17/11, «muy importante, debe quedar perfecta»: notas oficiales en español sin traducir + estadísticas del parche, de solo lectura con filtros, muy cuidada estéticamente, solo modos que se juegan: nada de TFT). 6.º elemento de la barra lateral (icono «doc», punto de aviso con parche nuevo, Ctrl+6; Datos pasa a Ctrl+7), página `parche`, vista `patch`.
