@@ -73,6 +73,7 @@ class ClienteFalso:
         self.pl = pl   # (PL antes, PL después) en Solo/Dúo Oro II: el rango cambia cuando la partida acaba
         self.remake = remake   # la partida nueva acaba anulada (rendición temprana): en la lista del historial lleva gameEndedInEarlySurrender
         self.pedidas = []
+        self.rc = {}   # paso del guion -> respuesta de /lol-matchmaking/v1/ready-check (la ventana de aceptar); sin entrada, el cliente no la da
         self.viejas = [partida(100, 103, True, 1_000), partida(101, 86, False, 2_000)]
         self.detalles = {}   # gameId -> detalle de la Grieta (los 10 jugadores); lo demás devuelve None, como el cliente con una partida que ya no tiene
 
@@ -98,6 +99,8 @@ class ClienteFalso:
         if self.paso in self.caidas:
             raise ConnectionError("el cliente se ha cerrado")
         f = self.fase
+        if path == "/lol-matchmaking/v1/ready-check":
+            return self.rc.get(self.paso)
         if path == "/lol-champ-select/v1/session":
             if f != "ChampSelect":
                 return None

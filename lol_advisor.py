@@ -10,6 +10,7 @@ import matchups
 import meta as metamod
 import params
 import players
+import readycheck
 import sounds
 import synergy
 import trends
@@ -1208,6 +1209,7 @@ def run(conf, champs, ui):
     import augments   # (aquí dentro: augments importa este módulo)
     mayhem_live, next_probe = False, 0.0
     last_flow = "_"
+    rc_prev = None
     next_roster, roster_gid = 0.0, None
     next_hist, hist_tries = 0.0, 0
     party, my_puuid = set(), ""
@@ -1272,6 +1274,14 @@ def run(conf, champs, ui):
                 in_game = flow in ("InProgress", "GameStart", "Reconnect")  # con la partida en marcha no se toca nada: el PC es del juego
                 if in_game:
                     played = True
+                if flow == "ReadyCheck":   # otra ventana de aceptar sin pasar por la cola (alguien no aceptó y el cliente encontró otra enseguida)
+                    rc = readycheck.read(lcu)
+                    if flow == last_flow and readycheck.new_round(rc_prev, rc):
+                        play_phase(conf, "found")
+                        diag("Otra partida encontrada (la anterior no la aceptaron todos)")
+                    rc_prev = rc
+                else:
+                    rc_prev = None
                 if flow != last_flow:
                     if last_flow != "_":  # sonidos por fase (no al conectar con el cliente a medias)
                         if flow == "ReadyCheck":
@@ -1401,7 +1411,7 @@ def run(conf, champs, ui):
                         season = new
                         P = load_player_data(lcu, season)
                         ui.idle(player_info(P), "Estadísticas de op.gg actualizadas.")
-                time.sleep(2); continue
+                time.sleep(1 if flow in ("Matchmaking", "ReadyCheck") else 2); continue   # en cola y al aceptar, más rápido: una cola relámpago no se escapa
             key = json.dumps([session["myTeam"], session["theirTeam"], session["bans"],
                               session["timer"]["phase"], session.get("actions")], sort_keys=True)
             if key != last:

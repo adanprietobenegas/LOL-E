@@ -359,3 +359,12 @@ Cada versión se publicó con el sí del usuario. Lo que no está en `CONTINUAR.
   (Corki, Rumble, Mel suben; Locke, Yasuo bajan) y con lo que se ve en Lolalytics (Corki +1,4 pts y +2,4 de uso; Locke y Yasuo bajan).
 - **Reserva (17/11, tarde)**: el usuario pide no publicar la pantalla «Parche» hasta tener un cambio de parche real para revisarla con calma. Se apaga con
   `parche.ACTIVO` (ver CONTINUAR); el resto de arreglos de las revisiones (plan colgado tras esquivar, línea habitual del rival, reintentos) sí se publicarán.
+
+## 22/11/2026: «partida encontrada» que no vuelve a sonar (en `main`, sin publicar)
+
+- **Aviso del usuario**: con una partida encontrada, si alguien no acepta y el cliente enseña otra, a veces no suena de nuevo.
+- **Causa probable**: el sonido saltaba solo al CAMBIAR de fase a «ReadyCheck». Tras un rechazo el cliente pasa por «En cola» durante muy poco (a veces menos que el
+  intervalo de lectura, 2 s en reposo) y la fase se veía como «ReadyCheck» seguida, sin cambio. Sin verificar con un cliente real (el cliente falso lo imita).
+- **Arreglo**: `readycheck.py` lee `/lol-matchmaking/v1/ready-check` mientras dura la fase y detecta una ventana nueva (contador que salta, tu respuesta que se borra tras aceptar,
+  o estado final → en curso); entonces suena «found» y se anota «Otra partida encontrada» en `diag.log`. Además se lee cada 1 s (no 2) en cola y al aceptar.
+  Trampa: el sentido del contador del cliente (sube o baja) no está confirmado, por eso se compara con el reloj y no con el signo.

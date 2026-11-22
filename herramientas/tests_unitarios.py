@@ -571,6 +571,24 @@ class FlujoCompleto(unittest.TestCase):
         self.assertFalse([e for e in ev if e[0] == "live"])
         self.assertFalse(llamadas)                                           # y ni se lee el puerto salvo en Mayhem
 
+    def test_otra_partida_encontrada_sin_pasar_por_la_cola_suena_otra_vez(self):
+        from cliente_falso import ClienteFalso
+        fake = ClienteFalso(guion=["None", "Matchmaking", "ReadyCheck", "ReadyCheck", "ReadyCheck", "ReadyCheck", "ReadyCheck", "ChampSelect", "ChampSelect", "None", "None"])
+        rc = lambda timer, resp="None", st="InProgress": {"state": st, "playerResponse": resp, "timer": timer}
+        # el contador sube; aceptas; alguien no acepta y el cliente enseña otra ventana sin pasar por «En cola» (el contador vuelve a 0)
+        fake.rc = {2: rc(1), 3: rc(3, "Accepted"), 4: rc(0.5), 5: rc(2), 6: rc(4, "Accepted")}
+        self.correr(fake)
+        self.assertEqual(self.leer("diag.log").count("Otra partida encontrada"), 1)
+        self.assertEqual(self.leer("error.log"), "")
+
+    def test_una_sola_partida_encontrada_no_suena_dos_veces(self):
+        from cliente_falso import ClienteFalso
+        fake = ClienteFalso(guion=["None", "Matchmaking", "ReadyCheck", "ReadyCheck", "ReadyCheck", "ChampSelect", "ChampSelect", "None", "None"])
+        fake.rc = {2: {"state": "InProgress", "playerResponse": "None", "timer": 1}, 3: {"state": "InProgress", "playerResponse": "Accepted", "timer": 2},
+                   4: {"state": "EveryoneReady", "playerResponse": "Accepted", "timer": 3}}
+        self.correr(fake)
+        self.assertNotIn("Otra partida encontrada", self.leer("diag.log"))
+
     def test_esquivar_la_partida_no_guarda_ni_analiza_nada(self):
         from cliente_falso import ClienteFalso
         ev = self.correr(ClienteFalso(guion=["None", "Matchmaking", "ReadyCheck", "ChampSelect", "ChampSelect", "None", "None"]))
@@ -1218,6 +1236,21 @@ class MejoresContraRivales(unittest.TestCase):
         self.assertEqual(cp.targets({"r": r}), [(4, "top", True), (1, "top", False), (2, "support", False)])
         r["lane_opp"] = 0   # sin rival de línea conocido: solo los demás
         self.assertEqual([t[0] for t in cp.targets({"r": r})], [1, 2, 4])
+
+
+class VentanaDeAceptar(unittest.TestCase):
+    def test_nueva_ronda(self):
+        import readycheck as r
+        a = {"state": "InProgress", "response": "None", "timer": 3.0, "t": 100.0}
+        self.assertFalse(r.new_round(None, a))
+        self.assertFalse(r.new_round(a, None))
+        self.assertFalse(r.new_round(a, {**a, "timer": 4.0, "t": 101.0}))                              # sigue la misma ventana
+        self.assertFalse(r.new_round(a, {**a, "response": "Accepted", "timer": 4.0, "t": 101.0}))      # aceptas: misma ventana
+        self.assertTrue(r.new_round({**a, "timer": 9.0}, {**a, "timer": 0.5, "t": 101.0}))                # el contador vuelve a empezar
+        self.assertTrue(r.new_round({**a, "response": "Accepted"}, {**a, "timer": 4.0, "t": 101.0}))    # tu respuesta se borra
+        self.assertTrue(r.new_round({**a, "state": "PartyNotReady"}, {**a, "timer": 4.0, "t": 101.0}))  # de un estado final a «en curso»
+        self.assertFalse(r.new_round(a, {**a, "timer": 7.0, "t": 105.0}))                               # una pausa larga en la lectura no es una ventana nueva
+        self.assertFalse(r.new_round({**a, "timer": None}, {**a, "timer": None, "t": 101.0}))           # sin contador, solo valen las otras señales
 
 
 class ParcheReservada(unittest.TestCase):
