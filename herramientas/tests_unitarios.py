@@ -1470,6 +1470,61 @@ class PuntuacionAjustada(unittest.TestCase):
         self.assertTrue(sesion.clearly_higher((200, 130), (200, 100)))           # 65 % contra 50 % con 200
 
 
+class ComprobacionDelEmpaquetado(unittest.TestCase):
+    def test_la_lista_de_modulos_de_la_autoprueba_es_la_de_la_carpeta(self):
+        import glob
+        excluidos = {"app", "build_release", "make_icon", "make_icon_options", "make_icon_options2", "make_icon_options3", "draft5"}
+        en_carpeta = {os.path.splitext(os.path.basename(f))[0] for f in glob.glob(os.path.join(os.path.dirname(core.__file__), "*.py"))} - excluidos
+        self.assertEqual(sorted(core.AUTOTEST_MODULES), sorted(en_carpeta))   # un módulo nuevo debe entrar en la lista (y así se prueba en el ejecutable)
+
+    def test_la_autoprueba_pasa_desde_el_codigo_fuente(self):
+        self.assertEqual(core.autotest(), [])
+
+
+class DescargaDeActualizaciones(unittest.TestCase):
+    class Resp:
+        def __init__(self, data, length=None):
+            self.data, self.pos = data, 0
+            self.headers = {"Content-Length": str(len(data) if length is None else length)}
+        def read(self, n):
+            c = self.data[self.pos:self.pos + n]
+            self.pos += len(c)
+            return c
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def close(self): pass
+
+    def run_download(self, data, sha=None, length=None):
+        import updater, hashlib, tempfile
+        orig_open, orig_tmp = updater._open, tempfile.gettempdir
+        d = tempfile.mkdtemp()
+        updater._open = lambda url, timeout=20: self.Resp(data, length)
+        tempfile.gettempdir = lambda: d
+        try:
+            info = {"version": "9.9.9", "url": "https://github.com/x/y", "sha256": sha or hashlib.sha256(data).hexdigest()}
+            try:
+                return updater.download(info), d
+            except RuntimeError as e:
+                return str(e), d
+        finally:
+            updater._open, tempfile.gettempdir = orig_open, orig_tmp
+
+    def test_descarga_buena(self):
+        r, d = self.run_download(b"x" * 1000)
+        self.assertTrue(r.endswith("Instalar-LOL-E-9.9.9.exe") and os.path.exists(r))
+        self.assertEqual([n for n in os.listdir(os.path.join(d, "LOL-E-update")) if n.endswith(".part")], [])
+
+    def test_huella_distinta_se_descarta(self):
+        r, d = self.run_download(b"x" * 1000, sha="0" * 64)
+        self.assertIn("huella", r)
+        self.assertEqual(os.listdir(os.path.join(d, "LOL-E-update")), [])
+
+    def test_descarga_cortada_se_descarta_con_mensaje_claro(self):
+        r, d = self.run_download(b"x" * 500, length=1000)
+        self.assertIn("se cortó", r)
+        self.assertEqual(os.listdir(os.path.join(d, "LOL-E-update")), [])
+
+
 class DatosDelUsuarioSeguros(unittest.TestCase):
     """Lo que el cliente no puede volver a dar (historial, PL, partidas con rival, ajustes, fotos de rango) no se pierde por un archivo dañado."""
 

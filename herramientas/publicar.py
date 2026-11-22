@@ -74,6 +74,14 @@ def verificar(version):
             v = f"error {type(e).__name__}"
         print(f"  {time.strftime('%H:%M:%S')}  el actualizador ve la versión: {v}", flush=True)
         if v == version:
+            try:   # no basta con ver el número: se baja el instalador por el mismo camino que la app y se comprueba su huella
+                import updater
+                info = updater.check(UPDATE_URL, "0.0.1")
+                ruta = updater.download(info)
+                print(f"  el instalador se descarga y su huella coincide ({os.path.getsize(ruta) / 1e6:.1f} MB)")
+            except Exception as e:
+                print(f"\nMAL: el actualizador ve la {version} pero el instalador no se puede bajar bien: {type(e).__name__} {e}")
+                return 1
             print(f"\nBIEN: la {version} ya la sirve la dirección de actualizaciones.")
             return 0
         time.sleep(30)
@@ -130,6 +138,8 @@ def main():
             parar("la comprobación completa ha fallado")
         print("   bien")
 
+    if not re.fullmatch(r"\d+(\.\d+){2}", ver):
+        parar(f"la versión «{ver}» no tiene el formato X.Y.Z (solo números): el actualizador la rechazaría en todos los PC")
     print("4. Construcción")
     if "League of Legends.exe" in sh("tasklist").stdout:   # la comprobación dura minutos: se vuelve a mirar justo antes de construir
         parar("ha empezado una partida mientras se comprobaba: no se construye nada hasta que acabe (vuelve a lanzar el comando)")
@@ -138,6 +148,21 @@ def main():
     if r.returncode != 0:
         print(r.stdout[-2500:] + r.stderr[-1500:])
         parar("build_release.py ha fallado")
+    print("   bien")
+
+    print("4b. El ejecutable empaquetado arranca (LOL-E.exe --autotest)")
+    exe = os.path.join(os.environ.get("TEMP", ROOT), "lolb", "dist", "LOL-E", "LOL-E.exe")
+    out = os.path.join(os.environ.get("TEMP", ROOT), "lole_autotest.txt")
+    if os.path.exists(out):
+        os.remove(out)
+    try:
+        r = subprocess.run([exe, "--autotest"], timeout=180, capture_output=True)
+        rc = r.returncode
+    except Exception as e:
+        rc = f"no se pudo ejecutar ({type(e).__name__})"
+    detalle = open(out, encoding="utf-8").read() if os.path.exists(out) else "sin informe"
+    if rc != 0 or detalle.strip() != "BIEN":
+        parar(f"el ejecutable empaquetado no pasa su autoprueba (código {rc}): {detalle[:900]}")
     print("   bien")
 
     print("5. Contenido de release/")

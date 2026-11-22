@@ -580,9 +580,7 @@ class GUI:
                 elif kind == "update_fail":
                     self.update_btn.configure(state="normal", text=f"Actualizar a {self.update_info['version']}")
                 elif kind == "update_ready":
-                    updater.install(ev[1])
-                    self.root.after(800, self.close)   # el instalador reabre LOL-E al terminar
-                    self.close()
+                    self.apply_update(ev[1], ev[2] if len(ev) > 2 else False)
 
     def tick(self):
         if not self.running:
@@ -669,7 +667,11 @@ class GUI:
 
     # ---------- actualizaciones ----------
     UPDATE_EVERY = 3 * 3600 * 1000     # se vuelve a mirar cada 3 horas: quien deja LOL-E abierto también se actualiza
-    BUSY = ("Matchmaking", "ReadyCheck", "ChampSelect", "GameStart", "InProgress", "Reconnect")
+    BUSY = ("Matchmaking", "ReadyCheck", "ChampSelect", "GameStart", "InProgress", "Reconnect", "PreEndOfGame", "EndOfGame", "WaitingForStats")   # al acabar, LOL-E aún espera el cambio de PL y analiza la partida
+
+    def busy(self):
+        """¿Hay cola, selección, partida o cierre de partida en curso? Con eso no se instala nada: el instalador cierra la app."""
+        return self.advisor == "select" or self.ctx.get("phase") in self.BUSY or (self.ctx.get("plan") or {}).get("state") in ("select", "game")
     installing = False
 
     def patch_check(self):
@@ -715,6 +717,24 @@ class GUI:
             save_conf(self.conf)
         self.tab_seg.set_badge("Parche", False)
 
+    def apply_update(self, path, forced=False):
+        """Lanza el instalador ya descargado y comprobado. Si mientras se descargaba empezó una cola o una partida, espera (salvo si lo pidió el usuario con el botón).
+        Si el instalador no se puede lanzar (antivirus, archivo borrado), la app sigue abierta y lo dice."""
+        if not forced and self.busy():
+            self.status("Actualización descargada: se instalará cuando acabe la partida o la cola.")
+            self.root.after(120000, lambda: self.apply_update(path, forced))
+            return
+        try:
+            updater.install(path)
+        except Exception as e:
+            self.installing = False
+            self.update_btn.configure(state="normal", text=f"Actualizar a {(self.update_info or {}).get('version', '')}".strip())
+            self.status(f"No se pudo lanzar el instalador ({type(e).__name__}). Pulsa «Actualizar» para reintentarlo; si sigue fallando, descarga LOL-E de nuevo desde GitHub.")
+            core.diag(f"Actualización: no se pudo lanzar {path}: {type(e).__name__} {e}")
+            return
+        self.root.after(800, self.close)   # el instalador reabre LOL-E al terminar
+        self.close()
+
     def auto_check(self):
         if self.conf["auto_update"] and self.conf["update_url"] and not self.installing:
             self.check_updates(False)
@@ -724,8 +744,12 @@ class GUI:
         """Instala la versión nueva sin preguntar. Solo con la ventana en reposo: si hay cola, selección o partida, espera y vuelve a probar."""
         if self.installing or not self.running:
             return
-        if self.advisor == "select" or self.ctx.get("phase") in self.BUSY:
-            self.root.after(120000, lambda: self.auto_install(info))
+        if self.busy():
+            if not getattr(self, "_install_wait", None):   # un solo reintento pendiente (cada comprobación de 3 h añadía otra cadena)
+                def again():
+                    self._install_wait = None
+                    self.auto_install(info)
+                self._install_wait = self.root.after(120000, again)
             return
         self.installing = True
         self.status(f"Actualizando LOL-E a la versión {info['version']}…")
@@ -733,7 +757,7 @@ class GUI:
         def go():
             try:
                 path = updater.download(info)
-                self.q.put(("update_ready", path))
+                self.q.put(("update_ready", path, False))
             except Exception as e:
                 self.installing = False
                 self.status(f"No se ha podido actualizar solo ({e}). Pulsa «Actualizar» cuando quieras.")
@@ -779,13 +803,17 @@ class GUI:
             # también en la comprobación automática: antes fallaba en silencio y no se reintentaba hasta 3 horas después
             self.status(f"No se ha podido comprobar si hay actualizaciones: {err}")
             if manual:
-                self.ver_note("sin conexión con el servidor de actualizaciones", "warn")
+                sin_red = any(x in str(err).lower() for x in ("urlopen", "getaddrinfo", "timed out", "connection", "winerror", "curl"))
+                self.ver_note("sin conexión con el servidor de actualizaciones" if sin_red else "no se pudo comprobar (ver el pie de la ventana)", "warn")
             self.update_fails = getattr(self, "update_fails", 0) + 1
             if not manual and self.update_fails <= 5:
                 self.root.after(120000, lambda: self.check_updates(False))
             return
         self.update_fails = 0
         if info is None:
+            self.update_info = None   # puede que retiraran la versión nueva: el botón ya no tiene a qué llevar
+            if not self.installing:
+                self.update_btn.pack_forget()
             if manual:
                 self.status(f"Estás al día: la versión {APP_VERSION} es la más reciente.")
                 self.ver_note("al día ✓", "good")
@@ -801,20 +829,23 @@ class GUI:
 
     def confirm_update(self):
         info = self.update_info
-        if not info:
-            return
+        if not info or self.installing:
+            return   # ya se está descargando (a mano o sola): una segunda descarga pisaría el archivo
         notes = info.get("notes", "")
+        aviso = "\n\nOJO: hay una cola, una selección o una partida en curso. LOL-E se cerrará durante unos segundos: mejor espera a que acabe." if self.busy() else ""
         if not messagebox.askyesno(APP_NAME, f"Hay una versión nueva de {APP_NAME}: {info['version']}.\n\n{notes}\n\n"
                                    "Se descargará el instalador, se comprobará su huella de seguridad y LOL-E se cerrará para "
-                                   "actualizarse. Tus datos y ajustes se conservan.\n\n¿Actualizar ahora?"):
+                                   f"actualizarse. Tus datos y ajustes se conservan.{aviso}\n\n¿Actualizar ahora?"):
             return
+        self.installing = True
         self.update_btn.configure(state="disabled", text="Descargando…")
 
         def go():
             try:
                 path = updater.download(info, lambda f: self.status(f"Descargando la actualización… {f:.0%}"))
-                self.q.put(("update_ready", path))
+                self.q.put(("update_ready", path, True))
             except Exception as e:
+                self.installing = False
                 self.status(f"No se ha podido actualizar: {e}")
                 self.q.put(("update_fail",))
         threading.Thread(target=go, daemon=True).start()

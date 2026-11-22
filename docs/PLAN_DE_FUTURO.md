@@ -95,6 +95,11 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
   encogido por muestra (`META_K` = 1500), sinergia de dúo con la línea ASIGNADA del aliado, motivo de sinergia positivo («Os ha ido bien juntos (3/3)» si solo hay reglas negativas), bans solo de
   tu línea (`P["oppr"]`), maestría con raíz, y diferencias de sesión (`sesion.clearly_higher`) solo si superan el azar. PENDIENTE: recencia (partidas de hace un año pesan igual), ARAM sin
   intercambios ni propiedad, `lane_share_min` por defecto (2 %), prior de «Mis campeones»/`counter` ligado al parámetro `winrate_prior`.
+- **Actualización y empaquetado** (auditoría de 22/11/2026): HECHO `LOL-E.exe --autotest` (importa todos los módulos de `AUTOTEST_MODULES`, mira recursos, certificados y Tk) que
+  `publicar.py` ejecuta sobre el exe construido antes de dar nada por publicable; `--verificar` baja de verdad el instalador y comprueba su huella; la descarga va a un `.part` único, se
+  comprueba contra el archivo en disco y que no se cortó; no se instala con cola/selección/partida/cierre de partida (se mira otra vez al terminar de bajar; el botón manual avisa);
+  si no se puede lanzar el instalador la app sigue abierta y lo dice; un solo reintento pendiente; versión con formato X.Y.Z exigido al publicar; mensajes de error menos engañosos.
+  PENDIENTE (bajo): construir en `TMP` y copiar a `release/` solo al final, copia de seguridad antes de la próxima migración de datos, aviso al arrancar si una actualización no se completó.
 - **Coaching con IA**: un resumen en lenguaje natural de la partida o de tu semana. Pide decidir dónde corre el modelo, clave de API o coste, y
   qué datos salen del PC (privacidad). Esfuerzo L, riesgo a. Solo si el usuario lo quiere y con consentimiento claro.
 - **Varias cuentas**: el historial ya es por cuenta; falta una interfaz para ver/cambiar de cuenta y comparar. M.

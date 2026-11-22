@@ -1788,8 +1788,53 @@ def seed_cache():
                 shutil.copy2(os.path.join(root, f), os.path.join(dst, f))
 
 
+# módulos de la app que el ejecutable empaquetado debe poder importar (la prueba `ComprobacionDelEmpaquetado` los compara con los archivos de la carpeta)
+AUTOTEST_MODULES = ("analysis", "aram_builds", "augments", "ayuda", "builds", "claves", "demo_cliente", "demo_data", "demo_mode", "gui", "guide", "history", "items", "itemset", "learn", "live", "lol_advisor", "lpseries", "matchups", "meta", "novedades", "opgg_builds", "params", "parche", "parche_stats", "patrones", "players", "readycheck", "runes", "safeio", "sesion", "shopping", "sounds", "synergy", "temas", "tour", "trends", "ui_analysis", "ui_aram", "ui_build", "ui_claves", "ui_draft", "ui_game", "ui_guide", "ui_help", "ui_history", "ui_kit", "ui_live", "ui_lp", "ui_mayhem", "ui_opp", "ui_patch", "ui_player", "ui_pool", "ui_rail", "ui_sections", "ui_views", "ui_vs", "updater", "wrapped")
+
+
+def autotest():
+    """Comprobación del EJECUTABLE empaquetado (`LOL-E.exe --autotest`): que se importan todos los módulos, que están los recursos (iconos, fuentes, claves, certificados)
+    y que Tk arranca. Lo ejecuta `publicar.py` antes de dar nada por publicable: un módulo o archivo que falta solo en el paquete no se ve ejecutando el código fuente.
+    Devuelve la lista de fallos (vacía si todo bien) y la deja también en un archivo de la carpeta temporal (el ejecutable no tiene consola)."""
+    fallos = []
+    for m in AUTOTEST_MODULES:
+        try:
+            __import__(m)
+        except Exception as e:
+            fallos.append(f"módulo {m}: {type(e).__name__} {e}")
+    try:
+        import ui_kit, certifi
+        for parts in (("icon.png",), ("icon.ico",), ("claves.json",)):
+            if not os.path.exists(ui_kit.res(*parts)):
+                fallos.append("falta el recurso " + "/".join(parts))
+        fonts = ui_kit.res("fonts")
+        if not os.path.isdir(fonts) or not os.listdir(fonts):
+            fallos.append("faltan las fuentes")
+        json.load(open(ui_kit.res("claves.json"), encoding="utf-8"))
+        if not os.path.exists(certifi.where()):
+            fallos.append("faltan los certificados (certifi)")
+    except Exception as e:
+        fallos.append(f"recursos: {type(e).__name__} {e}")
+    try:
+        import tkinter
+        r = tkinter.Tk()
+        r.withdraw()
+        r.destroy()
+    except Exception as e:
+        fallos.append(f"Tk no arranca: {type(e).__name__} {e}")
+    try:
+        import tempfile
+        with open(os.path.join(tempfile.gettempdir(), "lole_autotest.txt"), "w", encoding="utf-8") as f:
+            f.write("\n".join(fallos) if fallos else "BIEN")
+    except OSError:
+        pass
+    return fallos
+
+
 def main():
-    sys.modules.setdefault("lol_advisor", sys.modules[__name__])  # si se lanza como script, que gui.py comparta este modulo
+    sys.modules.setdefault("lol_advisor", sys.modules[__name__])
+    if "--autotest" in sys.argv:
+        sys.exit(1 if autotest() else 0)  # si se lanza como script, que gui.py comparta este modulo
     if "--demo" in sys.argv:   # la demostración: la app con datos inventados, en otra ventana y sin tocar los datos reales
         install_error_hooks()
         install_certs()

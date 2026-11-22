@@ -6,7 +6,7 @@ Si `update_url` está vacío, no se comprueba nada. Por defecto la app se actual
 
 latest.json:  {"version": "1.2.0", "url": "https://…/Instalar-LOL-E-1.2.0.exe", "sha256": "…", "notes": "…"}
 """
-import hashlib, json, os, subprocess, tempfile, urllib.request
+import hashlib, json, os, subprocess, tempfile, threading, urllib.request
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; LOL-E)"}
 
@@ -75,37 +75,51 @@ def download(info, progress=None):
     """Descarga el instalador a una carpeta temporal y comprueba su SHA-256. Devuelve la ruta."""
     folder = os.path.join(tempfile.gettempdir(), "LOL-E-update")
     os.makedirs(folder, exist_ok=True)
-    path = os.path.join(folder, f"Instalar-LOL-E-{info['version']}.exe")
-    h = hashlib.sha256()
-    try:
-        _open(info["url"], 60).close()
-    except Exception as e:
-        if not _cert_error(e):
-            raise
-        _curl(info["url"], path, 300)
+    final = os.path.join(folder, f"Instalar-LOL-E-{info['version']}.exe")
+    path = f"{final}.{os.getpid()}.{threading.get_ident()}.part"   # nombre único: dos descargas a la vez no se pisan el archivo
+
+    def check_and_finish():
+        """La huella se calcula sobre el ARCHIVO en disco (no sobre lo recibido) y, si coincide, se cambia de nombre al definitivo."""
+        h = hashlib.sha256()
         with open(path, "rb") as f:
             for chunk in iter(lambda: f.read(1 << 20), b""):
                 h.update(chunk)
         if h.hexdigest().lower() != info["sha256"].lower():
             os.remove(path)
             raise RuntimeError("la huella del archivo descargado no coincide: se descarta por seguridad")
-        return path
-    with _open(info["url"], 60) as r, open(path, "wb") as f:
-        total = int(r.headers.get("Content-Length", 0))
-        done = 0
-        while True:
-            chunk = r.read(256 * 1024)
-            if not chunk:
-                break
-            f.write(chunk)
-            h.update(chunk)
-            done += len(chunk)
-            if progress and total:
-                progress(done / total)
-    if h.hexdigest().lower() != info["sha256"].lower():
-        os.remove(path)
-        raise RuntimeError("la huella del archivo descargado no coincide: se descarta por seguridad")
-    return path
+        os.replace(path, final)
+        return final
+
+    try:
+        _open(info["url"], 60).close()
+    except Exception as e:
+        if not _cert_error(e):
+            raise
+        _curl(info["url"], path, 300)
+        return check_and_finish()
+    try:
+        with _open(info["url"], 60) as r, open(path, "wb") as f:
+            total = int(r.headers.get("Content-Length", 0))
+            done = 0
+            while True:
+                chunk = r.read(256 * 1024)
+                if not chunk:
+                    break
+                f.write(chunk)
+                done += len(chunk)
+                if progress and total:
+                    progress(done / total)
+            f.flush()
+            os.fsync(f.fileno())
+        if total and done != total:
+            raise RuntimeError(f"la descarga se cortó ({done} de {total} bytes): se reintentará")
+        return check_and_finish()
+    except Exception:
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+        raise
 
 
 def install(path):
