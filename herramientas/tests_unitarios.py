@@ -1381,6 +1381,22 @@ class NotasDelParche(unittest.TestCase):
         self.assertEqual(es[0]["blocks"][0]["title"], "Q - Marca")
         self.assertEqual(es[1]["verdict"], "nerf")
 
+    def test_habilidad_con_dos_formas_y_correccion_de_errores_en_classic(self):
+        # parche 26.23 real: «Q - Bumerán» y en otro párrafo «/Peñascazo» (Gnar) no es otro campeón; «Corrección de errores» en negrita cierra Classic con viñetas
+        html = ('<div id="patch-notes-container"><h2 id="patch-champions">Campeones</h2>'
+                '<h3 class="change-title" id="patch-gnar"><a href="#">Gnar</a></h3><blockquote class="blockquote context"><p>Nota.</p></blockquote>'
+                '<h4 class="change-detail-title ability-title">Q - Bumer\u00e1n</h4><p>/Pe\u00f1ascazo</p><ul><li>Da\u00f1o: 5 \u21d2 <strong>6</strong>.</li></ul>'
+                '<h2 id="patch-classic">Classic</h2><h4 class="change-detail-title">Campeones</h4>'
+                '<h4 class="change-detail-title">NOVEDAD - Akali</h4><blockquote class="blockquote context"><p>Nota de Akali.</p></blockquote><ul><li>Hace cosas.</li></ul>'
+                '<p><strong>Correcci\u00f3n de errores</strong></p><ul><li>Se arregl\u00f3 algo.</li></ul></div>')
+        d = self.p.parse({"blades": [{"type": "patchNotesRichText", "richText": {"body": html}}]})
+        gnar = d["sections"][0]["groups"][0]["entries"]
+        self.assertEqual([e["name"] for e in gnar], ["Gnar"])
+        self.assertEqual(gnar[0]["blocks"][0]["title"], "Q - Bumer\u00e1n/Pe\u00f1ascazo")
+        cl = d["sections"][1]["groups"]
+        self.assertEqual([e["name"] for e in cl[0]["entries"]], ["Akali"])
+        self.assertEqual(len(cl[1]["bullets"]), 1)
+
     def test_cambios_para_cruzar_con_estadisticas(self):
         ch = self.p.changes(self.d)
         self.assertEqual([(c["slug"], c["verdict"], c["section"]) for c in ch[:2]], [("corki", "buff", "champions"), ("yasuo", "nerf", "champions")])

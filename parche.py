@@ -433,7 +433,12 @@ def parse_section(node, sid, title):
                 entry["blocks"] = [b for b in entry["blocks"] if b["lines"] or b["title"]] + [block]
         elif k == "p":
             started = True
-            if entry is not None and nxt and nxt[0] == "ul" and re.match(r"^(Pasiva|P|Q|W|E|R)\s*[-–—]\s*\S|^Estad[ií]sticas\b", tok[2]) and len(tok[2]) < 90:
+            if entry is not None and tok[2].startswith("/") and len(tok[2]) < 60 and entry["blocks"] and entry["blocks"][-1]["title"] and not entry["blocks"][-1]["lines"]:
+                # «Q - Bumerán» + «/Peñascazo» (la habilidad de Gnar cambia de forma): el segundo párrafo es la otra mitad del título, no una ficha
+                entry["blocks"][-1]["title"] = clean(entry["blocks"][-1]["title"] + tok[2])
+            elif re.match(r"^Correcci.{1,2}n de errores", tok[2]) and len(tok[2]) < 40:
+                new_group(tok[2])   # «Corrección de errores» en negrita dentro de Classic: un grupo de viñetas, no un campeón
+            elif entry is not None and nxt and nxt[0] == "ul" and re.match(r"^(Pasiva|P|Q|W|E|R)\s*[-–—]\s*\S|^Estad[ií]sticas\b", tok[2]) and len(tok[2]) < 90:
                 # «Q - Golpe de erizo de mar» como párrafo en negrita: es el título de una habilidad de la ficha abierta, no una ficha nueva
                 block = {"title": clean(tok[2]), "icon": None, "lines": []}
                 entry["blocks"] = [x for x in entry["blocks"] if x["lines"] or x["title"]] + [block]
