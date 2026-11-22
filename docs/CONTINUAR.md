@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.22.27). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.23.0, sin publicar). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -32,10 +32,11 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
   - `GUI.patch_check` (cada 3 h, tras 9 s; espera si hay partida) apunta `parche_visto` (conf) y, si sale uno nuevo, pone el punto en la barra y precarga sus notas; abrir «Parche» lo quita.
   - Pruebas nuevas: `NotasDelParche`, `EstadisticasDelParche` (HTML y datos sintéticos). Visto en la demo con red real, no con una partida; la banda ámbar no cambia.
 
-- **PANTALLA PARCHE RESERVADA (decisión del usuario, 17/11/2026)**: está terminada en `main` pero apagada con `parche.ACTIVO` (False salvo `LOLE_PARCHE=1`). Apagada
-  no hay botón en la barra, ni Ctrl+n, ni opción de pestaña inicial, ni aviso bajo el campeón, ni comprobación de parches, ni lección ni preguntas de la Ayuda
-  (`ui_rail`, `gui`, `ui_patch.patch_chip`, `tour`, `ayuda`; prueba `ParcheReservada`). Para revisarla con un parche real: `set LOLE_PARCHE=1` y abrir la app; el parche 26.23
-  ya está en la web de Riot (`parche_vivo.py` lo lee bien). Cuando el usuario diga que se publica: `ACTIVO = True`, versión y notas, y mirar qué dice el HISTORIAL.
+- **PANTALLA PARCHE ENCENDIDA en la 1.23.0 (22/11/2026)**: el usuario la reservó el 17/11 hasta revisarla con un parche real y el 22/11 pidió publicarla; se revisó con el 26.23
+  (arreglos en el lector). El interruptor es `parche.ACTIVO` (True; `LOLE_PARCHE=0` la apaga: útil si Riot cambia su web y `parche_vivo.py` falla). Sin ella no hay botón en la
+  barra, ni Ctrl+n, ni aviso bajo el campeón, ni comprobación de parches, ni lección ni preguntas de la Ayuda (`ui_rail`, `gui`, `ui_patch.patch_chip`, `tour`, `ayuda`;
+  pruebas `ParcheEncendida` y `ParcheReservada`). Primera vez: no avisa del parche que ya existía (solo apunta cuál es); el punto aparece con el siguiente (26.24). Aviso de parche
+  nuevo con «tus campeones» tocados en el pie (`PatchView.touched_mine`). Sin ver con un parche NUEVO saliendo de verdad.
 
 - **Revisión de la pantalla Parche (17/11 noche)**: un experto de solo lectura dio 25 hallazgos y se corrigieron casi todos: sin red ya no se repite la petición
   en bucle (como mucho 1/min), las instantáneas guardadas siendo el parche actual se vuelven a leer al cerrarse (`final`), «Recuperación de enfriamiento» ya no se

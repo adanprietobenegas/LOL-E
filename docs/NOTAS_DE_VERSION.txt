@@ -7,6 +7,14 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.23.0   (22 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Pantalla «Parche» ENCENDIDA (parche.ACTIVO = True; LOLE_PARCHE=0 la apaga): parche.py (notas de leagueoflegends.com/es-es, JSON de __NEXT_DATA__), parche_stats.py (Lolalytics con
+    patch=16.NN), ui_patch.py; lección y preguntas de la Ayuda; punto de aviso en la barra y aviso con tus campeones tocados. Revisada con el parche 26.23 real (arreglos en el lector).
+  · Relectura de jugadores si el cliente da 9 de 10; temporizadores del Heraldo (15:00-19:45) y de inhibidores (5 min); menos CPU en la selección (ráfaga de imágenes, CounterPicks);
+    aviso al abrir si una actualización no se completó. 241 pruebas. Solo visto con pruebas, la demo y partidas reales del usuario hasta la 1.22.27.
+
 VERSIÓN 1.22.27   (22 de noviembre de 2026)
 ---------------------------------------------------------------------
 

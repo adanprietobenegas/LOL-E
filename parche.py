@@ -16,9 +16,9 @@ Modelo de salida de `parse`:
 import json, os, re, time, urllib.error, urllib.request
 from html.parser import HTMLParser
 
-# Reservada: la pantalla «Parche» está terminada pero NO se muestra hasta revisarla con un parche nuevo real (decisión del usuario, 17/11/2026).
-# Para verla en desarrollo: variable de entorno LOLE_PARCHE=1. Para publicarla: poner True aquí (y revisar lo que diga CONTINUAR.md).
-ACTIVO = os.environ.get("LOLE_PARCHE") == "1"
+# Interruptor de la pantalla «Parche»: encendida desde la 1.23.0 (el usuario la reservó hasta revisarla con un parche real; se revisó con el 26.23 el 22/11/2026).
+# Para apagarla (p. ej. si Riot cambia su web y las notas dejan de leerse): variable de entorno LOLE_PARCHE=0, o poner False aquí.
+ACTIVO = os.environ.get("LOLE_PARCHE", "1") != "0"
 
 BASE = "https://www.leagueoflegends.com"
 LIST_URL = BASE + "/es-es/news/tags/patch-notes/"

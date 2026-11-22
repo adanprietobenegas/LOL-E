@@ -10,6 +10,15 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.23.0", "fecha": "22 de noviembre de 2026", "titulo": "Nueva pantalla «Parche»: las notas oficiales y cómo cambia el juego", "items": [
+        ("nuevo", "Pantalla «Parche» en la barra lateral: las notas oficiales de Riot en español, tal como las publica (sin traducir ni resumir), con fichas «antes → después», la nota de los diseñadores y una marca de mejora, ajuste o debilitación calculada de los números. Filtra por sección, por tipo de cambio, por «solo mis campeones» o con el buscador. Solo modos que se juegan (sin TFT, aspectos ni pase)."),
+        ("nuevo", "En «Estadísticas» del parche: cómo se mueven victorias, uso y baneos frente al parche anterior (Lolalytics, tu elo y superiores), quién cambia de línea y qué pasó con los campeones tocados en las notas. Solo cuenta cambios que superan el margen de error y avisa de «datos provisionales» los primeros días."),
+        ("nuevo", "«Tus campeones en este parche»: cuáles de los que juegas tocan las notas y cómo te iba antes y desde el parche. Bajo el campeón que eliges en la selección y en Partida sale una línea «Parche 26.23: ▲ Mejora» si lo tocaron. Cuando sale un parche nuevo, la barra lo avisa con un punto y el pie dice cuáles de tus campeones toca."),
+        ("mejora", "La Ayuda y la demostración guiada tienen una lección y preguntas nuevas sobre el parche."),
+        ("mejora", "Si el cliente da 9 de los 10 jugadores de la partida, LOL-E vuelve a leerlos unos segundos y completa el tablero. El bloque en vivo suma los temporizadores del Heraldo de la Grieta (15:00) y de los inhibidores (5 minutos caídos)."),
+        ("mejora", "Menos CPU en la selección de campeón: una ráfaga de imágenes descargadas se pinta una sola vez, y la tarjeta de contrarrestos solo se repinta si cambia lo que enseña."),
+        ("mejora", "Si una actualización no llega a completarse, LOL-E te lo dice al abrirse y te deja reintentarla con «Actualizar»."),
+    ]},
     {"v": "1.22.27", "fecha": "22 de noviembre de 2026", "titulo": "Más fiable en la cola, en la partida y con tus datos", "items": [
         ("arreglo", "Si alguien no acepta la partida encontrada y el cliente enseña otra enseguida, el aviso sonoro vuelve a sonar (antes podía no sonar la segunda vez)."),
         ("arreglo", "En los contrarrestos faltaban los campeones con apóstrofo o «&» (Cho'Gath, Kai'Sa, K'Sante, Vel'Koz, Kog'Maw, Nunu…). Ya salen, y si el rival es uno de ellos, «Tu enfrentamiento» ya no dice que no hay datos."),

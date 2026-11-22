@@ -1692,6 +1692,33 @@ class VentanaDeAceptar(unittest.TestCase):
         self.assertFalse(r.new_round({**a, "timer": None}, {**a, "timer": None, "t": 101.0}))           # sin contador, solo valen las otras señales
 
 
+class AvisoDeParcheConTusCampeones(unittest.TestCase):
+    def test_solo_los_campeones_que_has_jugado(self):
+        import ui_patch
+        class V:
+            played = lambda self: {1, 3}
+            champ_id = lambda self, e: {"A": 1, "B": 2, "C": 3}.get(e["name"])
+        notas = {"sections": [{"kind": "champions", "groups": [{"entries": [{"kind": "champion", "name": n} for n in ("A", "B", "C", "A")]}]},
+                              {"kind": "classic", "groups": [{"entries": [{"kind": "champion", "name": "A"}]}]},
+                              {"kind": "items", "groups": [{"entries": [{"kind": "item", "name": "C"}]}]}]}
+        self.assertEqual(ui_patch.PatchView.touched_mine(V(), notas), ["A", "C"])          # sin repetir, sin Classic ni objetos, sin los que no juegas
+        self.assertEqual(ui_patch.PatchView.touched_mine(V(), None), [])
+
+
+class ParcheEncendida(unittest.TestCase):
+    """Desde la 1.23.0 la pantalla «Parche» está encendida: aparece en la barra, en la Ayuda y en la demostración."""
+
+    def test_encendida_aparece_en_todos_los_sitios(self):
+        import parche, ui_rail, ayuda, tour
+        if not parche.ACTIVO:
+            self.skipTest("LOLE_PARCHE=0: apagada a propósito")
+        self.assertIn("Parche", [i[0] for i in ui_rail.ITEMS])
+        self.assertIn("Parche", ayuda.PAGES)
+        self.assertIn("parche", tour.LESSONS)
+        self.assertIn("parche", tour.OTRAS)
+        self.assertEqual(tour.PREGUNTAS.get("parche"), "parche")
+
+
 class ParcheReservada(unittest.TestCase):
     """La pantalla «Parche» está reservada hasta revisarla con un parche real: sin `parche.ACTIVO` no se ve en ningún sitio."""
 

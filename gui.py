@@ -703,6 +703,7 @@ class GUI:
                     if vs:
                         self.patch_view.versions = vs
                         seen = self.conf.get("parche_visto")
+                        is_new = bool(seen and seen != vs[0])
                         if not seen:
                             self.q.put(("parche_seen", vs[0]))   # primera vez: solo se apunta cuál es el último, sin avisar
                         elif seen != vs[0]:
@@ -714,6 +715,11 @@ class GUI:
                             fresh = parche.load(CACHE, vs[0], latest=vs[0])   # precarga: al abrir la pantalla ya están
                             if isinstance(fresh, dict):
                                 self.patch_view.notes[vs[0]] = fresh   # y si Riot corrigió las notas del parche actual, se ven sin reiniciar
+                                if is_new and self.__dict__.get("_patch_told_mine") != vs[0]:
+                                    names = self.patch_view.touched_mine(fresh)
+                                    if names:   # lo que más le importa a quien juega: si el parche toca a sus campeones
+                                        self._patch_told_mine = vs[0]
+                                        self.status(f"Parche {vs[0]}: tocan a {len(names)} de tus campeones ({', '.join(names[:4])}{'…' if len(names) > 4 else ''}). Míralo en «Parche».")
                         except Exception:
                             pass
                 except Exception:

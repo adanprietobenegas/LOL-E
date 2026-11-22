@@ -250,6 +250,19 @@ class PatchView:
         s = self.mine()
         return s if self._mine_src == "hist" else set()
 
+    def touched_mine(self, d):
+        """Nombres de los campeones que de verdad has jugado y que tocan las notas `d` (solo la sección Campeones, sin novedades de Classic). Para el aviso de parche nuevo."""
+        mine = self.played()
+        out = []
+        for s in (d or {}).get("sections", []):
+            if s.get("kind") != "champions":
+                continue
+            for g in s.get("groups", []):
+                for e in g.get("entries", []):
+                    if e.get("kind") == "champion" and self.champ_id(e) in mine and e["name"] not in out:
+                        out.append(e["name"])
+        return out
+
     def champ_id(self, entry):
         idx = getattr(self, "_cidx", None)
         if idx is None or len(idx) < 5:
