@@ -89,6 +89,8 @@ def summarize(d, champs):
             if who:
                 teams[who][{"DragonKill": "dragons", "BaronKill": "barons", "HeraldKill": "heralds", "HordeKill": "grubs"}[n]] += 1
     baron_kills = sorted(float(e.get("EventTime") or 0) for e in (d.get("events") or {}).get("Events") or [] if e.get("EventName") == "BaronKill")
+    inhib_kills = sorted((float(e.get("EventTime") or 0), _side(e.get("InhibKilled"))) for e in (d.get("events") or {}).get("Events") or []
+                         if e.get("EventName") == "InhibKilled" and _side(e.get("InhibKilled")))   # (cuándo cayó, de qué equipo era)
     drake_kills = sorted((float(e.get("EventTime") or 0), str(e.get("DragonType") or "")) for e in (d.get("events") or {}).get("Events") or []
                          if e.get("EventName") == "DragonKill")
     for p in players:
@@ -97,7 +99,7 @@ def summarize(d, champs):
     me = next((p for p in players if p["me"]), None)
     players.sort(key=lambda p: (0 if p["team"] == "ORDER" else 1, ORDER.get(p["pos"], 9)))   # azul primero, y por línea
     return {"t": float((d.get("gameData") or {}).get("gameTime") or 0), "mode": (d.get("gameData") or {}).get("gameMode") or "",
-            "baron_kills": baron_kills, "drake_kills": drake_kills, "gold": int(ap.get("currentGold") or 0), "me_team": me["team"] if me else "", "players": players, "teams": teams}
+            "baron_kills": baron_kills, "drake_kills": drake_kills, "inhib_kills": inhib_kills, "gold": int(ap.get("currentGold") or 0), "me_team": me["team"] if me else "", "players": players, "teams": teams}
 
 
 def clock(t):
@@ -164,6 +166,7 @@ BARON_SPAWN, BARON_RESPAWN = 1200, 360   # el Barón sale a los 20:00 y 6 min de
 DRAKE_SPAWN, DRAKE_RESPAWN = 300, 300     # dragón elemental: a los 5:00 y 5 min tras caer (wiki oficial, página «Dragon pit»). Con el alma o el Ancestral ya no se avisa: no está confirmado
 GRUBS_SPAWN, GRUBS_END = 480, 885         # larvas del Vacío: aparecen a los 8:00, una sola vez por partida, y se van a los 14:45 (wiki oficial, parche 25.09 en adelante)
 HERALD_SPAWN, HERALD_END = 900, 1185      # Heraldo de la Grieta: aparece a los 15:00, una sola vez por partida, y se va a los 19:45 (wiki oficial, infobox y parche 25.09; en una partida real, HeraldKill a los 15:41)
+INHIB_RESPAWN = 300                       # un inhibidor destruido reaparece a los 5 minutos (wiki: «Destroyed inhibitors respawn after 5 minutes»; sin cambios desde la V4.20)
 BARON_WARN = 60                           # se avisa cuando falta menos de este tiempo
 
 
@@ -202,6 +205,11 @@ def timers(snap):
             out.append(f"El Heraldo de la Grieta aparece en {clock(hl)} (estimado).")
         elif hl <= 0 < HERALD_END - t:
             out.append(f"El Heraldo de la Grieta sigue en la Grieta hasta el {clock(HERALD_END)} (estimado).")
+    down = sorted((tk + INHIB_RESPAWN - t, lost) for tk, lost in (snap.get("inhib_kills") or []) if 0 < tk + INHIB_RESPAWN - t <= INHIB_RESPAWN)
+    mine = snap.get("me_team")
+    for left, lost in down[:2]:   # los dos que antes reaparecen
+        who = "Tu inhibidor" if mine and lost == mine else "Un inhibidor rival" if mine else "Un inhibidor"
+        out.append(f"{who} reaparece en {clock(left)} (estimado).")
     return " ".join(out) or None
 
 

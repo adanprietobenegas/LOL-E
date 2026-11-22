@@ -1158,6 +1158,16 @@ class TemporizadorDelBaron(unittest.TestCase):
         self.assertIsNone(live.timers(con_alma(1790, four)))                 # con el alma tomada (4 de un equipo) no se avisa
         self.assertIn("reaparece", live.timers(repartidos(1790, four)) or "")    # 2-2: nadie tiene el alma y el dragón sigue reapareciendo
 
+    def test_inhibidores(self):
+        import live
+        s = lambda t, kills, me="ORDER": {"mode": "CLASSIC", "t": t, "me_team": me, "inhib_kills": kills, "teams": {"ORDER": {"heralds": 1, "grubs": 3}, "CHAOS": {}}}
+        self.assertIn("Tu inhibidor reaparece en 3:20", live.timers(s(1000, [(900.0, "ORDER")])))
+        self.assertIn("Un inhibidor rival reaparece en 4:00", live.timers(s(1000, [(940.0, "CHAOS")])))
+        self.assertNotIn("inhibidor", live.timers(s(1300, [(900.0, "ORDER")])) or "")      # ya reapareció
+        d = {"allPlayers": [{"championName": "Ahri", "team": "ORDER", "scores": {}, "items": []}], "activePlayer": {},
+             "events": {"Events": [{"EventName": "InhibKilled", "EventTime": 905.0, "InhibKilled": "Inhib_TOrder_L1_P1_1234", "KillerName": "x"}]}, "gameData": {"gameTime": 1000, "gameMode": "CLASSIC"}}
+        self.assertEqual(live.summarize(d, {})["inhib_kills"], [(905.0, "ORDER")])          # de qué equipo era (no de quien lo mató)
+
     def test_heraldo(self):
         import live
         s = lambda t, h=0: {"mode": "CLASSIC", "t": t, "teams": {"ORDER": {"heralds": h, "grubs": 3}, "CHAOS": {"heralds": 0, "grubs": 0}}}
