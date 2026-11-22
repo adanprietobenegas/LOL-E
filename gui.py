@@ -747,6 +747,10 @@ class GUI:
             updater.mark_pending(CACHE, path)
             updater.install(path)
         except Exception as e:
+            try:
+                os.remove(updater.pending_file(CACHE))   # no se llegó a lanzar: ya se avisa aquí, no hace falta el aviso de «no se completó» al volver a abrir
+            except OSError:
+                pass
             self.installing = False
             self.update_btn.configure(state="normal", text=f"Actualizar a {(self.update_info or {}).get('version', '')}".strip())
             self.status(f"No se pudo lanzar el instalador ({type(e).__name__}). Pulsa «Actualizar» para reintentarlo; si sigue fallando, descarga LOL-E de nuevo desde GitHub.")
