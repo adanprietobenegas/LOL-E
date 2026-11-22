@@ -650,7 +650,7 @@ def _refresh_old_games(lcu, puuid, gc, limit=60):
 
 def load_player_data(lcu, season=None):
     """Maestría, historial, enfrentamientos, parejas de campeones, modos y perfil. Todo desde el cliente, sin claves."""
-    P = {"mastery": {}, "stats": {}, "rstats": {}, "matchups": {}, "opp": {}, "pairs": {}, "modes": {}, "mates": {}, "aram": {}, "owned": set(),
+    P = {"mastery": {}, "stats": {}, "rstats": {}, "matchups": {}, "opp": {}, "oppr": {}, "pairs": {}, "modes": {}, "mates": {}, "aram": {}, "owned": set(),
          "season": (season or {}).get("champs", {}), "ladder": (season or {}).get("ladder"), "form": [], "games": 0, "rank": "", "record": "", "profile": {}}
     try:
         for m in lcu.get("/lol-champion-mastery/v1/local-player/champion-mastery") or []:
@@ -750,6 +750,8 @@ def load_player_data(lcu, season=None):
         if opp:
             m_ = P["matchups"].setdefault((champ, opp), [0, 0]); m_[0] += 1; m_[1] += win
             o = P["opp"].setdefault(opp, [0, 0]); o[0] += 1; o[1] += not win  # partidas y derrotas contra este rival
+            orr = P["oppr"].setdefault((norm_role(role), opp), [0, 0])   # lo mismo, por la línea en que lo jugaste
+            orr[0] += 1; orr[1] += not win
     # temporada (op.gg): nos quedamos con lo que tenga mas partidas, el local o el de op.gg
     agg = {}
     for (c, o), (g, w) in (season or {}).get("matchups", {}).items():
@@ -808,18 +810,30 @@ def getp(conf, key):
     return (conf.get("params") or {}).get(key, params.DEFAULT_PARAMS[key])
 
 
+META_K = 1500   # «partidas virtuales» al 50 % del meta: con 1.500 la mitad del desvío cuenta; con 20.000 casi todo
+
+
 def score(cid, champs, role, allies, enemies, lane_opp, pend, P, conf, mmax):
     """Puntos de un campeón y su desglose: {factor: puntos}. Todo sale de conf['weights'] y conf['params']."""
     w, c, why = conf["weights"], champs[cid], []
     prior = getp(conf, "winrate_prior")
     parts = {}
     m = P["mastery"].get(cid, 0)
-    parts["mastery"] = w["mastery"] * min(m / max(mmax, 1), 1.0)
+    parts["mastery"] = w["mastery"] * min(m / max(mmax, 1), 1.0) ** 0.5   # raíz: con un main de 1,5 M, uno de 100 k vale 0,26 y no 0,07
     if m:
         why.append(f"maestría {m // 1000}k")
     # primero tu historial en este rol; si no hay, lo que tenga mas muestra entre el historial local y la temporada
-    g, wins = P["rstats"].get((cid, role)) or max(P["stats"].get(cid, [0, 0]), P["season"].get(cid, [0, 0]))
-    parts["winrate"] = w["winrate"] * ((wins + prior / 2) / (g + prior) - 0.5) * 2 if g + prior else 0.0  # suavizado
+    tg, tw = max(P["stats"].get(cid, [0, 0]), P["season"].get(cid, [0, 0]))   # todas las líneas: lo que tenga más muestra entre lo local y la temporada
+    rg, rw_ = P["rstats"].get((cid, role), (0, 0))
+    if rg:   # tu historial EN ESTE ROL, suavizado hacia lo que sabemos del campeón en general (1 de 1 en este rol no anula 150 partidas al 57 %)
+        og, ow = max(0, tg - rg), max(0, tw - rw_)   # el resto de líneas (sin contar dos veces las partidas de este rol)
+        base = (ow + prior / 2) / (og + prior) if og + prior else 0.5
+        g, wins = rg, rw_
+        rate = (wins + prior * base) / (g + prior) if g + prior else 0.5
+    else:
+        g, wins = tg, tw
+        rate = (wins + prior / 2) / (g + prior) if g + prior else 0.5
+    parts["winrate"] = w["winrate"] * (rate - 0.5) * 2 if g + prior else 0.0
     if g:
         why.append(f"{wins}/{g} victorias")
     fit = role_fit(c, role, cid, conf)
@@ -857,10 +871,12 @@ def score(cid, champs, role, allies, enemies, lane_opp, pend, P, conf, mmax):
     return sum(parts.values()), why, parts
 
 
-def ban_suggestions(champs, P, taken, n, conf=None):
-    """Rivales de linea contra los que mas has perdido (umbrales en params.py)."""
+def ban_suggestions(champs, P, taken, n, conf=None, role=""):
+    """Rivales de linea contra los que mas has perdido (umbrales en params.py). Con tu línea de ahora solo cuentan las partidas jugadas en ella
+    (perder dos veces contra Darius en superior no dice nada de tu apoyo)."""
     mg, ml = (getp(conf, "ban_games"), getp(conf, "ban_loss") / 100) if conf else (2, 0.6)
-    cand = [(l, g, o) for o, (g, l) in P["opp"].items()
+    src = {o: v for (r_, o), v in (P.get("oppr") or {}).items() if r_ == role} if role and P.get("oppr") else P["opp"]
+    cand = [(l, g, o) for o, (g, l) in src.items()
             if g >= mg and l / g >= ml and o in champs and o not in taken]
     cand.sort(reverse=True)
     return [(champs[o]["name"], g - l, g, o) for l, g, o in cand[:n]]
@@ -1005,7 +1021,7 @@ def _result(session, champs, P, conf, mode, role, allies, enemies, lane_opp, ban
     me_cell = session["localPlayerCellId"]
     mine, locked = my_champion(session)
     return {"mine": mine, "mine_locked": locked, "role": role, "allies": allies, "enemies": enemies, "bans": bans, "cands": cands, "top": top, "mode": mode,
-            "lane_opp": lane_opp, "ban_ideas": ban_suggestions(champs, P, taken, conf["ban_n"], conf) if mode["kind"] == "sr" else [],
+            "lane_opp": lane_opp, "ban_ideas": ban_suggestions(champs, P, taken, conf["ban_n"], conf, role) if mode["kind"] == "sr" else [],
             "turn": my_turn(session), "ally_stats": als, "enemy_stats": ens,
             "pct_scale": 0.8 * (w["mastery"] + w["winrate"]) if mode["kind"] == "aram" else 0.6 * sum(w.values()),
             "enemy_cells": [{"cell": p["cellId"], "champ": p["championId"] or 0, "puuid": p.get("puuid", ""), "name": p.get("gameName", "")}
@@ -1075,6 +1091,8 @@ def _advise(session, champs, P, conf, mode):
     role = norm_role(me.get("assignedPosition"))
     allies = [p["championId"] or p.get("championPickIntent", 0) for p in session["myTeam"] if p["cellId"] != me_cell]
     allies = [a for a in allies if a]
+    ally_roles = {(p["championId"] or p.get("championPickIntent", 0)): norm_role(p.get("assignedPosition"))
+                  for p in session["myTeam"] if p["cellId"] != me_cell and (p["championId"] or p.get("championPickIntent", 0)) and p.get("assignedPosition")}
     enemies = [p["championId"] for p in session["theirTeam"] if p["championId"]]
     lane_opp = next((p["championId"] for p in session["theirTeam"]
                      if p["championId"] and role and norm_role(p.get("assignedPosition")) == role), 0)
@@ -1101,14 +1119,16 @@ def _advise(session, champs, P, conf, mode):
     for cid in pool:
         sc, why, parts = score(cid, champs, role, allies, enemies, lane_opp, pend, P, conf, mmax)
         off = is_off_role(champs, cid, role, P, conf)
-        syn = synergy.synergy_for(champs, cid, allies, P["pairs"], lean, role, getp(conf, "pair_games"))
+        syn = synergy.synergy_for(champs, cid, allies, P["pairs"], lean, role, getp(conf, "pair_games"), ally_roles)
         m = metamod.get(META["data"], role, cid) if use_meta else None
         parts["meta"] = 0.0
         if m:
-            parts["meta"] = w.get("meta", 0) * max(-1.0, min(1.0, (m["wr"] - 50) / 4))
-            if m["wr"] >= strong:
+            n_m = m.get("games") or 0
+            wr_adj = 50 + (m["wr"] - 50) * n_m / (n_m + META_K) if n_m else m["wr"]   # con pocas partidas (200 → ±7 puntos de error) se acerca al 50
+            parts["meta"] = w.get("meta", 0) * max(-1.0, min(1.0, (wr_adj - 50) / 4))
+            if wr_adj >= strong:
                 why.append(f"meta fuerte ({m['wr']:.1f} %)".replace(".", ","))
-            elif m["wr"] <= weak:
+            elif wr_adj <= weak:
                 why.append("meta débil")
         if lane_key:
             fl = trends.short_flag(TRENDS["data"], lane_key, cid)

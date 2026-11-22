@@ -91,10 +91,10 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
   de pico, `catalog()` con cerrojo durante la red, rótulo «sin datos desde hace X s» en la tira.
 - **Motor de recomendaciones** (auditoría de 22/11/2026): HECHO el motor ya no recorta a 36 candidatos antes de los filtros de la pantalla, las listas «Contra tu rival» / «Ventaja» y
   la tarjeta de contrarrestos excluyen baneados y ya elegidos, los remakes no cuentan como derrota en ninguna estadística, «te falta un tanque» solo con 3+ aliados, los bonos de
-  composición pesan según el preset, y el «has jugado bastante» del rol cuenta partidas de ESE rol. PENDIENTE (cambian las puntuaciones; decidir y comparar con capturas): (a) el registro
-  por rol de 1 partida no debe anular un historial grande del campeón (prior hacia la media del campeón); (b) meta encogido por muestra (K≈1500) y mínimo mayor; (c) sinergia de dúo con la
-  línea ASIGNADA del aliado, no sus posiciones posibles; (d) motivo de sinergia que puede ser una regla negativa; (e) sugerencias de ban por línea y suavizadas; (f) maestría con raíz/log;
-  (g) recencia; (h) umbrales de `sesion.py` (n≥8 es ruido); (i) ARAM sin intercambios ni propiedad.
+  composición pesan según el preset, y el «has jugado bastante» del rol cuenta partidas de ESE rol. HECHO también (22/11, con pruebas `PuntuacionAjustada`): el registro del rol se suaviza hacia el RESTO de partidas del campeón (no hacia 50 ni contando dos veces las del rol), meta
+  encogido por muestra (`META_K` = 1500), sinergia de dúo con la línea ASIGNADA del aliado, motivo de sinergia positivo («Os ha ido bien juntos (3/3)» si solo hay reglas negativas), bans solo de
+  tu línea (`P["oppr"]`), maestría con raíz, y diferencias de sesión (`sesion.clearly_higher`) solo si superan el azar. PENDIENTE: recencia (partidas de hace un año pesan igual), ARAM sin
+  intercambios ni propiedad, `lane_share_min` por defecto (2 %), prior de «Mis campeones»/`counter` ligado al parámetro `winrate_prior`.
 - **Coaching con IA**: un resumen en lenguaje natural de la partida o de tu semana. Pide decidir dónde corre el modelo, clave de API o coste, y
   qué datos salen del PC (privacidad). Esfuerzo L, riesgo a. Solo si el usuario lo quiere y con consentimiento claro.
 - **Varias cuentas**: el historial ya es por cuenta; falta una interfaz para ver/cambiar de cuenta y comparar. M.

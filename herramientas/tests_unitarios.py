@@ -1408,6 +1408,68 @@ class BloqueEnVivoRobusto(unittest.TestCase):
         self.assertIsNone(ui_live._my_build(UI(), snap, {"cid": 1, "role": "TOP", "kind": "sr"}))
 
 
+class PuntuacionAjustada(unittest.TestCase):
+    """Ajustes del motor (22/11/2026): muestras pequeñas pesan menos y las reglas usan la línea asignada."""
+
+    def setUp(self):
+        self.champs = {1: {"name": "Uno", "icon": "Uno", "tags": ["Fighter"], "pos": ["TOP"], "info": {"defense": 5}, "attr": {}},
+                       2: {"name": "Dos", "icon": "Dos", "tags": ["Fighter"], "pos": ["TOP"], "info": {"defense": 5}, "attr": {}}}
+        self.conf = {"weights": {"mastery": 0, "winrate": 4.0, "role": 0, "comp": 0, "counter": 0, "synergy": 0, "meta": 0}, "params": dict(core.params.DEFAULT_PARAMS)}
+
+    def P(self, **kw):
+        base = {"mastery": {}, "stats": {}, "rstats": {}, "season": {}, "matchups": {}, "opp": {}, "oppr": {}, "pairs": {}}
+        base.update(kw)
+        return base
+
+    def test_una_partida_en_el_rol_no_anula_un_historial_grande(self):
+        # el campeón 1: 150 partidas al 57 % en total y 1 de 1 en este rol; el 2: solo 1 de 1 en total y en este rol
+        P = self.P(stats={1: [150, 85], 2: [1, 1]}, rstats={(1, "TOP"): [1, 1], (2, "TOP"): [1, 1]})
+        s1 = core.score(1, self.champs, "TOP", [], [], 0, 0, P, self.conf, 1)[2]["winrate"]
+        s2 = core.score(2, self.champs, "TOP", [], [], 0, 0, P, self.conf, 1)[2]["winrate"]
+        self.assertGreater(s1, s2)                                  # antes ganaba el de 1 partida (1/1 = +0,8)
+
+    def test_el_meta_con_pocas_partidas_pesa_menos(self):
+        old = core.META["data"]
+        core.META["data"] = {"lanes": {"top": {1: {"wr": 58.0, "pr": 5, "br": 1, "games": 220, "d": 0}, 2: {"wr": 54.0, "pr": 5, "br": 1, "games": 200000, "d": 0}}},
+                             "avg": {"top": 50}, "patch": "16.22", "tier": "emerald_plus"}
+        conf = {**self.conf, "weights": {**self.conf["weights"], "meta": 2.2}, "meta_enabled": True}
+        try:
+            m1 = core.metamod.get(core.META["data"], "TOP", 1)
+            m2 = core.metamod.get(core.META["data"], "TOP", 2)
+            adj = lambda m: 50 + (m["wr"] - 50) * m["games"] / (m["games"] + core.META_K)
+            self.assertLess(adj(m1), adj(m2))                       # 58 % con 220 partidas ya no gana a 54 % con 200.000
+        finally:
+            core.META["data"] = old
+
+    def test_sugerencias_de_ban_solo_de_tu_linea_y_suavizadas(self):
+        P = self.P(opp={1: [5, 4], 2: [2, 2]}, oppr={("TOP", 1): [5, 4], ("SUPPORT", 2): [2, 2]})
+        self.assertEqual([b[3] for b in core.ban_suggestions(self.champs, P, set(), 5, self.conf, "TOP")], [1])        # el 2 lo perdiste jugando apoyo
+        self.assertEqual([b[3] for b in core.ban_suggestions(self.champs, P, set(), 5, self.conf, "SUPPORT")], [2])
+        self.assertEqual([b[3] for b in core.ban_suggestions(self.champs, P, set(), 5, self.conf)], [1, 2])             # sin línea: más derrotas primero
+
+    def test_la_sinergia_de_duo_usa_la_linea_asignada_del_aliado(self):
+        import synergy
+        champs = {1: {"name": "Tirador", "tags": ["Marksman"], "pos": ["BOTTOM"], "attr": {}},
+                  2: {"name": "Zyra", "tags": ["Mage", "Support"], "pos": ["MIDDLE", "SUPPORT"], "attr": {"utility": 2, "control": 2}}}
+        lean = lambda c: 0.0
+        con_rol = synergy.pair(champs, 1, 2, lean, "BOTTOM", "MIDDLE")        # Zyra juega central: no hay dúo de línea
+        sin_rol = synergy.pair(champs, 1, 2, lean, "BOTTOM", "")              # sin saberlo, vale como apoyo posible
+        self.assertFalse([x for x in con_rol if "dúo" in x[1] or "protege" in x[1]])
+        self.assertTrue([x for x in sin_rol if x[0] > 0])
+
+    def test_el_motivo_de_sinergia_no_es_una_regla_negativa(self):
+        import synergy
+        champs = {1: {"name": "A", "tags": ["Fighter"], "pos": ["TOP"], "attr": {}}, 2: {"name": "B", "tags": ["Fighter"], "pos": ["MIDDLE"], "attr": {}}}
+        lean = lambda c: 1.0
+        r = synergy.synergy_for(champs, 1, [2], {(1, 2): (3, 3)}, lean)
+        self.assertNotIn("mismo tipo de daño", r["items"][0]["text"] or "")
+
+    def test_diferencia_de_sesion_con_muestra_pequena_es_ruido(self):
+        import sesion
+        self.assertFalse(sesion.clearly_higher((8, 6), (8, 4)))                 # 75 % contra 50 % con 8 partidas cada una
+        self.assertTrue(sesion.clearly_higher((200, 130), (200, 100)))           # 65 % contra 50 % con 200
+
+
 class DatosDelUsuarioSeguros(unittest.TestCase):
     """Lo que el cliente no puede volver a dar (historial, PL, partidas con rival, ajustes, fotos de rango) no se pierde por un archivo dañado."""
 

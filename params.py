@@ -6,11 +6,11 @@ La pestaña «Datos» de la ventana se genera a partir de este archivo, así que
 # (nombre, qué es, qué pasa si lo subes, qué pasa si lo bajas)
 WEIGHT_INFO = {
     "mastery": ("Maestría",
-                "Cuánto pesa tu maestría con el campeón. Tu campeón con más puntos vale el máximo; el resto, proporcional.",
+                "Cuánto pesa tu maestría con el campeón. Tu campeón con más puntos vale el máximo; el resto, según la raíz de la proporción (un campeón con la cuarta parte de puntos vale la mitad).",
                 "Recomienda sobre todo tus campeones de siempre.", "Da más cabida a campeones que juegas poco."),
     "winrate": ("Tus victorias",
                 "Tu porcentaje de victorias con el campeón (en tu línea si tienes partidas ahí; si no, el de la temporada). "
-                "Se suaviza: con pocas partidas se acerca al 50 %.",
+                "Se suaviza: con pocas partidas en tu línea se acerca a lo que sabemos del campeón en general (y, sin nada, al 50 %).",
                 "Se fía más de tus resultados reales.", "Se fía menos de resultados con pocas partidas."),
     "role": ("Encaje con tu rol",
              "Si el campeón se juega de verdad en la línea que te ha tocado (según las posiciones de Meraki Analytics).",
@@ -26,7 +26,7 @@ WEIGHT_INFO = {
                 "daño complementario) más tu historial jugando con cada pareja.",
                 "Prioriza campeones que encajan con tus compañeros.", "Elige más por ti mismo que por el equipo."),
     "meta": ("Meta del parche",
-             "Tasa de victorias del campeón en tu línea y rango este parche (Lolalytics). Vale +1 a partir de 54 % y −1 por debajo de 46 %.",
+             "Tasa de victorias del campeón en tu línea y rango este parche (Lolalytics). Vale +1 a partir de 54 % y −1 por debajo de 46 %, pero con pocas partidas se acerca al 50 % (el error con 200 partidas es de ±7 puntos).",
              "Recomienda más lo que está fuerte ahora.", "Ignora el estado del parche."),
 }
 

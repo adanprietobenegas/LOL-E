@@ -13,8 +13,9 @@ def _support_kind(c):
     return "otro"
 
 
-def pair(champs, a, b, lean, role=""):
-    """Reglas entre un campeón candidato (a) y un aliado (b). Devuelve [(puntos, texto)]."""
+def pair(champs, a, b, lean, role="", b_role=""):
+    """Reglas entre un campeón candidato (a) y un aliado (b). Devuelve [(puntos, texto)]. `b_role`: la línea que le ha tocado al aliado (si se sabe, manda sobre
+    las posiciones en que PUEDE jugar: Zyra en central no es apoyo)."""
     ca, cb = champs[a], champs[b]
     ta, tb = set(ca["tags"]), set(cb["tags"])
     pa, pb = set(ca.get("pos", [])), set(cb.get("pos", []))
@@ -22,6 +23,8 @@ def pair(champs, a, b, lean, role=""):
     out = []
     adc_a, sup_a = "BOTTOM" in pa and "Marksman" in ta, "SUPPORT" in pa
     adc_b, sup_b = "BOTTOM" in pb and "Marksman" in tb, "SUPPORT" in pb
+    if b_role:
+        adc_b, sup_b = b_role == "BOTTOM" and "Marksman" in tb, b_role in ("SUPPORT", "UTILITY")
     if adc_a and sup_b and role in ("", "BOTTOM"):
         k = _support_kind(cb)
         out.append({"inicia": (0.6, f"{nb} inicia el combate y tú rematas"),
@@ -55,19 +58,22 @@ def pair(champs, a, b, lean, role=""):
     return out
 
 
-def synergy_for(champs, cid, allies, pairs, lean, role="", min_pair=2):
+def synergy_for(champs, cid, allies, pairs, lean, role="", min_pair=2, ally_roles=None):
     """Sinergia de un candidato con los aliados ya elegidos.
     Devuelve {'score': -1..1, 'items': [{ally, score, text, record}], 'why': [texto corto]}."""
     items = []
     for al in allies:
         if al not in champs or al == cid:
             continue
-        ps = pair(champs, cid, al, lean, role)
+        ps = pair(champs, cid, al, lean, role, (ally_roles or {}).get(al, ""))
         s = sum(p for p, _ in ps)
         g, w = pairs.get((cid, al), (0, 0))
         if g >= min_pair:  # lo que ya has vivido jugando con esta pareja
             s += ((w + 1) / (g + 2) - 0.5) * 1.2
-        best = max(ps, key=lambda x: abs(x[0]))[1] if ps else ""
+        pos = [p for p in ps if p[0] > 0]
+        best = (max(pos, key=lambda x: x[0]) if pos else max(ps, key=lambda x: abs(x[0])))[1] if ps else ""   # el motivo es una regla que suma (si la hay)
+        if not pos and g >= min_pair and (w + 1) / (g + 2) > 0.5:
+            best = f"Os ha ido bien juntos ({w}/{g})"   # solo hay reglas negativas: lo que suma es vuestro historial
         items.append({"ally": al, "score": s, "text": best, "record": (g, w) if g else None})
     total = max(-1.0, min(1.0, sum(i["score"] for i in items) / 1.5)) if items else 0.0
     why = [i["text"] for i in sorted(items, key=lambda i: -i["score"]) if i["score"] >= 0.5 and i["text"]][:1]

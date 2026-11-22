@@ -74,13 +74,22 @@ def wr(pair):
     return pair[1] / pair[0] if pair and pair[0] else None
 
 
+def clearly_higher(a, b):
+    """¿La tasa de victorias de `a` (partidas, victorias) supera a la de `b` más allá del azar? (diferencia de dos proporciones, ~90 %; con 8 partidas cada una, 12 puntos son ruido)."""
+    if not a or not b or not a[0] or not b[0]:
+        return False
+    p = (a[1] + b[1]) / (a[0] + b[0])
+    se = (p * (1 - p) * (1 / a[0] + 1 / b[0])) ** 0.5
+    return se > 0 and wr(a) - wr(b) > 1.64 * se
+
+
 def tilt_note(sess, after):
     """Frase para quien lleva 2 o más derrotas seguidas, con su propio dato si hay muestra suficiente; None si no hay nada que decir."""
     if not sess or sess["loss_streak"] < 2:
         return None
     txt = f"Llevas {sess['loss_streak']} derrotas seguidas en esta sesión."
     base, bad = after.get(0), after.get(2)
-    if base and bad and base[0] >= MIN_N and bad[0] >= MIN_N and wr(base) - wr(bad) >= .08:
+    if base and bad and base[0] >= MIN_N and bad[0] >= MIN_N and wr(base) - wr(bad) >= .08 and clearly_higher(base, bad):
         txt += (f" Tras 2 o más seguidas ganas el {round(wr(bad) * 100)} % de tus partidas ({bad[0]}), frente al {round(wr(base) * 100)} % "
                 f"cuando empiezas la sesión o vienes de ganar ({base[0]}): quizá toque parar un rato.")
     return txt
@@ -92,4 +101,4 @@ def best_slot(hours):
     if len(cand) < 2:
         return None
     cand.sort(reverse=True)
-    return (cand[0][1], cand[0][0], cand[0][2]) if cand[0][0] - cand[-1][0] >= .12 else None
+    return (cand[0][1], cand[0][0], cand[0][2]) if cand[0][0] - cand[-1][0] >= .12 and clearly_higher(hours[cand[0][1]], hours[min(cand, key=lambda c: c[0])[1]]) else None
