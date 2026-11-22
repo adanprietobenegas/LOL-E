@@ -100,6 +100,7 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
   comprueba contra el archivo en disco y que no se cortó; no se instala con cola/selección/partida/cierre de partida (se mira otra vez al terminar de bajar; el botón manual avisa);
   si no se puede lanzar el instalador la app sigue abierta y lo dice; un solo reintento pendiente; versión con formato X.Y.Z exigido al publicar; mensajes de error menos engañosos.
   PENDIENTE (bajo): construir en `TMP` y copiar a `release/` solo al final, copia de seguridad antes de la próxima migración de datos, aviso al arrancar si una actualización no se completó.
+- **Saber desde dónde se usa LOL-E** (pregunta del usuario, 22/11/2026): hoy solo hay `herramientas/usuarios.py` (descargas y comprobaciones de GitHub, sin países). Un aviso anónimo y VOLUNTARIO (id aleatorio de instalación, versión y país deducido en el servidor, sin guardar la IP) necesitaría un servidor propio (p. ej. un Cloudflare Worker con un contador), aviso claro en Ajustes y un interruptor apagado por defecto. NO decidido; no se envía nada a nadie. M.
 - **Coaching con IA**: un resumen en lenguaje natural de la partida o de tu semana. Pide decidir dónde corre el modelo, clave de API o coste, y
   qué datos salen del PC (privacidad). Esfuerzo L, riesgo a. Solo si el usuario lo quiere y con consentimiento claro.
 - **Varias cuentas**: el historial ya es por cuenta; falta una interfaz para ver/cambiar de cuenta y comparar. M.

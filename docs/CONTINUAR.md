@@ -224,6 +224,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 | `demo_falso.py` | La app entera (ventana + bucle) contra el cliente falso, con una captura por fase; `LOLE_RIVAL=1` |
 | `prueba_cliente_real.py` | Con LoL abierto y en reposo: lectura de solo lectura contra el cliente REAL (cuenta, historial, migración, líneas, perfil) |
 | `validar_lineas.py [n]` | Con el cliente abierto: cruza etiqueta de línea, Aplastar y objeto de rol en n partidas (valida `history.role_of`) |
+| `usuarios.py` | Cuánta gente usa LOL-E, en privado y sin rastrear a nadie: descargas del instalador por versión, comprobaciones de versión (`latest.json`) y tráfico del repositorio, vía `gh api`. Guarda una foto en `cache/usuarios_historial.json` (histórico, fuera de git). No da países: LOL-E no tiene telemetría. |
 | `hover_cpu.py` | Mide la CPU que gasta la ventana por cada tipo de cambio de la selección (marcar un campeón, un aliado, un rival, un ban, una ráfaga de imágenes) y qué secciones se repintan. |
 | `tiempos.py [ancho] [texto]` | Mide y perfila el pintado de cada pantalla y el coste del recolector |
 | `generar_claves.py` | Genera `assets/claves.json` (claves de los campeones) desde `docs/rediseno/claves_campeones.json` |
