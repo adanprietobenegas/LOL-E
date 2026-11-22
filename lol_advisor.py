@@ -362,11 +362,23 @@ def parse_lp_histories(html):
     return d if isinstance(d, list) else []
 
 
+def snaps_path(conf):
+    """Fotos diarias de rango de ESTE perfil de op.gg (antes un solo archivo mezclaba las de varios perfiles). La primera vez hereda las del archivo único anterior."""
+    who = re.sub(r"\W+", "_", f"{conf.get('opgg_region')}_{conf.get('opgg_name')}_{conf.get('opgg_tag')}")
+    p, old = os.path.join(CACHE, f"opgg_lp_{who}.json"), os.path.join(CACHE, "opgg_lp.json")
+    if not os.path.exists(p) and os.path.exists(old) and conf.get("opgg_name"):
+        try:
+            shutil.copy2(old, p)
+        except OSError:
+            pass
+    return p
+
+
 def save_lp_snapshots(conf):
     """Lee el perfil de op.gg y suma sus fotos diarias de rango a `opgg_lp.json`: la historia crece sola. Devuelve las nuevas (0 si no hay)."""
     import lpseries
     snaps = lpseries.parse_snapshots(parse_lp_histories(fetch_opgg(conf, "")))
-    return lpseries.save_snapshots(os.path.join(CACHE, "opgg_lp.json"), snaps) if snaps else 0
+    return lpseries.save_snapshots(snaps_path(conf), snaps) if snaps else 0
 
 
 def parse_ladder(html):

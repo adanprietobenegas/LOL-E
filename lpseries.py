@@ -217,10 +217,10 @@ def summary(points):
     return sum(p["d"] for p in games), len(games), sum(1 for p in games if p["w"]), sum(1 for p in games if not p["w"])
 
 
-def load_all(cache_dir):
+def load_all(cache_dir, snaps_file=None):
     """(lp.json, fotos de op.gg) de la carpeta de datos; vacíos si no existen."""
     try:
         lp = json.load(open(os.path.join(cache_dir, "lp.json"), encoding="utf-8"))
     except Exception:
         lp = {}
-    return (lp if isinstance(lp, dict) else {}), load_snapshots(os.path.join(cache_dir, "opgg_lp.json"))
+    return (lp if isinstance(lp, dict) else {}), load_snapshots(snaps_file or os.path.join(cache_dir, "opgg_lp.json"))

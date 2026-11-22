@@ -1354,6 +1354,38 @@ class DatosDelUsuarioSeguros(unittest.TestCase):
             safeio.read = original
         self.assertEqual(open(path, encoding="utf-8").read(), antes)
 
+    def test_los_patrones_solo_usan_partidas_de_la_cuenta_actual(self):
+        import history, patrones
+        os.makedirs(self.p("analysis"))
+        for gid, t_ in (("11", 1000), ("22", 2000)):
+            json.dump({"gid": gid}, open(self.p(f"analysis/{gid}.json"), "w"))
+        json.dump({"33": {"id": "33", "t": 3000}}, open(self.p("history_otra.json"), "w"))
+        old = history.ACCOUNT
+        try:
+            history.ACCOUNT = "otra"
+            patrones._CACHE.clear()
+            json.dump({"22": {"id": "22", "t": 2000}, "11": {"id": "11", "t": 1000}}, open(self.p("history_otra.json"), "w"))
+            self.assertEqual([a["gid"] for a in patrones.load(self.d)], ["22", "11"])   # la más reciente por fecha de la partida
+            json.dump({"11": {"id": "11", "t": 1000}}, open(self.p("history_otra.json"), "w"))
+            self.assertEqual([a["gid"] for a in patrones.load(self.d)], ["11"])        # ya no entran las de otra cuenta
+        finally:
+            history.ACCOUNT = old
+            patrones._CACHE.clear()
+
+    def test_las_fotos_de_rango_son_de_cada_perfil_de_opgg(self):
+        old = core.CACHE
+        core.CACHE = self.d
+        try:
+            json.dump({"2026-11-01": {"x": 1}}, open(self.p("opgg_lp.json"), "w"))
+            a = core.snaps_path({"opgg_region": "euw", "opgg_name": "Ana", "opgg_tag": "EUW"})
+            b = core.snaps_path({"opgg_region": "euw", "opgg_name": "Beto", "opgg_tag": "EUW"})
+            self.assertNotEqual(a, b)
+            self.assertTrue(os.path.exists(a) and os.path.exists(b))       # cada uno hereda lo anterior la primera vez
+            json.dump({"2026-11-02": {"x": 2}}, open(a, "w"))
+            self.assertEqual(json.load(open(core.snaps_path({"opgg_region": "euw", "opgg_name": "Beto", "opgg_tag": "EUW"}))), {"2026-11-01": {"x": 1}})
+        finally:
+            core.CACHE = old
+
     def test_ajustes_dañados_se_apartan_y_arranca_con_los_de_fabrica(self):
         original = core.CONF_FILE
         core.CONF_FILE = self.p("config.json")

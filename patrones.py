@@ -173,14 +173,28 @@ def current(cache_dir, every=30):
 
 
 
+def history_sig(when):
+    """Huella de la lista de partidas de la cuenta (para repetir la lectura si cambia de cuenta)."""
+    return (len(when), max(when.values(), default=0))
+
+
 def load(cache_dir, limit=80):
     """Los análisis guardados más recientes (se releen solo si cambia la carpeta)."""
     files = glob.glob(os.path.join(cache_dir, "analysis", "*.json"))
-    sig = (len(files), max((os.path.getmtime(f) for f in files), default=0))
+    try:   # solo las partidas de la cuenta actual (la carpeta de análisis es de todas), de la más reciente a la más antigua por la fecha de la PARTIDA, no del archivo
+        import history
+        hist = history.load_all(history.hpath(cache_dir), history.gpath(cache_dir))
+        when = {str(e.get("id")): e.get("t", 0) for e in hist}
+    except Exception:
+        when = {}
+    if when:
+        files = [f for f in files if os.path.splitext(os.path.basename(f))[0] in when]
+    sig = (len(files), max((os.path.getmtime(f) for f in files), default=0), history_sig(when))
     if _CACHE.get(cache_dir, (None,))[0] == sig:
         return _CACHE[cache_dir][1]
     out = []
-    for f in sorted(files, key=os.path.getmtime, reverse=True)[:limit]:
+    key = (lambda f: when.get(os.path.splitext(os.path.basename(f))[0], 0)) if when else os.path.getmtime
+    for f in sorted(files, key=key, reverse=True)[:limit]:
         try:
             with open(f, encoding="utf-8") as fh:
                 out.append(json.load(fh))

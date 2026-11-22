@@ -348,7 +348,7 @@ class SummaryCard(Section):
 
     def lp_key(self):
         """Datos de la gráfica de rango (lp.json y las fotos de op.gg) y su huella, para repintar solo si cambian."""
-        lp, snaps = lpseries.load_all(core.CACHE)
+        lp, snaps = lpseries.load_all(core.CACHE, core.snaps_path(self.ui.conf))
         self.lp = (lp, snaps) if len(lp) + len(snaps) >= 3 else None
         return (len(lp), len(snaps), max(snaps) if snaps else "", self.hist[0]["id"] if self.hist else "") if self.lp else None
 
