@@ -368,3 +368,11 @@ Cada versión se publicó con el sí del usuario. Lo que no está en `CONTINUAR.
 - **Arreglo**: `readycheck.py` lee `/lol-matchmaking/v1/ready-check` mientras dura la fase y detecta una ventana nueva (contador que salta, tu respuesta que se borra tras aceptar,
   o estado final → en curso); entonces suena «found» y se anota «Otra partida encontrada» en `diag.log`. Además se lee cada 1 s (no 2) en cola y al aceptar.
   Trampa: el sentido del contador del cliente (sube o baja) no está confirmado, por eso se compara con el reloj y no con el signo.
+
+## 22/11/2026: la pantalla Parche contra el parche 26.23 real (17/11)
+
+- Con `LOLE_PARCHE=1` se leyó el 26.23 de verdad (13 secciones, 14 campeones, 25 cambios numéricos). Dos fallos del lector, ya corregidos con prueba: la Q de Gnar
+  (`Q - Bumerán` + párrafo `/Peñascazo`) creaba un «campeón» falso, y «Corrección de errores» en negrita al final de Classic se leía como un campeón.
+  Trampa repetida: `` en una cadena de un script se convierte en el carácter 8 (backspace); y la «ó» no se puede escribir en una clase `[oó]` con seguridad: usar `.{1,2}`.
+- Estadísticas con 5 días de datos (2,2 M de partidas, 30 % de un parche completo, avisa «datos provisionales»): los que suben en victorias (Galio, Annie) y en uso (Vi, Azir)
+  son justo los mejorados en las notas, y bajan en uso Syndra (debilitada). Capturas en `herramientas/salida/parche_*.png`.
