@@ -489,7 +489,8 @@ class FlujoCompleto(unittest.TestCase):
         history.ACCOUNT = ""
         core.CACHE, core.time = self.tmp, Reloj
         core.find_client, core.LCU = (lambda conf: ("x",)), (lambda *a: fake)
-        core.start_meta = core.play_phase = core.detect_account = lambda *a, **k: None
+        core.start_meta = core.detect_account = lambda *a, **k: None
+        core.play_phase = lambda conf, fase: ev.append(("sonido", fase))
         core.maybe_update_opgg, core.load_season = (lambda *a, **k: None), (lambda *a, **k: {})
         players.fetch_team = lambda lcu, session, emit: ev.append(("fetch_team",))
         players.fetch_roster = lambda *a, **k: ev.append(("fetch_roster",))
@@ -579,6 +580,14 @@ class FlujoCompleto(unittest.TestCase):
         fake.rc = {2: rc(1), 3: rc(3, "Accepted"), 4: rc(0.5), 5: rc(2), 6: rc(4, "Accepted")}
         self.correr(fake)
         self.assertEqual(self.leer("diag.log").count("Otra partida encontrada"), 1)
+        self.assertEqual(self.leer("error.log"), "")
+
+    def test_cada_partida_encontrada_suena_aunque_se_repita_la_cola(self):
+        from cliente_falso import ClienteFalso
+        g = ["None", "Matchmaking", "ReadyCheck", "Matchmaking", "ReadyCheck", "ChampSelect", "ChampSelect", "None", "Matchmaking", "ReadyCheck", "ChampSelect", "ChampSelect", "None", "None"]
+        ev = self.correr(ClienteFalso(guion=g))
+        sonidos = [e[1] for e in ev if e[0] == "sonido"]
+        self.assertEqual(sonidos.count("found"), 3)        # dos rechazos/esquives y una final: tres veces «encontrada»
         self.assertEqual(self.leer("error.log"), "")
 
     def test_una_sola_partida_encontrada_no_suena_dos_veces(self):
