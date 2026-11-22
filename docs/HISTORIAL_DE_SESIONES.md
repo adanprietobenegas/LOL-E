@@ -391,3 +391,6 @@ Cada versión se publicó con el sí del usuario. Lo que no está en `CONTINUAR.
   `GUI.poll` junta la ráfaga en uno y deja pasar 0,8 s entre repintados; (2) `CounterPicks` (arreglo de baneados/elegidos) se repintaba con cada marca de un aliado o ban: su clave ahora
   es lo que va a enseñar (`shown`). Sigue costando ~1 s marcar un campeón nuevo (MyPick: build y runas) y una imagen nueva sigue repintando todo una vez; mejora posible: repintar solo
   las secciones que pidieron esa imagen.
+- **Dos partidas reales más (diag.log del usuario, 22/11 18:08 y 18:45)**: al terminar, «Variación de PL (solo): +21 PL» con «esperas 0» las dos veces (el cierre de partida funciona con el cliente real) y
+  `PreEndOfGame -> EndOfGame -> Lobby` sin incidencias. En la segunda, «Jugadores de la partida: 9 leídos» (0 con perfil oculto, 0 sin campeón): el cliente dio 9 de 10 en la primera lectura
+  y la pantalla de carga se lee una sola vez por partida. Causa sin confirmar (¿alguien sin conectar?); posible mejora: releer unos segundos si salen 9 y fusionar los nuevos.
