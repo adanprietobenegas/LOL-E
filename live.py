@@ -93,6 +93,7 @@ def summarize(d, champs):
                          if e.get("EventName") == "DragonKill")
     for p in players:
         p.pop("names", None)
+        p.pop("full", None)
     me = next((p for p in players if p["me"]), None)
     players.sort(key=lambda p: (0 if p["team"] == "ORDER" else 1, ORDER.get(p["pos"], 9)))   # azul primero, y por línea
     return {"t": float((d.get("gameData") or {}).get("gameTime") or 0), "mode": (d.get("gameData") or {}).get("gameMode") or "",

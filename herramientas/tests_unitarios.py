@@ -1379,7 +1379,9 @@ class BloqueEnVivoRobusto(unittest.TestCase):
              "activePlayer": {"riotId": "Ahri#1234", "summonerName": "Ahri#1234", "riotIdGameName": "Ahri"}, "gameData": {"gameTime": 100, "gameMode": "CLASSIC"}}
         r = live.summarize(d, {})
         self.assertEqual([p["me"] for p in r["players"]], [False, True])              # tú eres el de la etiqueta completa
-        self.assertEqual(live.team_of_name("Ahri#1234", r["players"]), "CHAOS")
+        d["events"] = {"Events": [{"EventName": "DragonKill", "EventTime": 400.0, "KillerName": "Ahri#1234", "DragonType": "Fire"}]}
+        r2 = live.summarize(d, {})
+        self.assertEqual((r2["teams"]["CHAOS"]["dragons"], r2["teams"]["ORDER"]["dragons"]), (1, 0))   # el dragón es del de la etiqueta completa, no del otro «Ahri»
         d["activePlayer"] = {"riotIdGameName": "Ahri"}                                  # solo el nombre corto y dos jugadores lo llevan: no se sabe quién eres
         self.assertEqual([p["me"] for p in live.summarize(d, {})["players"]], [False, False])
 
