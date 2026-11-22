@@ -1,0 +1,105 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Pruebas del Worker</title>
+<body>
+<pre id="out">Ejecutando…</pre>
+<!--
+  Pruebas del Worker sin Node: se abren en un navegador servido desde esta carpeta, por ejemplo
+      python -m http.server 8123      (desde la carpeta servidor)
+  y se visita http://localhost:8123/prueba.html . Termina con «RESULTADO: TODO BIEN» o «RESULTADO: FALLOS».
+-->
+<script type="module">
+import worker, * as W from "./worker.js";
+
+const out = document.getElementById("out");
+const lines = [];
+let fails = 0;
+const ok = (cond, name) => { lines.push((cond ? "ok    " : "FALLO ") + name); if (!cond) fails++; };
+
+class KV {   // KV de mentira
+  constructor() { this.m = new Map(); this.puts = 0; }
+  async get(k, t) { const v = this.m.get(k); return v === undefined ? null : (t === "json" ? JSON.parse(v) : v); }
+  async put(k, v) { this.m.set(k, v); this.puts++; }
+}
+const ID = "3f2b9c1e-8a47-4d3b-9e60-1a2b3c4d5e6f", ID2 = "11111111-2222-4333-8444-555555555555";
+const TOK = "una-clave-larga-de-prueba-123456";
+const call = (env, method, path, body, cf) => {
+  const req = new Request("https://x.test" + path, { method, body: body === undefined ? undefined : JSON.stringify(body) });
+  if (cf) Object.defineProperty(req, "cf", { value: cf });
+  return worker.fetch(req, env);
+};
+
+// --- funciones puras
+ok(W.dayIso(20000) === "2024-10-04", "dayIso");
+const g = W.coarse({ country: "es", region: "Andalusia", latitude: "37.3891", longitude: -5.9845 });
+ok(g.c === "ES" && g.r === "Andalusia" && g.la === 37.5 && g.lo === -6, "coarse redondea a medio grado y pone el país en mayúsculas");
+ok(W.coarse(undefined).la === null && W.coarse({}).c === "", "coarse sin datos");
+ok(W.parsePing(JSON.stringify({ id: ID, v: "1.23.0" })).v === "1.23.0", "parsePing válido");
+ok(W.parsePing('{"id":"abc","v":"1.0.0"}') === null, "parsePing rechaza id raro");
+ok(W.parsePing(JSON.stringify({ id: ID, v: "1.0" })) === null, "parsePing rechaza versión rara");
+ok(W.parsePing("x".repeat(600)) === null && W.parsePing("no json") === null, "parsePing rechaza cuerpo enorme o no JSON");
+ok(W.parsePing(JSON.stringify({ id: ID, v: "1.0.0", ip: "1.2.3.4", nombre: "x" })).nombre === undefined, "parsePing solo se queda con id y v");
+
+let idx = {};
+let r = W.applyPing(idx, ID, "1.23.0", g, 100);
+ok(r.changed && idx[ID].f === 100 && idx[ID].d.length === 1, "primer aviso crea el registro");
+r = W.applyPing(idx, ID, "1.23.0", g, 100);
+ok(!r.changed, "mismo día y mismo dato: no hay nada que guardar");
+r = W.applyPing(idx, ID, "1.23.0", g, 101);
+ok(r.changed && idx[ID].d.join() === "100,101" && idx[ID].f === 100 && idx[ID].l === 101, "otro día añade el día y conserva el primero");
+r = W.applyPing(idx, ID, "1.24.0", g, 101);
+ok(r.changed && idx[ID].v === "1.24.0", "cambio de versión se guarda");
+r = W.applyPing(idx, ID, "1.24.0", g, 400);
+ok(idx[ID].d.join() === "400", "se olvidan los días de hace más de 120");
+r = W.forgetId(idx, ID);
+ok(r.changed && !(ID in idx) && !W.forgetId(idx, ID).changed, "olvidar borra el registro");
+
+// --- resumen
+idx = {};
+W.applyPing(idx, ID, "1.23.0", W.coarse({ country: "ES", region: "Catalonia", latitude: 41.4, longitude: 2.1 }), 100);
+W.applyPing(idx, ID, "1.23.0", W.coarse({ country: "ES", region: "Catalonia", latitude: 41.4, longitude: 2.1 }), 104);
+W.applyPing(idx, ID2, "1.22.27", W.coarse({ country: "ES", region: "Catalonia", latitude: 41.5, longitude: 2.2 }), 104);
+const s = W.summarize(idx, 104);
+ok(s.total === 2 && s.activas[1] === 2 && s.activas[7] === 2 && s.activas[30] === 2, "resumen: totales y activas");
+ok(s.zonas.length === 1 && s.zonas[0].n === 2 && s.zonas[0].r === "Catalonia", "resumen: instalaciones de la misma región se agrupan");
+ok(s.versiones["1.23.0"] === 1 && s.versiones["1.22.27"] === 1, "resumen: versiones");
+ok(s.dias.length === 30 && s.dias[29].activas === 2 && s.dias[29].nuevas === 1, "resumen: serie de 30 días con nuevas y activas");
+ok(W.summarize(idx, 140).activas[30] === 0, "resumen: pasados 30 días ya no están activas");
+ok(!JSON.stringify(s).includes(ID), "resumen: no incluye ningún identificador");
+
+// --- el Worker entero
+const env = { STATS: new KV(), ADMIN_TOKEN: TOK };
+let res = await call(env, "POST", "/ping", { id: ID, v: "1.23.0" }, { country: "ES", region: "Madrid", latitude: 40.4, longitude: -3.7 });
+ok(res.status === 200, "POST /ping responde 200");
+const guardado = JSON.stringify(await env.STATS.get("idx", "json"));
+ok(guardado.includes("Madrid") && !guardado.includes("1.2.3.4"), "se guardó la región (sin IP)");
+const puts = env.STATS.puts;
+await call(env, "POST", "/ping", { id: ID, v: "1.23.0" }, { country: "ES", region: "Madrid", latitude: 40.4, longitude: -3.7 });
+ok(env.STATS.puts === puts, "un aviso repetido el mismo día no escribe en KV");
+res = await call(env, "POST", "/ping", { id: "no-es-un-id", v: "1.23.0" });
+ok(res.status === 400, "POST /ping con id inválido: 400");
+res = await call(env, "GET", "/resumen");
+ok(res.status === 404, "GET /resumen sin clave: 404");
+res = await call(env, "GET", "/resumen?k=mala-clave-mala-clave-mala");
+ok(res.status === 404, "GET /resumen con clave mala: 404");
+res = await call(env, "GET", "/resumen?k=" + TOK);
+const rj = await res.json();
+ok(res.status === 200 && rj.total === 1 && rj.zonas[0].r === "Madrid", "GET /resumen con clave: datos");
+res = await call({ STATS: env.STATS, ADMIN_TOKEN: "corta" }, "GET", "/resumen?k=corta");
+ok(res.status === 404, "con un ADMIN_TOKEN corto el panel queda cerrado");
+res = await call(env, "GET", "/panel?k=" + TOK);
+const html = await res.text();
+ok(res.status === 200 && html.includes("LOL-E · Uso") && res.headers.get("referrer-policy") === "no-referrer", "GET /panel con clave: HTML privado");
+ok(!html.includes(TOK), "el panel no lleva la clave dentro");
+res = await call(env, "GET", "/panel");
+ok(res.status === 404, "GET /panel sin clave: 404");
+res = await call(env, "POST", "/olvidar", { id: ID });
+ok(res.status === 200 && (await env.STATS.get("idx", "json"))[ID] === undefined, "POST /olvidar borra el registro");
+res = await call(env, "POST", "/olvidar", { id: "malo" });
+ok(res.status === 400, "POST /olvidar con id inválido: 400");
+res = await call(env, "GET", "/");
+ok(res.status === 404, "cualquier otra ruta: 404");
+
+out.textContent = lines.join("\n") + "\n\nRESULTADO: " + (fails ? "FALLOS (" + fails + ")" : "TODO BIEN");
+</script>
+</body>

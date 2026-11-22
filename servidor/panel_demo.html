@@ -1,0 +1,35 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Demostración del panel</title>
+<!--
+  Muestra el panel del administrador con datos INVENTADOS, sin servidor ni cuenta: sirve para ver cómo queda. Desde esta carpeta:
+      python -m http.server 8123      y se abre http://localhost:8123/panel_demo.html
+  (El mapa necesita internet para cargar las teselas y la biblioteca Leaflet.)
+-->
+<script type="module">
+import * as W from "./worker.js";
+
+const hoy = W.dayNumber(Date.now());
+const zonas = [
+  ["ES", "Community of Madrid", 40.4, -3.7, 9], ["ES", "Catalonia", 41.4, 2.1, 7], ["ES", "Andalusia", 37.4, -6.0, 6], ["ES", "Valencian Community", 39.5, -0.4, 4],
+  ["ES", "Galicia", 42.9, -8.5, 3], ["ES", "Basque Country", 43.3, -2.9, 2], ["ES", "Canary Islands", 28.1, -15.4, 2], ["MX", "Ciudad de México", 19.4, -99.1, 3],
+  ["AR", "Buenos Aires", -34.6, -58.4, 2],
+];
+const idx = {};
+let n = 0;
+for (const [c, r, la, lo, cuantas] of zonas) {
+  for (let i = 0; i < cuantas; i++) {
+    const id = `00000000-0000-4000-8000-${String(++n).padStart(12, "0")}`;
+    const alta = hoy - Math.floor(Math.random() * 28);
+    const rec = { f: alta, l: hoy - (Math.random() < 0.6 ? 0 : Math.floor(Math.random() * 10)), v: Math.random() < 0.7 ? "1.23.0" : "1.22.27", c, r, la: Math.round(la * 2) / 2, lo: Math.round(lo * 2) / 2, d: [] };
+    for (let d = alta; d <= rec.l; d++) if (Math.random() < 0.7 || d === rec.l) rec.d.push(d);
+    idx[id] = rec;
+  }
+}
+const datos = W.summarize(idx, hoy);
+const realFetch = window.fetch.bind(window);
+window.fetch = (u, o) => String(u).startsWith("/resumen") ? Promise.resolve(new Response(JSON.stringify(datos))) : realFetch(u, o);
+document.open();
+document.write(W.PANEL);
+document.close();
+</script>

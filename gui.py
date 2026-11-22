@@ -11,6 +11,7 @@ from PIL import Image
 
 import lol_advisor as core
 import parche
+import stats
 import updater
 from lol_advisor import APP_NAME, APP_VERSION, CACHE, DATA_DIR, PRESET_INFO, read_json, save_conf
 from ui_history import HistoryView
@@ -111,6 +112,8 @@ class GUI:
         if not os.environ.get("LOLE_GEOMETRY"):  # en las pruebas no se abre
             self.root.after(3500, self.show_notes_once)
             self.root.after(6000, self.report_failed_update)
+            self.root.after(45000, self.maybe_ask_stats)
+            self.root.after(90000, self.stats_tick)
 
     # ---------- interfaz con el motor (otro hilo: solo usa colas) ----------
     def stopped(self):
@@ -522,6 +525,8 @@ class GUI:
                         cx = self.make_ctx()
                         for sec in (self.lobby, self.enemies, self.draft):
                             sec.refresh(cx)
+                elif kind == "call":   # una función que otro hilo pide ejecutar en el de la ventana
+                    ev[1]()
                 elif kind == "roster":
                     self.on_roster(ev[1])
                 elif kind == "roster_prog":   # solo cambia el contador: no se redibuja el tablero
@@ -734,6 +739,43 @@ class GUI:
             self.conf["parche_visto"] = vs[0]
             save_conf(self.conf)
         self.tab_seg.set_badge("Parche", False)
+
+    # ---------- cuenta anónima de instalaciones (voluntaria; ver stats.py) ----------
+    def maybe_ask_stats(self):
+        """Pregunta una sola vez si quiere contar su instalación. Solo si hay servidor, nunca durante cola, selección ni partida, y «No, gracias» es lo destacado."""
+        if not stats.enabled() or self.conf.get("stats_optin") is not None or not self.running:
+            return
+        if self.busy() or getattr(self, "notes_win", None) is not None:
+            self.root.after(5 * 60 * 1000, self.maybe_ask_stats)
+            return
+        import ui_stats
+        ui_stats.ConsentWindow(self, self.stats_set)
+
+    def stats_set(self, on):
+        """Aplica la decisión del usuario (ventana de permiso o interruptor de Ajustes)."""
+        if on:
+            self.conf["stats_optin"] = True
+            self.conf["stats_id"] = self.conf.get("stats_id") or stats.new_id()
+            self.conf["stats_last"] = 0
+            save_conf(self.conf)
+            threading.Thread(target=lambda: stats.ping(self.conf, APP_VERSION, save=save_conf), daemon=True).start()
+            self.status("Gracias: LOL-E avisará una vez al día, de forma anónima, de que está instalada.")
+        else:
+            old = {"stats_id": self.conf.get("stats_id") or ""}
+            self.conf["stats_optin"], self.conf["stats_id"], self.conf["stats_last"] = False, "", 0
+            save_conf(self.conf)
+            if old["stats_id"]:
+                threading.Thread(target=lambda: stats.forget(old), daemon=True).start()   # el servidor borra el registro de esta instalación
+            self.status("Hecho: no se enviará nada y se ha pedido borrar el registro de esta instalación.")
+
+    def stats_tick(self):
+        """Cada rato mira si toca avisar (una vez al día como mucho), fuera de cola, selección y partida."""
+        try:
+            if stats.enabled() and self.running and not self.busy() and stats.due(self.conf):
+                threading.Thread(target=lambda: stats.ping(self.conf, APP_VERSION, save=save_conf), daemon=True).start()
+        except Exception:
+            core.log_exc("Aviso anónimo de instalación")
+        self.root.after(30 * 60 * 1000, self.stats_tick)
 
     def report_failed_update(self):
         """Si la actualización anterior no llegó a completarse (el instalador falló con la app ya cerrada), se dice y se anota en el registro."""
@@ -1582,6 +1624,34 @@ class GUI:
         entry.bind("<FocusOut>", lambda e: self.set("update_url", entry.get().strip(), redraw=False))
         entry.bind("<Return>", lambda e: self.set("update_url", entry.get().strip(), redraw=False))
         button("Buscar actualizaciones ahora", lambda: (self.set("update_url", entry.get().strip(), redraw=False), self.check_updates(True)))
+
+        if stats.enabled():
+            section("Privacidad")
+            var_s = ctk.BooleanVar(value=conf.get("stats_optin") is True)
+            ctk.CTkSwitch(sc, text="Contar mi instalación (anónimo)", variable=var_s, font=k.font(12), progress_color=k.acc,
+                          command=lambda: self.stats_set(var_s.get())).pack(anchor="w", padx=12, pady=8)
+            note("Voluntario y apagado de fábrica. Si lo activas, LOL-E avisa una vez al día de un número aleatorio y de su versión, para que quien la mantiene sepa cuánta gente la usa "
+                 "y desde qué zona aproximada. No se envía tu nombre, tu cuenta de LoL, tus partidas ni tus ajustes, y la dirección IP no se guarda. Al apagarlo se borra el registro.")
+            button("Ver exactamente qué se envía", lambda: messagebox.showinfo(APP_NAME, "Esto es todo lo que se envía (una vez al día):\n\n"
+                                                                                  + stats.describe({"stats_id": conf.get("stats_id") or "(un número aleatorio)"}, APP_VERSION)
+                                                                                  + "\n\nEl servidor añade el país y la región de la conexión y descarta la dirección IP."))
+            if (conf.get("admin_token") or "").strip():
+                section("Administrador")
+                adm = k.clbl(sc, "Leyendo el resumen…", 11, "dim", wraplength=self.note_w(), justify="left", anchor="w")
+                adm.pack(anchor="w", padx=16, pady=(0, 4))
+
+                def got(res):
+                    try:
+                        if adm.winfo_exists():
+                            adm.configure(text=(f"Instalaciones: {res['total']} · activas hoy {res['activas']['1']}, en 7 días {res['activas']['7']}, en 30 días {res['activas']['30']}"
+                                                if res else "No se pudo leer el panel (¿sin conexión o clave incorrecta?)."))
+                    except Exception:
+                        pass
+                def fetch():
+                    res = stats.admin_summary(conf)
+                    self.q.put(("call", lambda: got(res)))   # la ventana se toca solo desde su hilo
+                threading.Thread(target=fetch, daemon=True).start()
+                button("Abrir el panel de uso (mapa)", lambda: __import__("webbrowser").open(stats.admin_url(conf)))
 
         section("Mantenimiento")
         button("Ver novedades", self.show_notes)

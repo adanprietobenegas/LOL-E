@@ -43,6 +43,10 @@ DEFAULT_CONF = {
     "top_n": 5,
     "ban_n": 3,
     "poll_seconds": 1.0,
+    "stats_optin": None,     # cuenta anónima de instalaciones (stats.py): None = aún no se ha preguntado, True/False = lo que dijo el usuario
+    "stats_id": "",          # número aleatorio de esta instalación (solo existe si dijo que sí)
+    "stats_last": 0,         # cuándo fue el último aviso
+    "admin_token": "",       # solo para quien mantiene LOL-E: clave del panel de uso (se escribe a mano en config.json)
     "beep": True,            # aviso sonoro cuando es tu turno
     "sound": "Doble tono",
     "volume": 0.7,           # 0 a 1
@@ -1799,7 +1803,7 @@ def seed_cache():
 
 
 # módulos de la app que el ejecutable empaquetado debe poder importar (la prueba `ComprobacionDelEmpaquetado` los compara con los archivos de la carpeta)
-AUTOTEST_MODULES = ("analysis", "aram_builds", "augments", "ayuda", "builds", "claves", "demo_cliente", "demo_data", "demo_mode", "gui", "guide", "history", "items", "itemset", "learn", "live", "lol_advisor", "lpseries", "matchups", "meta", "novedades", "opgg_builds", "params", "parche", "parche_stats", "patrones", "players", "readycheck", "runes", "safeio", "sesion", "shopping", "sounds", "synergy", "temas", "tour", "trends", "ui_analysis", "ui_aram", "ui_build", "ui_claves", "ui_draft", "ui_game", "ui_guide", "ui_help", "ui_history", "ui_kit", "ui_live", "ui_lp", "ui_mayhem", "ui_opp", "ui_patch", "ui_player", "ui_pool", "ui_rail", "ui_sections", "ui_views", "ui_vs", "updater", "wrapped")
+AUTOTEST_MODULES = ("stats", "ui_stats", "analysis", "aram_builds", "augments", "ayuda", "builds", "claves", "demo_cliente", "demo_data", "demo_mode", "gui", "guide", "history", "items", "itemset", "learn", "live", "lol_advisor", "lpseries", "matchups", "meta", "novedades", "opgg_builds", "params", "parche", "parche_stats", "patrones", "players", "readycheck", "runes", "safeio", "sesion", "shopping", "sounds", "synergy", "temas", "tour", "trends", "ui_analysis", "ui_aram", "ui_build", "ui_claves", "ui_draft", "ui_game", "ui_guide", "ui_help", "ui_history", "ui_kit", "ui_live", "ui_lp", "ui_mayhem", "ui_opp", "ui_patch", "ui_player", "ui_pool", "ui_rail", "ui_sections", "ui_views", "ui_vs", "updater", "wrapped")
 
 
 def autotest():

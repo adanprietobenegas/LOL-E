@@ -1,0 +1,11 @@
+# Configuración de Cloudflare Workers para el contador anónimo de LOL-E. Pasos en LEEME_DESPLIEGUE.md.
+name = "lole-stats"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+# El «id» lo da el comando:  npx wrangler kv namespace create STATS   (pégalo aquí en lugar de PEGA_AQUI_EL_ID)
+[[kv_namespaces]]
+binding = "STATS"
+id = "PEGA_AQUI_EL_ID"
+
+# La clave del panel NO va aquí: se guarda como secreto con  npx wrangler secret put ADMIN_TOKEN

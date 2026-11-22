@@ -1501,6 +1501,88 @@ class PuntuacionAjustada(unittest.TestCase):
         self.assertTrue(sesion.clearly_higher((200, 130), (200, 100)))           # 65 % contra 50 % con 200
 
 
+class CuentaAnonimaDeInstalaciones(unittest.TestCase):
+    """Voluntaria, anónima y apagada de fábrica (stats.py)."""
+
+    def servidor(self):
+        import http.server, threading, json as _j
+        recibidos = []
+
+        class H(http.server.BaseHTTPRequestHandler):
+            def do_POST(self):
+                n = int(self.headers.get("Content-Length", 0))
+                recibidos.append((self.path, _j.loads(self.rfile.read(n).decode("utf-8")), dict(self.headers)))
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"ok")
+
+            def do_GET(self):
+                recibidos.append((self.path, None, dict(self.headers)))
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(b'{"total": 3, "activas": {"1": 1, "7": 2, "30": 3}}')
+
+            def log_message(self, *a):
+                pass
+        srv = http.server.HTTPServer(("127.0.0.1", 0), H)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        self.addCleanup(srv.shutdown)
+        return f"http://127.0.0.1:{srv.server_address[1]}", recibidos
+
+    def test_apagada_de_fabrica_y_sin_servidor_no_hay_nada(self):
+        import stats
+        self.assertEqual(stats.STATS_URL, "" if not stats.STATS_URL else stats.STATS_URL)
+        self.assertFalse(stats.enabled(""))
+        self.assertIsNone(core.DEFAULT_CONF["stats_optin"])                          # sin respuesta del usuario: no se pregunta ni se envía
+        self.assertFalse(stats.due({"stats_optin": None, "stats_id": "x"}))
+        self.assertFalse(stats.due({"stats_optin": False, "stats_id": "x"}))
+        self.assertFalse(stats.due({"stats_optin": True, "stats_id": ""}))
+        self.assertFalse(stats.ping({"stats_optin": True, "stats_id": "x"}, "1.0.0", url=""))    # sin servidor configurado no se envía
+
+    def test_solo_se_envia_el_id_y_la_version(self):
+        import stats
+        url, recibidos = self.servidor()
+        conf = {"stats_optin": True, "stats_id": stats.new_id(), "stats_last": 0, "opgg_name": "SecretoNombre", "lol_path": "C:\Juegos"}
+        guardado = []
+        self.assertTrue(stats.ping(conf, "1.23.0", url=url, save=lambda c: guardado.append(1), now=1e6))
+        path, cuerpo, cab = recibidos[0]
+        self.assertEqual(path, "/ping")
+        self.assertEqual(sorted(cuerpo), ["id", "v"])                                # nada más: ni nombre, ni ruta, ni ajustes
+        self.assertEqual(cuerpo["v"], "1.23.0")
+        self.assertNotIn("SecretoNombre", json.dumps(cuerpo))
+        self.assertEqual(conf["stats_last"], 1e6)
+        self.assertEqual(guardado, [1])
+        self.assertFalse(stats.ping(conf, "1.23.0", url=url, now=1e6 + 3600))     # una hora después: aún no toca (una vez al día)
+        self.assertEqual(len(recibidos), 1)
+        self.assertTrue(stats.ping(conf, "1.23.0", url=url, now=1e6 + stats.PING_EVERY + 1))
+
+    def test_retirar_el_permiso_pide_borrar_el_registro(self):
+        import stats
+        url, recibidos = self.servidor()
+        ident = stats.new_id()
+        self.assertTrue(stats.forget({"stats_id": ident}, url=url))
+        self.assertEqual(recibidos[0][0], "/olvidar")
+        self.assertEqual(recibidos[0][1], {"id": ident})
+        self.assertFalse(stats.forget({"stats_id": ""}, url=url))                    # sin id no hay nada que borrar
+
+    def test_un_servidor_caido_no_rompe_nada(self):
+        import stats
+        conf = {"stats_optin": True, "stats_id": stats.new_id(), "stats_last": 0}
+        self.assertFalse(stats.ping(conf, "1.23.0", url="http://127.0.0.1:9", now=5.0))   # puerto cerrado: se ignora y se reintentará
+        self.assertEqual(conf["stats_last"], 0)
+
+    def test_panel_del_administrador_solo_con_clave(self):
+        import stats
+        url, recibidos = self.servidor()
+        self.assertEqual(stats.admin_url({"admin_token": ""}, url=url), "")
+        self.assertTrue(stats.admin_url({"admin_token": "k1"}, url=url).endswith("/panel?k=k1"))
+        self.assertIsNone(stats.admin_summary({"admin_token": ""}, url=url))
+        res = stats.admin_summary({"admin_token": "k1"}, url=url)
+        self.assertEqual(res["activas"]["7"], 2)
+        self.assertEqual(recibidos[0][0], "/resumen?k=k1")
+
+
 class ComprobacionDelEmpaquetado(unittest.TestCase):
     def test_la_lista_de_modulos_de_la_autoprueba_es_la_de_la_carpeta(self):
         import glob
