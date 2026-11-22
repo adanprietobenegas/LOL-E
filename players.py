@@ -251,13 +251,13 @@ def game_roster(gf, my_puuid):
     return out
 
 
-def fetch_roster(lcu, roster, emit, progress=None):
+def fetch_roster(lcu, roster, emit, progress=None, known=None):
     """Lee en paralelo el perfil de los jugadores de la partida (incluido el tuyo) y avisa UNA sola vez con emit({puuid: datos}) cuando han llegado todos (así la pantalla se dibuja una vez, sin recargarse por cada jugador).
     `progress(hechos, total)` va diciendo cuántos faltan, para un contador sin redibujar nada."""
-    found = {}
-    pus = [x["puuid"] for x in roster if x["puuid"]]   # también el tuyo: tus 10 últimas y tu rendimiento salen igual que los de los demás
+    found = dict(known or {})   # lo ya leído (si se vuelve a leer la lista porque faltaba alguien, no se piden otra vez los que ya están)
+    pus = [x["puuid"] for x in roster if x["puuid"] and x["puuid"] not in found]   # también el tuyo: tus 10 últimas y tu rendimiento salen igual que los de los demás
     if not pus:
-        emit({})
+        emit(dict(found))
         return
 
     def one(pu):
@@ -266,7 +266,7 @@ def fetch_roster(lcu, roster, emit, progress=None):
         except Exception:
             found[pu] = {"puuid": pu, "name": "", "error": True}
         if progress:
-            progress(len(found), len(pus))
+            progress(len([p for p in pus if p in found]), len(pus))
     with ThreadPoolExecutor(4) as ex:
         list(ex.map(one, pus))
     emit(dict(found))

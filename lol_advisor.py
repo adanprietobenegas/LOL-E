@@ -1248,6 +1248,7 @@ def run(conf, champs, ui):
     last_flow = "_"
     rc_prev = None
     next_roster, roster_gid = 0.0, None
+    roster_found, roster_n, roster_tries = {}, 0, 0   # perfiles ya leídos de la partida; cuántos jugadores dio la primera lectura; relecturas si faltaba alguno
     next_hist, hist_tries = 0.0, 0
     party, my_puuid = set(), ""
     mode = None
@@ -1404,15 +1405,24 @@ def run(conf, champs, ui):
                     try:  # pantalla de carga: quién juega la partida (los 10), con su rango y su forma; se lee una vez por partida
                         gfr = lcu.get("/lol-gameflow/v1/session") or {}
                         gid_r = (gfr.get("gameData") or {}).get("gameId")
-                        ros = players.game_roster(gfr, my_puuid) if gid_r and gid_r != roster_gid else None
+                        again = bool(gid_r and gid_r == roster_gid and roster_n == 9 and roster_tries < 10)   # el cliente dio 9 de 10 (visto en una partida real): se relee unos segundos por si el décimo aún no estaba
+                        ros = players.game_roster(gfr, my_puuid) if gid_r and (gid_r != roster_gid or again) else None
+                        if again:
+                            roster_tries += 1
+                            if not ros or len(ros) <= roster_n:
+                                ros = None
+                            else:
+                                diag(f"Jugadores de la partida {gid_r}: ahora {len(ros)} leídos (antes {roster_n})")
                         if gid_r and gid_r != roster_gid and not ros:
                             diag(f"Jugadores de la partida {gid_r}: aún sin datos del cliente o sin saber cuál es tu equipo (cuenta {'conocida' if my_puuid else 'DESCONOCIDA'})")
                         if ros:
-                            roster_gid = gid_r
+                            if gid_r != roster_gid:
+                                roster_found, roster_tries = {}, 0
+                            roster_gid, roster_n = gid_r, len(ros)
                             diag(f"Jugadores de la partida {gid_r}: {len(ros)} leídos, {sum(1 for x in ros if not x['puuid'])} con perfil oculto, "
                                  f"{sum(1 for x in ros if not x['cid'])} sin campeón, {sum(1 for x in ros if not x['role'])} sin línea")
                             getattr(ui, "roster", lambda *a: None)(ros)
-                            threading.Thread(target=players.fetch_roster, args=(lcu, ros, getattr(ui, "roster_players", lambda d: None), getattr(ui, "roster_progress", None)), daemon=True).start()
+                            threading.Thread(target=players.fetch_roster, args=(lcu, ros, lambda d: (roster_found.update(d), getattr(ui, "roster_players", lambda d: None)(d)), getattr(ui, "roster_progress", None), dict(roster_found)), daemon=True).start()
                     except (urllib.error.URLError, ConnectionError, OSError):
                         raise
                     except Exception:

@@ -66,13 +66,14 @@ COLAS = {"sr": {"id": 420, "gameMode": "CLASSIC"}, "aram": {"id": 450, "gameMode
 
 
 class ClienteFalso:
-    def __init__(self, puuid=YO, guion=GUION, partida_nueva=900, modo="sr", caidas=(), cuenta_desde=0, remake=False, pl=None, fallos=(), sin_historial=False):
+    def __init__(self, puuid=YO, guion=GUION, partida_nueva=900, modo="sr", caidas=(), cuenta_desde=0, remake=False, pl=None, fallos=(), sin_historial=False, sin_ultimo_hasta=0):
         """modo: «sr» (Grieta), «aram» o «arena». caidas: números de paso del guion en los que el cliente «no responde» (se cae y vuelve)."""
         self.puuid, self.guion, self.paso, self.nueva = puuid, list(guion), 0, partida_nueva
         self.modo, self.caidas, self.cuenta_desde = modo, set(caidas), cuenta_desde   # cuenta_desde: paso a partir del cual el cliente da tu cuenta
         self.pl = pl   # (PL antes, PL después) en Solo/Dúo Oro II: el rango cambia cuando la partida acaba
         self.remake = remake   # la partida nueva acaba anulada (rendición temprana): en la lista del historial lleva gameEndedInEarlySurrender
         self.pedidas = []
+        self.sin_ultimo_hasta = sin_ultimo_hasta   # hasta este paso el cliente da solo 9 de los 10 jugadores de la partida (visto en una partida real)
         self.fallos = set(fallos)   # pasos en los que el cliente contesta un error 5xx (el LCU devuelve None) en vez de caerse
         self.sin_historial = sin_historial   # la partida nueva nunca llega a la lista del historial (modo sin historial, o cliente lento)
         self.rc = {}   # paso del guion -> respuesta de /lol-matchmaking/v1/ready-check (la ventana de aceptar); sin entrada, el cliente no la da
@@ -127,6 +128,8 @@ class ClienteFalso:
                           teamTwo=[{"puuid": f"r{i}", "championId": c, "selectedPosition": p}
                                    for i, (c, p) in enumerate(((157, "TOP"), (23, "JUNGLE"), (134, "MIDDLE"), (51, "BOTTOM"), (412, "UTILITY")), 1)],
                           playerChampionSelections=[])
+            if self.paso < self.sin_ultimo_hasta and gd.get("teamTwo"):
+                gd["teamTwo"] = gd["teamTwo"][:-1]
             return {"gameData": gd, "map": {"gameMode": "CLASSIC"}}
         if path == "/lol-summoner/v1/current-summoner":
             if self.paso < self.cuenta_desde:   # el cliente aún está iniciando sesión: no sabe quién eres

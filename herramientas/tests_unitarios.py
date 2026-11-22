@@ -633,6 +633,16 @@ class FlujoCompleto(unittest.TestCase):
         self.assertNotIn("Partida terminada: ", diag)
         self.assertFalse([e for e in ev if e[0] == "analysis.load"])
 
+    def test_si_el_cliente_da_9_de_10_jugadores_se_relee(self):
+        from cliente_falso import ClienteFalso
+        g = ["None", "Matchmaking", "ReadyCheck", "ChampSelect", "ChampSelect", "InProgress", "InProgress", "InProgress", "InProgress", "InProgress", "InProgress", "EndOfGame", "None", "None"]
+        ev = self.correr(ClienteFalso(guion=g, sin_ultimo_hasta=8))
+        diag = self.leer("diag.log")
+        self.assertIn("9 leídos", diag)
+        self.assertIn("ahora 10 leídos (antes 9)", diag)
+        self.assertEqual(len([e for e in ev if e[0] == "roster"]), 2)           # primera lectura y la completa
+        self.assertEqual(self.leer("error.log"), "")
+
     def test_una_sola_partida_encontrada_no_suena_dos_veces(self):
         from cliente_falso import ClienteFalso
         fake = ClienteFalso(guion=["None", "Matchmaking", "ReadyCheck", "ReadyCheck", "ReadyCheck", "ChampSelect", "ChampSelect", "None", "None"])
