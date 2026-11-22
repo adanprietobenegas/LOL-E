@@ -598,6 +598,41 @@ class FlujoCompleto(unittest.TestCase):
         self.assertLess(fases.index("ReadyCheck"), fases.index("ChampSelect"))
         self.assertIn("ReadyCheck -> ChampSelect", self.leer("diag.log"))
 
+    def test_un_error_puntual_del_cliente_no_acaba_la_seleccion(self):
+        from cliente_falso import ClienteFalso
+        g = ["None", "Matchmaking", "ReadyCheck", "ChampSelect", "ChampSelect", "ChampSelect", "ChampSelect", "InProgress", "InProgress", "EndOfGame", "None", "None"]
+        ev = self.correr(ClienteFalso(guion=g, fallos=(5,)))     # un 5xx en mitad de la selección
+        diag = self.leer("diag.log")
+        self.assertEqual(diag.count("Selección de campeón"), 1)   # no se vuelve a empezar la selección
+        self.assertEqual(diag.count("Selección terminada"), 1)
+        self.assertEqual(self.leer("error.log"), "")
+
+    def test_el_cliente_cae_a_mitad_de_seleccion_y_vuelve(self):
+        from cliente_falso import ClienteFalso
+        g = ["None", "Matchmaking", "ReadyCheck", "ChampSelect", "ChampSelect", "ChampSelect", "ChampSelect", "InProgress", "InProgress", "EndOfGame", "None", "None"]
+        self.correr(ClienteFalso(guion=g, caidas=(5,)))
+        diag = self.leer("diag.log")
+        self.assertIn("Cliente de LoL perdido", diag)
+        self.assertEqual(diag.count("Selección de campeón"), 2)   # al volver se empieza una selección nueva con todo limpio
+        self.assertIn("Partida terminada: 900", diag)
+        self.assertEqual(self.leer("error.log"), "")
+
+    def test_partida_ya_empezada_al_abrir_se_analiza_al_terminar(self):
+        from cliente_falso import ClienteFalso
+        ev = self.correr(ClienteFalso(guion=["None", "InProgress", "InProgress", "InProgress", "EndOfGame", "None", "None", "None"]))
+        diag = self.leer("diag.log")
+        self.assertIn("en marcha sin haber visto su selección", diag)
+        self.assertIn("Partida terminada: 900", diag)
+        self.assertTrue([e for e in ev if e[0] == "analysis.load"])
+
+    def test_partida_que_nunca_aparece_en_el_historial_no_analiza_otra(self):
+        from cliente_falso import ClienteFalso
+        ev = self.correr(ClienteFalso(guion=["None", "Matchmaking", "ReadyCheck", "ChampSelect", "ChampSelect", "InProgress", "InProgress", "EndOfGame"] + ["None"] * 14, sin_historial=True))
+        diag = self.leer("diag.log")
+        self.assertIn("no aparece en el historial", diag)
+        self.assertNotIn("Partida terminada: ", diag)
+        self.assertFalse([e for e in ev if e[0] == "analysis.load"])
+
     def test_una_sola_partida_encontrada_no_suena_dos_veces(self):
         from cliente_falso import ClienteFalso
         fake = ClienteFalso(guion=["None", "Matchmaking", "ReadyCheck", "ReadyCheck", "ReadyCheck", "ChampSelect", "ChampSelect", "None", "None"])

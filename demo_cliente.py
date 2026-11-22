@@ -66,13 +66,15 @@ COLAS = {"sr": {"id": 420, "gameMode": "CLASSIC"}, "aram": {"id": 450, "gameMode
 
 
 class ClienteFalso:
-    def __init__(self, puuid=YO, guion=GUION, partida_nueva=900, modo="sr", caidas=(), cuenta_desde=0, remake=False, pl=None):
+    def __init__(self, puuid=YO, guion=GUION, partida_nueva=900, modo="sr", caidas=(), cuenta_desde=0, remake=False, pl=None, fallos=(), sin_historial=False):
         """modo: «sr» (Grieta), «aram» o «arena». caidas: números de paso del guion en los que el cliente «no responde» (se cae y vuelve)."""
         self.puuid, self.guion, self.paso, self.nueva = puuid, list(guion), 0, partida_nueva
         self.modo, self.caidas, self.cuenta_desde = modo, set(caidas), cuenta_desde   # cuenta_desde: paso a partir del cual el cliente da tu cuenta
         self.pl = pl   # (PL antes, PL después) en Solo/Dúo Oro II: el rango cambia cuando la partida acaba
         self.remake = remake   # la partida nueva acaba anulada (rendición temprana): en la lista del historial lleva gameEndedInEarlySurrender
         self.pedidas = []
+        self.fallos = set(fallos)   # pasos en los que el cliente contesta un error 5xx (el LCU devuelve None) en vez de caerse
+        self.sin_historial = sin_historial   # la partida nueva nunca llega a la lista del historial (modo sin historial, o cliente lento)
         self.rc = {}   # paso del guion -> respuesta de /lol-matchmaking/v1/ready-check (la ventana de aceptar); sin entrada, el cliente no la da
         self.viejas = [partida(100, 103, True, 1_000), partida(101, 86, False, 2_000)]
         self.detalles = {}   # gameId -> detalle de la Grieta (los 10 jugadores); lo demás devuelve None, como el cliente con una partida que ya no tiene
@@ -91,13 +93,15 @@ class ClienteFalso:
 
     # ---- respuestas ----
     def historial(self):
-        fin = "EndOfGame" in self.guion[: self.paso + 1]
+        fin = "EndOfGame" in self.guion[: self.paso + 1] and not self.sin_historial
         return ([partida(self.nueva, 86, True, 9_000, queue=420, lane="JUNGLE", item=1220, remake=self.remake)] if fin else []) + self.viejas[::-1]
 
     def get(self, path, timeout=None):
         self.pedidas.append(path)
         if self.paso in self.caidas:
             raise ConnectionError("el cliente se ha cerrado")
+        if self.paso in self.fallos:
+            return None
         f = self.fase
         if path == "/lol-matchmaking/v1/ready-check":
             return self.rc.get(self.paso)

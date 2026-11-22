@@ -376,3 +376,5 @@ Cada versión se publicó con el sí del usuario. Lo que no está en `CONTINUAR.
   Trampa repetida: `` en una cadena de un script se convierte en el carácter 8 (backspace); y la «ó» no se puede escribir en una clase `[oó]` con seguridad: usar `.{1,2}`.
 - Estadísticas con 5 días de datos (2,2 M de partidas, 30 % de un parche completo, avisa «datos provisionales»): los que suben en victorias (Galio, Annie) y en uso (Vi, Azir)
   son justo los mejorados en las notas, y bajan en uso Syndra (debilitada). Capturas en `herramientas/salida/parche_*.png`.
+- **Auditoría del bucle (22/11)**: un revisor de solo lectura dio 10 hallazgos; se hicieron todos salvo `last = key` antes de pintar (reintentar cada segundo inundaría el registro).
+  Ver la lista en `PLAN_DE_FUTURO.md` (Robustez del bucle principal).

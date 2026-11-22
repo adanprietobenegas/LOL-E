@@ -492,7 +492,8 @@ class GUI:
                     self.kit.anim = False
                 elif kind == "idle":
                     self.ctx.update(info=ev[1], msg=ev[2], players={})
-                    if ev[2] and "Partida en curso" not in ev[2]:
+                    reconectando = (ev[2] or "").startswith("Conectado") and self.ctx.get("phase") in ("InProgress", "GameStart", "Reconnect")   # el cliente volvió en plena partida: el marcador y los avisos de compra siguen valiendo
+                    if ev[2] and "Partida en curso" not in ev[2] and not reconectando:
                         self.ctx["live"] = None   # fuera de la partida el marcador en vivo ya no vale
                         self.buy_notified = set()
                     self.advisor = "idle"
