@@ -1846,8 +1846,26 @@ class CounterPicks(Section):
         if ctx["r"]["mode"]["kind"] != "sr":
             return ("no",)
         t = self.targets(ctx)
-        return (tuple(t), tuple(str(Recs.COUNTERS.get((c, ln)))[:14] for c, ln, _ in t), self.ui.conf["compact"], len((ctx.get("info") or {}).get("owned") or ()), ctx["width"] // 150,
-                tuple(ctx["r"]["bans"]), tuple(ctx["r"]["allies"]), tuple(ctx["r"]["enemies"]))
+        return (tuple(t), tuple(str(Recs.COUNTERS.get((c, ln)))[:14] for c, ln, _ in t), self.ui.conf["compact"], len((ctx.get("info") or {}).get("owned") or ()), ctx["width"] // 150, self.shown(ctx))
+
+    def shown(self, ctx):
+        """Qué campeones se van a enseñar en cada fila (ya sin baneados ni elegidos): la tarjeta solo se repinta si esto cambia, no con cada marca de un aliado o un ban que no la toca."""
+        r = ctx["r"]
+        gone = set(r["bans"]) | set(r["allies"]) | set(r["enemies"])
+        owned = set((ctx.get("info") or {}).get("owned") or [])
+        out = []
+        for cid, lane, mine in self.targets(ctx):
+            st = Recs.COUNTERS.get((cid, lane))
+            if not isinstance(st, list):
+                out.append(None)
+                continue
+            st = [x for x in st if x["cid"] not in gone]
+            good = [x for x in st if x["games"] >= self.MIN]
+            low = len(good) < 3
+            rows = (good if not low else [x for x in st if x["games"] >= self.FALLBACK])[:5 if mine else 3]
+            best = next((x for x in (good if not low else st) if x["cid"] in owned), None) if owned and mine else None
+            out.append((tuple(x["cid"] for x in rows), best["cid"] if best else 0, low))
+        return tuple(out)
 
     def fetch(self, cid, lane):
         key = (cid, lane)

@@ -322,12 +322,22 @@ class GUI:
             if kind == "show":
                 self.pending_show = ev  # de varios cambios seguidos solo cuenta el último
                 continue
+            if kind == "assets":
+                self.assets_pending = True   # cada imagen descargada avisaba y repintaba TODO (1-2 s): ahora una ráfaga de imágenes cuenta como un solo repintado
+                continue
             if kind == "idle":
                 self.pending_show = None
             try:
                 self.handle_event(ev, kind)
             except Exception as e:  # un dato raro no debe dejar la ventana sin actualizarse
                 self.event_failed(kind, e)
+        if self.assets_pending and time.time() - self.last_assets_t >= 0.8:   # como mucho un repintado por imágenes cada 0,8 s (y tras dejar pasar la ráfaga)
+            self.assets_pending = False
+            self.last_assets_t = time.time()
+            try:
+                self.handle_event(("assets",), "assets")
+            except Exception as e:
+                self.event_failed("assets", e)
         if self.pending_show is not None and time.time() - self.last_show_t >= 0.6:  # como mucho ~1,5 repintados por segundo
             ev, self.pending_show = self.pending_show, None
             self.last_show_t = time.time()
@@ -344,6 +354,7 @@ class GUI:
                     "el detalle está en Ajustes › «Abrir el registro de errores».")
 
     pending_show, last_show_t, last_turn = None, 0.0, None
+    assets_pending, last_assets_t = False, 0.0
     auto_game = False
 
     def analysis(self, gid, data):

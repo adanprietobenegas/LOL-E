@@ -380,3 +380,14 @@ Cada versión se publicó con el sí del usuario. Lo que no está en `CONTINUAR.
   Ver la lista en `PLAN_DE_FUTURO.md` (Robustez del bucle principal).
 - **Auditoría de persistencia (22/11)**: un revisor de solo lectura halló que `lp.json`, `games_*.json` y los ajustes se pisaban con uno vacío ante un archivo dañado, y que `history.json`
   podía pisar su propia copia buena. Se resolvió con `safeio.py` + 6 pruebas (`DatosDelUsuarioSeguros`). El actualizador y el instalador no tocan datos (comprobado por el revisor).
+
+## 22/11/2026 tarde: LOL-E real en una selección (monitorizada) y CPU de la selección
+
+- **Lo visto en una partida real** (1.22.27 instalada sola a las 17:32): cola con un rechazo (`ReadyCheck -> Matchmaking -> ReadyCheck`), `ReadyCheck -> ChampSelect` anotado (la
+  fase ya llega), 10 jugadores leídos al empezar, bloque en vivo bien (captura de la ventana con `PrintWindow`), `live.summarize` sobre la respuesta real: «tú» 1 vez, 10 campeones, 0 objetos
+  fuera del catálogo. `/lol-matchmaking/v1/ready-check` real: `{state: "Invalid" fuera de la ventana, playerResponse, timer 0.0, declinerIds, dodgeWarning}`. Sin errores nuevos.
+- **CPU**: ~17 % de un núcleo durante la selección (≈15 s en 92 s), ~1,7 % en partida. Medido con `herramientas/hover_cpu.py` (nuevo): cada cambio de la selección cuesta 0,8–2,7 s de CPU
+  de Tk. Dos causas arregladas: (1) cada imagen descargada mandaba un evento «assets» que subía `epoch` y repintaba TODO (1,5–2,7 s) — una ráfaga de N imágenes = N repintados; ahora
+  `GUI.poll` junta la ráfaga en uno y deja pasar 0,8 s entre repintados; (2) `CounterPicks` (arreglo de baneados/elegidos) se repintaba con cada marca de un aliado o ban: su clave ahora
+  es lo que va a enseñar (`shown`). Sigue costando ~1 s marcar un campeón nuevo (MyPick: build y runas) y una imagen nueva sigue repintando todo una vez; mejora posible: repintar solo
+  las secciones que pidieron esa imagen.
