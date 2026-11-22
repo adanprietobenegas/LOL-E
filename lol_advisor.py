@@ -1412,6 +1412,10 @@ def run(conf, champs, ui):
                         P = load_player_data(lcu, season)
                         ui.idle(player_info(P), "Estadísticas de op.gg actualizadas.")
                 time.sleep(1 if flow in ("Matchmaking", "ReadyCheck") else 2); continue   # en cola y al aceptar, más rápido: una cola relámpago no se escapa
+            if last_flow != "ChampSelect":   # con selección en curso no se lee la fase del cliente: se anota aquí (antes la ventana se quedaba en «Partida encontrada» toda la selección)
+                diag(f"Fase: {last_flow} -> ChampSelect")
+                last_flow, rc_prev = "ChampSelect", None
+                getattr(ui, "phase", lambda f: None)("ChampSelect")
             key = json.dumps([session["myTeam"], session["theirTeam"], session["bans"],
                               session["timer"]["phase"], session.get("actions")], sort_keys=True)
             if key != last:

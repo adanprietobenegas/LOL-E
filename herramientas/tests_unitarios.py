@@ -590,6 +590,14 @@ class FlujoCompleto(unittest.TestCase):
         self.assertEqual(sonidos.count("found"), 3)        # dos rechazos/esquives y una final: tres veces «encontrada»
         self.assertEqual(self.leer("error.log"), "")
 
+    def test_la_seleccion_llega_a_la_ventana_como_fase(self):
+        from cliente_falso import ClienteFalso
+        ev = self.correr(ClienteFalso(guion=["None", "Matchmaking", "ReadyCheck", "ChampSelect", "ChampSelect", "InProgress", "InProgress", "EndOfGame", "None", "None"]))
+        fases = [e[1] for e in ev if e[0] == "phase"]
+        self.assertIn("ChampSelect", fases)
+        self.assertLess(fases.index("ReadyCheck"), fases.index("ChampSelect"))
+        self.assertIn("ReadyCheck -> ChampSelect", self.leer("diag.log"))
+
     def test_una_sola_partida_encontrada_no_suena_dos_veces(self):
         from cliente_falso import ClienteFalso
         fake = ClienteFalso(guion=["None", "Matchmaking", "ReadyCheck", "ReadyCheck", "ReadyCheck", "ChampSelect", "ChampSelect", "None", "None"])

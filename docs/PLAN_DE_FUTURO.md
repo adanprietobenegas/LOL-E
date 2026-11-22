@@ -73,6 +73,11 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
   6. **Mismo aviso de parche en Enfrentamiento y en el análisis de partida**. S.
   7. **Leer los parches con una prueba viva**: un paso opcional en `comprobar_todo` que descargue la última nota y compruebe que se reconoce (hoy solo hay pruebas con HTML de ejemplo);
      avisaría el día que Riot cambie su web. S.
+- **Robustez del bucle principal** (auditoría de 22/11/2026; HECHO: la fase «ChampSelect» llega a la ventana y se anota; un plan «game» pasa a «done» al entrar en otra cola). PENDIENTE,
+  cada uno con su escenario (ver HISTORIAL): (a) un fallo de red o una cola nueva mientras se espera el PL de la partida anterior pierde su análisis y puede dejar `rank_before` pisado;
+  (b) abrir LOL-E o reiniciar el cliente con la partida en marcha no analiza esa partida (`reload_pending` solo se pone tras ver la selección; cuidado con TFT: bloquearía 64 s);
+  (c) un HTTPError 5xx puntual se toma por «selección terminada» y repite sonidos; (d) agotadas las 8 esperas se analiza `games[0]`, que puede ser otra partida; (e) `ui.idle` al
+  reconectar en plena partida borra el marcador y los avisos de compra; (f) `last`/`mode` no se reinician al caer el cliente a mitad de selección. S–M cada uno; probar con el cliente falso.
 - **Coaching con IA**: un resumen en lenguaje natural de la partida o de tu semana. Pide decidir dónde corre el modelo, clave de API o coste, y
   qué datos salen del PC (privacidad). Esfuerzo L, riesgo a. Solo si el usuario lo quiere y con consentimiento claro.
 - **Varias cuentas**: el historial ya es por cuenta; falta una interfaz para ver/cambiar de cuenta y comparar. M.

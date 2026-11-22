@@ -402,6 +402,8 @@ class GUI:
         plan = self.ctx.get("plan")
         if plan and plan.get("state") == "select" and flow in ("Lobby", "Matchmaking", "ReadyCheck", "None", None):
             plan["state"] = "done"   # la selección se abandonó (esquive, cola cancelada): ese plan ya no es de una selección en curso
+        elif plan and plan.get("state") == "game" and flow in ("Matchmaking", "ReadyCheck"):
+            plan["state"] = "done"   # ya se está en otra cola: la partida anterior acabó aunque no se vieran las fases de fin (cliente cerrado o reiniciado)
         if flow in ("Matchmaking", "ReadyCheck", "ChampSelect") and self.ctx.get("phase") not in ("Matchmaking", "ReadyCheck", "ChampSelect"):
             self.new_cycle()
             plan = self.ctx.get("plan")
