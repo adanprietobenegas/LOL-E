@@ -55,7 +55,7 @@ def load(cache_dir, patch, force=False, region="all"):
     saved = None
     try:
         saved = json.load(open(path, encoding="utf-8"))
-        if not force and saved.get("v") == VERSION and saved["patch"] == patch and saved.get("region") == region and time.time() - saved["ts"] < TTL:
+        if not force and saved.get("v") == VERSION and saved["patch"] == patch and saved.get("region") == region and time.time() - saved["ts"] < (1800 if saved.get("partial") else TTL):
             return saved
     except Exception:
         pass
@@ -83,7 +83,8 @@ def load(cache_dir, patch, force=False, region="all"):
         if saved and saved.get("v") == VERSION and saved.get("lanes") and saved.get("region") == region:   # sin red: las últimas tendencias guardadas, marcadas
             return {**saved, "stale": True}
         raise RuntimeError("sin datos de tendencias")
-    data = {"v": VERSION, "ts": time.time(), "patch": patch, "prev": prev, "region": region, "lanes": lanes}
+    partial = sum(1 for v in lanes.values() if v) < 5   # una línea vacía por un fallo puntual: se guarda, pero solo 30 min (no medio día)
+    data = {"v": VERSION, "ts": time.time(), "patch": patch, "prev": prev, "region": region, "lanes": lanes, "partial": partial}
     os.makedirs(cache_dir, exist_ok=True)
     json.dump(data, open(path, "w", encoding="utf-8"))
     return data

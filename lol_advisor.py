@@ -1217,6 +1217,7 @@ def run(conf, champs, ui):
     reload_pending = False
     played = False   # ¿ha empezado de verdad una partida desde la última selección? (si no, se esquivó o se canceló: no hay nada que cerrar)
     rank_before, cur_gid, end_tries = None, None, 0
+    next_meta = time.time() + 6 * 3600   # el meta y las tendencias se vuelven a mirar cada 6 h si la app sigue abierta (parche nuevo, caché caducada), fuera de cola y de partida
     sel_seen = False   # ¿se vio la selección de la partida en curso? (si no, LOL-E o el cliente se abrieron con la partida ya empezada)
     nosession = 0      # lecturas seguidas sin sesión de selección (un fallo puntual del cliente no cuenta como «selección terminada»)
     import augments   # (aquí dentro: augments importa este módulo)
@@ -1423,6 +1424,9 @@ def run(conf, champs, ui):
                     except Exception:
                         soft_fail("Leer la partida en curso")
                     time.sleep(5); continue
+                if not in_game and flow in ("None", "Lobby") and time.time() >= next_meta:
+                    next_meta = time.time() + 6 * 3600
+                    start_meta(conf, P, ui)
                 if (not P.get("hist_ok") or not my_puuid or not P.get("owned")) and hist_tries < 12 and time.time() >= next_hist:
                     # el historial, tu cuenta o tus campeones no llegaron (cliente aún iniciando sesión): reintentar
                     next_hist, hist_tries = time.time() + 30, hist_tries + 1

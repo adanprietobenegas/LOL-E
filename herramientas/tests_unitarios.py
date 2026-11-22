@@ -1347,6 +1347,27 @@ class ContrarrestosSinRed(unittest.TestCase):
             urllib.request.urlopen = orig
 
 
+class CachesIncompletas(unittest.TestCase):
+    def test_tendencias_con_una_linea_vacia_caducan_pronto(self):
+        import trends, tempfile
+        d = tempfile.mkdtemp()
+        orig = trends._fetch
+        trends._fetch = lambda patch, lane, region: {} if lane == "support" else {"1": {"g": 100, "pr": 5.0, "wr": 50.0}}
+        try:
+            data = trends.load(d, "26.23", True, "euw")
+        finally:
+            trends._fetch = orig
+        self.assertTrue(data["partial"])
+        saved = json.load(open(os.path.join(d, "trends.json"), encoding="utf-8"))
+        saved["ts"] -= 3600          # hace una hora: una caché parcial ya no vale (una completa duraría medio día)
+        json.dump(saved, open(os.path.join(d, "trends.json"), "w"))
+        trends._fetch = lambda patch, lane, region: {"1": {"g": 100, "pr": 5.0, "wr": 50.0}}
+        try:
+            self.assertFalse(trends.load(d, "26.23", False, "euw")["partial"])      # se vuelve a pedir y ya viene completa
+        finally:
+            trends._fetch = orig
+
+
 class DatosDelUsuarioSeguros(unittest.TestCase):
     """Lo que el cliente no puede volver a dar (historial, PL, partidas con rival, ajustes, fotos de rango) no se pierde por un archivo dañado."""
 

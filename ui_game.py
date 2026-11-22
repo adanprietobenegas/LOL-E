@@ -6,6 +6,7 @@ objetivos y tu recorrido por el mapa, más consejos que dicen de dónde salen (v
 """
 import os
 import threading
+import time
 import tkinter as tk
 
 import customtkinter as ctk
@@ -295,6 +296,8 @@ class GameView:
         self.section("TU ENFRENTAMIENTO")
         key = (opp, plan.get("role"))
         st = self.vs.get(key)
+        if isinstance(st, tuple) and time.time() - st[2] > 90:
+            st = None   # un fallo puntual (sin red, Lolalytics caído) se reintenta solo
         if st is None:
             self.vs[key] = "cargando"
 
@@ -302,7 +305,7 @@ class GameView:
                 try:
                     rows = matchups.best_against(ui.champs, opp, lane, core.CACHE, min_games=20)
                 except Exception as e:
-                    rows = ("error", str(e))
+                    rows = ("error", str(e), time.time())
                 self.vs[key] = rows
                 ui.notify("game_data")
             threading.Thread(target=go, daemon=True).start()
@@ -319,8 +322,10 @@ class GameView:
                    10, "dim", anchor="w").pack(anchor="w")
             return
         wr = mine["wr"]
-        verdict = "favorable" if wr >= 52 else "desfavorable" if wr <= 48 else "igualado"
-        col = "good" if wr >= 52 else "bad" if wr <= 48 else "fg"
+        moe = 98 / max(1, mine["games"]) ** 0.5   # margen de error (95 %) en puntos: con 20 partidas es ±22, con 1.000 ±3
+        fav, des = wr - moe > 50, wr + moe < 50
+        verdict = "favorable" if fav else "desfavorable" if des else "igualado" if mine["games"] >= 100 else "sin datos suficientes para decidir"
+        col = "good" if fav else "bad" if des else "fg"
         row = ui.frame(self.host)
         row.pack(anchor="w")
         ui.lbl(row, f"{wr:.1f} %".replace(".", ","), 22, col, True, True).pack(side="left")

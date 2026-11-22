@@ -63,8 +63,8 @@ def load(cache_dir, version, tier, force=False):
             try:
                 with ThreadPoolExecutor(5) as ex:
                     res = dict(zip(LANES.values(), ex.map(lambda ln: _fetch(patch, ln, t), LANES.values())))
-                if sum(len(v[0]) for v in res.values()) < 100:
-                    continue
+                if sum(len(v[0]) for v in res.values()) < 100 or min(len(v[0]) for v in res.values()) < 10:
+                    continue   # datos incompletos (una línea vacía por un fallo puntual): no se guardan 20 h; se prueba otro elo o parche y, si no, lo guardado
                 data = {"ts": time.time(), "patch": patch, "current": f"{major}.{minor}", "tier": t, "avg": {k: v[1] for k, v in res.items()},
                         "lanes": {k: v[0] for k, v in res.items()}}
                 os.makedirs(cache_dir, exist_ok=True)

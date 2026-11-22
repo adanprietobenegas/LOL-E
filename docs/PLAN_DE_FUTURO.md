@@ -84,10 +84,7 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
 - **Fuentes externas** (auditoría de 22/11/2026): HECHO nombres con apóstrofo o «&» en contrarrestos (Cho'Gath, Kai'Sa, Nunu…: `matchups.norm` y `unescape`), `RETRY` sin definir en
   `ui_opp` (un `
 ` dentro de un comentario rompía el selector de rival tras un error de datos), freno de reintentos en builds y guías (5 min), archivo temporal único en op.gg y ARAM,
-  `matchups.load` con reserva si la fuente falla (y 404 ≠ 429/5xx), builds que se refrescan cada 6 h en sesión larga. PENDIENTE: (a) cachés parciales (`trends`, `meta`) que guardan
-  datos incompletos 12–20 h si falla una línea o el parche nuevo aún no existe; (b) `start_meta` y la versión de Data Dragon solo se miran al conectar: refrescar cada pocas horas fuera de
-  cola; (c) muestras pequeñas como veredicto (`ui_game` con 20 partidas, meta con 200): encoger hacia 50 o exigir margen; (d) menores: runas vacías cacheadas, `minor=1` en cambio de
-  temporada, Meraki sin refrescar si hay campeón nuevo, `safeio` en las cachés de red, reintento del enfrentamiento en `ui_game`.
+  `matchups.load` con reserva si la fuente falla (y 404 ≠ 429/5xx), builds que se refrescan cada 6 h en sesión larga. HECHO también: meta que exige 10+ filas por línea y tendencias parciales con caché de 30 min, meta y tendencias que se vuelven a mirar cada 6 h fuera de cola, enfrentamiento con margen de error ("favorable" solo si el margen no cruza el 50 %) y reintento a los 90 s. PENDIENTE (menor): runas vacías cacheadas, `minor=1` en cambio de temporada, Meraki sin refrescar con campeón nuevo, `safeio` en las cachés de red, meta global con pocos datos en el primer día de parche (encoger hacia 50).
 - **Coaching con IA**: un resumen en lenguaje natural de la partida o de tu semana. Pide decidir dónde corre el modelo, clave de API o coste, y
   qué datos salen del PC (privacidad). Esfuerzo L, riesgo a. Solo si el usuario lo quiere y con consentimiento claro.
 - **Varias cuentas**: el historial ya es por cuenta; falta una interfaz para ver/cambiar de cuenta y comparar. M.
