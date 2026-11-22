@@ -163,6 +163,7 @@ BARON_SPAWN, BARON_RESPAWN = 1200, 360   # el Barón sale a los 20:00 y 6 min de
 # incluyen: las fuentes discrepan y no se ha podido confirmar el tiempo actual
 DRAKE_SPAWN, DRAKE_RESPAWN = 300, 300     # dragón elemental: a los 5:00 y 5 min tras caer (wiki oficial, página «Dragon pit»). Con el alma o el Ancestral ya no se avisa: no está confirmado
 GRUBS_SPAWN, GRUBS_END = 480, 885         # larvas del Vacío: aparecen a los 8:00, una sola vez por partida, y se van a los 14:45 (wiki oficial, parche 25.09 en adelante)
+HERALD_SPAWN, HERALD_END = 900, 1185      # Heraldo de la Grieta: aparece a los 15:00, una sola vez por partida, y se va a los 19:45 (wiki oficial, infobox y parche 25.09; en una partida real, HeraldKill a los 15:41)
 BARON_WARN = 60                           # se avisa cuando falta menos de este tiempo
 
 
@@ -194,6 +195,13 @@ def timers(snap):
         out.append(f"Las larvas del Vacío aparecen en {clock(gl)} (estimado).")
     elif gl <= 0 < GRUBS_END - t and not grubs:
         out.append(f"Las larvas del Vacío siguen en la fosa hasta el {clock(GRUBS_END)} (estimado).")
+    heralds = sum((tm or {}).get("heralds", 0) for tm in (snap.get("teams") or {}).values())
+    hl = HERALD_SPAWN - t
+    if not heralds:
+        if 0 < hl <= BARON_WARN:
+            out.append(f"El Heraldo de la Grieta aparece en {clock(hl)} (estimado).")
+        elif hl <= 0 < HERALD_END - t:
+            out.append(f"El Heraldo de la Grieta sigue en la Grieta hasta el {clock(HERALD_END)} (estimado).")
     return " ".join(out) or None
 
 

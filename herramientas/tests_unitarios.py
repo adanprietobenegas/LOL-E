@@ -1158,13 +1158,22 @@ class TemporizadorDelBaron(unittest.TestCase):
         self.assertIsNone(live.timers(con_alma(1790, four)))                 # con el alma tomada (4 de un equipo) no se avisa
         self.assertIn("reaparece", live.timers(repartidos(1790, four)) or "")    # 2-2: nadie tiene el alma y el dragón sigue reapareciendo
 
+    def test_heraldo(self):
+        import live
+        s = lambda t, h=0: {"mode": "CLASSIC", "t": t, "teams": {"ORDER": {"heralds": h, "grubs": 3}, "CHAOS": {"heralds": 0, "grubs": 0}}}
+        self.assertIn("Heraldo de la Grieta aparece en 0:30", live.timers(s(870)))
+        self.assertIn("sigue en la Grieta hasta el 19:45", live.timers(s(1000)))
+        self.assertIsNone(live.timers(s(1000, 1)))             # ya lo han matado
+        self.assertNotIn("Heraldo", live.timers(s(1190)) or "")   # ya se fue (y ahora toca el aviso del Barón)
+        self.assertIsNone(live.timers(s(600)))                 # aún falta mucho
+
     def test_larvas_del_vacio(self):
         import live
         s = lambda t, grubs=0: {"mode": "CLASSIC", "t": t, "teams": {"ORDER": {"grubs": grubs}, "CHAOS": {"grubs": 0}}}
         self.assertIn("aparecen en 0:30", live.timers(s(450)))
         self.assertIn("hasta el 14:45", live.timers(s(600)))
         self.assertIsNone(live.timers(s(600, 3)))          # ya las han matado
-        self.assertIsNone(live.timers(s(900)))             # ya se fueron
+        self.assertNotIn("larvas", live.timers(s(900)) or "")   # ya se fueron
 
     def test_resumen_trae_las_muertes_del_baron(self):
         import live
