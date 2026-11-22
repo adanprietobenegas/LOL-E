@@ -70,7 +70,12 @@ def main():
     pump(4000)
     evento("sin cambios (misma sesión otra vez)", lambda: push2(ses))
     evento("marco un campeón (intención)", lambda: push2(sesion(intent=103)))
-    evento("marco otro", lambda: push2(sesion(intent=157)))
+    if os.environ.get("PERFIL"):
+        import cProfile, pstats
+        push2(sesion(intent=86)); pump(2500)       # el campeón y su build ya cargados: lo que cuesta de verdad cambiar a otro
+        pr = cProfile.Profile(); pr.enable(); push2(sesion(intent=11)); pump(1500); pr.disable()
+        pstats.Stats(pr).strip_dirs().sort_stats("cumulative").print_stats(28)
+        evento("marco otro", lambda: push2(sesion(intent=157)))
     evento("un aliado marca un campeón", lambda: push2(sesion(ally_intent=11)))
     evento("otro aliado marca (cambia)", lambda: push2(sesion(ally_intent=64)))
     evento("un rival elige", lambda: push2(sesion(enemy=134)))
