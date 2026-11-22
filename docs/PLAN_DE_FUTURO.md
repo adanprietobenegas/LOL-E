@@ -89,6 +89,12 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
   pestaña Análisis abierta, «tú» duplicado con nombres iguales y distinta etiqueta, temporizador del dragón con 2-2 (el alma es 4 de un equipo), reloj de la banda sin adelantarse más de 12 s ni
   seguir con datos de hace 30 s, primera lectura reintentada a los 3 s y mejoras solo si cambian. PENDIENTE (menor): `patrones.current` en el hilo de Tk, `LiveView` recreado pierde avisos
   de pico, `catalog()` con cerrojo durante la red, rótulo «sin datos desde hace X s» en la tira.
+- **Motor de recomendaciones** (auditoría de 22/11/2026): HECHO el motor ya no recorta a 36 candidatos antes de los filtros de la pantalla, las listas «Contra tu rival» / «Ventaja» y
+  la tarjeta de contrarrestos excluyen baneados y ya elegidos, los remakes no cuentan como derrota en ninguna estadística, «te falta un tanque» solo con 3+ aliados, los bonos de
+  composición pesan según el preset, y el «has jugado bastante» del rol cuenta partidas de ESE rol. PENDIENTE (cambian las puntuaciones; decidir y comparar con capturas): (a) el registro
+  por rol de 1 partida no debe anular un historial grande del campeón (prior hacia la media del campeón); (b) meta encogido por muestra (K≈1500) y mínimo mayor; (c) sinergia de dúo con la
+  línea ASIGNADA del aliado, no sus posiciones posibles; (d) motivo de sinergia que puede ser una regla negativa; (e) sugerencias de ban por línea y suavizadas; (f) maestría con raíz/log;
+  (g) recencia; (h) umbrales de `sesion.py` (n≥8 es ruido); (i) ARAM sin intercambios ni propiedad.
 - **Coaching con IA**: un resumen en lenguaje natural de la partida o de tu semana. Pide decidir dónde corre el modelo, clave de API o coste, y
   qué datos salen del PC (privacidad). Esfuerzo L, riesgo a. Solo si el usuario lo quiere y con consentimiento claro.
 - **Varias cuentas**: el historial ya es por cuenta; falta una interfaz para ver/cambiar de cuenta y comparar. M.

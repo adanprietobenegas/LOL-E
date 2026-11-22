@@ -730,6 +730,8 @@ def load_player_data(lcu, season=None):
     sr = []
     for e in hist:
         note_queue(e["q"])
+        if e.get("rm"):
+            continue   # partida anulada (rendición temprana): no cuenta como derrota en ninguna estadística
         grp = queue_group(e["q"])
         m = P["modes"].setdefault(grp, [0, 0, []])
         m[0] += 1; m[1] += e["w"]; m[2].append(e["w"])
@@ -821,7 +823,7 @@ def score(cid, champs, role, allies, enemies, lane_opp, pend, P, conf, mmax):
     if g:
         why.append(f"{wins}/{g} victorias")
     fit = role_fit(c, role, cid, conf)
-    if g >= getp(conf, "off_role_games") and fit < 0.5:
+    if P["rstats"].get((cid, role), [0, 0])[0] >= getp(conf, "off_role_games") and fit < 0.5:   # partidas EN ESTE ROL (no las de otra línea)
         fit = 0.5  # lo has jugado bastante, asumimos que sabes usarlo
     parts["role"] = w["role"] * fit
     if role and fit < 0.5:
@@ -830,7 +832,7 @@ def score(cid, champs, role, allies, enemies, lane_opp, pend, P, conf, mmax):
     tanks = sum(1 for a in ids if "Tank" in champs[a]["tags"])
     bal = sum(lean(champs[a]) for a in ids)
     comp = 0.0
-    if tanks == 0 and "Tank" in c["tags"]:
+    if len(ids) >= 3 and tanks == 0 and "Tank" in c["tags"]:   # con menos de 3 aliados elegidos aún no se sabe que falte
         comp += 0.6; why.append("te falta un tanque")
     if abs(bal) > 1.0:  # equipo muy cargado a un tipo de dano
         if bal > 0 and lean(c) < -0.2: comp += 0.7; why.append("aporta daño mágico")
@@ -842,10 +844,10 @@ def score(cid, champs, role, allies, enemies, lane_opp, pend, P, conf, mmax):
         comp += 0.5; why.append("aporta control")
     parts["comp"] = w["comp"] * comp
     if pend >= 2 and len(c.get("pos", [])) >= 2:  # quedan picks rivales: un campeon flexible no revela tu linea
-        parts["comp"] += 0.3; why.append("pick flexible")
+        parts["comp"] += w["comp"] * 0.3; why.append("pick flexible")
     ebal = sum(lean(champs[e]) for e in enemies if e in champs)
     if ebal > 1.0 and c["info"]["defense"] >= 7:
-        parts["comp"] += 0.5; why.append("resiste su daño físico")
+        parts["comp"] += w["comp"] * 0.5; why.append("resiste su daño físico")
     parts["counter"] = 0.0
     if lane_opp:  # tu historial contra el rival de tu linea
         mg, mw = P["matchups"].get((cid, lane_opp), [0, 0])
@@ -1119,9 +1121,9 @@ def _advise(session, champs, P, conf, mode):
             why.append("fuera de tu rol")
         ranked.append((sum(parts.values()), cid, why, off, m, syn, parts))
     ranked.sort(key=lambda x: -x[0])
-    inrole = [x for x in ranked if not x[3]][:36]  # los de tu rol, y unos pocos fuera de rol por si quitas ese filtro
+    inrole = [x for x in ranked if not x[3]]  # los de tu rol (todos: los filtros de la pantalla trabajan sobre ellos y la pantalla recorta al final), y los mejores fuera de rol por si quitas ese filtro
     cands = []
-    for sc, cid, why, off, m, syn, parts in sorted(inrole + [x for x in ranked if x[3]][:8], key=lambda x: -x[0]):
+    for sc, cid, why, off, m, syn, parts in sorted(inrole + [x for x in ranked if x[3]][:40], key=lambda x: -x[0]):
         g, wv = champ_record(P, cid, role)
         cands.append({"cid": cid, "score": sc, "why": why, "off_role": off, "meta": m, "syn": syn, "parts": parts,
                       "mastery": P["mastery"].get(cid, 0), "games": g, "wins": wv, "tags": champs[cid]["tags"],

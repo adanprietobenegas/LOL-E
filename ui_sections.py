@@ -1318,7 +1318,8 @@ class Recs(Section):
             return None, f"Cargando los mejores campeones contra {oname}…"
         if isinstance(st, tuple):
             return None, f"No hay datos de enfrentamientos contra {oname}: {st[1]}"
-        rows = [x for x in st if (not tag or tag in ui.champs[x["cid"]]["tags"]) and (not only_mine or not owned or x["cid"] in owned)]
+        gone = set(self.r["bans"]) | set(self.r["allies"]) | set(self.r["enemies"])   # baneados o ya elegidos: no se pueden coger
+        rows = [x for x in st if x["cid"] not in gone and (not tag or tag in ui.champs[x["cid"]]["tags"]) and (not only_mine or not owned or x["cid"] in owned)]
         if which == "Contra tu rival":
             return [(x["cid"], f"{x['wr']:.1f} %".replace(".", ","), "good" if x["wr"] >= 50 else "bad",
                      f"{x['games']:,} partidas".replace(",", ".")) for x in rows], \
@@ -1845,7 +1846,8 @@ class CounterPicks(Section):
         if ctx["r"]["mode"]["kind"] != "sr":
             return ("no",)
         t = self.targets(ctx)
-        return (tuple(t), tuple(str(Recs.COUNTERS.get((c, ln)))[:14] for c, ln, _ in t), self.ui.conf["compact"], len((ctx.get("info") or {}).get("owned") or ()), ctx["width"] // 150)
+        return (tuple(t), tuple(str(Recs.COUNTERS.get((c, ln)))[:14] for c, ln, _ in t), self.ui.conf["compact"], len((ctx.get("info") or {}).get("owned") or ()), ctx["width"] // 150,
+                tuple(ctx["r"]["bans"]), tuple(ctx["r"]["allies"]), tuple(ctx["r"]["enemies"]))
 
     def fetch(self, cid, lane):
         key = (cid, lane)
@@ -1901,6 +1903,8 @@ class CounterPicks(Section):
                        wraplength=max(260, ctx["width"] - 110)).pack(anchor="w")
                 continue
             n = 5 if mine else 3
+            gone = set(r["bans"]) | set(r["allies"]) | set(r["enemies"])   # baneados o ya elegidos: no se pueden coger
+            st = [x for x in st if x["cid"] not in gone]
             good = [x for x in st if x["games"] >= self.MIN]
             low = len(good) < 3
             rows = (good if not low else [x for x in st if x["games"] >= self.FALLBACK])[:n]
