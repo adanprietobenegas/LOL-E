@@ -10,6 +10,17 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.22.27", "fecha": "22 de noviembre de 2026", "titulo": "Más fiable en la cola, en la partida y con tus datos", "items": [
+        ("arreglo", "Si alguien no acepta la partida encontrada y el cliente enseña otra enseguida, el aviso sonoro vuelve a sonar (antes podía no sonar la segunda vez)."),
+        ("arreglo", "En los contrarrestos faltaban los campeones con apóstrofo o «&» (Cho'Gath, Kai'Sa, K'Sante, Vel'Koz, Kog'Maw, Nunu…). Ya salen, y si el rival es uno de ellos, «Tu enfrentamiento» ya no dice que no hay datos."),
+        ("arreglo", "El selector de «Rival de línea» dejaba de salir tras un fallo de datos (red caída o línea sin datos) hasta reiniciar la app."),
+        ("mejora", "Tus datos están más protegidos: el historial, los PL, los ajustes y las partidas con rival se guardan de forma atómica, y un archivo dañado se aparta en vez de sobrescribirse con uno vacío."),
+        ("mejora", "Las recomendaciones fían menos de las muestras pequeñas: tu historial en un rol se suaviza con el resto de tus partidas con ese campeón, el meta con pocas partidas pesa menos, y los bans y las sinergias de dúo usan tu línea y la del aliado. Las partidas anuladas por remake ya no cuentan como derrota."),
+        ("mejora", "«Tu enfrentamiento» en partida dice «favorable» o «desfavorable» solo si el dato supera el margen de error, y se reintenta solo si Lolalytics falla. Las listas de contrarrestos ya no proponen campeones baneados o ya elegidos."),
+        ("arreglo", "La partida en vivo ya no se repinta sin parar con los iconos de mejoras de Mayhem, no aplica el plan de otro campeón si abres LOL-E con la partida empezada, marca bien quién eres si dos jugadores se llaman igual y no apaga el aviso del dragón con un reparto 2-2."),
+        ("arreglo", "Más robusto el seguimiento de la cola: la selección se ve como «En selección», un fallo puntual del cliente no la da por terminada, una partida ya empezada al abrir LOL-E también se analiza al terminar y un análisis pendiente no se pierde por un corte de red."),
+        ("mejora", "La actualización automática no se instala con cola, selección o partida en curso (ni mientras se cierra la partida), y si el instalador no se puede lanzar, LOL-E sigue abierto y te lo dice."),
+    ]},
     {"v": "1.22.26", "fecha": "17 de noviembre de 2026", "titulo": "Arreglos tras una revisión", "items": [
         ("arreglo", "Si abandonas una selección (esquivas o cancelas la cola), el plan de esa selección ya no se queda colgado como si siguiera en curso."),
         ("arreglo", "En «Mejores campeones contra tus rivales», la línea habitual de cada rival sale de dónde se juega más este parche, no de un orden alfabético; la etiqueta «lo tienes» tiene en cuenta todos tus campeones."),

@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.22.26). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.22.27, sin publicar). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)

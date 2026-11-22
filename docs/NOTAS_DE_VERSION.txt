@@ -7,6 +7,15 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.22.27   (22 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · readycheck.py (otra ventana de aceptar sin pasar por la cola), fase ChampSelect visible, 2.ª lectura sin sesión, partida ya empezada, esperas agotadas, cierre pendiente.
+    safeio.py (escritura atómica y lectura que aparta lo dañado) en historial, lp.json, games_*.json, ajustes y fotos. matchups.norm con entidades HTML; ui_opp.RETRY.
+    Motor: sin recorte previo a los filtros, remakes fuera, rol suavizado hacia el resto del campeón, meta con META_K, sinergia con línea asignada, bans por línea, maestría con raíz.
+    En vivo: augments._tried, «tú» por nombre completo, alma del dragón por equipo. Actualización: --autotest en el exe, descarga a .part comprobada en disco, busy().
+    La pantalla «Parche» está terminada pero APAGADA (parche.ACTIVO = False). 236 pruebas. Solo visto con pruebas y la demo, no con una partida real.
+
 VERSIÓN 1.22.26   (17 de noviembre de 2026)
 ---------------------------------------------------------------------
 
