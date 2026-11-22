@@ -7,6 +7,14 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.24.0   (22 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Cuenta anónima de instalaciones, OPT-IN y apagada de fábrica (stats.py, ui_stats.py): ventana de permiso única («No, gracias» destacado), Ajustes › Privacidad (borra el registro al apagarla),
+    servidor propio en Cloudflare (servidor/worker.js; STATS_URL = https://lole-stats.aprietob04.workers.dev) que deduce la zona de la conexión y NO guarda la IP; panel de administrador con mapa
+    (/panel?k=CLAVE) y sección «Administrador» en Ajustes con admin_token. No se activa en la demostración. 247 pruebas + servidor/prueba.html (33). El servidor real se probó por HTTP
+    (404 sin clave, 400 con id no válido, ping y olvidar 200), no con usuarios reales.
+
 VERSIÓN 1.23.0   (22 de noviembre de 2026)
 ---------------------------------------------------------------------
 

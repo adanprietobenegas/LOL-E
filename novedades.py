@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.24.0", "fecha": "22 de noviembre de 2026", "titulo": "Ayúdame a contar cuánta gente usa LOL-E (opcional y anónimo)", "items": [
+        ("nuevo", "Una pregunta, una sola vez: si quieres «contar tu instalación». Es opcional y está apagado hasta que digas que sí; «No, gracias» es la opción destacada y cerrar la ventana equivale a no. Si aceptas, una vez al día se envía solo un número aleatorio de tu instalación y la versión de LOL-E. Nunca tu nombre, tu cuenta de LoL, tus partidas ni tus ajustes, y la dirección IP no se guarda: el servidor solo deduce una zona aproximada (comunidad autónoma) y la descarta."),
+        ("nuevo", "Ajustes › Privacidad: el interruptor para cambiar de opinión cuando quieras (al apagarlo se borra el registro de tu instalación en el servidor) y «Ver exactamente qué se envía». El texto completo está en docs/PRIVACIDAD.md."),
+        ("mejora", "Para quien mantiene LOL-E: sección «Administrador» en Ajustes (solo con su clave) con el resumen y un panel privado con mapa."),
+    ]},
     {"v": "1.23.0", "fecha": "22 de noviembre de 2026", "titulo": "Nueva pantalla «Parche»: las notas oficiales y cómo cambia el juego", "items": [
         ("nuevo", "Pantalla «Parche» en la barra lateral: las notas oficiales de Riot en español, tal como las publica (sin traducir ni resumir), con fichas «antes → después», la nota de los diseñadores y una marca de mejora, ajuste o debilitación calculada de los números. Filtra por sección, por tipo de cambio, por «solo mis campeones» o con el buscador. Solo modos que se juegan (sin TFT, aspectos ni pase)."),
         ("nuevo", "En «Estadísticas» del parche: cómo se mueven victorias, uso y baneos frente al parche anterior (Lolalytics, tu elo y superiores), quién cambia de línea y qué pasó con los campeones tocados en las notas. Solo cuenta cambios que superan el margen de error y avisa de «datos provisionales» los primeros días."),

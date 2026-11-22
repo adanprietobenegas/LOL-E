@@ -1532,7 +1532,7 @@ class CuentaAnonimaDeInstalaciones(unittest.TestCase):
 
     def test_apagada_de_fabrica_y_sin_servidor_no_hay_nada(self):
         import stats
-        self.assertEqual(stats.STATS_URL, "" if not stats.STATS_URL else stats.STATS_URL)
+        self.assertTrue(not stats.STATS_URL or stats.STATS_URL.startswith("https://"))    # solo HTTPS
         self.assertFalse(stats.enabled(""))
         self.assertIsNone(core.DEFAULT_CONF["stats_optin"])                          # sin respuesta del usuario: no se pregunta ni se envía
         self.assertFalse(stats.due({"stats_optin": None, "stats_id": "x"}))

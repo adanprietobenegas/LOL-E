@@ -12,12 +12,18 @@ import urllib.parse
 import urllib.request
 import uuid
 
-STATS_URL = ""   # dirección del servidor (Cloudflare Worker), p. ej. "https://lole-stats.TU-USUARIO.workers.dev". Vacía = función desactivada.
+STATS_URL = "https://lole-stats.aprietob04.workers.dev"   # dirección del servidor (Cloudflare Worker del mantenedor). Vacía = función desactivada.
 PING_EVERY = 20 * 3600   # segundos entre avisos
 
 
 def enabled(url=None):
-    """¿Hay servidor configurado? Sin él no se pregunta nada ni se envía nada."""
+    """¿Hay servidor configurado? Sin él no se pregunta nada ni se envía nada. Tampoco en la demostración (datos inventados: no debe contar como una instalación)."""
+    try:
+        import lol_advisor
+        if getattr(lol_advisor, "DEMO_MODE", False):
+            return False
+    except Exception:
+        pass
     return bool((STATS_URL if url is None else url).strip())
 
 

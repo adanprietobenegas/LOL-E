@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.23.0). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.24.0, sin publicar). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -58,7 +58,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
   de fábrica: solo envía `{id aleatorio, versión}` una vez al día y solo si el usuario dijo «sí» en la ventana de permiso (una sola vez) o en Ajustes › Privacidad; al apagarla se borra su
   registro en el servidor (`POST /olvidar`). La zona (país, región y coordenadas a medio grado) la deduce el Worker de la conexión y NO guarda la IP. Mientras `stats.STATS_URL` esté vacío no se
   pregunta ni se envía nada (así se publicó el código: no pasa nada hasta desplegar). Para activarla: seguir `servidor/LEEME_DESPLIEGUE.md` (cuenta de Cloudflare del usuario, `wrangler deploy`),
-  poner la URL en `stats.STATS_URL` y publicar. Administrador: `admin_token` en `config.json` → Ajustes › Administrador (resumen + botón al panel). Pruebas: `CuentaAnonimaDeInstalaciones`
+  poner la URL en `stats.STATS_URL` (YA PUESTA: https://lole-stats.aprietob04.workers.dev) y publicar (1.24.0). Administrador: `admin_token` en `config.json` → Ajustes › Administrador (resumen + botón al panel). Pruebas: `CuentaAnonimaDeInstalaciones`
   (Python) y `servidor/prueba.html` (el Worker, sin Node: `python -m http.server 8123` en `servidor/` y abrir la página; debe acabar en «TODO BIEN»); vista previa del panel con datos inventados:
   `servidor/panel_demo.html`. Texto de privacidad: `docs/PRIVACIDAD.md` (mantenerlo cierto: no ampliar lo que se envía sin volver a pedir permiso).
 
