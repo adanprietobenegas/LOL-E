@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.24.0, sin publicar). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.24.0). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -22,7 +22,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 2. Estado (actualizar al terminar cada conversación)
 
-**Publicado en GitHub: 1.23.0** (22/11/2026; la 1.22.27 fue la anterior): pantalla «Parche» ENCENDIDA (notas oficiales y estadísticas), relectura de jugadores si faltaba uno, temporizadores del Heraldo e inhibidores, menos CPU en la selección. **Antes, 1.22.27** (22/11/2026; la 1.22.26 fue la anterior). Cola, partida en vivo, datos del usuario, recomendaciones y actualización más robustos; la autoprueba del exe (`--autotest`) pasó en `publicar.py`. La pantalla «Parche» va APAGADA (`parche.ACTIVO`), pendiente de decidir cuándo encenderla (ya se revisó con el 26.23 real).
+**Publicado en GitHub: 1.24.0** (22/11/2026; la 1.23.0 fue la anterior): cuenta anónima de instalaciones OPT-IN (ventana de permiso única, Ajustes › Privacidad, servidor propio en Cloudflare `https://lole-stats.aprietob04.workers.dev`, panel con mapa y sección Administrador con `admin_token`). **Antes, 1.23.0** (22/11/2026; la 1.22.27 fue la anterior): pantalla «Parche» ENCENDIDA (notas oficiales y estadísticas), relectura de jugadores si faltaba uno, temporizadores del Heraldo e inhibidores, menos CPU en la selección. **Antes, 1.22.27** (22/11/2026; la 1.22.26 fue la anterior). Cola, partida en vivo, datos del usuario, recomendaciones y actualización más robustos; la autoprueba del exe (`--autotest`) pasó en `publicar.py`. La pantalla «Parche» va APAGADA (`parche.ACTIVO`), pendiente de decidir cuándo encenderla (ya se revisó con el 26.23 real).
 
 **En `main` sin publicar** (17/11/2026 noche, candidata a 1.22.26 o 1.23.0; versión y notas SIN preparar; NO publicar sin el sí del usuario):
 - **Pantalla «Parche»** (petición del usuario del 17/11, «muy importante, debe quedar perfecta»: notas oficiales en español sin traducir + estadísticas del parche, de solo lectura con filtros, muy cuidada estéticamente, solo modos que se juegan: nada de TFT). 6.º elemento de la barra lateral (icono «doc», punto de aviso con parche nuevo, Ctrl+6; Datos pasa a Ctrl+7), página `parche`, vista `patch`.
@@ -54,7 +54,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 - **Publicar ahora incluye el paso 4b** (22/11): `publicar.py` ejecuta `LOL-E.exe --autotest` del paquete recién construido y para si falla; si un módulo o recurso falta solo en el
   ejecutable, se verá ahí y no en los PC de la gente. Primera vez sin probar con un exe real: si falla por algo del propio autotest, revisar `%TEMP%\lole_autotest.txt`.
 
-- **Cuenta anónima de instalaciones (22/11/2026, sin publicar, DORMIDA)**: `stats.py` + `ui_stats.py` + `servidor/` (Cloudflare Worker con KV y panel de administrador con mapa). Voluntaria y apagada
+- **Cuenta anónima de instalaciones (22/11/2026, PUBLICADA en la 1.24.0; el Worker ya está desplegado)**: `stats.py` + `ui_stats.py` + `servidor/` (Cloudflare Worker con KV y panel de administrador con mapa). Voluntaria y apagada
   de fábrica: solo envía `{id aleatorio, versión}` una vez al día y solo si el usuario dijo «sí» en la ventana de permiso (una sola vez) o en Ajustes › Privacidad; al apagarla se borra su
   registro en el servidor (`POST /olvidar`). La zona (país, región y coordenadas a medio grado) la deduce el Worker de la conexión y NO guarda la IP. Mientras `stats.STATS_URL` esté vacío no se
   pregunta ni se envía nada (así se publicó el código: no pasa nada hasta desplegar). Para activarla: seguir `servidor/LEEME_DESPLIEGUE.md` (cuenta de Cloudflare del usuario, `wrangler deploy`),
