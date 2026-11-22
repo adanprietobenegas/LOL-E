@@ -11,6 +11,7 @@ import meta as metamod
 import params
 import players
 import readycheck
+import safeio
 import sounds
 import synergy
 import trends
@@ -120,7 +121,8 @@ def install_certs():
 
 def load_conf():
     conf = dict(DEFAULT_CONF)
-    conf.update(read_json(CONF_FILE, {}))
+    saved, _st = safeio.read(CONF_FILE)   # dañado: se aparta como config.json.corrupt-FECHA y se arranca con los valores de fábrica sin pisarlo
+    conf.update(saved)
     if not str(conf.get("update_url") or "").strip():
         # Las primeras versiones guardaban esta dirección vacía (aún no había dónde actualizarse) y ese vacío tapaba para
         # siempre la dirección de fábrica: la app no volvía a buscar versiones. Para no actualizarse está el interruptor.
@@ -138,8 +140,7 @@ def load_conf():
 def save_conf(conf):
     os.makedirs(DATA_DIR, exist_ok=True)
     data = {k: v for k, v in conf.items() if k != "weights" and not k.startswith("_")}
-    with open(CONF_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    safeio.write(CONF_FILE, data, indent=2)
 
 
 def read_json(path, default):
@@ -152,11 +153,7 @@ def read_json(path, default):
 
 def write_json(path, data):
     """Escribe en un archivo temporal y lo cambia de sitio al terminar: un corte de luz no deja el archivo a medias."""
-    os.makedirs(os.path.dirname(path) or CACHE, exist_ok=True)
-    tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(data, f)
-    os.replace(tmp, path)
+    safeio.write(path, data)
 
 
 def norm_role(r):
@@ -671,7 +668,9 @@ def load_player_data(lcu, season=None):
         how = history.set_account(CACHE, P["puuid"], [g.get("gameId") for g in glist])   # cada cuenta, su archivo
         if how:
             diag(f"Cuenta {P['puuid'][:8]}: " + ("hereda el historial anterior" if how == "migrated" else "historial propio nuevo"))
-        gc = read_json(history.gpath(CACHE), {})
+        gc, _gst = safeio.read(history.gpath(CACHE))   # dañado: se aparta, no se pisa
+        if _gst == "unreadable":
+            raise OSError("el archivo de partidas está bloqueado ahora; se reintenta")
         try:
             recs = [history.from_game(g, P["puuid"]) for g in glist]
             history.save(history.hpath(CACHE), [r for r in recs if r])

@@ -6,18 +6,25 @@ Las partidas guardadas por versiones anteriores (`games.json`) se incluyen, aunq
 """
 import json, os, shutil, time
 
+import safeio
+
+
+def _read2(path, default):
+    """(datos, se_puede_guardar). Un archivo dañado se aparta (`.corrupt-FECHA`, no se pisa) y se usa la copia de seguridad (.bak); si el archivo existe pero no se puede
+    leer ahora (antivirus, OneDrive), `se_puede_guardar` es False: guardar encima lo perdería."""
+    d, st = safeio.read(path, default)
+    if st == "ok":
+        return d, True
+    if st == "unreadable":
+        return default, False
+    b, sb = safeio.read(path + ".bak", default)   # sin archivo o dañado: la copia de seguridad
+    if sb == "ok":
+        return b, True
+    return default, sb != "unreadable"
+
 
 def _read(path, default):
-    """Lee un JSON; si está dañado, usa la copia de seguridad (.bak) para no perder el historial."""
-    for p in (path, path + ".bak"):
-        try:
-            with open(p, encoding="utf-8") as f:
-                return json.load(f)
-        except FileNotFoundError:
-            continue
-        except Exception:
-            continue
-    return default
+    return _read2(path, default)[0]
 
 
 # ---- la línea que jugaste ----
@@ -106,11 +113,7 @@ def gpath(cache):
 
 
 def _write(path, data):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(data, f)
-    os.replace(tmp, path)
+    safeio.write(path, data)
 
 
 def load_account(cache):
@@ -195,24 +198,22 @@ def from_game(g, puuid=""):
 
 def save(path, games):
     """Añade o actualiza partidas en el archivo (por identificador)."""
-    data = _read(path, {})
+    data, can = _read2(path, {})
+    if not can:
+        return   # el historial existe pero no se pudo leer ahora: no se guarda encima (se reintenta en la siguiente lectura)
     changed = False
     for e in games:
         if data.get(e["id"]) != e:
             data[e["id"]] = e
             changed = True
     if changed:
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        tmp = path + ".tmp"
-        with open(tmp, "w", encoding="utf-8") as f:
-            json.dump(data, f)
         bak = path + ".bak"
-        try:  # una copia por día como máximo: si el archivo se dañara, el historial se recupera de aquí
-            if os.path.exists(path) and (not os.path.exists(bak) or time.time() - os.path.getmtime(bak) > 86400):
+        try:  # una copia por día como máximo: si el archivo se dañara, el historial se recupera de aquí (solo se copia un archivo que se lee bien)
+            if os.path.exists(path) and (not os.path.exists(bak) or time.time() - os.path.getmtime(bak) > 86400) and safeio.read(path)[1] == "ok":
                 shutil.copy2(path, bak)
         except OSError:
             pass
-        os.replace(tmp, path)
+        safeio.write(path, data)
 
 
 def load_all(history_path, legacy_path):

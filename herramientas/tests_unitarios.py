@@ -1290,6 +1290,82 @@ class MejoresContraRivales(unittest.TestCase):
         self.assertEqual([t[0] for t in cp.targets({"r": r})], [1, 2, 4])
 
 
+class DatosDelUsuarioSeguros(unittest.TestCase):
+    """Lo que el cliente no puede volver a dar (historial, PL, partidas con rival, ajustes, fotos de rango) no se pierde por un archivo dañado."""
+
+    def setUp(self):
+        import tempfile
+        self.d = tempfile.mkdtemp()
+
+    def p(self, n):
+        return os.path.join(self.d, n)
+
+    def test_escribir_deja_el_archivo_completo_y_sin_temporales(self):
+        import safeio
+        safeio.write(self.p("a.json"), {"x": 1})
+        safeio.write(self.p("a.json"), {"x": 2})
+        self.assertEqual(json.load(open(self.p("a.json"), encoding="utf-8")), {"x": 2})
+        self.assertEqual([n for n in os.listdir(self.d) if n.endswith(".tmp")], [])
+
+    def test_un_archivo_danado_se_aparta_y_no_se_pisa(self):
+        import safeio
+        open(self.p("a.json"), "w").write('{"x": 1')            # truncado
+        d, st = safeio.read(self.p("a.json"))
+        self.assertEqual((d, st), ({}, "corrupt"))
+        self.assertFalse(os.path.exists(self.p("a.json")))
+        self.assertEqual(len([n for n in os.listdir(self.d) if ".corrupt-" in n]), 1)
+        self.assertEqual(safeio.read(self.p("nada.json"))[1], "missing")
+
+    def test_lp_dañado_no_se_sobrescribe_con_uno_casi_vacio(self):
+        import analysis
+        analysis.save_lp(self.d, 1, {"d": 10})
+        analysis.save_lp(self.d, 2, {"d": -5})
+        raw = open(self.p("lp.json"), encoding="utf-8").read()
+        open(self.p("lp.json"), "w").write(raw[:-3])             # corte de luz a medias
+        analysis.save_lp(self.d, 3, {"d": 7})
+        copias = [n for n in os.listdir(self.d) if n.startswith("lp.json.corrupt-")]
+        self.assertEqual(len(copias), 1)                          # lo dañado se conserva para recuperarlo
+        self.assertEqual(open(self.p(copias[0]), encoding="utf-8").read(), raw[:-3])
+
+    def test_historial_danado_usa_la_copia_y_no_pisa_la_copia_con_el_dano(self):
+        import history
+        path = self.p("history_x.json")
+        history.save(path, [{"id": "1", "t": 1000, "c": 1, "w": True}])
+        history.save(path, [{"id": "2", "t": 2000, "c": 2, "w": False}])
+        self.assertTrue(os.path.exists(path + ".bak"))
+        bueno = open(path + ".bak", encoding="utf-8").read()
+        open(path, "w").write('{"1": {')                          # dañado
+        history.save(path, [{"id": "3", "t": 3000, "c": 3, "w": True}])
+        self.assertEqual(open(path + ".bak", encoding="utf-8").read(), bueno)   # la copia buena sigue intacta
+        d = json.load(open(path, encoding="utf-8"))
+        self.assertIn("3", d)
+        self.assertTrue([n for n in os.listdir(self.d) if ".corrupt-" in n])
+
+    def test_historial_que_no_se_puede_leer_ahora_no_se_pisa(self):
+        import history, safeio
+        path = self.p("history_y.json")
+        history.save(path, [{"id": "1", "t": 1000, "c": 1, "w": True}])
+        antes = open(path, encoding="utf-8").read()
+        original = safeio.read
+        safeio.read = lambda p, default=None, kind=dict: ({}, "unreadable") if p == path else original(p, default, kind)
+        try:
+            history.save(path, [{"id": "2", "t": 2000, "c": 2, "w": True}])
+        finally:
+            safeio.read = original
+        self.assertEqual(open(path, encoding="utf-8").read(), antes)
+
+    def test_ajustes_dañados_se_apartan_y_arranca_con_los_de_fabrica(self):
+        original = core.CONF_FILE
+        core.CONF_FILE = self.p("config.json")
+        try:
+            open(core.CONF_FILE, "w").write("{")
+            c = core.load_conf()
+            self.assertEqual(c["preset"], core.DEFAULT_CONF["preset"])
+            self.assertTrue([n for n in os.listdir(self.d) if n.startswith("config.json.corrupt-")])
+        finally:
+            core.CONF_FILE = original
+
+
 class VentanaDeAceptar(unittest.TestCase):
     def test_nueva_ronda(self):
         import readycheck as r

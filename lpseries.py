@@ -11,6 +11,7 @@ import json
 import os
 
 import analysis
+import safeio
 from players import TIERS_ES
 
 KEY_OF = {v: k for k, v in TIERS_ES.items()}          # «Platino» -> PLATINUM
@@ -88,12 +89,12 @@ def load_snapshots(path):
 
 def save_snapshots(path, new):
     """Suma fotos nuevas a las guardadas (por fecha) y devuelve cuántas eran nuevas."""
-    cur = load_snapshots(path)
+    cur, st = safeio.read(path)   # dañado: se aparta; bloqueado ahora: no se pisa la historia acumulada (op.gg solo da ~10 días)
+    if st == "unreadable":
+        return 0
     added = sum(1 for k in new if k not in cur)
     cur.update(new)
-    tmp = path + ".tmp"
-    json.dump(cur, open(tmp, "w", encoding="utf-8"))
-    os.replace(tmp, path)
+    safeio.write(path, cur)
     return added
 
 

@@ -10,6 +10,8 @@ sencillos; cada consejo enseña el dato en que se basa.
 """
 import json, os, statistics
 
+import safeio
+
 import history
 
 VERSION = 5
@@ -569,11 +571,7 @@ def _pid_from_history(a, cache_dir, gid):
 
 
 def _write(path, a):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(a, f)
-    os.replace(tmp, path)
+    safeio.write(path, a)
 
 
 # ---- puntos de liga (PL) ganados o perdidos en cada partida clasificatoria ----
@@ -609,17 +607,14 @@ def _lp_path(cache_dir):
 
 
 def save_lp(cache_dir, gid, data):
-    try:
-        cur = json.load(open(_lp_path(cache_dir), encoding="utf-8"))
-    except Exception:
-        cur = {}
+    cur, st = safeio.read(_lp_path(cache_dir))   # dañado: se aparta, no se pisa; bloqueado ahora: no se guarda (lp.json no se puede reconstruir)
+    if st == "unreadable":
+        return
     old = cur.get(str(gid))
     if old and old.get("d") and not data.get("d"):
         return   # nunca se sustituye una variación real por un 0 (el rango aún no se había actualizado, o no se movió)
     cur[str(gid)] = data
-    tmp = _lp_path(cache_dir) + ".tmp"
-    json.dump(cur, open(tmp, "w", encoding="utf-8"))
-    os.replace(tmp, _lp_path(cache_dir))
+    safeio.write(_lp_path(cache_dir), cur)
 
 
 def lp_for(cache_dir, gid):

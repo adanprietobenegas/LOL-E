@@ -78,6 +78,10 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
   partida ya empezada al abrir LOL-E o al volver el cliente se analiza al terminar (con 3 esperas; TFT y personalizadas no); agotadas las esperas no se analiza otra partida; un fallo de red
   no pierde el cierre pendiente; una selección nueva no borra el cierre de la anterior ni pisa su rango de antes; al caer el cliente en la selección se reinicia su estado; reconectar en
   plena partida no borra el marcador. Sin ver con un cliente real: mirar `diag.log` («en marcha sin haber visto su selección», «no aparece en el historial»).
+- **Integridad de los datos del usuario** (auditoría de 22/11/2026): HECHO `safeio.py` (escritura atómica con `fsync`, temporal único y cerrojo; lectura que aparta lo dañado como
+  `.corrupt-FECHA` y distingue «no existe» / «dañado» / «no se puede leer ahora») en historial, `lp.json`, `games_*.json`, ajustes y fotos de rango. PENDIENTE (bajo): `opgg_lp.json` por
+  perfil (hoy mezcla fotos si cambia el nombre de op.gg), `.bak` en las migraciones, `patrones` filtrando análisis por cuenta, día local en las fotos de op.gg, `.bak` diario de `lp.json`
+  y `games_*.json`, poda de `cache/analysis`. Los archivos de caché de red no se tocan: se vuelven a bajar.
 - **Coaching con IA**: un resumen en lenguaje natural de la partida o de tu semana. Pide decidir dónde corre el modelo, clave de API o coste, y
   qué datos salen del PC (privacidad). Esfuerzo L, riesgo a. Solo si el usuario lo quiere y con consentimiento claro.
 - **Varias cuentas**: el historial ya es por cuenta; falta una interfaz para ver/cambiar de cuenta y comparar. M.

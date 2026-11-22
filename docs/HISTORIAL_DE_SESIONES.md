@@ -378,3 +378,5 @@ Cada versión se publicó con el sí del usuario. Lo que no está en `CONTINUAR.
   son justo los mejorados en las notas, y bajan en uso Syndra (debilitada). Capturas en `herramientas/salida/parche_*.png`.
 - **Auditoría del bucle (22/11)**: un revisor de solo lectura dio 10 hallazgos; se hicieron todos salvo `last = key` antes de pintar (reintentar cada segundo inundaría el registro).
   Ver la lista en `PLAN_DE_FUTURO.md` (Robustez del bucle principal).
+- **Auditoría de persistencia (22/11)**: un revisor de solo lectura halló que `lp.json`, `games_*.json` y los ajustes se pisaban con uno vacío ante un archivo dañado, y que `history.json`
+  podía pisar su propia copia buena. Se resolvió con `safeio.py` + 6 pruebas (`DatosDelUsuarioSeguros`). El actualizador y el instalador no tocan datos (comprobado por el revisor).
