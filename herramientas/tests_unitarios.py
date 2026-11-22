@@ -1153,7 +1153,10 @@ class TemporizadorDelBaron(unittest.TestCase):
         self.assertIn("reaparece en 0:30", live.timers(s(870, [(600, "Fire")])))
         self.assertIsNone(live.timers(s(700, [(600, "Fire")])))
         four = [(300, "Fire"), (700, "Water"), (1100, "Earth"), (1500, "Air")]
-        self.assertIsNone(live.timers(s(1790, four)))        # con el alma tomada no se avisa
+        con_alma = lambda t, dk: {**s(t, dk), "teams": {"ORDER": {"dragons": 4}, "CHAOS": {"dragons": 0}}}
+        repartidos = lambda t, dk: {**s(t, dk), "teams": {"ORDER": {"dragons": 2}, "CHAOS": {"dragons": 2}}}
+        self.assertIsNone(live.timers(con_alma(1790, four)))                 # con el alma tomada (4 de un equipo) no se avisa
+        self.assertIn("reaparece", live.timers(repartidos(1790, four)) or "")    # 2-2: nadie tiene el alma y el dragón sigue reapareciendo
 
     def test_larvas_del_vacio(self):
         import live
@@ -1366,6 +1369,43 @@ class CachesIncompletas(unittest.TestCase):
             self.assertFalse(trends.load(d, "26.23", False, "euw")["partial"])      # se vuelve a pedir y ya viene completa
         finally:
             trends._fetch = orig
+
+
+class BloqueEnVivoRobusto(unittest.TestCase):
+    def test_dos_jugadores_con_el_mismo_nombre_y_distinta_etiqueta(self):
+        import live
+        pl = lambda team, rid, name, champ: {"championName": champ, "team": team, "riotId": rid, "summonerName": rid, "riotIdGameName": name, "scores": {}, "items": []}
+        d = {"allPlayers": [pl("ORDER", "Ahri#EUW", "Ahri", "Garen"), pl("CHAOS", "Ahri#1234", "Ahri", "Darius")],
+             "activePlayer": {"riotId": "Ahri#1234", "summonerName": "Ahri#1234", "riotIdGameName": "Ahri"}, "gameData": {"gameTime": 100, "gameMode": "CLASSIC"}}
+        r = live.summarize(d, {})
+        self.assertEqual([p["me"] for p in r["players"]], [False, True])              # tú eres el de la etiqueta completa
+        self.assertEqual(live.team_of_name("Ahri#1234", r["players"]), "CHAOS")
+        d["activePlayer"] = {"riotIdGameName": "Ahri"}                                  # solo el nombre corto y dos jugadores lo llevan: no se sabe quién eres
+        self.assertEqual([p["me"] for p in live.summarize(d, {})["players"]], [False, False])
+
+    def test_iconos_que_no_existen_no_se_piden_en_bucle(self):
+        import augments
+        augments._tried.clear()
+        orig_find, orig_icon = augments.core.find_client, augments.icon_path
+        llamadas = []
+        augments.core.find_client = lambda conf: (_ for _ in ()).throw(OSError("sin cliente"))
+        augments.icon_path = lambda i: None
+        try:
+            t = augments.fetch_icons([991, 992], {}, done=lambda: llamadas.append(1))
+            t.join(5)
+            self.assertIsNone(augments.fetch_icons([991, 992], {}, done=lambda: llamadas.append(1)))   # ya intentados: no hay hilo nuevo
+            self.assertEqual(llamadas, [])                                                              # y sin iconos nuevos no se repinta nada
+        finally:
+            augments.core.find_client, augments.icon_path = orig_find, orig_icon
+            augments._tried.clear()
+
+    def test_el_plan_de_otro_campeon_no_da_build(self):
+        import ui_live
+        class UI:
+            champs = {1: {"icon": "Garen"}, 2: {"icon": "Ahri"}}
+            items = {1: {}}
+        snap = {"players": [{"me": True, "cid": 2}]}
+        self.assertIsNone(ui_live._my_build(UI(), snap, {"cid": 1, "role": "TOP", "kind": "sr"}))
 
 
 class DatosDelUsuarioSeguros(unittest.TestCase):

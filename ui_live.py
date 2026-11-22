@@ -35,7 +35,7 @@ def _my_build(ui, snap, plan):
         return None
     lane = LANES.get(plan.get("role") or "")
     yo = next((p for p in snap["players"] if p["me"]), None)
-    if not lane or not yo:
+    if not lane or not yo or (yo.get("cid") and yo["cid"] != plan["cid"]):   # el plan es de otra partida (se abrió LOL-E con la partida ya en marcha): no se aplica su build
         return None
     opp = plan.get("opp") or 0
     st = builds.peek(builds.request(core.CACHE, ui.champs[plan["cid"]], lane, ui.champs[opp] if opp in ui.champs else None))

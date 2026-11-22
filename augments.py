@@ -45,13 +45,18 @@ def info(aid):
     return catalog().get(int(aid)) or {"n": f"Mejora {aid}", "r": "", "i": ""}
 
 
+_tried = set()   # ids de iconos ya intentados en esta sesión: un icono que el cliente no tiene no se pide en bucle
+
+
 def fetch_icons(ids, conf, done=None):
     """Baja en segundo plano los iconos que falten (del cliente) a cache/augicons/. Devuelve el hilo."""
-    ids = [i for i in dict.fromkeys(ids) if not icon_path(i)]
+    ids = [i for i in dict.fromkeys(ids) if not icon_path(i) and i not in _tried]
     if not ids:
         return None
+    _tried.update(ids)
 
     def go():
+        got = False
         try:
             lcu = core.LCU(*core.find_client(conf))
             catalog(lcu)
@@ -65,10 +70,11 @@ def fetch_icons(ids, conf, done=None):
                 if data:
                     with open(dest, "wb") as f:
                         f.write(data)
+                    got = True
         except Exception:
             pass
-        if done:
-            done()   # los iconos ya están: la pantalla se repinta una vez
+        if done and got:
+            done()   # solo si llegó algún icono nuevo: la pantalla se repinta una vez (antes se repintaba siempre y, con un icono que no existe, sin fin)
     t = threading.Thread(target=go, daemon=True)
     t.start()
     return t

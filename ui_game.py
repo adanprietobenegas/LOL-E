@@ -149,7 +149,9 @@ class GameView:
         la pestaña entera cuesta más de un segundo y parpadeaba). La primera vez, o si no se está en el plan, se hace el refresco completo."""
         view = getattr(self, "live_view", None)
         try:
-            if self.tab == "Plan" and view is not None and view.alive() and ctx.get("live"):
+            if self.tab != "Plan":
+                return   # se está mirando otra pestaña (p. ej. el análisis de la anterior): al volver a «Plan» el refresco ya trae el resumen más nuevo
+            if view is not None and view.alive() and ctx.get("live"):
                 view.update(ctx["live"], (ctx.get("plan") or {}).get("opp") or 0, ctx.get("plan"))
                 return
         except Exception:

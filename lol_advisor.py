@@ -1218,6 +1218,7 @@ def run(conf, champs, ui):
     played = False   # ¿ha empezado de verdad una partida desde la última selección? (si no, se esquivó o se canceló: no hay nada que cerrar)
     rank_before, cur_gid, end_tries = None, None, 0
     next_meta = time.time() + 6 * 3600   # el meta y las tendencias se vuelven a mirar cada 6 h si la app sigue abierta (parche nuevo, caché caducada), fuera de cola y de partida
+    last_aug = None
     sel_seen = False   # ¿se vio la selección de la partida en curso? (si no, LOL-E o el cliente se abrieron con la partida ya empezada)
     nosession = 0      # lecturas seguidas sin sesión de selección (un fallo puntual del cliente no cuenta como «selección terminada»)
     import augments   # (aquí dentro: augments importa este módulo)
@@ -1399,7 +1400,7 @@ def run(conf, champs, ui):
                         if time.time() >= next_probe:
                             live_on = conf.get("live_enabled", True)
                             snap = augments.fetch_live() if (live_on or mayhem_live) else None
-                            next_probe = time.time() + (10 if live_on else 20)
+                            next_probe = time.time() + ((10 if live_on else 20) if snap else 3)   # sin respuesta (pantalla de carga) se reintenta pronto
                             if snap:
                                 if live_on:
                                     summary = live.summarize(snap, champs)
@@ -1408,7 +1409,10 @@ def run(conf, champs, ui):
                                 if mayhem_live:   # se guarda lo que traiga para poder mejorarlo
                                     got = augments.live_probe(conf, snap)
                                     if got:
-                                        getattr(ui, "live_augments", lambda f: None)(augments.flat_live([v for _, v in got]))
+                                        flat = augments.flat_live([v for _, v in got])
+                                        if flat != last_aug:   # solo si cambió: cada aviso repinta la pestaña entera
+                                            last_aug = flat
+                                            getattr(ui, "live_augments", lambda f: None)(flat)
                     except Exception:
                         soft_fail("Leer los datos de la partida en vivo")
                     try:  # id de la partida en curso: luego se espera a que el cliente la liste en el historial

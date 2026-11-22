@@ -38,7 +38,8 @@ def _names(p):
 
 def team_of_name(name, players):
     """Equipo del jugador con ese nombre (el que traen los eventos), o «» si no se encuentra."""
-    return next((p["team"] for p in players if name and name in p["names"]), "")
+    exact = next((p["team"] for p in players if name and name in p.get("full", ())), "")   # el nombre completo manda sobre el corto, que pueden compartir dos jugadores
+    return exact or next((p["team"] for p in players if name and name in p["names"]), "")
 
 
 def _side(code):
@@ -55,13 +56,18 @@ def summarize(d, champs):
     if not isinstance(d, dict) or not d.get("allPlayers"):
         return None
     ap = d.get("activePlayer") or {}
-    mine = {x for x in (ap.get("riotId"), ap.get("summonerName"), ap.get("riotIdGameName")) if x}
+    full = {x for x in (ap.get("riotId"), ap.get("summonerName")) if x}
+    short = {x for x in (ap.get("riotIdGameName"),) if x}
+    # «tú»: primero por el nombre completo (con etiqueta); el nombre sin etiqueta solo vale si lo lleva un único jugador (dos «Ahri#EUW» y «Ahri#1234» no son el mismo)
+    by_full = [i for i, p in enumerate(d["allPlayers"]) if full & {x for x in (p.get("riotId"), p.get("summonerName")) if x}]
+    by_short = [i for i, p in enumerate(d["allPlayers"]) if short & _names(p)]
+    me_idx = set(by_full) if len(by_full) == 1 else set(by_short) if len(by_short) == 1 and not by_full else set()
     players = []
-    for p in d["allPlayers"]:
+    for idx, p in enumerate(d["allPlayers"]):
         sc = p.get("scores") or {}
         items = [i for i in (p.get("items") or []) if i.get("itemID")]
         players.append({"cid": champ_id(p, champs), "name": p.get("championName") or "", "team": p.get("team") or "",
-                        "me": bool(mine & _names(p)), "names": _names(p), "level": int(p.get("level") or 0),
+                        "me": idx in me_idx, "names": _names(p), "full": {x for x in (p.get("riotId"), p.get("summonerName")) if x}, "level": int(p.get("level") or 0),
                         "k": int(sc.get("kills") or 0), "d": int(sc.get("deaths") or 0), "a": int(sc.get("assists") or 0),
                         "cs": int(sc.get("creepScore") or 0), "dead": bool(p.get("isDead")), "respawn": float(p.get("respawnTimer") or 0),
                         "items": [i["itemID"] for i in sorted(items, key=lambda i: i.get("slot", 0))],
@@ -174,7 +180,8 @@ def timers(snap):
     elif -300 < left <= 0:
         out.append("El Barón debería estar disponible (estimado).")
     dk = snap.get("drake_kills") or []
-    if len(dk) < 4 and not any(str(k[1]).lower().startswith("elder") for k in dk):
+    soul = any((tm or {}).get("dragons", 0) >= 4 for tm in (snap.get("teams") or {}).values())   # alma: un equipo con 4 dragones (con 2-2 o 3-1 sigue reapareciendo)
+    if not soul and not any(str(k[1]).lower().startswith("elder") for k in dk):
         dl = ((dk[-1][0] + DRAKE_RESPAWN) if dk else DRAKE_SPAWN) - t
         if 0 < dl <= BARON_WARN:
             out.append(f"El dragón {'reaparece' if dk else 'aparece'} en {clock(dl)} (estimado).")

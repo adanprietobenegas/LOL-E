@@ -266,8 +266,10 @@ class GUI:
                 secs, inf = core.timer_left(self.ctx["session"], self.ctx["got"])
                 clock = "" if inf else f"{int(secs) // 60}:{int(secs) % 60:02d}"
             elif phase in ("InProgress", "GameStart", "Reconnect") and self.ctx.get("live") and self.ctx.get("live_at"):
-                t = int(self.ctx["live"]["t"] + time.time() - self.ctx["live_at"])
-                clock = f"{t // 60}:{t % 60:02d}"
+                age = time.time() - self.ctx["live_at"]
+                if age <= 30:   # sin lecturas hace rato (cliente caído o juego cerrado) no se sigue contando como si estuviera vivo; y no se adelanta más de una lectura
+                    t = int(self.ctx["live"]["t"] + min(age, 12))
+                    clock = f"{t // 60}:{t % 60:02d}"
         except Exception:
             clock = ""
         sig = (live, label, champ, self.page == "partida", clock)

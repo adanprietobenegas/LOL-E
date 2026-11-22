@@ -85,6 +85,10 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
   `ui_opp` (un `
 ` dentro de un comentario rompía el selector de rival tras un error de datos), freno de reintentos en builds y guías (5 min), archivo temporal único en op.gg y ARAM,
   `matchups.load` con reserva si la fuente falla (y 404 ≠ 429/5xx), builds que se refrescan cada 6 h en sesión larga. HECHO también: meta que exige 10+ filas por línea y tendencias parciales con caché de 30 min, meta y tendencias que se vuelven a mirar cada 6 h fuera de cola, enfrentamiento con margen de error ("favorable" solo si el margen no cruza el 50 %) y reintento a los 90 s. PENDIENTE (menor): runas vacías cacheadas, `minor=1` en cambio de temporada, Meraki sin refrescar con campeón nuevo, `safeio` en las cachés de red, meta global con pocos datos en el primer día de parche (encoger hacia 50).
+- **Bloque en vivo** (auditoría de 22/11/2026): HECHO bucle de iconos de mejoras (Mayhem/ARAM) que repintaba sin fin, plan de otro campeón aplicado a la partida, repintado cada 10 s con la
+  pestaña Análisis abierta, «tú» duplicado con nombres iguales y distinta etiqueta, temporizador del dragón con 2-2 (el alma es 4 de un equipo), reloj de la banda sin adelantarse más de 12 s ni
+  seguir con datos de hace 30 s, primera lectura reintentada a los 3 s y mejoras solo si cambian. PENDIENTE (menor): `patrones.current` en el hilo de Tk, `LiveView` recreado pierde avisos
+  de pico, `catalog()` con cerrojo durante la red, rótulo «sin datos desde hace X s» en la tira.
 - **Coaching con IA**: un resumen en lenguaje natural de la partida o de tu semana. Pide decidir dónde corre el modelo, clave de API o coste, y
   qué datos salen del PC (privacidad). Esfuerzo L, riesgo a. Solo si el usuario lo quiere y con consentimiento claro.
 - **Varias cuentas**: el historial ya es por cuenta; falta una interfaz para ver/cambiar de cuenta y comparar. M.
