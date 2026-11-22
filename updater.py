@@ -122,6 +122,39 @@ def download(info, progress=None):
         raise
 
 
+def pending_file(cache_dir):
+    return os.path.join(cache_dir, "update_pendiente.json")
+
+
+def mark_pending(cache_dir, path):
+    """Antes de lanzar el instalador (la app se cierra): se apunta a qué versión se iba. Al arrancar, `check_pending` dice si la actualización no llegó a completarse."""
+    import re, time
+    m = re.search(r"Instalar-LOL-E-(\d+(?:\.\d+)*)\.exe", os.path.basename(path))
+    if not m:
+        return
+    try:
+        os.makedirs(cache_dir, exist_ok=True)
+        with open(pending_file(cache_dir), "w", encoding="utf-8") as f:
+            json.dump({"to": m.group(1), "at": time.time()}, f)
+    except OSError:
+        pass
+
+
+def check_pending(cache_dir, current):
+    """Si quedó una actualización a medias (el instalador falló con la app ya cerrada), devuelve la versión a la que se iba; None si no hay nada que decir. El apunte se borra siempre."""
+    p = pending_file(cache_dir)
+    try:
+        with open(p, encoding="utf-8") as f:
+            to = str(json.load(f).get("to") or "")
+    except (OSError, ValueError):
+        return None
+    try:
+        os.remove(p)
+    except OSError:
+        pass
+    return to if to and vtuple(to) > vtuple(current) else None
+
+
 def install(path):
     """Lanza el instalador sin ventanas; al terminar vuelve a abrir LOL-E (UPDATE=1). El programa debe cerrarse después."""
     subprocess.Popen([path, "/VERYSILENT", "/SUPPRESSMSGBOXES", "/UPDATE=1", "/NORESTART"], close_fds=True)

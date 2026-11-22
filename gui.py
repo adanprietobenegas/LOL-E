@@ -110,6 +110,7 @@ class GUI:
         self.root.after(9000, self.patch_check)
         if not os.environ.get("LOLE_GEOMETRY"):  # en las pruebas no se abre
             self.root.after(3500, self.show_notes_once)
+            self.root.after(6000, self.report_failed_update)
 
     # ---------- interfaz con el motor (otro hilo: solo usa colas) ----------
     def stopped(self):
@@ -728,6 +729,13 @@ class GUI:
             save_conf(self.conf)
         self.tab_seg.set_badge("Parche", False)
 
+    def report_failed_update(self):
+        """Si la actualización anterior no llegó a completarse (el instalador falló con la app ya cerrada), se dice y se anota en el registro."""
+        to = updater.check_pending(CACHE, APP_VERSION)
+        if to:
+            core.diag(f"La actualización a la {to} no se completó (se sigue en la {APP_VERSION})")
+            self.status(f"La actualización a la {to} no se completó. Pulsa «Actualizar» para reintentarla; si sigue fallando, descarga LOL-E de nuevo desde GitHub.")
+
     def apply_update(self, path, forced=False):
         """Lanza el instalador ya descargado y comprobado. Si mientras se descargaba empezó una cola o una partida, espera (salvo si lo pidió el usuario con el botón).
         Si el instalador no se puede lanzar (antivirus, archivo borrado), la app sigue abierta y lo dice."""
@@ -736,6 +744,7 @@ class GUI:
             self.root.after(120000, lambda: self.apply_update(path, forced))
             return
         try:
+            updater.mark_pending(CACHE, path)
             updater.install(path)
         except Exception as e:
             self.installing = False

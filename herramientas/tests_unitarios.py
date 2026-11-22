@@ -1481,6 +1481,19 @@ class ComprobacionDelEmpaquetado(unittest.TestCase):
         self.assertEqual(core.autotest(), [])
 
 
+class ActualizacionIncompleta(unittest.TestCase):
+    def test_se_avisa_si_la_actualizacion_no_llego_a_completarse(self):
+        import updater, tempfile
+        d = tempfile.mkdtemp()
+        updater.mark_pending(d, r"C:\temp\Instalar-LOL-E-1.22.30.exe")
+        self.assertEqual(updater.check_pending(d, "1.22.29"), "1.22.30")           # sigue la versión de antes: falló
+        self.assertIsNone(updater.check_pending(d, "1.22.29"))                      # solo se avisa una vez
+        updater.mark_pending(d, r"C:\temp\Instalar-LOL-E-1.22.30.exe")
+        self.assertIsNone(updater.check_pending(d, "1.22.30"))                      # se completó: nada que decir
+        updater.mark_pending(d, "otra-cosa.exe")                                    # un nombre raro no escribe nada
+        self.assertIsNone(updater.check_pending(d, "1.0.0"))
+
+
 class DescargaDeActualizaciones(unittest.TestCase):
     class Resp:
         def __init__(self, data, length=None):
