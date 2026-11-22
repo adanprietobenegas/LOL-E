@@ -1678,6 +1678,32 @@ class DatosDelUsuarioSeguros(unittest.TestCase):
         self.assertEqual(len([n for n in os.listdir(self.d) if ".corrupt-" in n]), 1)
         self.assertEqual(safeio.read(self.p("nada.json"))[1], "missing")
 
+    def test_copia_diaria_recupera_un_archivo_danado(self):
+        import safeio
+        safeio.write(self.p("c.json"), {"x": 1}, daily_backup=True)
+        safeio.write(self.p("c.json"), {"x": 2}, daily_backup=True)       # la copia del día se hace con lo que había: {"x": 1}
+        self.assertEqual(json.load(open(self.p("c.json.bak"), encoding="utf-8")), {"x": 1})
+        safeio.write(self.p("c.json"), {"x": 3}, daily_backup=True)       # el mismo día no se vuelve a copiar
+        self.assertEqual(json.load(open(self.p("c.json.bak"), encoding="utf-8")), {"x": 1})
+        open(self.p("c.json"), "w").write('{"x": ')
+        self.assertEqual(safeio.read(self.p("c.json")), ({"x": 1}, "ok"))
+        self.assertEqual(json.load(open(self.p("c.json"), encoding="utf-8")), {"x": 1})
+        self.assertEqual(len([n for n in os.listdir(self.d) if ".corrupt-" in n]), 1)
+
+    def test_pregunta_de_permiso_limitada_y_espaciada(self):
+        import stats
+        DIA = 86400
+        c = {"stats_optin": None, "stats_asked": 0, "stats_ask_t": 0}
+        self.assertTrue(stats.should_ask(c, now=1000 * DIA))                     # la primera vez
+        c.update(stats_asked=1, stats_ask_t=1000 * DIA)
+        self.assertFalse(stats.should_ask(c, now=1003 * DIA))                    # antes de una semana, no
+        self.assertTrue(stats.should_ask(c, now=1007 * DIA))
+        c["stats_asked"] = stats.MAX_ASKS
+        self.assertFalse(stats.should_ask(c, now=2000 * DIA))                    # agotadas: no se vuelve a preguntar
+        self.assertFalse(stats.more_asks(c))
+        self.assertFalse(stats.should_ask({"stats_optin": False}, now=2000 * DIA))   # ya decidió
+        self.assertFalse(stats.should_ask({"stats_optin": True}, now=2000 * DIA))
+
     def test_lp_dañado_no_se_sobrescribe_con_uno_casi_vacio(self):
         import analysis
         analysis.save_lp(self.d, 1, {"d": 10})
@@ -2212,14 +2238,17 @@ class SerieDeRango(unittest.TestCase):
                 {"created_at": "2026-11-06T00:00:29+09:00", "tier_info": {"lp": 1, "tier": "RARO", "label": "R 1"}},
                 {"created_at": "mal", "tier_info": {}}]
         snaps = ls.parse_snapshots(hist)
-        self.assertEqual(sorted(snaps), ["2026-11-04", "2026-11-05"])                    # lo que no se entiende se ignora
-        self.assertEqual((snaps["2026-11-05"]["key"], snaps["2026-11-05"]["div"]), ("PLATINUM", "III"))
-        dias = ls.day_points(snaps, taken_days={"2026-11-04"})
+        import datetime as _dt
+        loc = lambda iso: _dt.datetime.fromisoformat(iso).astimezone().strftime("%Y-%m-%d")      # la fecha es la LOCAL de la foto (no la de Corea)
+        d4, d5 = loc("2026-11-04T00:00:32+09:00"), loc("2026-11-05T00:00:29+09:00")
+        self.assertEqual(sorted(snaps), sorted([d4, d5]))                                # lo que no se entiende se ignora
+        self.assertEqual((snaps[d5]["key"], snaps[d5]["div"]), ("PLATINUM", "III"))
+        dias = ls.day_points(snaps, taken_days={d4})
         self.assertEqual([p["tier"] for p in dias], ["Platino III"])                      # el día 4 ya tiene partida propia: no se duplica
         d = tempfile.mkdtemp()
         path = os.path.join(d, "opgg_lp.json")
         self.assertEqual(ls.save_snapshots(path, snaps), 2)
-        self.assertEqual(ls.save_snapshots(path, {**snaps, "2026-11-06": snaps["2026-11-05"]}), 1)   # solo cuenta lo nuevo: la historia se acumula
+        self.assertEqual(ls.save_snapshots(path, {**snaps, "2026-11-06": snaps[d5]}), 1)   # solo cuenta lo nuevo: la historia se acumula
         self.assertEqual(len(ls.load_snapshots(path)), 3)
 
     def test_tramos(self):

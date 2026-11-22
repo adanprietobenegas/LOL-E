@@ -7,6 +7,15 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.24.1   (22 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Ventana de permiso del contador anónimo reformulada (ui_stats.py, stats.should_ask): explica para qué sirve, «Sí, ayudar» directo, «Ahora no» (se repite como mucho 2 veces más, una semana entre una y otra),
+    «No volver a preguntar». Nada se envía sin el sí. Conf nueva: stats_asked, stats_ask_t.
+  · safeio: copia diaria .bak (daily_backup) de lp.json, ajustes y fotos de rango, y recuperación automática desde ella si el archivo se daña.
+  · lpseries: fotos de op.gg con fecha LOCAL (las antiguas en UTC se fusionan sin duplicar).
+  · Servidor (no forma parte de la app): panel con historia de 120 días, gráficas, retención, países y mapa con teselas Esri (OpenStreetMap devolvía 403). 249 pruebas.
+
 VERSIÓN 1.24.0   (22 de noviembre de 2026)
 ---------------------------------------------------------------------
 

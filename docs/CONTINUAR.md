@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.24.0). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.24.1, en preparación). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -21,6 +21,10 @@ español. Repositorio público `adanprietobenegas/LOL-E`, rama `main`. Pestañas
 Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el cliente local y datos públicos (Data Dragon, Lolalytics, op.gg).
 
 ## 2. Estado (actualizar al terminar cada conversación)
+
+**Sin publicar (22/11/2026): ventana de permiso reformulada** (`ui_stats.py`, `stats.should_ask`): explica para qué sirve y qué no se envía; botones «Sí, ayudar» / «Ahora no» / «No volver a preguntar»; «Ahora no» (o cerrar) la repite como mucho 2 veces más con una semana de por medio, la tercera ya es «No, gracias»; conf `stats_asked`, `stats_ask_t`. Sigue sin enviarse nada sin el sí. Más: copia diaria `.bak` (`safeio`), fecha local en fotos op.gg.
+
+**Pendiente de subir al Worker (22/11/2026):** el mapa del panel salía sin mosaicos porque la CSP `https://*.tile.openstreetmap.org` no cubre `tile.openstreetmap.org` (el comodín exige subdominio). Causa real: OpenStreetMap bloqueaba las teselas (403, política de uso: exige Referer y el panel usa no-referrer); CARTO ya pide clave; se usan las teselas grises de Esri (sin clave). Corregido en `servidor/worker.js` (+ prueba en `prueba.html` y aviso si el mapa base no carga). El panel ahora incluye historia de 120 días con selector 30/60/todo, instalaciones acumuladas, activas/nuevas por día, media por día de la semana, antigüedad, retención 7/30 días, % con la última versión, versiones, países y regiones; el usuario debe pegar el `worker.js` nuevo en Cloudflare (Edit code › Deploy). No toca la app ni requiere versión nueva.
 
 **Publicado en GitHub: 1.24.0** (22/11/2026; la 1.23.0 fue la anterior): cuenta anónima de instalaciones OPT-IN (ventana de permiso única, Ajustes › Privacidad, servidor propio en Cloudflare `https://lole-stats.aprietob04.workers.dev`, panel con mapa y sección Administrador con `admin_token`). **Antes, 1.23.0** (22/11/2026; la 1.22.27 fue la anterior): pantalla «Parche» ENCENDIDA (notas oficiales y estadísticas), relectura de jugadores si faltaba uno, temporizadores del Heraldo e inhibidores, menos CPU en la selección. **Antes, 1.22.27** (22/11/2026; la 1.22.26 fue la anterior). Cola, partida en vivo, datos del usuario, recomendaciones y actualización más robustos; la autoprueba del exe (`--autotest`) pasó en `publicar.py`. La pantalla «Parche» va APAGADA (`parche.ACTIVO`), pendiente de decidir cuándo encenderla (ya se revisó con el 26.23 real).
 

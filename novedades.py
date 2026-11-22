@@ -10,6 +10,12 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.24.1", "fecha": "22 de noviembre de 2026", "titulo": "La pregunta de «contar tu instalación», más clara", "items": [
+        ("mejora", "La ventana que pregunta si quieres contar tu instalación ahora explica para qué sirve (saber cuánta gente usa LOL-E y dónde seguir mejorándola) y deja aceptar con un botón, sin ir a Ajustes. Sigue siendo anónimo y opcional: solo se envía un número aleatorio y la versión, y la IP no se guarda."),
+        ("mejora", "«Ahora no» (o cerrar la ventana) te lo vuelve a preguntar como mucho dos veces más, con una semana de por medio; «No volver a preguntar» lo cierra para siempre. Nunca se envía nada sin tu sí, y puedes cambiarlo en Ajustes › Privacidad."),
+        ("mejora", "Más seguridad para tus datos: copia diaria automática de tus puntos de liga, tus ajustes y las fotos de rango, con recuperación sola si un archivo se dañara."),
+        ("arreglo", "Las fotos de rango de op.gg se guardan con tu fecha local (antes con la de Corea), para que cuadren con tus partidas."),
+    ]},
     {"v": "1.24.0", "fecha": "22 de noviembre de 2026", "titulo": "Ayúdame a contar cuánta gente usa LOL-E (opcional y anónimo)", "items": [
         ("nuevo", "Una pregunta, una sola vez: si quieres «contar tu instalación». Es opcional y está apagado hasta que digas que sí; «No, gracias» es la opción destacada y cerrar la ventana equivale a no. Si aceptas, una vez al día se envía solo un número aleatorio de tu instalación y la versión de LOL-E. Nunca tu nombre, tu cuenta de LoL, tus partidas ni tus ajustes, y la dirección IP no se guarda: el servidor solo deduce una zona aproximada (comunidad autónoma) y la descarta."),
         ("nuevo", "Ajustes › Privacidad: el interruptor para cambiar de opinión cuando quieras (al apagarlo se borra el registro de tu instalación en el servidor) y «Ver exactamente qué se envía». El texto completo está en docs/PRIVACIDAD.md."),

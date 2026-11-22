@@ -614,7 +614,7 @@ def save_lp(cache_dir, gid, data):
     if old and old.get("d") and not data.get("d"):
         return   # nunca se sustituye una variación real por un 0 (el rango aún no se había actualizado, o no se movió)
     cur[str(gid)] = data
-    safeio.write(_lp_path(cache_dir), cur)
+    safeio.write(_lp_path(cache_dir), cur, daily_backup=True)
 
 
 def lp_for(cache_dir, gid):

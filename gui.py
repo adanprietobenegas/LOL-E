@@ -743,13 +743,32 @@ class GUI:
     # ---------- cuenta anónima de instalaciones (voluntaria; ver stats.py) ----------
     def maybe_ask_stats(self):
         """Pregunta una sola vez si quiere contar su instalación. Solo si hay servidor, nunca durante cola, selección ni partida, y «No, gracias» es lo destacado."""
-        if not stats.enabled() or self.conf.get("stats_optin") is not None or not self.running:
+        if not self.running or not stats.more_asks(self.conf):
+            return
+        if not stats.should_ask(self.conf):
+            self.root.after(6 * 3600 * 1000, self.maybe_ask_stats)   # aún no ha pasado la semana desde la última vez
             return
         if self.busy() or getattr(self, "notes_win", None) is not None:
             self.root.after(5 * 60 * 1000, self.maybe_ask_stats)
             return
         import ui_stats
-        ui_stats.ConsentWindow(self, self.stats_set)
+        self.conf["stats_asked"] = int(self.conf.get("stats_asked") or 0) + 1
+        self.conf["stats_ask_t"] = time.time()
+        save_conf(self.conf)
+        ui_stats.ConsentWindow(self, self.stats_answer, last=self.conf["stats_asked"] >= stats.MAX_ASKS)
+
+    def stats_answer(self, res):
+        """Respuesta de la ventana de permiso: «yes», «later» (ya está anotado cuándo; se vuelve a preguntar en una semana, hasta 3 veces) o «never»."""
+        if res == "yes":
+            self.stats_set(True)
+        elif res == "never":
+            self.stats_set(False)
+        else:
+            if stats.more_asks(self.conf):
+                self.root.after(6 * 3600 * 1000, self.maybe_ask_stats)
+            else:
+                self.conf["stats_optin"] = False   # tercera vez sin aceptar: no se pregunta más (sigue disponible en Ajustes › Privacidad)
+                save_conf(self.conf)
 
     def stats_set(self, on):
         """Aplica la decisión del usuario (ventana de permiso o interruptor de Ajustes)."""

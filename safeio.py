@@ -6,7 +6,7 @@ Esos datos no se pueden volver a pedir al cliente (solo entrega las últimas par
   · Leer: si el archivo existe pero está dañado, NO se sigue como si estuviera vacío (el siguiente guardado lo pisaría): se aparta como `nombre.corrupt-FECHA` y se
     avisa en el resultado. Si no se puede leer por otra causa (antivirus o OneDrive lo tienen bloqueado un instante) se dice «no leído» y quien guarda debe esperar.
 Sin dependencias del resto de la app para poder probarlo solo."""
-import json, os, threading, time
+import json, os, shutil, threading, time
 
 _locks = {}
 _guard = threading.Lock()
@@ -18,12 +18,29 @@ def _lock(path):
         return _locks.setdefault(os.path.abspath(path), threading.Lock())
 
 
-def write(path, data, indent=None):
-    """Escribe `data` como JSON de forma atómica y duradera."""
+def _daily_backup(path):
+    """Copia `path` a `path.bak` la primera vez que se escribe cada día (hora local), SOLO si lo que hay ahora se puede leer. Cualquier fallo se ignora."""
+    bak = path + ".bak"
+    try:
+        if not os.path.exists(path):
+            return
+        if os.path.exists(bak) and time.strftime("%Y%m%d", time.localtime(os.path.getmtime(bak))) == time.strftime("%Y%m%d"):
+            return
+        with open(path, encoding="utf-8") as f:
+            json.load(f)
+        shutil.copyfile(path, bak)
+    except (OSError, ValueError):
+        pass
+
+
+def write(path, data, indent=None, daily_backup=False):
+    """Escribe `data` como JSON de forma atómica y duradera. Con `daily_backup` guarda además una copia diaria `.bak` del contenido anterior."""
     d = os.path.dirname(os.path.abspath(path))
     os.makedirs(d, exist_ok=True)
     tmp = f"{path}.{os.getpid()}.{threading.get_ident()}.tmp"
     with _lock(path):
+        if daily_backup:
+            _daily_backup(path)
         try:
             with open(tmp, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=indent)
@@ -55,8 +72,22 @@ def quarantine(path):
     return dest
 
 
+def _restore(path, kind):
+    """Tras apartar un archivo dañado: si hay una copia diaria `.bak` válida se recupera. Devuelve sus datos o None."""
+    try:
+        with open(path + ".bak", encoding="utf-8") as f:
+            d = json.load(f)
+        if kind is not None and not isinstance(d, kind):
+            return None
+        shutil.copyfile(path + ".bak", path)
+        return d
+    except (OSError, ValueError):
+        return None
+
+
 def read(path, default=None, kind=dict):
-    """(datos, estado): estado «ok», «missing» (no existe: vacío legítimo), «corrupt» (dañado: ya apartado; se devuelve `default`) o «unreadable» (no se pudo leer ahora)."""
+    """(datos, estado): estado «ok», «missing» (no existe: vacío legítimo), «corrupt» (dañado: ya apartado; se devuelve `default`) o «unreadable» (no se pudo leer ahora).
+    Si estaba dañado pero existe una copia diaria `.bak` válida, se recupera de ella y el estado es «ok» (el dañado queda apartado)."""
     default = {} if default is None else default
     try:
         with open(path, encoding="utf-8") as f:
@@ -65,10 +96,12 @@ def read(path, default=None, kind=dict):
         return default, "missing"
     except (ValueError, UnicodeDecodeError):
         quarantine(path)
-        return default, "corrupt"
+        r = _restore(path, kind)
+        return (r, "ok") if r is not None else (default, "corrupt")
     except OSError:
         return default, "unreadable"
     if kind is not None and not isinstance(d, kind):
         quarantine(path)
-        return default, "corrupt"
+        r = _restore(path, kind)
+        return (r, "ok") if r is not None else (default, "corrupt")
     return d, "ok"

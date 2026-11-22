@@ -64,6 +64,10 @@ ok(s.total === 2 && s.activas[1] === 2 && s.activas[7] === 2 && s.activas[30] ==
 ok(s.zonas.length === 1 && s.zonas[0].n === 2 && s.zonas[0].r === "Catalonia", "resumen: instalaciones de la misma región se agrupan");
 ok(s.versiones["1.23.0"] === 1 && s.versiones["1.22.27"] === 1, "resumen: versiones");
 ok(s.dias.length === 30 && s.dias[29].activas === 2 && s.dias[29].nuevas === 1, "resumen: serie de 30 días con nuevas y activas");
+ok(s.serie.length === 120 && s.serie[119].total === 2 && s.serie[119].nuevas === 1 && s.serie[118].total === 1, "resumen: historia de 120 días con total acumulado");
+ok(s.paises.length === 1 && s.paises[0].n === 2 && s.ultima === "1.23.0" && s.inactivas === 0, "resumen: países, última versión e inactivas");
+ok(s.semana.length === 7 && Math.abs(s.semana.reduce((a, b) => a + b, 0) - s.serie.reduce((a, x) => a + x.activas, 0) / 120 * 7) < 1.5, "resumen: media por día de la semana");
+ok(s.retencion.d7.n >= 0 && s.antiguedad["0-6"] + s.antiguedad["7-29"] + s.antiguedad["30-89"] + s.antiguedad["90+"] === 2, "resumen: retención y antigüedad");
 ok(W.summarize(idx, 140).activas[30] === 0, "resumen: pasados 30 días ya no están activas");
 ok(!JSON.stringify(s).includes(ID), "resumen: no incluye ningún identificador");
 
@@ -91,6 +95,13 @@ res = await call(env, "GET", "/panel?k=" + TOK);
 const html = await res.text();
 ok(res.status === 200 && html.includes("LOL-E · Uso") && res.headers.get("referrer-policy") === "no-referrer", "GET /panel con clave: HTML privado");
 ok(!html.includes(TOK), "el panel no lleva la clave dentro");
+{ // la CSP debe permitir cada servidor de mosaicos que usa el panel (el comodín *.x NO cubre x: así se rompió el mapa en la 1.24.0)
+  const csp = res.headers.get("content-security-policy") || "";
+  const img = (csp.match(/img-src([^;]*)/) || ["", ""])[1].trim().split(/\s+/);
+  const host = ((html.match(/var TILES='https:\/\/([^\/]+)/) || [])[1] || "").replace("{s}", "a");
+  const permitido = img.some((s) => s === "https://" + host || (s.startsWith("https://*.") && host.endsWith(s.slice(9)) && host.length > s.length - 9));
+  ok(host !== "" && permitido, "la CSP del panel permite los mosaicos del mapa (" + host + ")");
+}
 res = await call(env, "GET", "/panel");
 ok(res.status === 404, "GET /panel sin clave: 404");
 res = await call(env, "POST", "/olvidar", { id: ID });

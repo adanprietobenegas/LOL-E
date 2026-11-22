@@ -5,7 +5,8 @@ tus ajustes y sus cachés en tu propio perfil de Windows (`%LOCALAPPDATA%\LOL-E`
 
 ## Cuenta anónima de instalaciones (opcional, apagada de fábrica)
 
-Si el mantenedor ha configurado un servidor, LOL-E te preguntará **una sola vez** si quieres «contar tu instalación». Si dices que no (o cierras la ventana), no se envía nada.
+Si el mantenedor ha configurado un servidor, LOL-E te preguntará si quieres «contar tu instalación». Si dices «Ahora no» (o cierras la ventana) te lo volverá a preguntar como mucho
+dos veces más, con una semana de por medio; con «No volver a preguntar» no se repite, y en ningún caso se envía nada sin tu sí.
 Si dices que sí:
 
 **Se envía**, como mucho una vez al día:

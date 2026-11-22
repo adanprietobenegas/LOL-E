@@ -17,7 +17,7 @@ import synergy
 import trends
 from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.24.0"
+APP_NAME, APP_VERSION = "LOL-E", "1.24.1"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -43,6 +43,8 @@ DEFAULT_CONF = {
     "top_n": 5,
     "ban_n": 3,
     "poll_seconds": 1.0,
+    "stats_asked": 0,       # veces que se ha enseñado la ventana de permiso (stats.should_ask)
+    "stats_ask_t": 0,       # cuándo fue la última (segundos)
     "stats_optin": None,     # cuenta anónima de instalaciones (stats.py): None = aún no se ha preguntado, True/False = lo que dijo el usuario
     "stats_id": "",          # número aleatorio de esta instalación (solo existe si dijo que sí)
     "stats_last": 0,         # cuándo fue el último aviso
@@ -144,7 +146,7 @@ def load_conf():
 def save_conf(conf):
     os.makedirs(DATA_DIR, exist_ok=True)
     data = {k: v for k, v in conf.items() if k != "weights" and not k.startswith("_")}
-    safeio.write(CONF_FILE, data, indent=2)
+    safeio.write(CONF_FILE, data, indent=2, daily_backup=True)
 
 
 def read_json(path, default):

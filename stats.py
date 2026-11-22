@@ -14,6 +14,8 @@ import uuid
 
 STATS_URL = "https://lole-stats.aprietob04.workers.dev"   # dirección del servidor (Cloudflare Worker del mantenedor). Vacía = función desactivada.
 PING_EVERY = 20 * 3600   # segundos entre avisos
+MAX_ASKS = 3             # veces como mucho que se le pregunta a quien responde «Ahora no» (después no se vuelve a preguntar)
+ASK_EVERY = 7 * 86400    # segundos entre una pregunta y la siguiente
 
 
 def enabled(url=None):
@@ -25,6 +27,20 @@ def enabled(url=None):
     except Exception:
         pass
     return bool((STATS_URL if url is None else url).strip())
+
+
+def should_ask(conf, now=None):
+    """¿Toca enseñar la ventana de permiso? Solo si no ha decidido (None), no se ha agotado el máximo de veces y ha pasado una semana desde la anterior."""
+    if not enabled() or conf.get("stats_optin") is not None:
+        return False
+    if int(conf.get("stats_asked") or 0) >= MAX_ASKS:
+        return False
+    return (now if now is not None else time.time()) - float(conf.get("stats_ask_t") or 0) >= ASK_EVERY
+
+
+def more_asks(conf):
+    """¿Puede llegar a preguntarse otra vez más adelante? (para decidir si se sigue esperando)"""
+    return enabled() and conf.get("stats_optin") is None and int(conf.get("stats_asked") or 0) < MAX_ASKS
 
 
 def new_id():

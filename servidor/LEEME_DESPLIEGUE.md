@@ -89,7 +89,7 @@ Desde la carpeta `servidor`: `python -m http.server 8123` y abre <http://localho
 ## Mantenimiento
 
 - **Cambiar la clave**: `npx wrangler secret put ADMIN_TOKEN` otra vez (y actualizar `admin_token` en tu `config.json`).
-- **Actualizar el servidor** tras tocar `worker.js`: `npx wrangler deploy`.
+- **Actualizar el servidor** tras tocar `worker.js`: `npx wrangler deploy`. Si lo creaste desde el panel web de Cloudflare: Workers y Pages › tu Worker › «Edit code», pega todo `worker.js` (borrando lo anterior) y «Deploy».
 - **Borrar todos los datos**: `npx wrangler kv key delete --binding=STATS idx`. **Apagar el servicio**: borra el Worker en el panel de Cloudflare; LOL-E lo ignora (los avisos fallan en silencio).
 - **Quién puede ver qué**: los datos viven solo en tu cuenta de Cloudflare. El Worker no escribe registros de peticiones ni guarda IP.
 

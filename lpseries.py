@@ -67,13 +67,14 @@ def parse_snapshots(histories):
     out = {}
     for h in histories or []:
         try:
-            t = int(datetime.datetime.fromisoformat(h["created_at"]).timestamp() * 1000)
+            dt = datetime.datetime.fromisoformat(h["created_at"])
+            t = int(dt.timestamp() * 1000)
             info = h["tier_info"]
             key = str(info["tier"]).upper()
             div = "" if key in ("MASTER", "GRANDMASTER", "CHALLENGER") else ROMAN.get(str(info.get("label", "")).strip()[-1:], "")
             if key not in analysis.TIER_ORDER or (key not in ("MASTER", "GRANDMASTER", "CHALLENGER") and not div):
                 continue
-            out[h["created_at"][:10]] = {"t": t, "key": key, "div": div, "lp": int(info["lp"])}
+            out[dt.astimezone().strftime("%Y-%m-%d")] = {"t": t, "key": key, "div": div, "lp": int(info["lp"])}
         except (KeyError, TypeError, ValueError):
             continue
     return out
@@ -92,9 +93,12 @@ def save_snapshots(path, new):
     cur, st = safeio.read(path)   # dañado: se aparta; bloqueado ahora: no se pisa la historia acumulada (op.gg solo da ~10 días)
     if st == "unreadable":
         return 0
+    ts = {v.get("t") for v in new.values()}
+    for k in [k for k, v in cur.items() if k not in new and isinstance(v, dict) and v.get("t") in ts]:
+        del cur[k]   # misma foto guardada antes con la fecha en UTC: se queda solo con la fecha local
     added = sum(1 for k in new if k not in cur)
     cur.update(new)
-    safeio.write(path, cur)
+    safeio.write(path, cur, daily_backup=True)
     return added
 
 
