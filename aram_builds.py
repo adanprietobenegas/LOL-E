@@ -52,14 +52,20 @@ def parse(page):
 
 
 def _fetch(champ, mode):
-    tmp = os.path.join(core.CACHE, "aram_build.tmp")
+    tmp = os.path.join(core.CACHE, f"aram_build_{os.getpid()}_{threading.get_ident()}.tmp")   # uno por petición: dos descargas a la vez no se pisan
     os.makedirs(core.CACHE, exist_ok=True)
     ps = ("Invoke-WebRequest -UseBasicParsing -TimeoutSec 40 -Headers @{'User-Agent'='Mozilla/5.0';'Accept-Language'='en'} "
           f"-Uri '{url(champ, mode)}' -OutFile '{tmp}'")
     subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", ps], check=True, timeout=90,
                    capture_output=True, **{k: v for k, v in core.quiet().items() if k != "stdin"})
-    with open(tmp, encoding="utf-8", errors="replace") as f:
-        return f.read()
+    try:
+        with open(tmp, encoding="utf-8", errors="replace") as f:
+            return f.read()
+    finally:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
 
 
 def load(cache_dir, champ, mode, force=False):

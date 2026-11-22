@@ -3,6 +3,7 @@
 Fuente: la página pública de «counters» de Lolalytics. Una descarga por rival y línea (≈1,3 MB, 0,2 s), guardada un día.
 Si la web cambia o falla, la pestaña lo dice y el resto de la aplicación sigue igual.
 """
+import html as _html
 import json, os, re, time, urllib.error, urllib.request
 
 LANES = {"TOP": "top", "JUNGLE": "jungle", "MIDDLE": "middle", "BOTTOM": "bottom", "SUPPORT": "support"}
@@ -15,7 +16,8 @@ TTL = 24 * 3600
 
 
 def norm(s):
-    return re.sub(r"[^a-z0-9]", "", s.lower())
+    """Nombre comparable: sin entidades HTML («Cho&#39;Gath»), sin signos, y «&» como «y» («Nunu &amp; Willump» = «Nunu y Willump» de Data Dragon)."""
+    return re.sub(r"[^a-z0-9]", "", _html.unescape(s).lower().replace("&", "y").replace(" and ", " y "))
 
 
 def slug(champ):
@@ -41,7 +43,7 @@ def parse(html):
         if name in seen:
             continue
         seen.add(name)
-        rows.append({"name": name, "wr": float(wr), "d1": float(d1), "d2": float(d2), "avg": float(avg), "games": int(games.replace(",", ""))})
+        rows.append({"name": _html.unescape(name), "wr": float(wr), "d1": float(d1), "d2": float(d2), "avg": float(avg), "games": int(games.replace(",", ""))})
     return rows
 
 
@@ -51,21 +53,35 @@ def load(cache_dir, champ, lane, force=False):
     try:
         saved = json.load(open(path, encoding="utf-8"))
         if not force and time.time() - saved["ts"] < TTL:
+            for r_ in saved["rows"]:   # las cachés viejas guardaron «Cho&#39;Gath»
+                r_["name"] = _html.unescape(r_["name"])
             return saved["rows"]
     except Exception:
         pass
     rows = []
+    failed = None
     for tier in (None, "all"):  # primero el rango por defecto; si no hay datos, todos los rangos (campeones o líneas poco jugados)
         try:
             req = urllib.request.Request(url_for(champ, lane, tier), headers=UA)
             with urllib.request.urlopen(req, timeout=30) as r:
                 rows = parse(r.read().decode("utf8", "replace"))
-        except (ValueError, urllib.error.HTTPError):
+        except ValueError:
             rows = []
+        except urllib.error.HTTPError as e:
+            rows = []
+            if e.code != 404:   # 429 o 5xx: la fuente falla, no es «no hay datos»
+                failed = e
+        except (urllib.error.URLError, OSError) as e:   # sin red
+            rows, failed = [], e
         if rows:
             for r_ in rows:
                 r_["tier"] = tier or "default"
             break
+    if not rows and failed is not None:
+        try:   # la fuente no responde: lo guardado, aunque haya caducado, vale más que nada
+            return json.load(open(path, encoding="utf-8"))["rows"]
+        except Exception:
+            raise RuntimeError(f"Lolalytics no responde ahora ({type(failed).__name__}). Se reintenta solo.")
     if not rows:  # un campeón nuevo puede tener pocos enfrentamientos con datos: con alguno basta
         raise RuntimeError("Lolalytics no tiene todavía enfrentamientos de este campeón en esa línea. Prueba otra línea.")
     os.makedirs(os.path.dirname(path), exist_ok=True)

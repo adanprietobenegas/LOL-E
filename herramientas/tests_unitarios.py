@@ -1290,6 +1290,63 @@ class MejoresContraRivales(unittest.TestCase):
         self.assertEqual([t[0] for t in cp.targets({"r": r})], [1, 2, 4])
 
 
+class ContrarrestosNombres(unittest.TestCase):
+    def test_nombres_con_apostrofo_y_signo_y(self):
+        import matchups as m
+        self.assertEqual(m.norm("Cho&#39;Gath"), m.norm("Cho'Gath"))
+        self.assertEqual(m.norm("Kai&#39;Sa"), "kaisa")
+        self.assertEqual(m.norm("Nunu &amp; Willump"), m.norm("Nunu y Willump"))
+
+    def test_el_selector_de_rival_tiene_su_constante_de_reintento(self):
+        import ui_opp
+        self.assertEqual(ui_opp.RETRY, 60)   # un salto de línea escrito dentro de un comentario la dejó sin definir y rompía el selector tras cualquier error de datos
+
+
+class FuentesSinMartilleo(unittest.TestCase):
+    def test_una_build_que_falla_no_se_vuelve_a_pedir_en_cada_repintado(self):
+        import builds, time as _t
+        llamadas = []
+        orig = builds.load
+        def falla(*a, **k):
+            llamadas.append(1)
+            raise RuntimeError("sin datos")
+        builds.load = falla
+        builds._state.clear()
+        champ = {"icon": "Ahri", "name": "Ahri"}
+        try:
+            for _ in range(5):
+                builds.request("x", champ, "middle")
+                _t.sleep(0.15)
+            self.assertEqual(len(llamadas), 1)
+            self.assertEqual(builds.peek(("ahri", "middle", ""))[0], "error")
+        finally:
+            builds.load = orig
+            builds._state.clear()
+
+
+class ContrarrestosSinRed(unittest.TestCase):
+    def test_sin_red_se_usa_lo_guardado_aunque_haya_caducado(self):
+        import matchups, urllib.request, urllib.error, tempfile
+        d = tempfile.mkdtemp()
+        champ = {"icon": "Ahri", "name": "Ahri"}
+        os.makedirs(os.path.join(d, "matchups"))
+        json.dump({"ts": 1, "rows": [{"name": "Cho&#39;Gath", "wr": 51.0, "d1": 1.0, "d2": 1.0, "avg": 50.0, "games": 500}]},
+                  open(os.path.join(d, "matchups", "ahri_middle.json"), "w"))
+        orig = urllib.request.urlopen
+        def sin_red(*a, **k):
+            raise urllib.error.URLError("sin red")
+        urllib.request.urlopen = sin_red
+        try:
+            rows = matchups.load(d, champ, "middle")
+            self.assertEqual(rows[0]["games"], 500)
+            os.remove(os.path.join(d, "matchups", "ahri_middle.json"))
+            with self.assertRaises(RuntimeError) as cm:
+                matchups.load(d, champ, "middle")
+            self.assertIn("no responde", str(cm.exception))      # y no el engañoso «no tiene datos»
+        finally:
+            urllib.request.urlopen = orig
+
+
 class DatosDelUsuarioSeguros(unittest.TestCase):
     """Lo que el cliente no puede volver a dar (historial, PL, partidas con rival, ajustes, fotos de rango) no se pierde por un archivo dañado."""
 

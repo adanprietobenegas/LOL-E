@@ -192,6 +192,9 @@ def load(cache_dir, champ, lane, enemy=None, force=False):
 
 
 STALE_RETRY = 300
+ERROR_RETRY = 300
+REFRESH = 6 * 3600   # una sesión larga (LOL-E abierto varios días, o un parche nuevo a mitad) vuelve a pedir la build pasadas unas horas
+_ok_at = {}   # tras un fallo no se vuelve a pedir antes (la partida repinta cada ~10 s: sin freno se martilleaba a Lolalytics)
 _stale_at = {}
 
 
@@ -200,8 +203,9 @@ def request(cache_dir, champ, lane, enemy=None):
     key = (matchups.slug(champ), lane, matchups.slug(enemy) if enemy else "")
     with _lock:
         st = _state.get(key)
-        retry = bool(st and st[0] == "ok" and st[1].get("stale") and time.time() - _stale_at.get(key, 0) > STALE_RETRY)   # datos viejos por un corte: se reintenta cada 5 min
-        if st and (st[0] == "loading" or (st[0] == "ok" and not retry)):
+        retry = bool(st and st[0] == "ok" and ((st[1].get("stale") and time.time() - _stale_at.get(key, 0) > STALE_RETRY)   # datos viejos por un corte: se reintenta cada 5 min
+                                                or time.time() - _ok_at.get(key, time.time()) > REFRESH))
+        if st and (st[0] == "loading" or (st[0] == "ok" and not retry) or (st[0] == "error" and time.time() - (st[2] if len(st) > 2 else 0) < ERROR_RETRY)):
             return key
         if retry:
             _stale_at[key] = time.time()   # se sigue enseñando lo guardado mientras se reintenta
@@ -213,9 +217,10 @@ def request(cache_dir, champ, lane, enemy=None):
             d = load(cache_dir, champ, lane, enemy)
             if d.get("stale"):
                 _stale_at[key] = time.time()
+            _ok_at[key] = time.time()
             _state[key] = ("ok", d)
         except Exception as e:
-            _state[key] = ("error", str(e) if isinstance(e, RuntimeError) else f"No se pudo leer la build ({type(e).__name__}).")
+            _state[key] = ("error", str(e) if isinstance(e, RuntimeError) else f"No se pudo leer la build ({type(e).__name__}).", time.time())
     threading.Thread(target=go, daemon=True).start()
     return key
 

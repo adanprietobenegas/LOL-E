@@ -81,6 +81,13 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
 - **Integridad de los datos del usuario** (auditoría de 22/11/2026): HECHO `safeio.py` (escritura atómica con `fsync`, temporal único y cerrojo; lectura que aparta lo dañado como
   `.corrupt-FECHA` y distingue «no existe» / «dañado» / «no se puede leer ahora») en historial, `lp.json`, `games_*.json`, ajustes y fotos de rango. HECHO también: fotos de op.gg por perfil (`snaps_path`) y `patrones` solo con las partidas de la cuenta actual. PENDIENTE (bajo): `.bak` en las migraciones, día local en las fotos de op.gg, `.bak` diario de `lp.json`
   y `games_*.json`, poda de `cache/analysis`. Los archivos de caché de red no se tocan: se vuelven a bajar.
+- **Fuentes externas** (auditoría de 22/11/2026): HECHO nombres con apóstrofo o «&» en contrarrestos (Cho'Gath, Kai'Sa, Nunu…: `matchups.norm` y `unescape`), `RETRY` sin definir en
+  `ui_opp` (un `
+` dentro de un comentario rompía el selector de rival tras un error de datos), freno de reintentos en builds y guías (5 min), archivo temporal único en op.gg y ARAM,
+  `matchups.load` con reserva si la fuente falla (y 404 ≠ 429/5xx), builds que se refrescan cada 6 h en sesión larga. PENDIENTE: (a) cachés parciales (`trends`, `meta`) que guardan
+  datos incompletos 12–20 h si falla una línea o el parche nuevo aún no existe; (b) `start_meta` y la versión de Data Dragon solo se miran al conectar: refrescar cada pocas horas fuera de
+  cola; (c) muestras pequeñas como veredicto (`ui_game` con 20 partidas, meta con 200): encoger hacia 50 o exigir margen; (d) menores: runas vacías cacheadas, `minor=1` en cambio de
+  temporada, Meraki sin refrescar si hay campeón nuevo, `safeio` en las cachés de red, reintento del enfrentamiento en `ui_game`.
 - **Coaching con IA**: un resumen en lenguaje natural de la partida o de tu semana. Pide decidir dónde corre el modelo, clave de API o coste, y
   qué datos salen del PC (privacidad). Esfuerzo L, riesgo a. Solo si el usuario lo quiere y con consentimiento claro.
 - **Varias cuentas**: el historial ya es por cuenta; falta una interfaz para ver/cambiar de cuenta y comparar. M.

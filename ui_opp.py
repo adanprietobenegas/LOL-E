@@ -8,7 +8,8 @@ import threading, time
 import lol_advisor as core
 import matchups
 
-_ROWS = {}  # (campeón, línea) -> filas | "cargando" | ("error", texto, hora)\nRETRY = 60  # segundos hasta volver a intentar tras un error de red
+_ROWS = {}  # (campeón, línea) -> filas | "cargando" | ("error", texto, hora)
+RETRY = 60  # segundos hasta volver a intentar tras un error de red
 
 
 def _rows(ui, cid, lane):

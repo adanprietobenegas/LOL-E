@@ -58,7 +58,7 @@ def request(cache_dir, version, champ):
     key = (version, champ["icon"])
     with _lock:
         st = _state.get(key)
-        if st and st[0] in ("loading", "ok"):
+        if st and (st[0] in ("loading", "ok") or (st[0] == "error" and time.time() - (st[2] if len(st) > 2 else 0) < 300)):
             return key
         _state[key] = ("loading",)
 
@@ -66,7 +66,7 @@ def request(cache_dir, version, champ):
         try:
             _state[key] = ("ok", load(cache_dir, version, champ))
         except Exception as e:
-            _state[key] = ("error", f"No se pudieron bajar los datos de {champ['name']} ({type(e).__name__}).")
+            _state[key] = ("error", f"No se pudieron bajar los datos de {champ['name']} ({type(e).__name__}).", time.time())
     threading.Thread(target=go, daemon=True).start()
     return key
 
