@@ -8,6 +8,7 @@ Mientras `STATS_URL` esté vacío (no hay servidor desplegado) esta función no 
 import json
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import uuid
 
@@ -80,7 +81,7 @@ def admin_url(conf, url=None):
     """Dirección del panel privado del administrador (solo si hay servidor y un `admin_token` en config.json), o ''."""
     url = STATS_URL if url is None else url
     tok = (conf.get("admin_token") or "").strip()
-    return f"{url.rstrip('/')}/panel?k={tok}" if enabled(url) and tok else ""
+    return f"{url.rstrip('/')}/panel?k={urllib.parse.quote(tok, safe='')}" if enabled(url) and tok else ""   # con símbolos en la clave (&, #…) la dirección sigue valiendo
 
 
 def admin_summary(conf, url=None, timeout=10):
@@ -89,7 +90,7 @@ def admin_summary(conf, url=None, timeout=10):
     tok = (conf.get("admin_token") or "").strip()
     if not enabled(url) or not tok:
         return None
-    req = urllib.request.Request(f"{url.rstrip('/')}/resumen?k={tok}", headers={"User-Agent": "LOL-E"})
+    req = urllib.request.Request(f"{url.rstrip('/')}/resumen?k={urllib.parse.quote(tok, safe='')}", headers={"User-Agent": "LOL-E"})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.load(r)

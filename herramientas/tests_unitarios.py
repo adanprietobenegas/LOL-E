@@ -1577,6 +1577,7 @@ class CuentaAnonimaDeInstalaciones(unittest.TestCase):
         url, recibidos = self.servidor()
         self.assertEqual(stats.admin_url({"admin_token": ""}, url=url), "")
         self.assertTrue(stats.admin_url({"admin_token": "k1"}, url=url).endswith("/panel?k=k1"))
+        self.assertTrue(stats.admin_url({"admin_token": "a&b#c"}, url=url).endswith("/panel?k=a%26b%23c"))     # una clave con símbolos no rompe la dirección
         self.assertIsNone(stats.admin_summary({"admin_token": ""}, url=url))
         res = stats.admin_summary({"admin_token": "k1"}, url=url)
         self.assertEqual(res["activas"]["7"], 2)
