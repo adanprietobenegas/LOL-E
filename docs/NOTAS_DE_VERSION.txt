@@ -7,6 +7,11 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.24.2   (23 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · ui_kit.PAL: tema oscuro predeterminado en azul medianoche (bg #06101f, well #0a1527, card #111d31, card2 #1b2c46, shadow #02050b) en vez del casi negro. Variante «A» de docs/rediseno/fondos/.
+
 VERSIÓN 1.24.1   (22 de noviembre de 2026)
 ---------------------------------------------------------------------
 

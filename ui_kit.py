@@ -13,8 +13,8 @@ from lol_advisor import CACHE, name, why_kind
 # colores como (modo claro, modo oscuro): CustomTkinter elige solo según el tema activo
 PAL = {
     # Capas de menor a mayor luz (oscuro): fondo < pozo < tarjeta < panel interior < borde. Pasos más anchos que antes para que cada nivel se distinga.
-    "bg": ("#e1e7ef", "#04080d"), "card": ("#ffffff", "#111b28"), "card2": ("#edf1f7", "#1a2a3d"),
-    "well": ("#e3e9f1", "#0a121b"), "shadow": ("#bcc7d6", "#010305"), "edge": ("#d3dbe7", "#324862"),
+    "bg": ("#e1e7ef", "#06101f"), "card": ("#ffffff", "#111d31"), "card2": ("#edf1f7", "#1b2c46"),
+    "well": ("#e3e9f1", "#0a1527"), "shadow": ("#bcc7d6", "#02050b"), "edge": ("#d3dbe7", "#324862"),
     "border": ("#c3cedb", "#2e425a"), "fg": ("#142033", "#f0eadb"), "dim": ("#4a5a6e", "#a6b3c3"),
     "good": ("#15803d", "#3ddc84"), "bad": ("#dc2626", "#ff5a5f"), "info": ("#2563eb", "#58a6ff"),
     "warn": ("#9a4a06", "#ff9f43"), "chip": ("#dfe6ef", "#233650"),

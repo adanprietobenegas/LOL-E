@@ -10,6 +10,9 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.24.2", "fecha": "23 de noviembre de 2026", "titulo": "Un fondo azul medianoche", "items": [
+        ("mejora", "El tema oscuro predeterminado cambia el casi negro por un azul medianoche algo más cálido y con más profundidad; las tarjetas mantienen su contraste. Si prefieres otro tono, sigue estando en Ajustes › Aspecto."),
+    ]},
     {"v": "1.24.1", "fecha": "22 de noviembre de 2026", "titulo": "La pregunta de «contar tu instalación», más clara", "items": [
         ("mejora", "La ventana que pregunta si quieres contar tu instalación ahora explica para qué sirve (saber cuánta gente usa LOL-E y dónde seguir mejorándola) y deja aceptar con un botón, sin ir a Ajustes. Sigue siendo anónimo y opcional: solo se envía un número aleatorio y la versión, y la IP no se guarda."),
         ("mejora", "«Ahora no» (o cerrar la ventana) te lo vuelve a preguntar como mucho dos veces más, con una semana de por medio; «No volver a preguntar» lo cierra para siempre. Nunca se envía nada sin tu sí, y puedes cambiarlo en Ajustes › Privacidad."),
