@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.24.1, en preparación). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.24.1). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -22,7 +22,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 2. Estado (actualizar al terminar cada conversación)
 
-**Informes para próximas sesiones (23/11/2026):** `docs/INFORME_IDIOMAS.md` (español+inglés, opciones técnicas y fases), `docs/INFORME_COMERCIALIZACION.md` (condiciones de Riot, riesgos, monetización y anuncio estático bajo «Parche» solo en reposo, fondos/degradados con maquetas en `docs/rediseno/fondos/`). **1.24.1 preparada y subida (af995e8) pero SIN publicar**: se interrumpió por partida/selección en curso; falta `publicar.py`, `gh release create v1.24.1`, `--verificar`.
+**Informes para próximas sesiones (23/11/2026):** `docs/INFORME_IDIOMAS.md` (español+inglés, opciones técnicas y fases), `docs/INFORME_COMERCIALIZACION.md` (condiciones de Riot, riesgos, monetización y anuncio estático bajo «Parche» solo en reposo, fondos/degradados con maquetas en `docs/rediseno/fondos/`). **Publicado en GitHub: 1.24.1** (23/11/2026; la 1.24.0 fue la anterior): ventana de permiso del contador reformulada («Sí, ayudar» / «Ahora no» hasta 3 veces / «No volver a preguntar»), copia diaria `.bak` con recuperación, fotos de op.gg con fecha local, precarga de patrones. Verificado con `--verificar`.
 
 **Sin publicar (22/11/2026): ventana de permiso reformulada** (`ui_stats.py`, `stats.should_ask`): explica para qué sirve y qué no se envía; botones «Sí, ayudar» / «Ahora no» / «No volver a preguntar»; «Ahora no» (o cerrar) la repite como mucho 2 veces más con una semana de por medio, la tercera ya es «No, gracias»; conf `stats_asked`, `stats_ask_t`. Sigue sin enviarse nada sin el sí. Más: copia diaria `.bak` (`safeio`), fecha local en fotos op.gg.
 

@@ -51,6 +51,11 @@ Fuentes: [Políticas generales](https://developer.riotgames.com/policies/general
 | Datos de otras webs (op.gg, Lolalytics, onetricks) | Sus condiciones de uso (scraping, uso comercial) | Revisar términos antes de monetizar; una app comercial que raspa webs ajenas es más arriesgada que una gratuita |
 | Contador de instalaciones | RGPD/privacidad | Ya es opt-in y anónimo; si hay anuncios habrá que ampliar la política de privacidad |
 
+### API oficial de Riot (https://developer.riotgames.com/apis)
+Lista las API web soportadas (match-v5, league-v4, maestría, invocador…), todas con clave de desarrollador y límites de peticiones. Sirve para (1) registrar el producto y pedir la clave (paso previo a monetizar) y
+(2) sustituir datos hoy leídos del cliente o de webs externas (historial, rango) por fuentes soportadas y más estables. La clave debe estar en un servidor propio (p. ej. el Worker de Cloudflare), nunca en la app (Riot lo prohíbe).
+La selección de campeón y los datos en vivo seguirán viniendo del cliente local. A estudiar: qué cobertura da frente a lo que usa LOL-E y la limitación de peticiones para muchos usuarios.
+
 ## 3. Formas de monetizar (de menos a más riesgo)
 
 1. **Donaciones** (Ko-fi, GitHub Sponsors, Buy Me a Coffee): Riot las lista como forma válida (con producto registrado y aprobado). Un botón «Apoyar LOL-E» en Ajustes y la página de GitHub; sin anuncios, sin cambios en rendimiento. Es lo más seguro.
