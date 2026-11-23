@@ -14,6 +14,7 @@ VERSIÓN 1.24.1   (22 de noviembre de 2026)
     «No volver a preguntar». Nada se envía sin el sí. Conf nueva: stats_asked, stats_ask_t.
   · safeio: copia diaria .bak (daily_backup) de lp.json, ajustes y fotos de rango, y recuperación automática desde ella si el archivo se daña.
   · lpseries: fotos de op.gg con fecha LOCAL (las antiguas en UTC se fusionan sin duplicar).
+  · gui: precarga de patrones.current en un hilo al arrancar (la primera lectura de hasta 80 análisis ya no ocurre en el hilo de Tk).
   · Servidor (no forma parte de la app): panel con historia de 120 días, gráficas, retención, países y mapa con teselas Esri (OpenStreetMap devolvía 403). 249 pruebas.
 
 VERSIÓN 1.24.0   (22 de noviembre de 2026)

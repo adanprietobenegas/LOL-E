@@ -109,6 +109,9 @@ class GUI:
         self.root.after(2500, self.prebuild_dock)  # el panel de ajustes se prepara con la ventana en reposo
         self.root.after(5000, self.auto_check)
         self.root.after(9000, self.patch_check)
+        if not os.environ.get("LOLE_GEOMETRY"):   # la primera lectura de tus análisis (hasta 80 archivos) se hace fuera del hilo de la ventana, para que no la congele al abrir el Plan
+            import patrones
+            self.root.after(1200, lambda: threading.Thread(target=lambda: patrones.current(core.CACHE), daemon=True).start())
         if not os.environ.get("LOLE_GEOMETRY"):  # en las pruebas no se abre
             self.root.after(3500, self.show_notes_once)
             self.root.after(6000, self.report_failed_update)

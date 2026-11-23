@@ -14,6 +14,7 @@ NOTES = [
         ("mejora", "La ventana que pregunta si quieres contar tu instalación ahora explica para qué sirve (saber cuánta gente usa LOL-E y dónde seguir mejorándola) y deja aceptar con un botón, sin ir a Ajustes. Sigue siendo anónimo y opcional: solo se envía un número aleatorio y la versión, y la IP no se guarda."),
         ("mejora", "«Ahora no» (o cerrar la ventana) te lo vuelve a preguntar como mucho dos veces más, con una semana de por medio; «No volver a preguntar» lo cierra para siempre. Nunca se envía nada sin tu sí, y puedes cambiarlo en Ajustes › Privacidad."),
         ("mejora", "Más seguridad para tus datos: copia diaria automática de tus puntos de liga, tus ajustes y las fotos de rango, con recuperación sola si un archivo se dañara."),
+        ("mejora", "Al abrir el Plan por primera vez ya no hay un parón: tus análisis guardados se leen en segundo plano al arrancar."),
         ("arreglo", "Las fotos de rango de op.gg se guardan con tu fecha local (antes con la de Corea), para que cuadren con tus partidas."),
     ]},
     {"v": "1.24.0", "fecha": "22 de noviembre de 2026", "titulo": "Ayúdame a contar cuánta gente usa LOL-E (opcional y anónimo)", "items": [
