@@ -594,6 +594,13 @@ class GUI:
                 elif kind == "link":
                     self.ctx["linked"] = ev[1]
                     self.update_link()
+                    if ev[1]:   # análisis pedidos sin cliente (p. ej. desde «Tu última partida»): se vuelven a pedir ahora
+                        gv = self.game_view
+                        waiting = [k_ for k_, v_ in gv.data.items() if v_ == "cargando"]
+                        for k_ in waiting:
+                            del gv.data[k_]
+                        if waiting:
+                            gv.sig = None
                     if not ev[1] and self.advisor == "select":
                         self.leave_select()
                     if self.view == "idle":
@@ -604,6 +611,8 @@ class GUI:
                 elif kind == "splash" and self.view == "select":
                     self.recs.render()
                 elif kind == "analysis":
+                    if self.view == "idle":
+                        self.refresh_current()   # la tarjeta «Tu última partida» puede estar esperando los PL
                     pl = self.ctx.get("plan")
                     if ev[2] and pl and pl.get("state") == "done" and self.page == "partida" and self.game_view.tab != "Análisis":
                         self.game_view.tab, self.game_view.gid = "Análisis", ev[1]   # acabó la partida: se enseña su análisis solo

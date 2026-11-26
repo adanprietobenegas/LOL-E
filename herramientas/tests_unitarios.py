@@ -1672,8 +1672,8 @@ class BaneosSinHistorial(unittest.TestCase):
     def test_amenazas_del_meta(self):
         import lol_advisor as l
         champs = {i: {"name": f"C{i}"} for i in range(1, 7)}
-        data = {"lanes": {"top": {1: {"wr": 55.0, "games": 5000}, 2: {"wr": 60.0, "games": 10}, 3: {"wr": 53.0, "games": 4000},
-                                  4: {"wr": 49.0, "games": 9000}, 5: {"wr": 52.0, "games": 3000}, 6: {"wr": 54.0, "games": 8000}}}}
+        data = {"lanes": {"top": {1: {"wr": 55.0, "pr": 5.0}, 2: {"wr": 60.0, "pr": 0.1}, 3: {"wr": 53.0, "pr": 4.0},
+                                  4: {"wr": 49.0, "pr": 9.0}, 5: {"wr": 52.0, "pr": 1.5}, 6: {"wr": 54.0, "pr": 8.0}}}}
         out = l.meta_threats(champs, data, "TOP", {6}, 3)
         self.assertEqual([c for _n, _w, c in out], [1, 3])                       # sin el elegido, sin los poco jugados y solo los que ganan más de lo que pierden
         self.assertEqual(l.meta_threats(champs, None, "TOP", set()), [])

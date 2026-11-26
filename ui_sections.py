@@ -1035,7 +1035,7 @@ class BanIdeas(Section):
                 cell.pack(side="left", padx=(0, 16))
                 ui.champ(cell, cid, 40, False, "#ff5a5f").pack(side="left")
                 ui.lbl(cell, f"{n}\n{wr:.1f} %".replace(".", ","), 10, "bad").pack(side="left", padx=8)
-            ui.lbl(c, "Aún no tienes partidas suficientes para sugerencias a tu medida: son datos de todos los jugadores (Lolalytics).", 9, "dim",
+            ui.lbl(c, "Ningún rival de tu línea destaca todavía en tus partidas: son datos de todos los jugadores (Lolalytics).", 9, "dim",
                    anchor="w", justify="left", wraplength=max(240, ctx["width"] - 110)).pack(anchor="w", pady=(6, 0))
             return
         c = ui.card(self.box, "Banea a quien te gana en tu línea")

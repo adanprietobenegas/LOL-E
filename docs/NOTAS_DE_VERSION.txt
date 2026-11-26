@@ -7,6 +7,12 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.29.1   (26 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Revisión final: meta_threats exige uso ≥ 2 % (probado con la caché real: TOP Garen/Malphite/Kayle); análisis pedidos sin cliente se reintentan al conectar; Inicio se repinta al llegar los PL;
+    reconexión sin releer historial solo si el corte fue < 2 min; texto honesto en las ideas del meta. Guía de pruebas en docs/GUIA_PRUEBAS.md.
+
 VERSIÓN 1.29.0   (26 de noviembre de 2026)
 ---------------------------------------------------------------------
 

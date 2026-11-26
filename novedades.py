@@ -10,8 +10,13 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.29.1", "fecha": "26 de noviembre de 2026", "titulo": "Ajustes tras la última revisión", "items": [
+        ("arreglo", "Las ideas de baneo del meta solo proponen campeones que de verdad se juegan en tu línea."),
+        ("arreglo", "Si pulsas «Ver análisis» sin el juego abierto, el análisis se carga en cuanto lo abras."),
+        ("arreglo", "Los puntos de liga aparecen en «Tu última partida» en cuanto llegan, y tras un corte largo del juego se vuelve a leer tu historial."),
+    ]},
     {"v": "1.29.0", "fecha": "26 de noviembre de 2026", "titulo": "Ideas de baneo desde el primer día", "items": [
-        ("nuevo", "Si aún no tienes partidas suficientes para sugerencias a tu medida, en la fase de bans ves los campeones que más están ganando en tu línea este parche, con su porcentaje de victorias."),
+        ("nuevo", "Si en tus partidas ningún rival destaca todavía, en la fase de bans ves los campeones más jugados que más están ganando en tu línea este parche, con su porcentaje de victorias."),
         ("arreglo", "Al terminar una partida ya no aparece el botón «Enviar al cliente», porque entonces no sirve."),
         ("arreglo", "En Campeones, la columna «Forma» solo aparece si cabe. En el Historial, los títulos de las columnas están justo encima de las filas."),
     ]},

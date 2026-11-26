@@ -17,7 +17,7 @@ import synergy
 import trends
 from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.29.0"
+APP_NAME, APP_VERSION = "LOL-E", "1.29.1"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -928,15 +928,17 @@ def ban_suggestions(champs, P, taken, n, conf=None, role=""):
     return [(champs[o]["name"], g - l, g, o) for l, g, o in cand[:n]]
 
 
+META_THREAT_PR = 2.0   # % de uso mínimo en la línea para sugerirlo como amenaza (con menos, es una rareza con pocas partidas)
+
+
 def meta_threats(champs, meta_data, role, taken, n=3):
     """Para quien aún no tiene partidas suficientes: lo que mejor está ganando en tu línea este parche (entre lo que se juega de verdad), sin lo ya
     elegido o baneado. [(nombre, % de victorias, id)]. Vacío si no hay datos de meta o de línea."""
     rows = ((meta_data or {}).get("lanes") or {}).get(metamod.LANES.get(role, ""), {})
     if not rows:
         return []
-    games = sorted((v.get("games") or 0) for v in rows.values())
-    floor = games[len(games) // 3]   # fuera el tercio menos jugado: con pocas partidas el porcentaje es ruido
-    cand = sorted(((v["wr"], cid) for cid, v in rows.items() if cid in champs and cid not in taken and (v.get("games") or 0) >= floor and v.get("wr", 0) > 50), reverse=True)
+    cand = sorted(((v["wr"], cid) for cid, v in rows.items() if cid in champs and cid not in taken and (v.get("pr") or 0) >= META_THREAT_PR and v.get("wr", 0) > 50),
+                  reverse=True)
     return [(champs[cid]["name"], wr, cid) for wr, cid in cand[:n]]
 
 
@@ -1313,6 +1315,7 @@ def run(conf, champs, ui):
     season = load_season(champs)
     lcu = P = None
     stale, stale_until, net_fails = set(), 0.0, 0   # conexiones que no responden (archivo viejo o cliente arrancando) y fallos de red seguidos
+    lost_at = 0.0   # cuándo se perdió el cliente
     last = None
     next_check, next_lobby = 0.0, 0.0
     prev_turn = None
@@ -1381,7 +1384,7 @@ def run(conf, champs, ui):
                 detect_account(lcu, conf)
                 season = load_season(champs, conf)
                 ui.link(True)
-                again = bool(P and P.get("hist_ok") and my_puuid and not reload_pending
+                again = bool(P and P.get("hist_ok") and my_puuid and not reload_pending and time.time() - lost_at < 120
                              and (lcu.get("/lol-summoner/v1/current-summoner") or {}).get("puuid") == my_puuid)
                 if again:   # un corte suelto (en plena selección, p. ej.): misma cuenta y ya cargada; releer el historial entero la dejaba sin consejos 10-20 s
                     refresh_owned(lcu, P)
@@ -1626,6 +1629,7 @@ def run(conf, champs, ui):
                 continue
             if lcu is not None:
                 diag("Cliente de LoL perdido (cerrado o reiniciando)")
+                lost_at = time.time()
             lcu = None  # el cliente se cerro o reinicio
             if last is not None:   # a mitad de selección: al volver se trata como selección nueva (puede ser otra), con el sonido de turno una vez más como mucho
                 last = prev_turn = mode = None
