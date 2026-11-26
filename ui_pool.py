@@ -181,9 +181,11 @@ class PoolPanel:
         head = ui.frame(wrap)
         head.pack(fill="x", padx=12, pady=(0, 2))
         cols = [("", 34), ("Campeón", 130 if nar else 150), ("Partidas", 56), ("Victorias", 64 if nar else 120)]
+        avail = (self.ctx["width"] - 120) * 0.6 if self.wide else self.ctx["width"] - 110   # hueco de la tabla (en ancho comparte con el detalle)
+        self.show_form = not nar and avail >= 610   # la columna «Forma» solo si cabe: antes se cortaba y la fila perdía su borde derecho
         if not nar:
             cols += [("KDA", 50), ("Maestría", 64)]
-            if self.wide is False or True:
+            if self.show_form:
                 cols += [("Forma", 60)]
         for t, w in cols:
             ui.lbl(head, t, 9, "dim", True, width=w, anchor="w" if t in ("", "Campeón", "Forma") else "e").pack(side="left", padx=(0, 8))
@@ -207,7 +209,8 @@ class PoolPanel:
         on = r["cid"] == self.sel
         wcol = 130 if nar else 150
         wwin = 64 if nar else 120
-        W = 10 + 34 + 8 + wcol + 8 + 56 + 8 + wwin + 8 + (0 if nar else 50 + 8 + 64 + 8 + 60) + 10
+        form = getattr(self, "show_form", True)
+        W = 10 + 34 + 8 + wcol + 8 + 56 + 8 + wwin + 8 + (0 if nar else 50 + 8 + 64 + 8 + (60 if form else 0)) + 10
         H = 46
         S = lambda v: int(v * sx)
         cv = tk.Canvas(parent, width=S(W), height=S(H), bg=ui.bg(parent), highlightthickness=0, bd=0, cursor="hand2")
@@ -241,7 +244,7 @@ class PoolPanel:
             cv.create_text(S(x), S(23), text=f"{r['mast'] // 1000} k" if r["mast"] >= 1000 else (str(r["mast"]) if r["mast"] else "—"), font=f11,
                            fill=fg if r["mast"] else dim, anchor="e")
             x += 8
-            for q, w in enumerate(r["form"] or []):
+            for q, w in enumerate((r["form"] or []) if form else []):
                 cv.create_rectangle(S(x + q * 10), S(19), S(x + q * 10 + 8), S(27), fill=ui.hexm(PAL["good" if w else "bad"]), outline="")
         cv.bind("<Button-1>", lambda e, c=r["cid"]: self.select(c))
 

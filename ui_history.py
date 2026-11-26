@@ -503,8 +503,6 @@ class HistoryView:
             return
         self.wrap = ui.frame(self.list_host)
         self.wrap.pack(fill="x" if self.level == 0 else None)  # sin «fill» queda centrada: la información de cada fila va junta
-        if self.level >= 1:
-            self.col_header(self.wrap)
         self.cur_games, self.built, self.last_day, self.more_b = games, 0, None, None
         self.by_day = self.sort in ("Más recientes", "Más antiguas")
         self.day_stats, self.day_games, self.days = {}, {}, {}
@@ -519,6 +517,8 @@ class HistoryView:
             bar.pack(fill="x", padx=8, pady=(0, 2))
             small_btn(ui, bar, "Plegar todos los días", lambda: self.fold_days(False), 150).pack(side="left")
             small_btn(ui, bar, "Desplegar todos", lambda: self.fold_days(True), 130).pack(side="left", padx=(8, 0))
+        if self.level >= 1:   # los títulos de columna, justo encima de las filas (antes quedaban sobre los botones de plegar)
+            self.col_header(self.wrap)
         self.append_rows()
 
     def append_rows(self):
