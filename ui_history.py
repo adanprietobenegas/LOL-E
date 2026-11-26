@@ -99,6 +99,12 @@ class HistoryView:
         ui = self.ui
         n = len(self.all)
         wl = min(self.width - 90, 780)
+        quick = [g for g in ("Solo/Dúo", "Flexible", "ARAM") if any(mode_of(e) == g for e in self.all)]
+        if quick:   # lo que más se quiere ver (las clasificatorias) estaba dentro de «Buscar y filtrar»
+            opts = ["Todos"] + quick + ([self.mode] if self.mode not in quick and self.mode != "Todos" else [])
+            row = ui.frame(self.box)
+            row.pack(fill="x", pady=(0, 8))
+            ui.seg(row, opts, self.mode, self.quick_mode, height=28).pack(anchor="w", padx=8)
         self.sum_card = ui.card(self.box, "Resumen")
         self.summary_host = ui.frame(self.sum_card)
         ui.reg("hist.resumen", self.summary_host)
@@ -183,6 +189,11 @@ class HistoryView:
     def clear_filters(self):
         self.q, self.mode, self.res, self.line, self.sort, self.limit = "", "Todos", "Todas", "Todas", "Más recientes", None
         self.shown = STEP
+        self.sig = None
+        self.refresh(self.gui.make_ctx(), True)
+
+    def quick_mode(self, v):
+        self.mode, self.shown = v, STEP
         self.sig = None
         self.refresh(self.gui.make_ctx(), True)
 

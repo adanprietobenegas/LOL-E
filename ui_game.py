@@ -255,6 +255,11 @@ class GameView:
                 chip.pack(anchor="w", pady=(2, 0))
         except Exception:
             core.log_exc("Aviso de parche en Partida")
+        if plan.get("kind") in (None, "sr") and plan.get("enemies") and plan.get("state") == "game":
+            from ui_sections import comp_line
+            line = comp_line(core.comp_stats(plan.get("enemies") or [], ui.champs, True))
+            if line:
+                ui.lbl(host, f"Rivales: {line}", 11, "dim", anchor="w", justify="left", wraplength=max(240, self.width - 110)).pack(anchor="w", pady=(0, 6))
         goal = self.goal_text(plan) if plan.get("state") in ("select", "game") else None
         if goal:   # un solo objetivo medible, sacado de lo que te pasa en tus derrotas
             ui.reg("partida.objetivo", ui.lbl(host, goal, 11, "warn", True, anchor="w", justify="left", wraplength=max(240, self.width - 110))).pack(anchor="w", pady=(0, 8))
@@ -262,19 +267,6 @@ class GameView:
         if late:   # enlace que baja hasta ellos: al final de una pantalla larga había quien no los encontraba
             go_roster = ui.lbl(txt, "▾ Ver los jugadores de la partida (al final)", 10, "info", True)
             go_roster.pack(anchor="w", pady=(2, 0))
-        if lane and plan.get("kind") in (None, "sr") and plan.get("enemies"):
-            import ui_opp
-            if plan.get("state") == "game":   # en partida el rival ya está claro: el selector queda plegado, con el rival actual como resumen
-                def fill_opp(c):
-                    pk_ = ui_opp.picker(ui, c, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 130)
-                    if pk_ is not None:
-                        pk_.pack(fill="x", pady=(4, 8))
-                ui.reg("partida.rival", ui.fold(host, "Rival de línea", fill_opp, ("contra " + core.name(opp, ui.champs)) if opp and opp in ui.champs else "automático", "game_opp", False))
-            else:
-                pk = ui_opp.picker(ui, host, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 110)
-                if pk is not None:
-                    pk.pack(fill="x", pady=(0, 8))
-                    ui.reg("partida.rival", pk)
         if plan.get("mayhem") or (plan.get("kind") == "aram" and plan.get("qid") == 450):
             self.mark("Build")   # ARAM y Mayhem no tienen línea: su build también tiene atajo
         if plan.get("mayhem"):
@@ -293,6 +285,19 @@ class GameView:
             self.mark("Build")
             build_panel(ui, host, cid, lane, opp or None, self.width - 110,
                         core.comp_stats(plan.get("enemies") or [], ui.champs, True), in_game=plan.get("state") == "game").pack(fill="x")
+        if lane and plan.get("kind") in (None, "sr") and plan.get("enemies"):
+            import ui_opp
+            if plan.get("state") == "game":   # en partida el rival ya está claro: el selector queda plegado, con el rival actual como resumen
+                def fill_opp(c):
+                    pk_ = ui_opp.picker(ui, c, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 130)
+                    if pk_ is not None:
+                        pk_.pack(fill="x", pady=(4, 8))
+                ui.reg("partida.rival", ui.fold(host, "Rival de línea", fill_opp, ("contra " + core.name(opp, ui.champs)) if opp and opp in ui.champs else "automático", "game_opp", False))
+            else:
+                pk = ui_opp.picker(ui, host, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 110)
+                if pk is not None:
+                    pk.pack(fill="x", pady=(0, 8))
+                    ui.reg("partida.rival", pk)
         # tras tu build y tus runas (lo que se consulta durante la partida): los diez jugadores en directo, el tablero y las claves
         if getattr(self, "live_detail", None) is not None:
             self.mark("Los 10")

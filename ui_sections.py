@@ -122,7 +122,7 @@ class TourOffer(Section):
         try:
             if self.ui.conf.get("tour_offered") or getattr(core, "DEMO_MODE", False):
                 return False
-            return not history.load_all(history.hpath(core.CACHE), history.gpath(core.CACHE))
+            return bool(self.ui.conf.get("tour_pending")) or not history.load_all(history.hpath(core.CACHE), history.gpath(core.CACHE))
         except Exception:
             return False
 
@@ -785,6 +785,13 @@ class ProfileStrip(Section):
                          fg_color=PAL["good" if w else "bad"], text_color=ON_FILL).pack(side="left", padx=2)
 
 
+def comp_line(st):
+    """«daño físico 3 · mágico 1 · tanques 1 · control alto» de un equipo (comp_stats), o "" si aún no hay campeones. Solo datos de composición."""
+    if not st or not (st.get("ad", 0) + st.get("ap", 0)):
+        return ""
+    return f"daño físico {st['ad']} · mágico {st['ap']} · tanques {st.get('tanks', 0)} · control {ctl(st.get('cc', 0))}"
+
+
 class TurnCard(Section):
     """Tu turno: icono de línea, estado, fases de la selección y cuenta atrás en anillo."""
     STEPS = ["Planificación", "Bans", "Picks", "Final"]
@@ -800,7 +807,7 @@ class TurnCard(Section):
 
     def key(self, ctx):
         r, s = ctx["r"], ctx["session"]
-        return (r["turn"], s["timer"]["phase"], r["role"], self.step(s), r["mode"]["kind"])
+        return (r["turn"], s["timer"]["phase"], r["role"], self.step(s), r["mode"]["kind"], comp_line(r.get("enemy_stats")), comp_line(r.get("ally_stats")))
 
     def build(self, ctx):
         ui, r, session = self.ui, ctx["r"], ctx["session"]
@@ -839,6 +846,13 @@ class TurnCard(Section):
             ui.lbl(left, f"{r['mode']['group'] or 'Otro modo'}  ·  sin roles ni bans", 11, "dim").pack(anchor="w", pady=(2, 0))
         self.timer_lbl = ctk.CTkLabel(row, text="")
         self.timer_lbl.pack(side="right")
+        lines = [(t, v) for t, v in (("Rivales", comp_line(r.get("enemy_stats"))), ("Tu equipo", comp_line(r.get("ally_stats")))) if v] if sr else []
+        if lines:
+            box = ui.frame(c)
+            box.pack(fill="x", pady=(10, 0))
+            for who, text in lines:
+                ui.lbl(box, f"{who}: {text}", 11, "fg" if who == "Rivales" else "dim", anchor="w", justify="left",
+                       wraplength=max(260, ctx["width"] - 110)).pack(anchor="w")
         self.tick(ctx)
 
     def tick(self, ctx):
@@ -1550,6 +1564,11 @@ class Recs(Section):
             inner.pack(padx=4, pady=8)
             icon = ctk.CTkLabel(inner, text="", image=ui.icon(c["cid"], 40))
             icon.pack()
+            per = (self.width - 60) / max(1, len(self.vis))   # hueco de cada miniatura
+            if per >= 62:   # con sitio se pone el nombre: con 30 s de reloj, un retrato pequeño no se reconoce
+                nm = name(c["cid"], ui.champs)
+                cut = max(5, int(per // 8))
+                ui.lbl(inner, nm if len(nm) <= cut else nm[:cut - 1] + "…", 9, "fg").pack(pady=(2, 0))
             num = ui.lbl(inner, self.pct_text(c), 13, "dim", True, True)
             num.pack(pady=(2, 0))
             ui.clickable(cell, lambda i=i: self.pick(i))
@@ -1580,10 +1599,15 @@ class Recs(Section):
         col.pack()  # sin «fill»: la columna queda centrada y el desglose no se pega al borde izquierdo
         why = [w for w in c["why"] if not re.match(r"^\d+/\d+ victorias( en ARAM)?$", w)]   # ya está arriba como «2 de 3»
         ui.chips(col, why or ["encaja con tu rol"], 3 if self.width < 900 else 4)
-        ui.lbl(col, "DESGLOSE DE LA AFINIDAD", 10, "dim", True).pack(anchor="w", pady=(12, 4))
-        breakdown_rows(ui, col, c["parts"], c["score"], self.r["pct_scale"], bw)
-        ui.lbl(col, "La afinidad (0 a 100) es la suma de estos puntos sobre un máximo realista. Los pesos y su explicación están "
-                    "en «Datos» (se abre desde Ajustes).", 9, "dim", anchor="w", wraplength=bw + 150, justify="left").pack(anchor="w", pady=(8, 0))
+        parts, score, scale = c["parts"], c["score"], self.r["pct_scale"]
+
+        def fill(host):
+            breakdown_rows(ui, host, parts, score, scale, bw)
+            ui.lbl(host, "La afinidad (0 a 100) es la suma de estos puntos sobre un máximo realista. Los pesos y su explicación están "
+                         "en «Datos» (se abre desde Ajustes).", 9, "dim", anchor="w", wraplength=bw + 150, justify="left").pack(anchor="w", pady=(8, 0))
+        more = ui.frame(body)
+        more.pack(fill="x", pady=(8, 0))
+        ui.fold(more, "Cómo se calcula la afinidad", fill, "puntos por apartado", "rec_breakdown", False)
 
     def vs_row(self, parent, enemy, g, w, size=30):
         ui = self.ui

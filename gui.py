@@ -288,7 +288,11 @@ class GUI:
             self.band.pack_forget()
             return
         self.band_txt.configure(text=f"●  {label}" + (f"  ·  {clock}" if clock else "") + (f"  ·  {champ}" if champ else ""))
-        self.band_btn.configure(text="Consultar" if self.page == "partida" else "Volver a la partida")
+        selecting = self.advisor == "select" and phase not in ("GameStart", "InProgress", "Reconnect")
+        if self.page == "partida":
+            self.band_btn.configure(text="Volver a la selección" if selecting else "Ir a Inicio")
+        else:
+            self.band_btn.configure(text="Ver mi plan" if selecting else "Ver mi partida")
         if not self.band.winfo_ismapped():
             self.band.pack(fill="x", padx=16, pady=(8, 0), before=self.mid)
 
@@ -1328,8 +1332,8 @@ class GUI:
 
     def update_footer(self):
         meta = read_json(core.opgg_path(self.conf), {})
-        age = f"op.gg · actualizado hace {(time.time() - meta['ts']) / 3600:.0f} h" if meta.get("ts") else "op.gg: sin datos todavía (se leen solos con el cliente de LoL abierto)"
-        self.footer.configure(text=f"{self.status_text}     {age}" if self.status_text else age)
+        age = f"op.gg · actualizado hace {(time.time() - meta['ts']) / 3600:.0f} h" if meta.get("ts") else ""
+        self.footer.configure(text="     ".join(x for x in (self.status_text, age) if x))
 
     def vol_icon(self):
         v = self.conf["volume"]

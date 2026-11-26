@@ -43,6 +43,7 @@ DEFAULT_CONF = {
     "top_n": 5,
     "ban_n": 3,
     "poll_seconds": 1.0,
+    "tour_pending": False,   # instalación nueva: la tarjeta del recorrido guiado sigue hasta que el usuario conteste
     "stats_asked": 0,       # veces que se ha enseñado la ventana de permiso (stats.should_ask)
     "stats_ask_t": 0,       # cuándo fue la última (segundos)
     "stats_optin": None,     # cuenta anónima de instalaciones (stats.py): None = aún no se ha preguntado, True/False = lo que dijo el usuario
@@ -139,6 +140,8 @@ def load_conf():
     conf["weights"] = {**base, **(conf.get("custom_weights") or {})} if conf["preset"] == "personalizado" \
         else dict(PRESETS.get(conf["preset"], base))
     if not os.path.exists(CONF_FILE):
+        if _st == "missing":
+            conf["tour_pending"] = True   # instalación nueva: la oferta del recorrido se queda hasta que la conteste
         save_conf(conf)
     return conf
 

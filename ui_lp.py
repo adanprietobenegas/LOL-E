@@ -162,7 +162,12 @@ class LpChart:
         has_est = any(p["src"] == "est" for p in pts)
         real = [p for p in allp if p["src"] != "est"]
         first = real[0]["t"] if real else allp[0]["t"]
-        txt = "Los puntos rellenos son partidas que LOL-E vio con la app abierta; " + ("los huecos son fotos diarias de tu rango que da op.gg; " if has_day else "") +               ("los puntos huecos y a trazos son ESTIMADOS: salen de tus victorias y derrotas con los PL típicos, así que pueden desviarse unos PL por partida. " if has_est else "") +               "Pasa el ratón por un punto para ver la partida."
+        parts_ = ["Los puntos rellenos son partidas que LOL-E vio con la app abierta"]
+        if has_day:
+            parts_.append("los huecos son fotos diarias de tu rango que da op.gg")
+        if has_est:
+            parts_.append("los puntos huecos y a trazos son ESTIMADOS: salen de tus victorias y derrotas con los PL típicos, así que pueden desviarse unos PL por partida")
+        txt = "; ".join(parts_) + ". Pasa el ratón por un punto para ver la partida."
         if t0 < first - lpseries.DAY_MS:   # el tramo empieza antes de lo que hay guardado: se dice, en vez de dejar un hueco sin explicar
             txt += f"  Tu rango guardado de verdad empieza el {fecha(first)}; antes de esa fecha LOL-E no tenía tus PL" + (" y lo que ves es estimado." if has_est else ".")
         self.note.configure(text=txt)
