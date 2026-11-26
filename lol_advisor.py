@@ -1367,7 +1367,13 @@ def run(conf, champs, ui):
                 detect_account(lcu, conf)
                 season = load_season(champs, conf)
                 ui.link(True)
-                P = load_player_data(lcu, season)  # precarga (la primera vez descarga el historial)
+                again = bool(P and P.get("hist_ok") and my_puuid and not reload_pending
+                             and (lcu.get("/lol-summoner/v1/current-summoner") or {}).get("puuid") == my_puuid)
+                if again:   # un corte suelto (en plena selección, p. ej.): misma cuenta y ya cargada; releer el historial entero la dejaba sin consejos 10-20 s
+                    refresh_owned(lcu, P)
+                    diag("Reconectado a la misma cuenta: se sigue con lo ya cargado")
+                else:
+                    P = load_player_data(lcu, season)  # precarga (la primera vez descarga el historial)
                 my_puuid = (P.get("profile") or {}).get("puuid", "")
                 diag(f"Conectado: cuenta {(my_puuid or P.get('puuid') or '?')[:8]}, historial {'leído' if P.get('hist_ok') else 'pendiente'}, "
                      f"{P.get('games', 0)} partidas de Grieta guardadas")

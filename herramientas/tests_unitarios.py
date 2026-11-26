@@ -712,6 +712,7 @@ class FlujoCompleto(unittest.TestCase):
         d = self.leer("diag.log")
         self.assertIn("Cliente de LoL perdido", d)
         self.assertGreaterEqual(d.count("Cliente de LoL encontrado"), 2)
+        self.assertIn("Reconectado a la misma cuenta", d)                               # sin releer el historial entero a mitad de selección
         self.assertGreaterEqual(len([e for e in ev if e[0] == "show"]), 2)              # y la selección se vuelve a enseñar al recuperarlo
 
     def test_aram_y_arena_no_rompen_el_bucle(self):
