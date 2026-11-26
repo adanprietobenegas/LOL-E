@@ -17,7 +17,7 @@ import synergy
 import trends
 from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.25.1"
+APP_NAME, APP_VERSION = "LOL-E", "1.26.0"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -263,7 +263,7 @@ def find_client(conf, skip=()):
         return None
     global _PS_WAIT
     _PS_NEXT = time.time() + _PS_WAIT
-    _PS_WAIT = min(120, _PS_WAIT * 2)   # con LoL cerrado todo el día no se lanza PowerShell cada 20 s: la espera crece hasta 2 min
+    _PS_WAIT = min(40, _PS_WAIT * 2)   # con LoL cerrado todo el día no se lanza PowerShell cada 20 s; el tope es bajo para no perder la selección al abrirlo
     try:  # plan B: leer los argumentos del proceso (por si LoL está instalado en otra carpeta)
         cmd = subprocess.check_output(
             ["powershell", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command",
@@ -273,6 +273,7 @@ def find_client(conf, skip=()):
         pw = re.search(r"--remoting-auth-token=([\w-]+)", cmd)
         if port and pw:
             _PS_WAIT = 20
+            _PS_NEXT = time.time() + 20
             return int(port.group(1)), pw.group(1)
     except Exception:
         diag("Buscar el cliente por su proceso: " + type(sys.exc_info()[1]).__name__)
@@ -762,6 +763,7 @@ def load_player_data(lcu, season=None):
         if _refresh_old_games(lcu, P["puuid"], gc):
             dirty = True
     except (urllib.error.URLError, ConnectionError, OSError) as e:
+        P["hist_ok"] = False   # también si se cortó a mitad de los detalles: se vuelve a pedir
         diag(f"Historial sin leer: {type(e).__name__} {e}")   # cliente cerrado o aún arrancando: se reintenta
     except Exception:
         log_exc("Leer las partidas del cliente")
@@ -1356,7 +1358,7 @@ def run(conf, champs, ui):
                     if not stale:
                         diag("El archivo de conexión del cliente no responde (arrancando o antiguo): se buscan otras vías")
                     stale.add(found)
-                    stale_until = time.time() + 60
+                    stale_until = time.time() + 10
                     time.sleep(3); continue
                 lcu = probe
                 net_fails = 0

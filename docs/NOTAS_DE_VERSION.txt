@@ -7,6 +7,17 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.26.0   (26 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  Trabajo autónomo con auditorías de especialistas (fiabilidad, rendimiento, experiencia) y revisión previa a publicar.
+  · Fiabilidad: Meraki caducado se refresca en segundo plano; conexión muerta del cliente se salta (find_client skip) y PowerShell con espera creciente (20-40 s); un tropiezo en partida no suelta el cliente;
+    la selección no relee el historial (refresh_owned); reintento de cuenta op.gg; historial cortado se reintenta; sel_seen se limpia; geometría en píxeles reales; ventanas sin doble escala; panel de Ajustes en el
+    monitor correcto; «NONE» = sin clasificar; builds de ARAM/op.gg reintentan; rutas con apóstrofo; cierre del cliente en selección.
+  · Rendimiento: avisos de imágenes/jugadores/recomendaciones agrupados; nada de repintar Partida minimizada; sin Tk desde hilos; sin descargas duplicadas; páginas del carrusel destruidas; catálogo de mejoras sin bloquear.
+  · Experiencia: composición en la cabecera de selección y en partida; nombres en las miniaturas; desglose de afinidad plegado; atajos de cola en Historial; rótulos de la banda; build antes que el rival; pie sin «op.gg sin datos».
+  · 255 pruebas.
+
 VERSIÓN 1.25.1   (26 de noviembre de 2026)
 ---------------------------------------------------------------------
 

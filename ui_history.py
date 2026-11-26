@@ -203,6 +203,8 @@ class HistoryView:
         self.render_all()
 
     def set_filter(self, key, v):
+        if key == "mode":
+            return self.quick_mode(v)   # la barra rápida de colas se rehace con el modo elegido en el desplegable
         setattr(self, key, v)
         self.shown = STEP
         self.render_all()

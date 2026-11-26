@@ -10,6 +10,18 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.26.0", "fecha": "26 de noviembre de 2026", "titulo": "Más rápida y más fiable", "items": [
+        ("arreglo", "Los consejos de la selección de campeón aparecen al momento. Antes la aplicación volvía a leer todo tu historial al empezar cada selección y podían tardar más de diez segundos."),
+        ("arreglo", "Con la escala de Windows distinta del 100 %, la ventana ya no se hace más pequeña cada vez que la abres, y las ventanas de aviso ya no se salen de la pantalla."),
+        ("arreglo", "Si cierras el juego a mitad de una selección, LOL-E deja de mostrarla como si siguiera."),
+        ("arreglo", "La aplicación se abre antes, aunque la red vaya lenta. Y si en una instalación nueva tu cuenta aún no había cargado, se detecta después."),
+        ("mejora", "La ventana se repinta menos durante la selección y la partida, y no trabaja mientras está minimizada."),
+        ("nuevo", "En la selección, bajo «Te toca elegir», ves de un vistazo el tipo de daño, los tanques y el control de los rivales y de tu equipo. En partida, el de los rivales."),
+        ("nuevo", "En el Historial, botones para ver solo Solo/Dúo, Flexible o ARAM."),
+        ("mejora", "Los campeones recomendados muestran su nombre debajo. El cálculo de la afinidad queda plegado y se abre con un clic."),
+        ("mejora", "El botón de la franja naranja dice a dónde te lleva: «Ver mi plan», «Volver a la selección» o «Ir a Inicio»."),
+        ("mejora", "En partida, tu build aparece antes que el selector de rival. Quien instala LOL-E por primera vez ve la oferta del recorrido guiado."),
+    ]},
     {"v": "1.25.1", "fecha": "26 de noviembre de 2026", "titulo": "Textos más claros y completos", "items": [
         ("arreglo", "Con la escala de Windows o el tamaño de interfaz por encima del 100 %, el texto de esta ventana (y el de la pregunta del contador) salía cortado por la derecha. Ya se ve entero."),
         ("mejora", "Repasada la redacción de toda la aplicación: frases más claras, singulares y plurales correctos y menciones a botones que ya no existían."),
