@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.26.0). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.27.0). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -22,7 +22,7 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 2. Estado (actualizar al terminar cada conversación)
 
-**1.26.0 (26/11/2026, trabajo autónomo pedido por el usuario).** Publicadas 1.25.1 y 1.26.0. El usuario la probará en clasificatorias y un compañero la instalará: al retomar, preguntar cómo les fue y mirar `%LOCALAPPDATA%\\LOL-E\\diag.log` y `error.log`. Qué vigilar: que los consejos salgan al empezar la selección, marcado vs «Sin confirmar», intercambios, reconexión si se reinicia el cliente, ventana con escala de Windows. **Pendiente (propuestas no hechas):** «Tu última partida» en Inicio, conclusión primero en Análisis, «Enviar al cliente» arriba en la selección, enviar runas al cliente (revisar política de Riot), un corte de red suelto en selección aún reconecta y recarga el historial.
+**1.26.0 (26/11/2026, trabajo autónomo pedido por el usuario).** Publicadas 1.25.1, 1.26.0 y 1.27.0 («Tu última partida» en Inicio y reconexión sin releer el historial). El usuario la probará en clasificatorias y un compañero la instalará: al retomar, preguntar cómo les fue y mirar `%LOCALAPPDATA%\\LOL-E\\diag.log` y `error.log`. Qué vigilar: que los consejos salgan al empezar la selección, marcado vs «Sin confirmar», intercambios, reconexión si se reinicia el cliente, ventana con escala de Windows. **Pendiente (propuestas no hechas):** conclusión primero en Análisis, «Enviar al cliente» arriba en la selección, enviar runas al cliente (revisar política de Riot).
 
 **Orden del usuario (26/11/2026 tarde): trabajar solo el resto de la ventana de 5 h en mejoras notables y SUBIRLAS aunque no confirme (probará en clasificatorias y un compañero también).** Primero 1.25.1 (texto cortado en Novedades con escala > 100 % y ~40 correcciones de redacción).
 

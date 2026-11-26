@@ -10,6 +10,10 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.27.0", "fecha": "26 de noviembre de 2026", "titulo": "Tu última partida, a la vista", "items": [
+        ("nuevo", "En Inicio aparece «Tu última partida»: si ganaste o perdiste, los puntos de liga, tu campeón, tus asesinatos, muertes y asistencias, y tu objetivo para la siguiente. El botón «Ver análisis» abre el análisis completo."),
+        ("arreglo", "Si el juego se corta un momento durante la selección, la aplicación sigue con lo que ya tenía cargado y los consejos vuelven enseguida."),
+    ]},
     {"v": "1.26.0", "fecha": "26 de noviembre de 2026", "titulo": "Más rápida y más fiable", "items": [
         ("arreglo", "Los consejos de la selección de campeón aparecen al momento. Antes la aplicación volvía a leer todo tu historial al empezar cada selección y podían tardar más de diez segundos."),
         ("arreglo", "Con la escala de Windows distinta del 100 %, la ventana ya no se hace más pequeña cada vez que la abres, y las ventanas de aviso ya no se salen de la pantalla."),

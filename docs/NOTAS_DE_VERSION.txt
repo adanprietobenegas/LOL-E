@@ -7,6 +7,12 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.27.0   (26 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Inicio: tarjeta «Tu última partida» (ui_sections.WaitCard.draw_last, ago_text; GUI.open_analysis).
+  · Reconexión a la misma cuenta sin releer el historial (refresh_owned). 256 pruebas.
+
 VERSIÓN 1.26.0   (26 de noviembre de 2026)
 ---------------------------------------------------------------------
 
