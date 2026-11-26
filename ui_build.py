@@ -86,6 +86,8 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None, in_game=
             d = st[1]
             rich = bool(d.get("stats") or d.get("palette"))
             cols = 3 if width >= 1500 else 2 if width >= 960 else 1
+            if not in_game:   # arriba del todo: en la selección es lo primero que se pulsa (durante la partida enviarlo ya no sirve)
+                export_row(ui, content, d, champs, cid, enemy, lane, build_blocks(ui, d, cid, lane, ens))
             if rich and cols > 1:
                 # cabe en el ancho: se ven todas las vistas a la vez, en columnas
                 grid = ui.frame(content)
@@ -101,8 +103,6 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None, in_game=
                 if d.get("stats"):
                     variants(ui, slots[1], d, champs, cid, cw, lane, again)
                 situations(ui, slots[2] if cols == 3 else slots[0], d, champs, ens, cw)
-                if not in_game:   # el juego lee los conjuntos de objetos al EMPEZAR la partida: durante ella enviarlos no sirve
-                    export_row(ui, content, d, champs, cid, enemy, lane, build_blocks(ui, d, cid, lane, ens))
                 return
             width1 = min(width, 720)
             if rich:
@@ -113,8 +113,6 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None, in_game=
                 situations(ui, content, d, champs, ens, width1)
             else:
                 render(ui, content, d, champs, cid, enemy, width1, lane, again, in_game)
-            if not in_game:
-                export_row(ui, content, d, champs, cid, enemy, lane, build_blocks(ui, d, cid, lane, ens))
     paint()
     return box
 
@@ -426,7 +424,7 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
     uid = f"{itemset.PREFIX}{cid}-{lane or 'x'}"
     title = f"LOL-E · {name}" + (f" · {matchups.LANE_NAMES.get(lane, '')}" if lane else "") + (f" vs {champs[enemy]['name']}" if vs else "")
     row = ui.frame(parent)
-    row.pack(fill="x", pady=(12, 0))
+    row.pack(fill="x", pady=(0, 4))
     res = {}
     msg = ui.lbl(row, "", 10, "dim", anchor="w", justify="left", wraplength=360)
 
@@ -458,11 +456,11 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
         if var.get():
             go_auto()
     sw = ctk.CTkSwitch(parent, text="Enviar siempre al elegir campeón", variable=var, font=ui.font(10), progress_color=ui.acc, command=toggle)
-    sw.pack(anchor="w", pady=(8, 0))
-    ui.autowrap(ui.lbl(parent, "Crea un conjunto de objetos propio en tu cliente de League («LOL-E · campeón · línea»), y lo copia a la carpeta del juego. "
-                   "El juego lo lee al EMPEZAR la partida: envíalo durante la selección de campeón (o activa el envío automático); si lo envías "
-                   "con la partida ya cargada, aparecerá en la siguiente. "
-                   "Solo se tocan los conjuntos de LOL-E; los tuyos no.", 9, "dim", anchor="w", justify="left", wraplength=400), parent).pack(anchor="w", pady=(4, 0))
+    sw.pack(anchor="w", pady=(0, 8))
+    explica = ("Crea un conjunto de objetos propio en tu cliente («LOL-E · campeón · línea»). El juego lo lee al EMPEZAR la partida: envíalo durante la "
+               "selección; si lo envías con la partida ya cargada, aparecerá en la siguiente. Solo se tocan los conjuntos de LOL-E; los tuyos no.")
+    ui.tip(btn, explica)
+    ui.tip(sw, explica)
 
     def go_auto():
         key = (uid, title, tuple((n, tuple(i)) for n, i in blocks))
