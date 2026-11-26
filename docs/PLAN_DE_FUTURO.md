@@ -59,7 +59,7 @@ hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
 ## P3 · Ideas a explorar (sin prometer)
 
 - **Hecho el 14/11/2026, de las propuestas de los expertos** (ver `HISTORIAL_DE_SESIONES.md`): sesión y forma tras derrotas (`sesion.py`), patrón repetido en
-  derrotas + objetivo + evaluación (`patrones.py`), picos del rival en vivo (`live.spikes`), rango estimado hacia atrás (`lpseries.estimate`).
+  derrotas + objetivo + evaluación (`patrones.py`), picos del rival en vivo (retirados el 26/11/2026 por las normas de terceros), rango estimado hacia atrás (`lpseries.estimate`).
   Siguen sin hacer: mapa de dónde mueres (necesita la posición de las muertes de la línea de tiempo), analizar el historial en segundo plano para
   tener más partidas con las que sacar patrones, y un resumen tipo «Wrapped» de fin de temporada.
 

@@ -24,7 +24,7 @@ from ui_game import GameView
 from ui_patch import PatchView
 from ui_draft import DraftCard
 from ui_mayhem import AramBuild
-from ui_sections import (CounterPicks, TourOffer,SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
+from ui_sections import (JumpBar, CounterPicks, TourOffer,SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
                          WaitCard)
 
 DOCK_W = 360
@@ -400,6 +400,10 @@ class GUI:
         Mayhem, jugadores, pestaña Análisis). Antes cada cosa se reiniciaba en un sitio distinto y, según cómo acabara la partida, quedaba algo suelto.
         Si ya hay un plan de ESTA selección o partida en curso no se toca."""
         c = self.ctx
+        MyPick.opened.clear()   # las builds abiertas a mano son de la selección anterior
+        import ui_build, ui_mayhem
+        ui_build.OPEN_RUNES.clear()
+        ui_mayhem.OPEN_MORE.clear()
         pl = c.get("plan")
         if pl and pl.get("state") in ("select", "game"):
             return
@@ -1012,9 +1016,12 @@ class GUI:
         self.mid.pack(fill="both", expand=True)
         self.tab_seg = RailNav(k, self.mid, self.set_page, tabs.get(self.page, ""))
         self.tab_seg.frame.pack(side="left", fill="y", padx=(12, 0), pady=(10, 0))
-        self.body = ctk.CTkScrollableFrame(self.mid, fg_color="transparent", corner_radius=0, scrollbar_button_color=PAL["edge"],
+        self.right = k.frame(self.mid)   # a la derecha del carril: la barra «Ir a» (fija, solo en la selección) y debajo el cuerpo con desplazamiento
+        self.right.pack(side="left", fill="both", expand=True)
+        self.jump_host = k.frame(self.right)
+        self.body = ctk.CTkScrollableFrame(self.right, fg_color="transparent", corner_radius=0, scrollbar_button_color=PAL["edge"],
                                            scrollbar_button_hover_color=PAL["border"])
-        self.body.pack(side="left", fill="both", expand=True, padx=(6, 12), pady=(8, 0))
+        self.body.pack(side="top", fill="both", expand=True, padx=(6, 12), pady=(8, 0))
         calm(getattr(self.body, "_scrollbar", None))   # la barra recalculaba toda la ventana en cada cambio de alto del contenido
         self.footer = k.clbl(self.main, "", 10, "dim", anchor="w")
         self.footer.pack(fill="x", padx=24, pady=(2, 12))
@@ -1027,6 +1034,9 @@ class GUI:
         # (la fila de rango y racha ya no se muestra en la selección: ahí no ayuda a decidir)
         self.turn = TurnCard(k, self.select_view)
         self.draft = DraftCard(k, self.select_view)   # el orden de creación es el orden en pantalla
+        self._order_kind = None   # secciones nuevas (al cambiar tema o tamaño): hay que volver a colocarlas
+        self.jump = JumpBar(k, self.jump_host, self)
+        self.game_jump = k.frame(self.jump_host)   # la barra «Ir a» de «Tu partida» durante la partida (la pinta GameView)
         mypick = MyPick(k, self.select_view)
         ideas = BanIdeas(k, self.select_view)
         self.aram_build = AramBuild(k, self.select_view)   # la build de tu campeón va antes que la lista del banquillo
@@ -1034,7 +1044,11 @@ class GUI:
         self.lobby = Lobby(k, self.select_view)
         self.enemies = Enemies(k, self.select_view)
         self.counter_picks = CounterPicks(k, self.select_view)   # los mejores campeones contra cada rival, aparte de la afinidad
-        self.select_secs = [self.turn, self.draft, mypick, ideas, self.aram_build, self.recs, self.counter_picks, self.lobby, self.enemies, BansRow(k, self.select_view)]
+        self.jump.targets = [("Tu build", self.aram_build), ("Tu campeón", mypick), ("Recomendaciones", self.recs), ("Contrarrestos", self.counter_picks), ("Tu equipo", self.lobby), ("Rivales", self.enemies)]
+        bans = BansRow(k, self.select_view)
+        self.sec = {"turn": self.turn, "draft": self.draft, "mypick": mypick, "ideas": ideas, "aram": self.aram_build, "recs": self.recs,
+                    "counter": self.counter_picks, "lobby": self.lobby, "enemies": self.enemies, "bans": bans}
+        self.select_secs = [self.turn, self.draft, mypick, ideas, self.aram_build, self.recs, self.counter_picks, self.lobby, self.enemies, bans, self.jump]   # la barra «Ir a» se repinta la última
         self.matchup_view = MatchupView(k, self.body, self)
         self.history_view = HistoryView(k, self.body, self)
         self.pool_view = PoolView(k, self.body, self)
@@ -1056,6 +1070,16 @@ class GUI:
         {"idle": self.idle_view, "select": self.select_view, "matchup": self.matchup_view.box,
          "history": self.history_view.box, "pool": self.pool_view.box, "data": self.data_view.box, "game": self.game_view.box, "patch": self.patch_view.box}[name].pack(fill="x")
         self.view = name
+        try:   # la barra «Ir a» solo existe en la selección
+            if name in ("select", "game"):
+                self.jump.box.pack_forget()
+                self.game_jump.pack_forget()
+                (self.jump.box if name == "select" else self.game_jump).pack(fill="x")
+                self.jump_host.pack(side="top", fill="x", padx=(6, 12), pady=(8, 0), before=self.body._parent_frame)   # el marco que de verdad se coloca (CTkScrollableFrame lo oculta tras .pack)
+            else:
+                self.jump_host.pack_forget()
+        except Exception:
+            core.log_exc("Barra Ir a")
         try:
             self.body._parent_canvas.yview_moveto(0)
         except Exception:
@@ -1126,6 +1150,31 @@ class GUI:
                 s.refresh(ctx, force)
         self.update_footer()
 
+    ORDERS = {   # orden de los bloques de la selección según lo que hay que hacer ahora
+        "ban": ["turn", "draft", "ideas", "aram", "recs", "counter", "mypick", "lobby", "enemies", "bans"],
+        "pick": ["turn", "draft", "aram", "recs", "counter", "mypick", "ideas", "lobby", "enemies", "bans"],
+        "locked": ["turn", "draft", "mypick", "aram", "recs", "counter", "lobby", "enemies", "bans", "ideas"],
+    }
+
+    def order_select(self, ctx):
+        """En la fase de bans primero las ideas de baneo; eligiendo (sin bloquear), las recomendaciones; con el campeón bloqueado, su build. Solo recoloca al cambiar de fase."""
+        try:
+            r, ses = ctx["r"], ctx["session"]
+            ban = r.get("turn") == "ban" or (ses or {}).get("timer", {}).get("phase") == "PLANNING"
+            kind = "ban" if ban else ("locked" if r.get("mine_locked") else "pick")
+            if kind == getattr(self, "_order_kind", None):
+                return False
+            self._order_kind = kind
+            names = self.ORDERS[kind]
+            for n in names:
+                self.sec[n].box.pack_forget()
+            for n in names:
+                self.sec[n].box.pack(fill="x")
+            return True
+        except Exception:
+            core.log_exc("Orden de la selección")
+        return False
+
     def refresh_select(self, ctx, force=False):
         """Repinta la selección sección a sección, dejando respirar a la ventana entre una y otra: con LoL en marcha el ordenador va
         justo y hacerlo todo de golpe bloqueaba la ventana ~1,5 s. Si llega un cambio nuevo a mitad, se abandona el anterior."""
@@ -1137,6 +1186,8 @@ class GUI:
             off = cv.yview()[0] * total
         except Exception:
             off = 0
+        if self.order_select(ctx):
+            off = 0   # los bloques han cambiado de sitio: se mira desde arriba, no a un sitio sin relación
         secs = list(self.select_secs)
         anim = self.kit.anim
 
@@ -1160,6 +1211,34 @@ class GUI:
             except Exception:
                 pass
         step()
+
+    def paint_game_jump(self, anchors, width):
+        """Atajos «Ir a» de «Tu partida» (solo durante la partida): `anchors` es [(nombre, marca)] en el orden en que están en pantalla."""
+        box = self.game_jump
+        self.kit.clear(box)
+        if len(anchors) < 2:
+            box.configure(height=1)   # un contenedor vacío conserva su tamaño: se colapsa a mano
+            return
+        per = 3 if width < 660 else len(anchors)
+        row = None
+        for i, (n, mark) in enumerate(anchors):
+            if i % per == 0:
+                row = self.kit.frame(box)
+                row.pack(fill="x", pady=(0, 6))
+                self.kit.lbl(row, "IR A" if i == 0 else "", 9, "dim", True, width=34, anchor="w").pack(side="left", padx=(2, 8))
+            ctk.CTkButton(row, text=n, width=0, height=26, corner_radius=13, font=self.kit.font(11), fg_color=PAL["card2"], text_color=PAL["fg"],
+                          hover_color=PAL["border"], command=lambda m=mark: self.go_to(m)).pack(side="left", padx=(0, 6))
+
+    def go_to(self, widget):
+        """Desplaza el cuerpo hasta dejar `widget` en lo alto de la ventana."""
+        try:
+            cv = self.body._parent_canvas
+            self.root.update_idletasks()
+            total = max(1, (cv.bbox("all") or (0, 0, 0, 1))[3])
+            y = widget.winfo_rooty() - cv.winfo_rooty() + cv.canvasy(0)
+            cv.yview_moveto(max(0.0, min(1.0, (y - 8) / total)))
+        except Exception:
+            core.log_exc("Ir a un bloque de la partida")
 
     def key_go(self, d):
         if self.view == "select" and self.conf["rec_view"] == "carrusel" and not self.conf["compact"]:
@@ -1200,6 +1279,10 @@ class GUI:
         if self.view == "select" and self.ctx["r"]:
             self.kit.anim = False
             self.recs.resized(self.make_ctx()["width"])
+            try:
+                self.jump.refresh(self.ctx)   # al estrechar o ensanchar la ventana la barra «Ir a» pasa a una o dos filas
+            except Exception:
+                core.log_exc("Barra Ir a")
         elif self.view in ("matchup", "history", "pool", "data", "idle", "game"):
             self.refresh_current()
 

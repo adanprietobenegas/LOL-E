@@ -63,12 +63,28 @@ class GameView:
         self.ui.clear(self.box)
         card = ui.card(self.box)
         top = ui.frame(card)
-        top.pack(fill="x", pady=(0, 12))
-        ui.lbl(top, "Tu partida", 16, "fg", True, True).pack(side="left")
-        ui.seg(top, TABS, self.tab, self.set_tab, width=220, height=28).pack(side="right")
+        self.compact = bool(self.tab == "Plan" and plan.get("state") == "game" and plan.get("cid") in ui.champs)   # en partida: cabecera de una fila
+        top.pack(fill="x", pady=(0, 8 if self.compact else 12))
+        ui.seg(top, TABS, self.tab, self.set_tab, width=150 if self.compact and self.width < 640 else 220, height=28).pack(side="right")   # primero: si falta sitio se recorta el nombre
+        if self.compact:   # una sola fila: quién eres y contra quién, con las pestañas a la derecha
+            cid, opp = plan["cid"], plan.get("opp") or 0
+            ui.champ(top, cid, 32, False, ui.hexm(ui.acc)).pack(side="left", padx=(0, 10))
+            line = core.name(cid, ui.champs) + (f" · {ROLES_ES.get(plan.get('role') or '', '').lower()}" if ROLES_ES.get(plan.get("role") or "") else "")
+            if opp and opp in ui.champs:
+                line += f" · contra {core.name(opp, ui.champs)}"
+            if self.width < 640:   # estrecha: sin la línea, para que quepan las pestañas
+                line = core.name(cid, ui.champs) + (f" · {core.name(opp, ui.champs)}" if opp and opp in ui.champs else "")
+            ui.lbl(top, line, 14, "fg", True, True).pack(side="left")
+        else:
+            ui.lbl(top, "Tu partida", 16, "fg", True, True).pack(side="left")
         self.host = ui.frame(card)
         self.host.pack(fill="x")
+        self.anchors = []
         (self.plan_tab if self.tab == "Plan" else self.analysis_tab)(ctx)
+        try:
+            self.gui.paint_game_jump(self.anchors if self.compact else [], self.width)
+        except Exception:
+            core.log_exc("Barra Ir a de la partida")
         shown = (self.tab, self.gid)
         if shown != getattr(self, "_shown", shown):   # otra pestaña u otra partida: se empieza arriba (visto en una partida real: al acabar, la pantalla pasa sola
             try:                                      # a «Análisis» y, si mirabas la parte baja del bloque en vivo, quedaba en blanco: el desplazamiento no existe ya)
@@ -117,7 +133,8 @@ class GameView:
                 except Exception:
                     core.log_exc("Tablero de jugadores")
                     ui.lbl(c, "No se pudo dibujar el tablero de jugadores. El motivo queda en Ajustes › «Abrir el registro de errores».", 10, "dim").pack(anchor="w")
-            ui.reg("partida.jugadores", ui_vs.collapsible(ui, self.host, "Jugadores de la partida", summ, "game_roster", fill))
+            live = (plan or {}).get("state") == "game"   # en partida sale cerrado (primero tu build); fuera de ella, como lo dejaste
+            ui.reg("partida.jugadores", ui_vs.collapsible(ui, self.host, "Jugadores de la partida", summ, "game_roster_live" if live else "game_roster", fill, not live))
             return
         from ui_sections import Lobby
         pl, r = ctx.get("roster_pl") or {}, ctx.get("r") or {}
@@ -170,7 +187,7 @@ class GameView:
             strip = self.ui.frame(self.host)
             strip.pack(fill="x", pady=(0, 8))
             self.live_detail = self.ui.frame(self.host)
-            self.live_view = ui_live.LiveView(self.ui, strip, self.live_detail, self.width)
+            self.live_view = ui_live.LiveView(self.ui, strip, self.live_detail, self.width, compact=(ctx.get("plan") or {}).get("state") == "game")
             self.live_view.update(ctx["live"], (ctx.get("plan") or {}).get("opp") or 0, ctx.get("plan"))
         except Exception:
             core.log_exc("Bloque en vivo")
@@ -210,18 +227,22 @@ class GameView:
             return
         cid, opp, role = plan["cid"], plan.get("opp") or 0, plan.get("role") or ""
         lane = LANE_OF.get(role)
-        head = ui.frame(host)
-        head.pack(fill="x", pady=(0, 8))
-        ui.champ(head, cid, 56, False, ui.hexm(ui.acc)).pack(side="left", padx=(0, 12))
-        txt = ui.frame(head)
-        txt.pack(side="left")
-        ui.lbl(txt, STATE.get(plan.get("state"), "").upper() + ("  ·  bloqueado" if plan.get("locked") and plan.get("state") == "select" else ""),
-               9, "dim", True).pack(anchor="w")
-        ui.lbl(txt, core.name(cid, ui.champs), 20, "fg", True, True).pack(anchor="w")
-        sub = ROLES_ES.get(role, "").lower()
-        if opp and opp in ui.champs:
-            sub += f"  ·  contra {core.name(opp, ui.champs)}"
-        ui.lbl(txt, sub or "sin línea asignada", 10, "dim").pack(anchor="w")
+        if getattr(self, "compact", False):   # la cabecera ya lo dice todo en una fila
+            txt = ui.frame(host)
+            txt.pack(fill="x")
+        else:
+            head = ui.frame(host)
+            head.pack(fill="x", pady=(0, 8))
+            ui.champ(head, cid, 56, False, ui.hexm(ui.acc)).pack(side="left", padx=(0, 12))
+            txt = ui.frame(head)
+            txt.pack(side="left")
+            ui.lbl(txt, STATE.get(plan.get("state"), "").upper() + (("  ·  bloqueado" if plan.get("locked") else "  ·  sin confirmar") if plan.get("state") == "select" else ""),
+                   9, "dim", True).pack(anchor="w")
+            ui.lbl(txt, core.name(cid, ui.champs), 20, "fg", True, True).pack(anchor="w")
+            sub = ROLES_ES.get(role, "").lower()
+            if opp and opp in ui.champs:
+                sub += f"  ·  contra {core.name(opp, ui.champs)}"
+            ui.lbl(txt, sub or "sin línea asignada", 10, "dim").pack(anchor="w")
         try:   # tocado en las últimas notas del parche (solo lo ya guardado)
             import ui_patch
             chip = ui_patch.patch_chip(ui, txt, cid)
@@ -238,10 +259,19 @@ class GameView:
             go_roster.pack(anchor="w", pady=(2, 0))
         if lane and plan.get("kind") in (None, "sr") and plan.get("enemies"):
             import ui_opp
-            pk = ui_opp.picker(ui, host, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 110)
-            if pk is not None:
-                pk.pack(fill="x", pady=(0, 8))
-                ui.reg("partida.rival", pk)
+            if plan.get("state") == "game":   # en partida el rival ya está claro: el selector queda plegado, con el rival actual como resumen
+                def fill_opp(c):
+                    pk_ = ui_opp.picker(ui, c, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 130)
+                    if pk_ is not None:
+                        pk_.pack(fill="x", pady=(4, 8))
+                ui.reg("partida.rival", ui.fold(host, "Rival de línea", fill_opp, ("contra " + core.name(opp, ui.champs)) if opp and opp in ui.champs else "automático", "game_opp", False))
+            else:
+                pk = ui_opp.picker(ui, host, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 110)
+                if pk is not None:
+                    pk.pack(fill="x", pady=(0, 8))
+                    ui.reg("partida.rival", pk)
+        if plan.get("mayhem") or (plan.get("kind") == "aram" and plan.get("qid") == 450):
+            self.mark("Build")   # ARAM y Mayhem no tienen línea: su build también tiene atajo
         if plan.get("mayhem"):
             import ui_mayhem
             self.load_games()
@@ -255,21 +285,33 @@ class GameView:
                    11, "dim", anchor="w", justify="left", wraplength=max(260, self.width - 110)).pack(anchor="w", pady=(8, 0))
         if lane:
             self.ui.lbl(self.host, "", 4, "dim").pack()
+            self.mark("Build")
             build_panel(ui, host, cid, lane, opp or None, self.width - 110,
-                        core.comp_stats(plan.get("enemies") or [], ui.champs, True)).pack(fill="x")
+                        core.comp_stats(plan.get("enemies") or [], ui.champs, True), in_game=plan.get("state") == "game").pack(fill="x")
         # tras tu build y tus runas (lo que se consulta durante la partida): los diez jugadores en directo, el tablero y las claves
+        if getattr(self, "live_detail", None) is not None:
+            self.mark("Los 10")
         self.place_live_detail()
         if not late:
+            if ctx.get("roster"):
+                self.mark("Jugadores")
             self.roster_block(ctx, plan)
         import ui_claves
-        ui_claves.block(ui, host, cid, self.width - 110)   # claves del campeón (evoluciones, acumulaciones, formas…) en cualquier modo
+        import claves
+        if claves.for_champ((ui.champs.get(cid) or {}).get("icon")):
+            self.mark("Claves")
+        ui_claves.block(ui, host, cid, self.width - 110, in_game=plan.get("state") == "game")   # claves del campeón (evoluciones, acumulaciones, formas…) en cualquier modo
+        if plan.get("opp") and lane:
+            self.mark("Enfrentamiento")
         self.matchup_block(plan, lane)
         if lane and plan.get("kind") in (None, "sr"):
             import ui_guide
-            ui_guide.guide_block(ui, host, cid, opp or None, lane, self.width)
+            ui_guide.guide_block(ui, host, cid, opp or None, lane, self.width, in_game=plan.get("state") == "game")
         if plan.get("kind") in (None, "sr"):
+            self.mark("Consejos")
             self.tips_block(plan, role)
         if late:
+            self.mark("Jugadores")
             mark = self.ui.lbl(self.host, "", 4, "dim")
             mark.pack()
             self.roster_block(ctx, plan)
@@ -286,6 +328,13 @@ class GameView:
             go_roster.configure(cursor="hand2")
             go_roster.bind("<Button-1>", jump)
             self.jump_roster = jump
+
+    def mark(self, name):
+        """Marca invisible donde empieza un bloque, para la barra «Ir a» (solo durante la partida)."""
+        if getattr(self, "compact", False):
+            m = tk.Frame(self.host, width=1, height=1, bg=self.ui.bg(self.host))
+            m.pack(anchor="w")
+            self.anchors.append((name, m))
 
     def section(self, title):
         self.ui.lbl(self.host, title, 10, "dim", True, anchor="w").pack(anchor="w", pady=(16, 4))

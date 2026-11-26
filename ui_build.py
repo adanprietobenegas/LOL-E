@@ -49,7 +49,7 @@ VIEWS = ["Más usada", "Variantes", "Situaciones"]
 _VIEW = {}
 
 
-def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None):
+def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None, in_game=False):
     """Devuelve un contenedor que se rellena solo cuando llegan los datos (sin bloquear la ventana).
     `ens`: composición del equipo rival (comp_stats) para marcar qué situaciones aplican ahora."""
     box = ui.frame(parent)
@@ -97,11 +97,12 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None):
                     s_.grid(row=0, column=k, sticky="nw", padx=(0 if k == 0 else 16, 0))
                     grid.columnconfigure(k, weight=1, uniform="bp")
                     slots.append(s_)
-                render(ui, slots[0], d, champs, cid, enemy, cw, lane, again)
+                render(ui, slots[0], d, champs, cid, enemy, cw, lane, again, in_game)
                 if d.get("stats"):
                     variants(ui, slots[1], d, champs, cid, cw, lane, again)
                 situations(ui, slots[2] if cols == 3 else slots[0], d, champs, ens, cw)
-                export_row(ui, content, d, champs, cid, enemy, lane, build_blocks(ui, d, cid, lane, ens))
+                if not in_game:   # el juego lee los conjuntos de objetos al EMPEZAR la partida: durante ella enviarlos no sirve
+                    export_row(ui, content, d, champs, cid, enemy, lane, build_blocks(ui, d, cid, lane, ens))
                 return
             width1 = min(width, 720)
             if rich:
@@ -111,8 +112,9 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None):
             elif state["view"] == "Situaciones":
                 situations(ui, content, d, champs, ens, width1)
             else:
-                render(ui, content, d, champs, cid, enemy, width1, lane, again)
-            export_row(ui, content, d, champs, cid, enemy, lane, build_blocks(ui, d, cid, lane, ens))
+                render(ui, content, d, champs, cid, enemy, width1, lane, again, in_game)
+            if not in_game:
+                export_row(ui, content, d, champs, cid, enemy, lane, build_blocks(ui, d, cid, lane, ens))
     paint()
     return box
 
@@ -506,13 +508,19 @@ def rune_icons(ui, parent, rn, rd, width):
         ui.lbl(parent, txt, 10, "dim", anchor="w", wraplength=max(200, width - 140), justify="left").pack(anchor="w", pady=(4, 0))
 
 
-def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
+OPEN_RUNES = set()   # (campeón, línea, rival) cuyo pliegue «Runas, hechizos e inicio» está abierto: cualquier repintado lo volvía a cerrar
+
+
+def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None, in_game=False):
     rd = ui.runedata or {}
     title = f"BUILD MÁS USADA DE {champs[cid]['name'].upper()}" + (f" CONTRA {champs[enemy]['name'].upper()}" if d.get("vs") and enemy else "")
     ui.lbl(parent, title, 10, "dim", True, anchor="w").pack(anchor="w", pady=(0, 4))
     # hechizos
     sp = d.get("spells") or []
-    if sp:
+
+    def spells_row(parent):
+        if not sp:
+            return
         b = _row(ui, parent, "Hechizos")
         ui.reg("build.hechizos", b.master)
         for sid in sp:
@@ -525,41 +533,58 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
         names = [(rd.get("spells") or {}).get(s, {}).get("n") for s in sp]
         if all(names):
             ui.lbl(b, "  " + " + ".join(names), 11, "fg").pack(side="left")
-    # runas: la página más usada y la de mayor % de victorias (si la fuente las da), con su % y su uso
-    b = _row(ui, parent, "Runas")
-    ui.reg("build.runas", b.master)
-    pages = d.get("rune_pages") or [{"id": "pick", "label": "Más usada", "runes": d["runes"]}]
-    holder = ui.frame(b)
-    holder.pack(anchor="w", fill="x")
-    pick_key = (cid, lane, enemy)
 
-    def paint_runes(sel=None):
-        ui.clear(holder)
-        names = [p["label"] for p in pages]
-        cur = sel or _RUNE_PICK.get(pick_key) or names[0]
-        cur = cur if cur in names else names[0]
-        _RUNE_PICK[pick_key] = cur
-        if len(pages) > 1:
-            ui.seg(holder, names, cur, lambda v: paint_runes(v), height=26).pack(fill="x", pady=(0, 8))
-        page = next(p for p in pages if p["label"] == cur)
-        rune_icons(ui, holder, page["runes"], rd, width)
-        if page.get("wr"):
-            es = lambda x: f"{x:.1f}".replace(".", ",")
-            partes = [f"{es(page['wr'])} % de victorias"] + ([f"{es(page['pr'])} % de uso"] if page.get("pr") else []) + [f"{page['n']:,} partidas".replace(",", ".")]
-            ui.lbl(holder, "  ·  ".join(partes), 10, "dim", anchor="w").pack(anchor="w", pady=(4, 0))
-    paint_runes()
-    if d.get("skills"):
-        b = _row(ui, parent, "Habilidades")
-        ui.lbl(b, "  ›  ".join(SKILLS[s] for s in d["skills"]), 12, ui.acc, True, True).pack(side="left")
-        ui.lbl(b, "   prioridad para subirlas (la R siempre que puedas)", 9, "dim").pack(side="left")
+    if not in_game:   # en partida van primero los objetos; hechizos, inicio y runas (ya elegidos) quedan plegados al final
+        spells_row(parent)
+    # runas: la página más usada y la de mayor % de victorias (si la fuente las da), con su % y su uso.
+    # Durante la partida (`in_game`) ya están elegidas: la fila va al final del bloque y plegada (un clic las abre)
+    def runes_row(host):
+        b = _row(ui, host, "Runas")
+        ui.reg("build.runas", b.master)
+        pages = d.get("rune_pages") or [{"id": "pick", "label": "Más usada", "runes": d["runes"]}]
+        holder = ui.frame(b)
+        holder.pack(anchor="w", fill="x")
+        pick_key = (cid, lane, enemy)
+
+        def paint_runes(sel=None):
+            ui.clear(holder)
+            names = [p["label"] for p in pages]
+            cur = sel or _RUNE_PICK.get(pick_key) or names[0]
+            cur = cur if cur in names else names[0]
+            _RUNE_PICK[pick_key] = cur
+            if len(pages) > 1:
+                ui.seg(holder, names, cur, lambda v: paint_runes(v), height=26).pack(fill="x", pady=(0, 8))
+            page = next(p for p in pages if p["label"] == cur)
+            rune_icons(ui, holder, page["runes"], rd, width)
+            if page.get("wr"):
+                es = lambda x: f"{x:.1f}".replace(".", ",")
+                partes = [f"{es(page['wr'])} % de victorias"] + ([f"{es(page['pr'])} % de uso"] if page.get("pr") else []) + [f"{page['n']:,} partidas".replace(",", ".")]
+                ui.lbl(holder, "  ·  ".join(partes), 10, "dim", anchor="w").pack(anchor="w", pady=(4, 0))
+        paint_runes()
+
+    if not in_game:
+        runes_row(parent)
+
+    def skills_row():
+        if d.get("skills"):
+            b = _row(ui, parent, "Habilidades")
+            ui.lbl(b, "  ›  ".join(SKILLS[s] for s in d["skills"]), 12, ui.acc, True, True).pack(side="left")
+            ui.lbl(b, "   prioridad para subirlas (la R siempre que puedas)", 9, "dim").pack(side="left")
+
+    if not in_game:
+        skills_row()
     # objetos: las botas van aparte (en la Grieta tienen su propia mejora y, en tirador, su propia ranura)
     it = d.get("items") or {}
     boots = [i for k in ("core", "i4", "i5", "i6") for i in (it.get(k) or []) if is_boots(ui, i)]
     boots = list(dict.fromkeys(boots))
-    if it.get("start"):
-        b = _row(ui, parent, "Inicio")
-        for i in it["start"]:
-            _item(ui, b, i)
+    def start_row(host):
+        if it.get("start"):
+            b = _row(ui, host, "Inicio")
+            for i in it["start"]:
+                _item(ui, b, i)
+
+    if not in_game:
+        start_row(parent)
     if boots:
         b = _row(ui, parent, "Botas")
         for n, i in enumerate(boots[:2]):
@@ -606,6 +631,25 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None):
                 if n:
                     ui.lbl(b, "o", 10, "dim").pack(side="left", padx=2)
                 _item(ui, b, i)
+    if in_game:
+        skills_row()
+        slot = ui.frame(parent)
+        slot.pack(fill="x")
+        fold = ui.lbl(slot, "▸ Runas, hechizos e inicio (ya elegidos): ver", 10, "info", True, anchor="w")
+        ui.reg("build.runas", fold)      # la visita guiada señala este enlace hasta que se abre
+        ui.reg("build.hechizos", fold)
+        fold.pack(anchor="w", pady=(8, 0))
+        fold.configure(cursor="hand2")
+
+        def open_runes(_e=None):
+            OPEN_RUNES.add((cid, lane, enemy))
+            fold.destroy()
+            spells_row(slot)
+            start_row(slot)
+            runes_row(slot)
+        fold.bind("<Button-1>", open_runes)
+        if (cid, lane, enemy) in OPEN_RUNES:
+            open_runes()
     notes = []
     quest = ROLE_QUEST.get(lane)
     if quest:

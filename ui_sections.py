@@ -855,10 +855,11 @@ class TurnCard(Section):
 class MyPick(Section):
     """El campeón que has marcado o bloqueado: su build y runas aparecen solos, estuviera o no entre las recomendaciones."""
     LANES = {"TOP": "top", "JUNGLE": "jungle", "MIDDLE": "middle", "BOTTOM": "bottom", "SUPPORT": "support"}
+    opened = set()   # campeones sin bloquear cuya build el usuario ha abierto a mano
 
     def key(self, ctx):
         r = ctx["r"]
-        return (r.get("mine"), r.get("mine_locked"), r["role"], r["lane_opp"], r["mode"]["kind"], tuple(r.get("enemies") or ()), r.get("lane_opp_auto"))
+        return (r.get("mine"), r.get("mine_locked"), r.get("mine") in self.opened, r["role"], r["lane_opp"], r["mode"]["kind"], tuple(r.get("enemies") or ()), r.get("lane_opp_auto"))
 
     def build(self, ctx):
         ui, r = self.ui, ctx["r"]
@@ -872,7 +873,7 @@ class MyPick(Section):
         ui.champ(head, cid, 44, False).pack(side="left", padx=(0, 12))
         txt = ui.frame(head)
         txt.pack(side="left")
-        ui.lbl(txt, "TU CAMPEÓN ELEGIDO" if r.get("mine_locked") else "LO ESTÁS ELIGIENDO", 10, "dim", True).pack(anchor="w")
+        ui.lbl(txt, "TU CAMPEÓN ELEGIDO" if r.get("mine_locked") else "SIN CONFIRMAR · LO ESTÁS MARCANDO", 10, "dim" if r.get("mine_locked") else "warn", True).pack(anchor="w")
         ui.lbl(txt, name(cid, ui.champs), 18, "fg", True, True).pack(anchor="w")
         try:   # si las últimas notas del parche tocaron a este campeón, una línea lo dice (sin red: solo lo ya guardado)
             import ui_patch
@@ -881,16 +882,61 @@ class MyPick(Section):
                 chip.pack(anchor="w", pady=(2, 0))
         except Exception:
             core.log_exc("Aviso de parche en la selección")
+        if not r.get("mine_locked") and cid not in self.opened:
+            # marcado pero sin bloquear: puede cambiar, así que no se despliega su build entera (empujaba las recomendaciones fuera de la pantalla); un clic la abre
+            more = ui.lbl(c, "▸ Ver su build y su enfrentamiento (aún sin confirmar)", 10, "info", True, anchor="w")
+            more.pack(anchor="w")
+            more.configure(cursor="hand2")
+
+            def open_it(_e=None, cid=cid):
+                self.opened.add(cid)
+                self.refresh(ctx, True)
+            more.bind("<Button-1>", open_it)
+            return
         import ui_opp
         pk = ui_opp.picker(ui, c, cid, lane, r.get("enemies") or [], r.get("lane_opp_auto") or 0,
                            ui.opp_now(), ui.set_opp, ctx["width"] - 110)
         if pk is not None:
             pk.pack(fill="x", pady=(0, 12))
+        build_panel(ui, c, cid, lane, r["lane_opp"] or None, ctx["width"] - 110, r.get("enemy_stats")).pack(fill="x")
         import ui_claves
         ui_claves.block(ui, c, cid, ctx["width"] - 110)
-        build_panel(ui, c, cid, lane, r["lane_opp"] or None, ctx["width"] - 110, r.get("enemy_stats")).pack(fill="x")
         import ui_guide
         ui_guide.guide_block(ui, c, cid, r["lane_opp"] or None, lane, ctx["width"])
+
+
+class JumpBar(Section):
+    """Fila de atajos «Ir a: Tu campeón · Recomendaciones · …» arriba de la selección: la pantalla es larga y cada bloque está a varias pantallas del siguiente.
+    Solo salen los bloques que ahora tienen contenido. Se repinta la última (después de las demás secciones) para saber cuáles hay."""
+
+    def __init__(self, ui, parent, gui):
+        super().__init__(ui, parent)
+        self.gui, self.targets = gui, []
+
+    def present(self):
+        return [(n, s) for n, s in self.targets if s.box.winfo_children()]   # (la altura aún no se ha calculado justo tras repintar: se mira si hay contenido)
+
+    def key(self, ctx):
+        return tuple(n for n, _s in self.present()) + (ctx["r"]["mode"]["kind"], ctx["width"] < 660)
+
+    def build(self, ctx):
+        items = self.present()
+        if len(items) < 2:
+            self.box.configure(height=1)
+            return
+        per = 3 if ctx["width"] < 660 else len(items)   # estrecha: dos filas, para que no se corten los últimos
+        row = None
+        for i, (n, s) in enumerate(items):
+            if i % per == 0:
+                row = self.ui.frame(self.box)
+                row.pack(fill="x", pady=(0, 6))
+                self.ui.lbl(row, "IR A" if i == 0 else "", 9, "dim", True, width=34, anchor="w").pack(side="left", padx=(2, 8))
+            ctk.CTkButton(row, text=n, width=0, height=26, corner_radius=13, font=self.ui.font(11), fg_color=PAL["card2"], text_color=PAL["fg"],
+                          hover_color=PAL["border"], command=lambda s=s: self.go(s)).pack(side="left", padx=(0, 6))
+
+    def go(self, sec):
+        """Baja (o sube) hasta el bloque, dejando su cabecera en lo alto de la ventana."""
+        self.gui.go_to(sec.box)
 
 
 class BanIdeas(Section):
@@ -1412,8 +1458,9 @@ class Recs(Section):
         self.hero_lab = ctk.CTkLabel(row, text="")
         ui.reg("recs.hero", self.hero_lab)
         self.hero_lab.pack(side="left", padx=8)
+        self.tabs_seg = None
         self.build_strip()   # las otras opciones van justo bajo la imagen: debajo del desglose quedaban fuera de la primera pantalla
-        tabs_seg = ui.seg(self.dyn, self.tabs(), self.tab, self.set_tab)
+        tabs_seg = self.tabs_seg = ui.seg(self.dyn, self.tabs(), self.tab, self.set_tab)
         tabs_seg.pack(fill="x", pady=(12, 8))
         ui.reg("recs.pestanas", tabs_seg)
         self.info_host = ctk.CTkFrame(self.dyn, fg_color=PAL["card2"], corner_radius=12)
@@ -1486,7 +1533,11 @@ class Recs(Section):
         """Previsualización inferior: un toque en cualquier campeón salta a su tarjeta."""
         ui = self.ui
         row = ui.frame(self.dyn)
-        row.pack(fill="x", pady=(8, 0))
+        seg = getattr(self, "tabs_seg", None)
+        if seg is not None and seg.winfo_exists() and seg.master is self.dyn:
+            row.pack(fill="x", pady=(8, 0), before=seg)   # al cambiar de filtro se volvía a colocar al final, bajo el desglose
+        else:
+            row.pack(fill="x", pady=(8, 0))
         self.strip_row = row
         self.cells = []
         for i, c in enumerate(self.vis):
@@ -1642,7 +1693,7 @@ class Lobby(Section):
 
     def key(self, ctx):
         r, pl = ctx["r"], ctx["players"]
-        return (tuple((a["cell"], a["champ"], a["role"], a["puuid"]) for a in r["ally_cells"]),
+        return (tuple((a["cell"], a["champ"], a["role"], a["puuid"], bool(a.get("hover"))) for a in r["ally_cells"]),
                 tuple(sorted((k, v.get("name", ""), len(v.get("recent", [])), bool(v.get("error"))) for k, v in pl.items())),
                 tuple(r["party"]), self.ui.conf["show_teams"], r["mode"]["kind"], json.dumps(r["mates"], sort_keys=True))
 
@@ -1661,7 +1712,9 @@ class Lobby(Section):
             row = ui.frame(c)
             row.pack(anchor="w")
             for a in r["ally_cells"]:
-                ui.champ(row, a["champ"], 44, True, "#3ddc84" if a["champ"] else None).pack(side="left", padx=4)
+                ui.champ(row, a["champ"], 44, True, (ui.hexm(PAL["warn"]) if a.get("hover") else "#3ddc84") if a["champ"] else None).pack(side="left", padx=4)
+            if any(a.get("hover") for a in r["ally_cells"]):
+                ui.lbl(c, "Los marcados en naranja aún no han bloqueado su campeón.", 10, "dim", anchor="w").pack(anchor="w", pady=(4, 0))
         else:
             for a in r["ally_cells"]:
                 p = pl.get(a["puuid"]) if a["puuid"] else None
@@ -1682,6 +1735,7 @@ class Lobby(Section):
         box.pack(fill="x", pady=4)
         inner = ui.frame(box)
         inner.pack(fill="x", padx=12, pady=12)
+        ring = ui.hexm(PAL["warn"]) if a.get("hover") else ring   # marcado y sin bloquear: aro naranja y la etiqueta «Sin confirmar»
         ui.champ(inner, a["champ"], 44, False, ring if a["champ"] else None).pack(side="left", anchor="n")
         mid = ui.frame(inner)
         mid.pack(side="left", fill="x", expand=True, padx=12)
@@ -1696,6 +1750,8 @@ class Lobby(Section):
                 ui.lbl(head, f"{rk['tier']} {rk['div']}".strip(), 12, TIER_COLORS.get(rk["key"], "fg"), True, True).pack(side="right", padx=(8, 0))
         if ROLES_ES.get(a["role"]):
             ui.chip(head, ROLES_ES[a["role"]], "dim").pack(side="left", padx=(8, 0))
+        if a.get("hover"):
+            ui.chip(head, "Sin confirmar", "warn").pack(side="left", padx=(8, 0))
         if tag:
             ui.chip(head, tag, "warn").pack(side="left", padx=(8, 0))
         if in_party:

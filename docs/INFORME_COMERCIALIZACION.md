@@ -28,6 +28,7 @@ Fuentes: [Políticas generales](https://developer.riotgames.com/policies/general
 - (Riot, literal) **«No pueden mostrar porcentajes de victoria de aumentos (Augments) ni de objetos del modo Arena.»**
 - (Riot, literal) Overlays con **datos estáticos disponibles antes de la partida** están aprobados.
 - (Riot, soporte) No debe haber software que comprometa la integridad «desde que pulsas Jugar hasta que sales»: exponer información oculta, actuar por el jugador, **sacar conclusiones durante la partida** («primero juega, luego analiza»), ampliar el campo de visión.
+- (LOL-E: los avisos en vivo de picos del rival se quitaron el 26/11/2026.)
 - (Overwolf, no Riot) Prohíbe notificaciones de picos de poder, seguimiento de recargas/hechizos enemigos y «temporizadores de ulti»; en selección de campeón de Solo/Dúo anonimizar a los no acompañantes («Aliado #»); no mostrar datos de «Classic» ni Brawl agregados (esto último no aparece en las páginas de Riot que se leyeron: **verificar**).
 
 ### Marca y propiedad intelectual

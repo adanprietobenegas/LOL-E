@@ -1249,28 +1249,6 @@ class PatronesRepetidos(unittest.TestCase):
         self.assertIsNone(patrones.find(g))
 
 
-class PicosDelRival(unittest.TestCase):
-    def snap(self, t, lvl, value, mine=5):
-        mk = lambda cid, team, me, level, v: {"cid": cid, "team": team, "me": me, "level": level, "value": v, "items": [], "k": 0, "d": 0, "a": 0}
-        return {"t": t, "players": [mk(1, "ORDER", True, mine, 3000), mk(2, "CHAOS", False, lvl, value)]}
-
-    def test_nivel_y_compra(self):
-        import live
-        a, b = self.snap(300, 5, 3000), self.snap(310, 6, 5000)
-        out = live.spikes(a, b, 2)
-        self.assertEqual(len(out), 2)
-        self.assertIn("nivel 6 y tú aún no", out[0])
-        self.assertIn("2.0", out[1].replace(",", "."))
-
-    def test_sin_aviso_sin_cambios_o_sin_rival(self):
-        import live
-        a = self.snap(300, 6, 3000)
-        self.assertEqual(live.spikes(a, self.snap(310, 6, 3500), 2), [])      # ya era 6 y la compra es pequeña
-        self.assertEqual(live.spikes(None, a, 2), [])
-        self.assertEqual(live.spikes(a, a, 0), [])                            # no se sabe quién es el rival
-        self.assertEqual(live.spikes(self.snap(400, 5, 0), self.snap(300, 6, 9999), 2), [])   # una lectura más vieja: no se mezcla
-
-
 class TourDeLaDemostracion(unittest.TestCase):
     def test_las_lecciones_son_validas(self):
         import tour
@@ -1650,6 +1628,57 @@ class DescargaDeActualizaciones(unittest.TestCase):
         r, d = self.run_download(b"x" * 500, length=1000)
         self.assertIn("se cortó", r)
         self.assertEqual(os.listdir(os.path.join(d, "LOL-E-update")), [])
+
+
+class PickSinConfirmar(unittest.TestCase):
+    """Un campeón solo marcado (sin bloquear) no cuenta como elegido: se distingue en pantalla y no mueve las recomendaciones."""
+
+    def ses(self, completed, champ_in_team=0, intent=0, act_champ=0):
+        return {"localPlayerCellId": 0,
+                "myTeam": [{"cellId": 0, "championId": 0}, {"cellId": 1, "championId": champ_in_team, "championPickIntent": intent}],
+                "actions": [[{"type": "pick", "actorCellId": 1, "championId": act_champ, "completed": completed}]]}
+
+    def test_ordenes_de_la_seleccion_completos(self):
+        import gui
+        base = set(gui.GUI.ORDERS["pick"])
+        self.assertEqual(len(base), 10)
+        for k, v in gui.GUI.ORDERS.items():                                                   # cada fase coloca los mismos diez bloques, sin repetir ni perder ninguno
+            self.assertEqual((k, set(v), len(v)), (k, base, 10))
+        self.assertEqual(gui.GUI.ORDERS["ban"][2], "ideas")                                   # en los bans, primero las ideas de baneo
+        self.assertEqual(gui.GUI.ORDERS["locked"][2], "mypick")                                # con el campeón bloqueado, su build
+
+    def test_estados(self):
+        import lol_advisor as l
+        p = {"cellId": 1, "championId": 0, "championPickIntent": 22}
+        self.assertEqual(l.pick_state(self.ses(False, 0, 22, 22), p), (22, False))              # marcado
+        self.assertEqual(l.pick_state(self.ses(True, 22, 22, 22), {**p, "championId": 22}), (22, True))   # bloqueado
+        self.assertEqual(l.pick_state(self.ses(False, 0, 0, 0), {"cellId": 1}), (0, False))     # nada
+        self.assertEqual(l.pick_state({"actions": []}, {"cellId": 3, "championId": 51}), (51, True))   # ARAM / sin draft: lo que entrega el cliente
+        self.assertEqual(l.pick_state({"actions": []}, {"cellId": 3, "championPickIntent": 9}), (9, False))
+
+    def test_tras_un_intercambio_manda_el_campeon_actual(self):
+        import lol_advisor as l
+        ses = {"localPlayerCellId": 0, "myTeam": [{"cellId": 0, "championId": 51}, {"cellId": 1, "championId": 22}],
+               "actions": [[{"type": "pick", "actorCellId": 0, "championId": 22, "completed": True}, {"type": "pick", "actorCellId": 1, "championId": 51, "completed": True}]]}
+        self.assertEqual(l.pick_state(ses, ses["myTeam"][1]), (22, True))
+        self.assertEqual(l.my_champion(ses), (51, True))
+
+    def test_el_marcado_no_cuenta_como_aliado(self):
+        import lol_advisor as l
+        ses = self.ses(False, 0, 22, 22)
+        ses["theirTeam"] = []
+        ses["myTeam"][0]["assignedPosition"] = "MIDDLE"
+        ses["bans"] = {}
+        champs, P = {}, {}
+        s2 = l.sanitize_session(ses)
+        res = l._result(s2, {1: {"tags": []}}, {"mastery": {}, "mates": {}, "profile": None, "rank": None, "record": None, "form": None, "games": 0}, {"weights": {"mastery": 1, "winrate": 1}, "top_n": 3, "ban_n": 1, "meta_enabled": False},
+                        {"kind": "other", "id": 0, "group": ""}, "MIDDLE", [], [], 0, [], set(), [], {}, {})
+        a = res["ally_cells"][0]
+        self.assertEqual((a["champ"], a["hover"]), (22, True))
+        s3 = l.sanitize_session(self.ses(True, 22, 22, 22))
+        a3 = l._result(s3, {1: {"tags": []}}, {"mastery": {}, "mates": {}, "profile": None, "rank": None, "record": None, "form": None, "games": 0}, {"weights": {"mastery": 1, "winrate": 1}, "top_n": 3, "ban_n": 1, "meta_enabled": False},
+                       {"kind": "other", "id": 0, "group": ""}, "MIDDLE", [], [], 0, [], set(), [], {}, {})["ally_cells"][0]
+        self.assertEqual((a3["champ"], a3["hover"]), (22, False))
 
 
 class DatosDelUsuarioSeguros(unittest.TestCase):

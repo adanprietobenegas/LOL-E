@@ -30,7 +30,7 @@ class DraftCard(Section):
         self.steps(c, pg)
         cells = r["enemy_cells"]
         champs = ui.champs
-        banned, picked = set(r["bans"]), set(r["enemies"]) | {a["champ"] for a in r["ally_cells"] if a["champ"]}
+        banned, picked = set(r["bans"]), set(r["enemies"]) | {a["champ"] for a in r["ally_cells"] if a["champ"]}   # lo marcado por un aliado tampoco se sugiere banear
         loaded = [x for x in cells if x["puuid"] in pl]
         if not any(x["puuid"] for x in cells):
             ui.lbl(c, "En esta cola Riot no muestra los nombres rivales: no hay bans dirigidos.", 10, "dim", anchor="w").pack(anchor="w", pady=(8, 0))

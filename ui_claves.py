@@ -3,7 +3,7 @@ import claves
 import lol_advisor as core
 
 
-def block(ui, parent, cid, width):
+def block(ui, parent, cid, width, in_game=False):
     """Dibuja el bloque en `parent`; no hace nada si el campeón no tiene claves."""
     key = (ui.champs.get(cid) or {}).get("icon")
     items = claves.for_champ(key)
@@ -28,4 +28,4 @@ def block(ui, parent, cid, width):
         else:
             note, tone = f"Verificado en el parche {ver} con notas de Riot, Data Dragon y Lolalytics.", "dim"
         ui.lbl(c, note, 9, tone, anchor="w").pack(anchor="w", pady=(4, 0))
-    collapsible(ui, parent, f"Claves de {nm}", summ, "claves_campeon", fill)
+    collapsible(ui, parent, f"Claves de {nm}", summ, "claves_campeon_live" if in_game else "claves_campeon", fill, not in_game)

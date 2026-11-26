@@ -7,6 +7,15 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.25.0   (26 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · Selección: lol_advisor.pick_state (marcado ≠ bloqueado; intercambios: manda championId), orden por fase (GUI.ORDERS), barra «Ir a» fija (JumpBar, jump_host), build antes que claves, build sin confirmar plegada.
+  · Partida (variante C): cabecera de una fila, tira en vivo compacta, objetos primero, pliegue «Runas, hechizos e inicio», barra «Ir a» (GameView.mark, GUI.paint_game_jump); «Jugadores», «Claves» y «Tu duelo» cerrados;
+    sin enfriamientos ni habilidades del rival y sin avisos de picos del rival (live.spikes retirado).
+  · ARAM: una build y «Otras N builds». Lo abierto a mano sigue abierto al repintar (OPEN_RUNES, OPEN_MORE). Visita guiada ajustada.
+  · Revisado por dos especialistas de solo lectura (selección y partida). 251 pruebas.
+
 VERSIÓN 1.24.2   (23 de noviembre de 2026)
 ---------------------------------------------------------------------
 

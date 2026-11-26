@@ -57,24 +57,27 @@ def _own(ui, parent, d, name, width, b):
         ui.lbl(parent, "Los niveles y el coste son exactos; el minuto en que llegas a cada objeto depende de tu partida.", 9, "dim", anchor="w").pack(anchor="w", pady=(4, 0))
 
 
-def _vs(ui, parent, dm, do, cid, opp, width):
+def _vs(ui, parent, dm, do, cid, opp, width, in_game=False):
     nm, no = ui.champs[cid]["name"], ui.champs[opp]["name"]
     am = ui.champs[cid].get("attr") or {}
     ao = ui.champs[opp].get("attr") or {}
     rows = guide.duel(dm, do, nm, no, am, ao, ui.champs[opp].get("dmg", ""))
+    if in_game:   # prudencia con las normas de Riot: durante la partida no se enseñan los tiempos de recarga del rival
+        rows = [x for x in rows if x[0] not in ("Ventana de trade", "Su definitiva")]
     if rows:
         _rows(ui, parent, rows, width)
     if do["enemy"]:
         ui.lbl(parent, f"CONSEJOS DE RIOT CONTRA {no.upper()}", 9, "dim", True, anchor="w").pack(anchor="w", pady=(12, 4))
         for t in do["enemy"]:
             ui.lbl(parent, "•  " + t, 11, "fg", anchor="w", justify="left", wraplength=max(240, width - 120)).pack(anchor="w", pady=2)
-    ui.lbl(parent, f"HABILIDADES DE {no.upper()}", 9, "dim", True, anchor="w").pack(anchor="w", pady=(12, 4))
-    _spells(ui, parent, do, width)
+    if not in_game:
+        ui.lbl(parent, f"HABILIDADES DE {no.upper()}", 9, "dim", True, anchor="w").pack(anchor="w", pady=(12, 4))
+        _spells(ui, parent, do, width)
     ui.lbl(parent, "Lo de arriba sale de comparar las estadísticas y habilidades oficiales de ambos; no es una guía escrita de este duelo.", 9, "dim",
            anchor="w", justify="left", wraplength=max(240, width - 120)).pack(anchor="w", pady=(8, 0))
 
 
-def guide_block(ui, host, cid, opp, lane, width):
+def guide_block(ui, host, cid, opp, lane, width, in_game=False):
     """Bloque «Guía de juego». Se rellena solo cuando llegan los datos de Data Dragon."""
     if cid not in ui.champs or not core.DD_VERSION:
         return
@@ -112,5 +115,6 @@ def guide_block(ui, host, cid, opp, lane, width):
         ui.fold(box, f"Cómo jugar con {nm}", lambda p: _own(ui, p, a[1], nm, width, b), "habilidades · picos de poder", "gd_own", False)
         if o and o[0] == "ok":
             no = ui.champs[opp]["name"]
-            ui.fold(box, f"Tu duelo contra {no}", lambda p: _vs(ui, p, a[1], o[1], cid, opp, width), "ventajas · ventanas de trade", "gd_vs", True)
+            ui.fold(box, f"Tu duelo contra {no}", lambda p: _vs(ui, p, a[1], o[1], cid, opp, width, in_game),
+                    "ventajas" if in_game else "ventajas · ventanas de trade", "gd_vs_live" if in_game else "gd_vs", not in_game)
     paint()

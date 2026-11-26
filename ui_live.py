@@ -216,8 +216,8 @@ class LiveView:
     """Lo que ve el jugador durante la partida. `strip` es la tira compacta (va arriba); los diez jugadores van en un pliegue (`detail`).
     Se llama a `update(snap, opp_cid, plan)` con cada lectura nueva; solo cambia lo que ha cambiado."""
 
-    def __init__(self, ui, strip, detail, width):
-        self.ui, self.width = ui, width
+    def __init__(self, ui, strip, detail, width, compact=False):
+        self.ui, self.width, self.compact = ui, width, compact
         self.snap, self.opp, self.plan = None, 0, None
         self.cells = {}
         self.board_built = False
@@ -226,29 +226,40 @@ class LiveView:
         card.pack(fill="x")
         ui.reg("vivo.tira", card)
         box = tk.Frame(card, bg=ui.hexm(PAL["card2"]))
-        box.pack(fill="x", padx=12, pady=12)
+        box.pack(fill="x", padx=12, pady=6 if compact else 12)
         head = ui.frame(box)
         head.pack(fill="x")
         self.clock = ui.lbl(head, "EN VIVO", 10, "fg", True)
         self.clock.pack(side="left")
         self.gold = ui.lbl(head, "", 10, "dim")
         self.gold.pack(side="right")
-        self.bar_kills = BarRow(ui, box, "Bajas", W)
-        self.bar_kills.cv.pack(anchor="w", pady=(8, 0))
-        self.bar_gold = BarRow(ui, box, "Oro en objetos", W)
-        self.bar_gold.cv.pack(anchor="w", pady=(2, 0))
+        if compact and W >= 480:   # las dos barras lado a lado (si caben) y los objetivos en una sola línea
+            bars = ui.frame(box)
+            bars.pack(fill="x", pady=(4, 0))
+            self.bar_kills = BarRow(ui, bars, "Bajas", max(200, W // 2 - 12))
+            self.bar_kills.cv.pack(side="left", padx=(0, 16))
+            self.bar_gold = BarRow(ui, bars, "Oro en objetos", max(200, W // 2 - 12))
+            self.bar_gold.cv.pack(side="left")
+        else:
+            self.bar_kills = BarRow(ui, box, "Bajas", W)
+            self.bar_kills.cv.pack(anchor="w", pady=(8, 0))
+            self.bar_gold = BarRow(ui, box, "Oro en objetos", W)
+            self.bar_gold.cv.pack(anchor="w", pady=(2, 0))
         objs = ui.frame(box)
         ui.reg("vivo.objetivos", objs)
-        objs.pack(fill="x", pady=(8, 0))
-        self.obj = {}
+        objs.pack(fill="x", pady=(4 if compact else 8, 0))
+        self.obj, self.obj_title = {}, {}
+        compact_obj = self.compact_obj = compact and width >= 540   # en una línea solo si cabe; si no, título arriba (no se recorta «Barón»)
         for key, title in OBJECTIVES:
             cell = ui.frame(objs)
             cell.pack(side="left", expand=True, fill="x")
-            ui.lbl(cell, title, 9, "dim").pack()
-            self.obj[key] = ui.lbl(cell, "0 · 0", 12, "dim", True)
+            if not compact_obj:
+                ui.lbl(cell, title, 9, "dim").pack()
+            self.obj_title[key] = title
+            self.obj[key] = ui.lbl(cell, f"{title} 0·0" if compact_obj else "0 · 0", 11 if compact_obj else 12, "dim", True)
             self.obj[key].pack()
         wrap = max(220, width - 150)
-        slots = [ui.frame(box) for _ in range(6)]   # huecos fijos y en orden: lo que aparece o desaparece no cambia el lugar de lo demás
+        slots = [ui.frame(box) for _ in range(5)]   # huecos fijos y en orden: lo que aparece o desaparece no cambia el lugar de lo demás
         for s in slots:
             s.pack(fill="x")
         self.buy = Hint(ui, slots[0], wrap)
@@ -256,10 +267,8 @@ class LiveView:
         self.counter = Hint(ui, slots[1], wrap)
         self.duel = ui.lbl(slots[2], "", 11, "fg", anchor="w", justify="left", wraplength=max(240, width - 110))
         self.reading = ui.lbl(slots[3], "", 10, "dim", anchor="w", justify="left", wraplength=max(240, width - 110))
-        self.alert = ui.lbl(slots[4], "", 11, "warn", True, anchor="w", justify="left", wraplength=max(240, width - 110))
-        self.timer = ui.lbl(slots[5], "", 11, "info", True, anchor="w", justify="left", wraplength=max(240, width - 110))
-        self.duel_on = self.reading_on = self.alert_on = self.timer_on = False
-        self.prev_snap, self.alerts = None, []   # [(hora de partida, frase)] de picos del rival, que se quedan unos segundos
+        self.timer = ui.lbl(slots[4], "", 11, "info", True, anchor="w", justify="left", wraplength=max(240, width - 110))
+        self.duel_on = self.reading_on = self.timer_on = False
         self.summary = ""
         self.fold = ui_vs.collapsible(ui, detail, "Los 10 jugadores en directo", "nivel, objetos y oro de cada uno", "live_board", self._fill_board, open_=False)
 
@@ -322,17 +331,11 @@ class LiveView:
         good, bad, dim = ui.hexm(PAL["good"]), ui.hexm(PAL["bad"]), ui.hexm(PAL["dim"])
         for key, _title in OBJECTIVES:
             va, vb = a.get(key, 0), b.get(key, 0)
-            self.obj[key].configure(text=f"{va} · {vb}", fg=(good if known else ui.hexm(PAL["fg"])) if va > vb else (bad if known else ui.hexm(PAL["fg"])) if vb > va else dim)
+            self.obj[key].configure(text=f"{self.obj_title[key]} {va}·{vb}" if self.compact_obj else f"{va} · {vb}", fg=(good if known else ui.hexm(PAL["fg"])) if va > vb else (bad if known else ui.hexm(PAL["fg"])) if vb > va else dim)
         buy = buy_hint(ui, snap, plan)
         self.buy.set((buy[0], buy[1]) if buy else None)
         self.counter.set(counter_hint(ui, snap, plan, other))
         pareja = live.duel(snap, opp_cid)
-        if self.prev_snap is not snap:   # una lectura nueva: ¿ha pasado algo con tu rival?
-            for txt in (live.spikes(self.prev_snap, snap, opp_cid) if self.prev_snap and snap["t"] - self.prev_snap["t"] <= 30 else []):   # tras un rato minimizada no se juntan avisos viejos
-                self.alerts.append((snap["t"], txt))
-            self.prev_snap = snap
-        self.alerts = [(t, x) for t, x in self.alerts if 0 <= snap["t"] - t <= live.SPIKE_SHOW]
-        self._text(self.alert, "alert_on", " ".join(x for _t, x in self.alerts), 6)
         self._text(self.timer, "timer_on", live.timers(snap) or "", 6)
         self._text(self.duel, "duel_on", live.duel_line(*pareja, ui.champs.get(opp_cid, {}).get("name", "")) if pareja else "", 6)
         frases = live.reading(live.itemization(other, ui.items or {}))

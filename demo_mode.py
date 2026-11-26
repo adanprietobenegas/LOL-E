@@ -206,7 +206,8 @@ class Demo:
             if ui.dock_open:
                 ui.close_dock()
         elif name == "abrir_jugadores":
-            ui.conf.setdefault("folds", {})["game_roster"] = True
+            folds = ui.conf.setdefault("folds", {})
+            folds["game_roster"] = folds["game_roster_live"] = folds["game_opp"] = True   # en partida salen cerrados: la lección los abre
             ui.game_view.refresh(ui.make_ctx(), True)
         elif name == "parche_notas":
             ui.patch_view.set_tab("Notas")

@@ -10,6 +10,15 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.25.0", "fecha": "26 de noviembre de 2026", "titulo": "Selección y partida más claras: menos desplazarse", "items": [
+        ("nuevo", "Barra «Ir a» fija arriba, en la selección de campeón y durante la partida: un clic te lleva a tu campeón o tu build, las recomendaciones, los contrarrestos, los equipos, las claves o los consejos."),
+        ("mejora", "En partida, «Tu partida» es mucho más compacta: cabecera de una fila, barras de bajas y oro lado a lado, los objetos de tu build primero (se ven sin desplazar) y runas, hechizos y objeto inicial (ya elegidos) detrás de un enlace. «Jugadores», «Claves» y «Tu duelo» salen cerrados."),
+        ("mejora", "Los bloques de la selección se ordenan según lo que toca: en los bans las ideas de baneo, eligiendo las recomendaciones y, con tu campeón bloqueado, su build."),
+        ("mejora", "Un campeón solo marcado (sin bloquear) se distingue («Sin confirmar», en naranja) y ya no cuenta en las recomendaciones; no se sugiere banear el que un aliado está marcando, y tu build se despliega al bloquear."),
+        ("mejora", "ARAM y Mayhem enseñan una sola build (las demás, con un clic): el banquillo queda a la vista."),
+        ("arreglo", "Tras un intercambio de campeones se ven los nuevos, también el tuyo. La tira de recomendados ya no baja al cambiar de filtro."),
+        ("mejora", "Por prudencia con las normas de Riot, durante la partida ya no se avisa de la subida de nivel o la compra de tu rival ni se muestran sus enfriamientos."),
+    ]},
     {"v": "1.24.2", "fecha": "23 de noviembre de 2026", "titulo": "Un fondo azul medianoche", "items": [
         ("mejora", "El tema oscuro predeterminado cambia el casi negro por un azul medianoche algo más cálido y con más profundidad; las tarjetas mantienen su contraste. Si prefieres otro tono, sigue estando en Ajustes › Aspecto."),
     ]},

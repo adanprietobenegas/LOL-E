@@ -17,7 +17,7 @@ import synergy
 import trends
 from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.24.2"
+APP_NAME, APP_VERSION = "LOL-E", "1.25.0"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -1011,13 +1011,32 @@ def sanitize_session(s):
 def my_champion(session):
     """(campeón, confirmado): el que has marcado o bloqueado. Su build se muestra aunque no esté entre las recomendaciones."""
     me_cell = session.get("localPlayerCellId")
+    me = next((p for p in session.get("myTeam") or [] if p.get("cellId") == me_cell), {})
+    cid = me.get("championId") or 0
     for grp in session.get("actions") or []:
         for a in grp or []:
             if a.get("type") == "pick" and a.get("actorCellId") == me_cell and a.get("championId"):
-                return a["championId"], bool(a.get("completed"))
-    me = next((p for p in session.get("myTeam") or [] if p.get("cellId") == me_cell), {})
-    cid = me.get("championId") or 0
+                if a.get("completed"):
+                    return (cid or a["championId"]), True   # tras un intercambio manda championId
+                return a["championId"], False
     return (cid, True) if cid else (me.get("championPickIntent") or 0, False)
+
+
+def pick_state(session, p):
+    """(campeón, confirmado) de un jugador de TU equipo. «Confirmado» = ya lo bloqueó; si solo lo tiene marcado (el cliente lo llama «intención»
+    o es el campeón de una acción de elegir sin completar) devuelve el campeón con False. Sin acciones de elegir (ARAM, modos sin draft) lo que
+    el cliente entrega como campeón cuenta como confirmado."""
+    cell = p.get("cellId")
+    cid = p.get("championId") or 0
+    hover = p.get("championPickIntent") or 0
+    acts = [a for g in session.get("actions") or [] for a in g if a.get("type") == "pick" and a.get("actorCellId") == cell]
+    if acts:
+        done = [a for a in acts if a.get("completed") and a.get("championId")]
+        if done:
+            return (cid or done[0]["championId"]), True   # tras un intercambio el cliente cambia championId, no la acción original
+        marked = cid or hover or next((a.get("championId") for a in acts if a.get("championId")), 0) or 0
+        return marked, False
+    return (cid, True) if cid else (hover, False)
 
 
 def _result(session, champs, P, conf, mode, role, allies, enemies, lane_opp, bans, taken, cands, ens, als):
@@ -1032,7 +1051,7 @@ def _result(session, champs, P, conf, mode, role, allies, enemies, lane_opp, ban
             "pct_scale": 0.8 * (w["mastery"] + w["winrate"]) if mode["kind"] == "aram" else 0.6 * sum(w.values()),
             "enemy_cells": [{"cell": p["cellId"], "champ": p["championId"] or 0, "puuid": p.get("puuid", ""), "name": p.get("gameName", "")}
                             for p in session["theirTeam"]],
-            "ally_cells": [{"cell": p["cellId"], "champ": p["championId"] or p.get("championPickIntent", 0),
+            "ally_cells": [{"cell": p["cellId"], "champ": pick_state(session, p)[0], "hover": not pick_state(session, p)[1] and bool(pick_state(session, p)[0]),
                             "role": norm_role(p.get("assignedPosition")), "puuid": p.get("puuid", "")}
                            for p in session["myTeam"] if p["cellId"] != me_cell],
             "meta_info": ({"patch": metamod.public_patch(md["patch"]), "current": metamod.public_patch(md.get("current", md["patch"])),
@@ -1049,7 +1068,7 @@ def advise_aram(session, champs, P, conf, mode):
     me = next((p for p in session["myTeam"] if p["cellId"] == me_cell), {})
     mine = me.get("championId") or me.get("championPickIntent", 0)
     bench = [b["championId"] for b in session.get("benchChampions", []) if b.get("championId")]
-    allies = [a for a in (p["championId"] or p.get("championPickIntent", 0) for p in session["myTeam"] if p["cellId"] != me_cell) if a]
+    allies = [c for c, ok in (pick_state(session, p) for p in session["myTeam"] if p["cellId"] != me_cell) if c and ok]   # solo los confirmados
     enemies = [p["championId"] for p in session["theirTeam"] if p["championId"]]
     ens, als = comp_stats(enemies, champs, True), comp_stats(allies, champs)
     w, prior = conf["weights"], getp(conf, "winrate_prior")
@@ -1095,10 +1114,10 @@ def _advise(session, champs, P, conf, mode):
     me_cell = session["localPlayerCellId"]
     me = next((p for p in session["myTeam"] if p["cellId"] == me_cell), {})
     role = norm_role(me.get("assignedPosition"))
-    allies = [p["championId"] or p.get("championPickIntent", 0) for p in session["myTeam"] if p["cellId"] != me_cell]
-    allies = [a for a in allies if a]
-    ally_roles = {(p["championId"] or p.get("championPickIntent", 0)): norm_role(p.get("assignedPosition"))
-                  for p in session["myTeam"] if p["cellId"] != me_cell and (p["championId"] or p.get("championPickIntent", 0)) and p.get("assignedPosition")}
+    states = [(p, *pick_state(session, p)) for p in session["myTeam"] if p["cellId"] != me_cell]
+    allies = [c for _p, c, ok in states if c and ok]   # solo los ya bloqueados: uno que solo está marcado puede cambiar y no debe mover las recomendaciones
+    ally_roles = {c: norm_role(p.get("assignedPosition")) for p, c, ok in states if c and ok and p.get("assignedPosition")}
+    hovered = {c for _p, c, ok in states if c and not ok}   # no cuentan como elegidos, pero no se sugiere banearlos y se avisa si salen recomendados
     enemies = [p["championId"] for p in session["theirTeam"] if p["championId"]]
     lane_opp = next((p["championId"] for p in session["theirTeam"]
                      if p["championId"] and role and norm_role(p.get("assignedPosition")) == role), 0)
@@ -1140,6 +1159,8 @@ def _advise(session, champs, P, conf, mode):
             fl = trends.short_flag(TRENDS["data"], lane_key, cid)
             if fl:
                 why.append(fl)
+        if cid in hovered:
+            why.insert(0, "un aliado lo está marcando")
         parts["synergy"] = w.get("synergy", 0) * syn["score"]
         why = why + syn["why"]
         parts["off_role"] = -8.0 if off else 0.0
@@ -1156,7 +1177,7 @@ def _advise(session, champs, P, conf, mode):
                       "lane": (lane_opp, *P["matchups"].get((cid, lane_opp), [0, 0])) if lane_opp else None,
                       "vs": [(e, *P["matchups"][(cid, e)]) for e in enemies if (cid, e) in P["matchups"]],
                       "build": build_tips(champs[cid], ens, als)})
-    res = _result(session, champs, P, conf, mode, role, allies, enemies, lane_opp, bans, taken, cands, ens, als)
+    res = _result(session, champs, P, conf, mode, role, allies, enemies, lane_opp, bans, taken | hovered, cands, ens, als)
     res["lane_opp_auto"] = auto_opp   # la ventana lo necesita para ofrecer «Auto» aunque estés viendo otro rival
     return res
 

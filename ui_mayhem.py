@@ -111,6 +111,9 @@ def _items(ui, parent, ids, size=30):
     return row
 
 
+OPEN_MORE = set()   # (campeón, modo) con «Otras builds» abiertas: un repintado (llega un icono…) las volvía a cerrar
+
+
 def build_block(ui, host, cid, mode_id, width):
     """Build sugerida (op.gg) y, en Mayhem, mejoras sugeridas. Se rellena sola cuando llegan los datos."""
     import aram_builds
@@ -150,11 +153,31 @@ def build_block(ui, host, cid, mode_id, width):
                 r.pack(fill="x", pady=4)
                 ui.lbl(r, label, 9, "dim", True, width=84, anchor="w").pack(side="left")
                 _items(ui, r, ids).pack(side="left")
-        for i, b in enumerate(d["builds"], 1):
-            r = ui.frame(box)
+        def build_row(host, i, b):
+            r = ui.frame(host)
             r.pack(fill="x", pady=4)
             ui.lbl(r, f"BUILD {i}", 9, "dim", True, width=84, anchor="w").pack(side="left")
             _items(ui, r, b, 34).pack(side="left")
+
+        builds_ = d["builds"]
+        if builds_:
+            build_row(box, 1, builds_[0])   # una sola a la vista (en ARAM hay prisa y el banquillo queda más abajo); las demás, con un clic
+        if len(builds_) > 1:
+            more = ui.frame(box)
+            more.pack(fill="x")
+
+            def open_more(_e=None):
+                OPEN_MORE.add((cid, mode_id))
+                ui.clear(more)
+                for i, b in enumerate(builds_[1:], 2):
+                    build_row(more, i, b)
+            if (cid, mode_id) in OPEN_MORE:
+                open_more()
+            else:
+                link = ui.lbl(more, f"▸ Otras {len(builds_) - 1} builds", 10, "info", True, anchor="w")
+                link.pack(anchor="w", pady=(2, 2))
+                link.configure(cursor="hand2")
+                link.bind("<Button-1>", open_more)
         if d.get("skills"):
             r = ui.frame(box)
             r.pack(fill="x", pady=4)
@@ -182,9 +205,9 @@ def build_block(ui, host, cid, mode_id, width):
             rest = [n for n in d["augments"] if n not in known]
             if rest:
                 ui.lbl(box, "Mejoras de op.gg que no encuentro en tu cliente (sin icono): " + ", ".join(rest), 9, "dim", anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(2, 0))
-        ui.lbl(box, "Orden y listas de op.gg; en Mayhem no publica porcentajes. LOL-E tampoco muestra victorias por mejora (norma de Riot). "
-                    "Como cada ronda es de una sola categoría, mira la fila de esa categoría; si no hay ninguna de tu lista, elige por lo que haga tu build.",
-               9, "dim", anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(8, 0))
+        note = ("Orden y listas de op.gg; en Mayhem no publica porcentajes. LOL-E tampoco muestra victorias por mejora (norma de Riot). "
+                "Como cada ronda es de una sola categoría, mira la fila de esa categoría; si no hay ninguna de tu lista, elige por lo que haga tu build.") if mayhem else "Orden y listas de op.gg."
+        ui.lbl(box, note, 9, "dim", anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(8, 0))
     paint()
 
 class AramBuild(Section):
