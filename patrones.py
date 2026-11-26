@@ -78,6 +78,14 @@ GOAL = {
 }
 
 
+UNTIL = {"muertes_pronto": 15 * 60, "farmeo_10": 10 * 60, "oro_15": 15 * 60}   # segundo de partida a partir del cual el objetivo ya está decidido
+
+
+def until(p):
+    """Cuándo deja de tener sentido enseñar el objetivo durante la partida (segundos), o None."""
+    return UNTIL.get((p or {}).get("clave"))
+
+
 def goal(p):
     """Un objetivo medible para la próxima partida, sacado del patrón (None si no hay patrón)."""
     return "Tu objetivo: " + GOAL[p["clave"]] if p and p.get("clave") in GOAL else None

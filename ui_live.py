@@ -143,6 +143,7 @@ class Hint:
         if not value:
             if self.shown:
                 self.row.pack_forget()
+                self.row.master.configure(height=1)
                 self.shown = False
             return
         if value[1] != self.iid:
@@ -340,7 +341,8 @@ class LiveView:
         self._text(self.duel, "duel_on", live.duel_line(*pareja, ui.champs.get(opp_cid, {}).get("name", "")) if pareja else "", 6)
         frases = live.reading(live.itemization(other, ui.items or {}))
         if self.counter.last:   # la sugerencia ya dice qué acumulan o qué daño hacen: no se repite
-            frases = [f for f in frases if not f.startswith("Acumulan")]
+            repeated = ("Acumulan", "Daño del equipo rival") if self.counter.last[0].startswith("El daño rival") else ("Acumulan",)
+            frases = [f for f in frases if not f.startswith(repeated)]
         self._text(self.reading, "reading_on", " ".join(frases) + "  (orientativo)" if frases else "", 6)
         if self.board_built:
             self._update_board(snap)
@@ -354,6 +356,7 @@ class LiveView:
             lab.pack(anchor="w", pady=(pady, 0))
         elif not on and getattr(self, flag):
             lab.pack_forget()
+            lab.master.configure(height=1)
         setattr(self, flag, on)
 
     def alive(self):

@@ -197,7 +197,7 @@ class WaitCard(Section):
 
     def key(self, ctx):
         last = self.last_game()
-        return (ctx["msg"], ctx["linked"], self.tilt(), last and (last[0].get("id"), last[1], last[2], ago_text(last[0].get("t", 0))))
+        return (ctx["msg"], ctx["linked"], ctx.get("phase"), self.tilt(), last and (last[0].get("id"), last[1], last[2], ago_text(last[0].get("t", 0))))
 
     def draw_last(self, ctx):
         last = self.last_game()
@@ -234,7 +234,9 @@ class WaitCard(Section):
         ui.lbl(row, "●", 12, "good" if ctx["linked"] else "warn").pack(side="left", padx=(0, 8))
         # el título dice lo que toca hacer ahora; la pista va debajo, en su propia línea (al lado se montaba sobre el título en ventanas estrechas)
         ui.lbl(row, "Esperando la selección de campeón" if ctx["linked"] else "Abre League of Legends", 13, "fg", True, True).pack(side="left")
-        hint = ("Entra en una cola: esta ventana se activa sola al empezar la selección." if ctx["linked"]
+        queued = {"Matchmaking": "Buscando partida: esta ventana se activa sola al empezar la selección.",
+                  "ReadyCheck": "Partida encontrada: en cuanto aceptéis todos, aquí aparece la selección."}.get(ctx.get("phase"))
+        hint = ((queued or "Entra en una cola: esta ventana se activa sola al empezar la selección.") if ctx["linked"]
                 else "Después entra en una cola: esta ventana se activa sola al empezar la selección.")
         ui.autowrap(ui.lbl(c, hint, 10, "dim", anchor="w", justify="left"), c).pack(anchor="w", pady=(4, 0))
         note = self.tilt()
@@ -243,7 +245,7 @@ class WaitCard(Section):
             lab.pack(anchor="w", pady=(8, 0))
             ui.reg("inicio.sesion", lab)
         msg = ctx["msg"] or ""
-        if msg and not any(s in msg for s in ("Conectado al cliente", "Abre el cliente", "Esperando al cliente")):
+        if msg and not any(s in msg for s in ("Conectado al cliente", "Abre el cliente", "Esperando al cliente", "Historial cargado")):
             ui.autowrap(ui.lbl(c, msg, 10, "dim", anchor="w", justify="left"), c).pack(anchor="w", pady=(2, 0))
         self.draw_last(ctx)
 
@@ -851,7 +853,8 @@ def comp_line(st):
     """«daño físico 3 · mágico 1 · tanques 1 · control alto» de un equipo (comp_stats), o "" si aún no hay campeones. Solo datos de composición."""
     if not st or not (st.get("ad", 0) + st.get("ap", 0)):
         return ""
-    return f"daño físico {st['ad']} · mágico {st['ap']} · tanques {st.get('tanks', 0)} · control {ctl(st.get('cc', 0))}"
+    line = f"daño físico {st['ad']} · mágico {st['ap']} · tanques {st.get('tanks', 0)}"
+    return line + (f" · control {ctl(st.get('cc', 0))}" if st["ad"] + st["ap"] >= 3 else "")   # con uno o dos campeones, «control 3 de 3» confunde
 
 
 class TurnCard(Section):
@@ -885,7 +888,8 @@ class TurnCard(Section):
         left.pack(side="left")
         turn = r["turn"]
         dot = {"ban": "bad", "pick": "good"}.get(turn, "dim")
-        title = {"ban": "Te toca banear", "pick": "Te toca elegir"}.get(turn, "Selección en curso")
+        waiting = "Planificación: marca tu campeón" if session["timer"]["phase"] == "PLANNING" else "Selección en curso"
+        title = {"ban": "Te toca banear", "pick": "Te toca elegir"}.get(turn, waiting)
         head = ui.frame(left)
         head.pack(anchor="w")
         dot_lbl = ui.lbl(head, "●", 16, dot)
@@ -1048,7 +1052,16 @@ class BanIdeas(Section):
             cell = ui.frame(row)
             cell.pack(side="left", padx=(0, 16))
             ui.champ(cell, cid, 40, False, "#ff5a5f").pack(side="left")
-            ui.lbl(cell, f"{n}\n{g - w} {'derrota' if g - w == 1 else 'derrotas'} de {g}", 10, "bad").pack(side="left", padx=8)
+            ui.lbl(cell, f"{n}\n{g - w} {'derrota' if g - w == 1 else 'derrotas'} de {g}", 10, "bad", justify="left", anchor="w").pack(side="left", padx=8)
+        if threats:   # menos de tres tuyas: se completa con lo que más gana en tu línea, separado y dicho
+            ui.lbl(c, "Y lo que más gana en tu línea este parche (todos los jugadores):", 9, "dim", anchor="w").pack(anchor="w", pady=(10, 4))
+            more = ui.frame(c)
+            more.pack(anchor="w")
+            for n, wr, cid in threats:
+                cell = ui.frame(more)
+                cell.pack(side="left", padx=(0, 16))
+                ui.champ(cell, cid, 32, False, None).pack(side="left")
+                ui.lbl(cell, f"{n}\n{wr:.1f} %".replace(".", ","), 9, "dim", justify="left", anchor="w").pack(side="left", padx=6)
 
 
 CLASES = {"Todas": None, "Tanque": "Tank", "Luchador": "Fighter", "Asesino": "Assassin", "Mago": "Mage",
@@ -1067,12 +1080,18 @@ class Recs(Section):
         self.menu_order = self.menu_class = None
         self.toggles = {}
         self.list_tab, self.info = "Afinidad", {}
+        self.unfolded = None   # campeón con el que pediste ver las recomendaciones después de bloquearlo
 
     def key(self, ctx):
         r, cf = ctx["r"], self.ui.conf
         return (tuple((c["cid"], round(c["score"], 1), c["off_role"]) for c in r["cands"]), tuple(r["allies"]),
                 tuple(r["enemies"]), r["lane_opp"], cf["rec_view"], cf["compact"], cf["top_n"],
-                bool(r["meta_info"]), r["mode"]["kind"])
+                bool(r["meta_info"]), r["mode"]["kind"], self.done_for(r))
+
+    def done_for(self, r):
+        """El campeón bloqueado si las recomendaciones van plegadas (en la Grieta, ya elegido y sin haber pedido verlas), o None."""
+        mine = r.get("mine") if r.get("mine_locked") and r["mode"]["kind"] == "sr" else None
+        return mine if mine and mine != self.unfolded else None
 
     def build(self, ctx):
         ui = self.ui
@@ -1084,6 +1103,19 @@ class Recs(Section):
             c = ui.card(self.box, "Recomendado para ti")
             ui.lbl(c, f"Este modo ({self.r['mode']['group'] or 'sin identificar'}) no tiene recomendaciones.\nLOL-E está pensado para la "
                       "Grieta del Invocador y, con menos datos, para ARAM.", 11, "dim", anchor="w", justify="left", wraplength=max(240, self.width - 110)).pack(anchor="w")
+            return
+        done = self.done_for(self.r)
+        if done:   # ya has bloqueado: no se ofrece «tu mejor opción» con otro campeón; un clic las devuelve (p. ej. para un intercambio)
+            self.dyn = None
+            c = ui.card(self.box)
+            more = ui.lbl(c, "▸ Ver las recomendaciones (ya has elegido campeón)", 10, "info", True, anchor="w")
+            more.pack(anchor="w")
+            more.configure(cursor="hand2")
+
+            def open_it(_e=None, ctx=ctx, cid=done):
+                self.unfolded = cid
+                self.refresh(ctx, True)
+            more.bind("<Button-1>", open_it)
             return
         c = ui.card(self.box)
         head = ui.frame(c)

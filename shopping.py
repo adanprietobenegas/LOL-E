@@ -151,5 +151,5 @@ def counter_item(enemy, pool, items, inventory, minimum=2500):
             if enemy[dom] >= 0.7 * ataque:
                 it = next((i for i in libres if tag in items[i]["t"]), None)
                 if it:
-                    return {"id": it, "why": f"Su daño es sobre todo {texto} ({round(100 * enemy[dom] / ataque)} %): {'armadura' if tag == 'Armor' else 'resistencia mágica'}."}
+                    return {"id": it, "why": f"El daño rival es sobre todo {texto} ({round(100 * enemy[dom] / ataque)} %): {'armadura' if tag == 'Armor' else 'resistencia mágica'}."}
     return None

@@ -61,7 +61,7 @@ def icon(kind, color, size=22, dot=None):
 class RailNav:
     def __init__(self, kit, parent, command, current=""):
         self.k, self.cmd, self.cur = kit, command, current
-        self.expanded, self.live = False, False
+        self.expanded, self.live, self.selecting = False, False, False
         self.badges = set()   # claves con punto de aviso
         self.cache = {}
         self.frame = kit.frame(parent)
@@ -102,16 +102,17 @@ class RailNav:
             (self.badges.add if on else self.badges.discard)(key)
             self.paint()
 
-    def set_live(self, on):
-        if on != self.live:
-            self.live = on
+    def set_live(self, on, selecting=False):
+        """`selecting`: hay selección de campeón, que vive en la primera pestaña: se llama «Selección» mientras dura."""
+        if (on, selecting) != (self.live, self.selecting):
+            self.live, self.selecting = on, selecting
             self.paint()
 
     def paint(self):
         k = self.k
         for key, kind, label, live_label in ITEMS:
             b = self.btns[key]
-            name = live_label if (self.live and live_label) else label
+            name = live_label if (self.live and live_label) else "Selección" if (self.selecting and key == "Asesor") else label
             on = key == self.cur
             hot = self.live and live_label is not None
             tone = "warn" if hot else "fg" if on else "dim"

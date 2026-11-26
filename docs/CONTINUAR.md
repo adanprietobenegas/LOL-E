@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.29.1). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.30.0). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -21,6 +21,8 @@ español. Repositorio público `adanprietobenegas/LOL-E`, rama `main`. Pestañas
 Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el cliente local y datos públicos (Data Dragon, Lolalytics, op.gg).
 
 ## 2. Estado (actualizar al terminar cada conversación)
+
+**1.30.0 (26/11/2026).** Primera clasificatoria real observada (victoria; consejos al instante, orden por fases y conjunto de objetos en la tienda confirmados). Arreglados los fallos vistos; sin ver aún en una partida real: jugador completado con la API en vivo, bloque en vivo oculto al acabar, objetivo que caduca, recomendaciones plegadas. «Enviar objetos al cliente» no envía runas ni hechizos (enviarlos sigue pendiente de revisar la política de Riot). Observar una partida: script pasivo de captura de la ventana + `cache\diag.log`.
 
 **1.26.0 (26/11/2026, trabajo autónomo pedido por el usuario).** Publicadas 1.25.1, 1.26.0, 1.27.0, 1.28.0, 1.29.0 y 1.29.1 (guía de pruebas en `docs/GUIA_PRUEBAS.md`; «Tu última partida» en Inicio y reconexión sin releer el historial). El usuario la probará en clasificatorias y un compañero la instalará: al retomar, preguntar cómo les fue y mirar `%LOCALAPPDATA%\\LOL-E\\diag.log` y `error.log`. Qué vigilar: que los consejos salgan al empezar la selección, marcado vs «Sin confirmar», intercambios, reconexión si se reinicia el cliente, ventana con escala de Windows. **Pendiente (propuestas no hechas):** revisión visual: etiquetas que aprietan la tarjeta de jugador; conclusión primero en Análisis, enviar runas al cliente (revisar política de Riot).
 

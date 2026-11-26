@@ -141,7 +141,7 @@ def reading(m, minimum=2500):
     attack = m["ad"] + m["ap"]
     if attack >= minimum:
         ad = round(100 * m["ad"] / attack)
-        out.append(f"Su daño, según sus objetos: {ad} % físico · {100 - ad} % mágico.")
+        out.append(f"Daño del equipo rival, según sus objetos: {ad} % físico · {100 - ad} % mágico.")
     if m["armor"] + m["mr"] >= minimum:
         if m["armor"] >= 1.8 * m["mr"]:
             out.append("Acumulan armadura: la penetración de armadura rinde más que el daño bruto.")

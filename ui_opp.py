@@ -64,13 +64,13 @@ def picker(ui, parent, cid, lane, enemies, auto, chosen, on_pick, width=520):
         import customtkinter as ctk
         t = ctk.CTkFrame(row, corner_radius=10, fg_color=core_color("well"), border_width=2,
                          border_color=core_color("acc", ui) if selected else core_color("edge"))
-        t.pack(side="left", padx=(0, 8), pady=2)
+        t.pack(side="left", fill="y", padx=(0, 8), pady=2)   # todas igual de altas: la de «Auto» quedaba más baja y cortaba «sin datos»
         inner = ui.frame(t, fg_color="transparent")
         inner.pack(padx=8, pady=4)
         if label_cid:
             ui.champ(inner, label_cid, 34, False).pack()
         else:
-            ui.lbl(inner, "AUTO", 11, ui.acc, True).pack(pady=(8, 8), padx=4)
+            ui.lbl(inner, "AUTO", 11, ui.acc, True).pack(pady=(6, 6), padx=4)
         ui.lbl(inner, title, 10, "fg", selected).pack(pady=(2, 0))
         sub = ui.lbl(inner, "", 9, "dim")
         sub.pack()

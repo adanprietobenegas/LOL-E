@@ -1680,6 +1680,49 @@ class BaneosSinHistorial(unittest.TestCase):
         self.assertEqual(l.meta_threats(champs, data, "", set()), [])
 
 
+class RunasPorSuNombre(unittest.TestCase):
+    def test_grupos_completos(self):
+        from ui_build import rune_names
+        rd = {"runes": {1: {"n": "Triunfo"}, 2: {"n": "Valor"}, 3: {"n": "Revestimiento"}}}
+        rn = {"primary": [1, 2], "secondary": [3, 99], "shards": []}
+        self.assertEqual(rune_names(rn, rd), [("Principal", "Triunfo  ·  Valor")])   # con un nombre desconocido no se enseña el grupo a medias
+        self.assertEqual(rune_names({}, {}), [])
+
+
+class TrasLaRanked(unittest.TestCase):
+    """Fallos vistos en una clasificatoria real."""
+    def test_planificacion_no_es_turno(self):
+        import lol_advisor as l
+        ses = {"localPlayerCellId": 0, "timer": {"phase": "PLANNING"}, "actions": [[{"actorCellId": 0, "isInProgress": True, "type": "ban"}]]}
+        self.assertIsNone(l.my_turn(ses))
+        ses["timer"]["phase"] = "BAN_PICK"
+        self.assertEqual(l.my_turn(ses), "ban")
+
+    def test_completa_el_jugador_que_falta(self):
+        import players
+        def x(team, cid, role): return {"team": team, "cid": cid, "puuid": "p%d" % cid, "role": role, "spells": [], "me": False, "icon": 0}
+        roster = [x("ally", i, r) for i, r in zip(range(1, 6), players.ROLE_ORDER)] + [x("enemy", i, r) for i, r in ((6, "TOP"), (8, "MIDDLE"), (9, "BOTTOM"), (10, "SUPPORT"))]
+        snap = {"me_team": "ORDER", "players": [{"team": "ORDER", "cid": i, "pos": ""} for i in range(1, 6)] +
+                [{"team": "CHAOS", "cid": i, "pos": p} for i, p in zip(range(6, 11), ("TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"))]}
+        full = players.complete_roster(roster, snap)
+        self.assertEqual(len(full), 10)
+        self.assertEqual([(y["cid"], y["role"], y["puuid"]) for y in full if y["cid"] == 7], [(7, "JUNGLE", "")])
+        self.assertIsNone(players.complete_roster(full, snap))                    # ya completa
+        self.assertIsNone(players.complete_roster(roster, {**snap, "me_team": ""}))
+        roster[-1]["cid"] = 0                                                     # alguien sin campeón: no se sabe cuál falta
+        self.assertIsNone(players.complete_roster(roster, snap))
+
+    def test_objetivo_con_minuto_limite(self):
+        import patrones
+        self.assertEqual(patrones.until({"clave": "farmeo_10"}), 600)
+        self.assertIsNone(patrones.until(None))
+
+    def test_control_solo_con_tres_campeones(self):
+        from ui_sections import comp_line
+        self.assertNotIn("control", comp_line({"ad": 1, "ap": 0, "tanks": 0, "cc": 3}))
+        self.assertIn("control", comp_line({"ad": 2, "ap": 1, "tanks": 0, "cc": 2}))
+
+
 class UltimaPartida(unittest.TestCase):
     def test_hace_cuanto(self):
         from ui_sections import ago_text
@@ -2791,7 +2834,7 @@ class PartidaEnVivo(unittest.TestCase):
         eq = [{"items": [3031, 3047, 2003]}, {"items": [3031, 3068]}, {"items": [6655, 3340]}]
         m = self.live.itemization(eq, db)
         self.assertEqual(m, {"ad": 6800, "ap": 3000, "armor": 3800, "mr": 0})        # sin consumibles ni baliza
-        self.assertEqual(self.live.reading(m), ["Su daño, según sus objetos: 69 % físico · 31 % mágico.",
+        self.assertEqual(self.live.reading(m), ["Daño del equipo rival, según sus objetos: 69 % físico · 31 % mágico.",
                                                 "Acumulan armadura: la penetración de armadura rinde más que el daño bruto."])
         self.assertEqual(self.live.reading({"ad": 900, "ap": 500, "armor": 700, "mr": 100}), [])   # con poco oro no se opina
         self.assertIn("resistencia mágica", self.live.reading({"ad": 0, "ap": 0, "armor": 500, "mr": 3000})[0])

@@ -120,9 +120,8 @@ class AnalysisView:
             opp = (analysis.enemies(a) or [{"pid": None}])[0]["pid"]
         self.nosec = True
         self.hosts, self.folds, self.cur = {}, {}, (a, opp)
-        self.header(host, a, opp)
         adv = analysis.advice(a, opp, ui.champs)
-        self.headline(host, a, adv)
+        self.header(host, a, opp, adv)
         self.media(host, a)
         self.kpis(host, a, opp)
         ev = self.events(a)
@@ -226,7 +225,7 @@ class AnalysisView:
         except Exception:
             core.log_exc("Tu partida frente a tu media")
 
-    def header(self, host, a, opp):
+    def header(self, host, a, opp, adv=None):
         ui, gv = self.ui, self.gv
         m = analysis.me(a)
         card = ctk.CTkFrame(host, fg_color=PAL["card2"], corner_radius=14)
@@ -259,6 +258,8 @@ class AnalysisView:
             res = None
         if res:
             ui.lbl(host, res[1], 11, "good" if res[0] else "warn", True, anchor="w", justify="left", wraplength=max(240, gv.width - 110)).pack(anchor="w", pady=(0, 8))
+        if adv is not None:
+            self.headline(host, a, adv)   # lo primero tras el resultado: la conclusión; después, con quién comparar
         if opp is None:
             return
         o = analysis.player(a, opp)

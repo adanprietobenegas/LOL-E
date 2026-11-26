@@ -444,8 +444,8 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
         itemset.send_async(ui.conf, uid, title, cid, blocks, res, champs[cid].get("icon"))
         row.after(300, poll)
 
-    btn = ctk.CTkButton(row, text="Enviar al cliente", height=28, width=140, corner_radius=8, font=ui.font(11, True), fg_color=ui.acc,
-                        text_color=ON_FILL, command=go)
+    btn = ctk.CTkButton(row, text="Enviar objetos al cliente", height=28, width=180, corner_radius=8, font=ui.font(11, True), fg_color=ui.acc,
+                        text_color=ON_FILL, text_color_disabled=ON_FILL, command=go)   # mientras envía se sigue leyendo
     btn.pack(side="left", padx=(0, 12))
     msg.pack(side="left", fill="x", expand=True)
     var = ctk.BooleanVar(value=bool(ui.conf.get("auto_itemset")))
@@ -455,10 +455,11 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
         core.save_conf(ui.conf)
         if var.get():
             go_auto()
-    sw = ctk.CTkSwitch(parent, text="Enviar siempre al elegir campeón", variable=var, font=ui.font(10), progress_color=ui.acc, command=toggle)
+    sw = ctk.CTkSwitch(parent, text="Enviar los objetos siempre al elegir campeón", variable=var, font=ui.font(10), progress_color=ui.acc, command=toggle)
     sw.pack(anchor="w", pady=(0, 8))
     explica = ("Crea un conjunto de objetos propio en tu cliente («LOL-E · campeón · línea»). El juego lo lee al EMPEZAR la partida: envíalo durante la "
-               "selección; si lo envías con la partida ya cargada, aparecerá en la siguiente. Solo se tocan los conjuntos de LOL-E; los tuyos no.")
+               "selección; si lo envías con la partida ya cargada, aparecerá en la siguiente. Solo se tocan los conjuntos de LOL-E; los tuyos no. "
+               "Las runas y los hechizos no se envían: ponlos tú en el cliente.")
     ui.tip(btn, explica)
     ui.tip(sw, explica)
 
@@ -472,6 +473,15 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
 
 
 _RUNE_PICK = {}   # (campeón, línea, rival) -> página de runas elegida (se recuerda al repintar)
+
+
+def rune_names(rn, rd):
+    """[(«Principal», «A  ·  B  ·  C»), («Secundaria», …), («Fragmentos», …)] de una página de runas; solo los grupos cuyos nombres se conocen todos."""
+    runes = rd.get("runes") or {}
+    groups = (("Principal", [(runes.get(i) or {}).get("n") for i in rn.get("primary") or []]),
+              ("Secundaria", [(runes.get(i) or {}).get("n") for i in rn.get("secondary") or []]),
+              ("Fragmentos", [(runemod.SHARDS.get(i) or (None,))[0] for i in rn.get("shards") or []]))
+    return [(title, "  ·  ".join(names)) for title, names in groups if names and all(names)]
 
 
 def rune_icons(ui, parent, rn, rd, width):
@@ -504,6 +514,8 @@ def rune_icons(ui, parent, rn, rd, width):
     if kn:
         txt = f"{kn}" + (f" ({tree})" if tree else "") + (f"  +  {(rd.get('trees') or {}).get(sec_tree)}" if sec_tree else "")
         ui.lbl(parent, txt, 10, "dim", anchor="w", wraplength=max(200, width - 140), justify="left").pack(anchor="w", pady=(4, 0))
+    for title, text in rune_names(rn, rd):   # por su nombre: las pones tú en el cliente y pasar el ratón icono a icono es lento
+        ui.lbl(parent, f"{title}: {text}", 10, "fg", anchor="w", wraplength=max(200, width - 140), justify="left").pack(anchor="w")
 
 
 OPEN_RUNES = set()   # (campeón, línea, rival) cuyo pliegue «Runas, hechizos e inicio» está abierto: cualquier repintado lo volvía a cerrar

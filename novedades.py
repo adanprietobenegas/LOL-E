@@ -10,6 +10,17 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.30.0", "fecha": "26 de noviembre de 2026", "titulo": "Mejoras tras la primera partida clasificatoria", "items": [
+        ("mejora", "Bajo las runas aparecen sus nombres (principal, secundaria y fragmentos), para ponerlas en el cliente sin pasar el ratón por cada icono. El botón se llama ahora «Enviar objetos al cliente»: las runas y los hechizos no se envían."),
+        ("mejora", "En los baneos, si en tus partidas destacan menos de tres rivales, la lista se completa con lo que más está ganando en tu línea este parche, marcado aparte."),
+        ("mejora", "En el análisis, la conclusión de la partida aparece justo debajo del resultado."),
+        ("mejora", "Con tu campeón ya bloqueado, las recomendaciones quedan plegadas y se abren con un clic. Durante la selección, la primera pestaña se llama «Selección»."),
+        ("arreglo", "Al terminar una partida desaparece el marcador en vivo, con su siguiente compra y sus temporizadores."),
+        ("arreglo", "Si el cliente solo entrega 9 de los 10 jugadores, el que falta se completa con los datos de la partida en curso (sin su rango ni su historial)."),
+        ("arreglo", "Durante la planificación ya no pone «Te toca banear» ni suena antes de tiempo el aviso de baneo."),
+        ("arreglo", "El objetivo de la partida se quita al pasar su minuto límite."),
+        ("arreglo", "Textos y detalles: el tipo de daño rival ya no se dice dos veces, el control del equipo solo aparece con tres campeones o más, en cola la tarjeta de Inicio dice que está buscando partida, y se corrigen la ficha «Auto» del rival, el botón mientras envía y un hueco vacío en partida."),
+    ]},
     {"v": "1.29.1", "fecha": "26 de noviembre de 2026", "titulo": "Ajustes tras la última revisión", "items": [
         ("arreglo", "Las ideas de baneo del meta solo proponen campeones que de verdad se juegan en tu línea."),
         ("arreglo", "Si pulsas «Ver análisis» sin el juego abierto, el análisis se carga en cuanto lo abras."),

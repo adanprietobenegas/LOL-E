@@ -17,7 +17,7 @@ import synergy
 import trends
 from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.29.1"
+APP_NAME, APP_VERSION = "LOL-E", "1.30.0"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -943,6 +943,8 @@ def meta_threats(champs, meta_data, role, taken, n=3):
 
 
 def my_turn(session):
+    if (session.get("timer") or {}).get("phase") == "PLANNING":   # planificando el cliente ya marca acciones «en curso», pero aún no se banea ni se elige
+        return None
     me = session["localPlayerCellId"]
     for group in session.get("actions", []):
         for a in group:
@@ -1098,7 +1100,8 @@ def _result(session, champs, P, conf, mode, role, allies, enemies, lane_opp, ban
     top = [(c["score"], c["cid"], c["why"]) for c in cands if not c["off_role"]][: conf["top_n"]]
     md = META["data"] if (conf.get("meta_enabled", True) and mode["kind"] == "sr") else None
     ideas = ban_suggestions(champs, P, taken, conf["ban_n"], conf, role) if mode["kind"] == "sr" else []
-    threats = meta_threats(champs, md, role, taken, 3) if mode["kind"] == "sr" and not ideas else []
+    shown = set(taken) | {x[3] for x in ideas}
+    threats = meta_threats(champs, md, role, shown, 3 - len(ideas)) if mode["kind"] == "sr" and len(ideas) < 3 else []
     me_cell = session["localPlayerCellId"]
     mine, locked = my_champion(session)
     return {"mine": mine, "mine_locked": locked, "role": role, "allies": allies, "enemies": enemies, "bans": bans, "cands": cands, "top": top, "mode": mode,

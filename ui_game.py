@@ -66,6 +66,7 @@ class GameView:
             return
         self.sig = sig
         self.ui.clear(self.box)
+        self.goal_until = None   # solo lo vuelve a fijar el plan que se pinte ahora (no vale el de la partida anterior)
         card = ui.card(self.box)
         top = ui.frame(card)
         self.compact = bool(self.tab == "Plan" and plan.get("state") == "game" and plan.get("cid") in ui.champs)   # en partida: cabecera de una fila
@@ -173,7 +174,8 @@ class GameView:
         try:
             if self.tab != "Plan":
                 return   # se está mirando otra pestaña (p. ej. el análisis de la anterior): al volver a «Plan» el refresco ya trae el resumen más nuevo
-            if view is not None and view.alive() and ctx.get("live"):
+            expired = bool(getattr(self, "goal_until", None)) and (ctx.get("live") or {}).get("t", 0) >= self.goal_until
+            if view is not None and view.alive() and ctx.get("live") and not expired:
                 view.update(ctx["live"], (ctx.get("plan") or {}).get("opp") or 0, ctx.get("plan"))
                 return
         except Exception:
@@ -185,7 +187,7 @@ class GameView:
         """La tira compacta de «en vivo» (arriba). El pliegue con los diez jugadores se crea aquí pero se coloca más abajo (`place_live_detail`),
         debajo de tu build y tus runas, que son lo que se consulta durante la partida."""
         self.live_view = self.live_detail = None
-        if not ctx.get("live"):
+        if not ctx.get("live") or (ctx.get("plan") or {}).get("state") == "done":   # terminada: el marcador, la compra y los temporizadores ya no sirven
             return
         try:
             import ui_live
@@ -202,13 +204,21 @@ class GameView:
         if getattr(self, "live_detail", None) is not None:
             self.live_detail.pack(fill="x", pady=(0, 8))
 
-    def goal_text(self, plan):
-        """El objetivo de la partida a partir del patrón repetido de tus derrotas; solo en la Grieta."""
+    def goal_text(self, plan, now=0):
+        """El objetivo de la partida a partir del patrón repetido de tus derrotas; solo en la Grieta. En partida (`now`: segundos de juego) desaparece al
+        pasar su minuto límite. Deja en `goal_until` cuándo habrá que quitarlo."""
+        self.goal_until = None
         if (plan.get("kind") or "sr") != "sr":
             return None
         try:
             import patrones
-            return patrones.goal(patrones.current(core.CACHE))
+            p = patrones.current(core.CACHE)
+            until = patrones.until(p)
+            if plan.get("state") == "game" and until:
+                if now >= until:
+                    return None
+                self.goal_until = until
+            return patrones.goal(p)
         except Exception:
             return None
 
@@ -260,7 +270,7 @@ class GameView:
             line = comp_line(core.comp_stats(plan.get("enemies") or [], ui.champs, True))
             if line:
                 ui.lbl(host, f"Rivales: {line}", 11, "dim", anchor="w", justify="left", wraplength=max(240, self.width - 110)).pack(anchor="w", pady=(0, 6))
-        goal = self.goal_text(plan) if plan.get("state") in ("select", "game") else None
+        goal = self.goal_text(plan, (ctx.get("live") or {}).get("t", 0)) if plan.get("state") in ("select", "game") else None
         if goal:   # un solo objetivo medible, sacado de lo que te pasa en tus derrotas
             ui.reg("partida.objetivo", ui.lbl(host, goal, 11, "warn", True, anchor="w", justify="left", wraplength=max(240, self.width - 110))).pack(anchor="w", pady=(0, 8))
         go_roster = None

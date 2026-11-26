@@ -11,6 +11,7 @@ from PIL import Image
 
 import lol_advisor as core
 import parche
+import players
 import stats
 import updater
 from lol_advisor import APP_NAME, APP_VERSION, CACHE, DATA_DIR, PRESET_INFO, read_json, save_conf
@@ -271,7 +272,8 @@ class GUI:
         """Estado del modo en vivo: tiñe la barra lateral y muestra (o esconde) la banda de arriba con la fase, el campeón y el botón de ir y volver."""
         phase = self.ctx.get("phase")
         live = self.advisor == "select" or phase in self.PHASE_ES
-        self.tab_seg.set_live(live)
+        selecting = self.advisor == "select" and phase not in ("GameStart", "InProgress", "Reconnect")
+        self.tab_seg.set_live(live, selecting)
         plan = self.ctx.get("plan") or {}
         champ = core.name(plan["cid"], self.champs) if plan.get("cid") in self.champs else ""
         label = self.PHASE_ES.get(phase) or ("En selección" if self.advisor == "select" else "")
@@ -287,7 +289,9 @@ class GUI:
                     clock = f"{t // 60}:{t % 60:02d}"
         except Exception:
             clock = ""
-        sig = (live, label, champ, self.page == "partida", clock)
+        # el botón solo si lleva a algo: en cola aún no hay partida que ver, y en la selección sin campeón marcado no hay plan
+        nowhere = self.page != "partida" and (phase in ("Matchmaking", "ReadyCheck") or (selecting and not champ))
+        sig = (live, label, champ, self.page == "partida", clock, nowhere)
         if sig == self.band_sig:
             return
         self.band_sig = sig
@@ -295,7 +299,10 @@ class GUI:
             self.band.pack_forget()
             return
         self.band_txt.configure(text=f"●  {label}" + (f"  ·  {clock}" if clock else "") + (f"  ·  {champ}" if champ else ""))
-        selecting = self.advisor == "select" and phase not in ("GameStart", "InProgress", "Reconnect")
+        if nowhere:
+            self.band_btn.pack_forget()
+        elif not self.band_btn.winfo_manager():
+            self.band_btn.pack(**self.band_btn_pack)
         if self.page == "partida":
             self.band_btn.configure(text="Volver a la selección" if selecting else "Ir a Inicio")
         else:
@@ -428,6 +435,8 @@ class GUI:
         Si ya hay un plan de ESTA selección o partida en curso no se toca."""
         c = self.ctx
         MyPick.opened.clear()   # las builds abiertas a mano son de la selección anterior
+        if getattr(self, "recs", None) is not None:
+            self.recs.unfolded = None   # y las recomendaciones vuelven a plegarse al bloquear
         import ui_build, ui_mayhem
         ui_build.OPEN_RUNES.clear()
         ui_mayhem.OPEN_MORE.clear()
@@ -459,6 +468,8 @@ class GUI:
             self.new_cycle()
             plan = self.ctx.get("plan")
         self.ctx["phase"] = flow
+        if self.view == "idle":
+            self.refresh_current()
         if not plan:
             return
         if flow in ("InProgress", "GameStart", "Reconnect"):
@@ -478,10 +489,20 @@ class GUI:
             if self.view == "game":
                 self.game_view.refresh(self.make_ctx(), True)
 
-    def on_roster(self, ros):
+    def add_missing_players(self, full):
+        """El juego en vivo completa a quien el cliente no entregó: se actualizan el plan y el tablero sin perder los perfiles leídos ni cambiar de pantalla."""
+        known, page = self.ctx.get("roster_pl") or {}, self.page
+        if self.ctx.get("plan") or self.view == "game":
+            self.ctx["roster_pl"] = known
+            self.on_roster(full, known)
+        else:
+            self.ctx["roster"] = full
+        self.page = page
+
+    def on_roster(self, ros, known=None):
         """Pantalla de carga: ya se sabe quién juega cada línea. Se guardan los 10 jugadores y, con ellos, el plan se afina:
         los rivales reales, su línea y tu rival directo (sin adivinar)."""
-        self.ctx["roster"], self.ctx["roster_pl"] = ros, {}
+        self.ctx["roster"], self.ctx["roster_pl"] = ros, dict(known or {})
         plan = self.ctx.get("plan")
         if plan and plan.get("kind") in (None, "sr"):
             enemies = [x["cid"] for x in ros if x["team"] == "enemy" and x["cid"]]
@@ -579,7 +600,10 @@ class GUI:
                     self.ctx["live"] = ev[1]
                     self.ctx["live_at"] = time.time()
                     self.buy_alert(ev[1])
-                    if self.view == "game":
+                    full = players.complete_roster(self.ctx.get("roster"), ev[1])
+                    if full:
+                        self.add_missing_players(full)
+                    if self.view == "game" and (self.ctx.get("plan") or {}).get("state") != "done":
                         if self.hidden():   # ventana minimizada: no se repinta nada (el PC es del juego); al volver se pinta de una vez
                             self._live_pending = True
                         else:
@@ -1058,7 +1082,8 @@ class GUI:
         self.band_txt.pack(side="left", padx=(12, 8), pady=6)
         self.band_btn = ctk.CTkButton(self.band, text="", width=150, height=26, corner_radius=8, font=k.font(11, True), fg_color="transparent", border_width=1,
                                       border_color=PAL["warn"], text_color=PAL["warn"], hover_color=PAL["card2"], command=self.band_click)
-        self.band_btn.pack(side="right", padx=10, pady=5)
+        self.band_btn_pack = {"side": "right", "padx": 10, "pady": 5}
+        self.band_btn.pack(**self.band_btn_pack)
         self.band_sig = None
         self.mid = k.frame(self.main)   # la barra lateral a la izquierda y el cuerpo a su lado
         self.mid.pack(fill="both", expand=True)

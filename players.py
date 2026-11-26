@@ -251,6 +251,31 @@ def game_roster(gf, my_puuid):
     return out
 
 
+def complete_roster(roster, snap):
+    """El cliente a veces entrega 9 de los 10 (visto en partidas reales, aun releyendo): el que falta se añade con lo que da el juego en vivo
+    (campeón y línea, sin cuenta). Devuelve la lista nueva, o None si no hay nada que añadir o no se puede saber sin riesgo de duplicar."""
+    mine = (snap or {}).get("me_team")
+    if not roster or not mine:
+        return None
+    added = []
+    for team in ("ally", "enemy"):
+        have = [x for x in roster if x["team"] == team]
+        seen = [p for p in snap.get("players") or [] if (p["team"] == mine) == (team == "ally")]
+        if len(have) >= len(seen) or any(not x["cid"] for x in have):   # con alguien sin campeón no se sabe cuál falta
+            continue
+        left = [x["cid"] for x in have]
+        for p in seen:
+            if p["cid"] in left:
+                left.remove(p["cid"])
+            elif p["cid"] and len(have) + len([a for a in added if a["team"] == team]) < len(seen):
+                role = (p.get("pos") or "").upper()
+                role = "SUPPORT" if role == "UTILITY" else role
+                added.append({"team": team, "cid": p["cid"], "puuid": "", "role": role if role in ROLE_ORDER else "", "spells": [], "me": False, "icon": 0})
+    if not added:
+        return None
+    return sorted(roster + added, key=lambda x: (x["team"] != "ally", ROLE_ORDER.index(x["role"]) if x["role"] else 9))
+
+
 def fetch_roster(lcu, roster, emit, progress=None, known=None):
     """Lee en paralelo el perfil de los jugadores de la partida (incluido el tuyo) y avisa UNA sola vez con emit({puuid: datos}) cuando han llegado todos (así la pantalla se dibuja una vez, sin recargarse por cada jugador).
     `progress(hechos, total)` va diciendo cuántos faltan, para un contador sin redibujar nada."""
