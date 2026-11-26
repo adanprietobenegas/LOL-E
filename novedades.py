@@ -10,17 +10,23 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
-    {"v": "1.25.0", "fecha": "26 de noviembre de 2026", "titulo": "Selección y partida más claras: menos desplazarse", "items": [
-        ("nuevo", "Barra «Ir a» fija arriba, en la selección de campeón y durante la partida: un clic te lleva a tu campeón o tu build, las recomendaciones, los contrarrestos, los equipos, las claves o los consejos."),
-        ("mejora", "En partida, «Tu partida» es mucho más compacta: cabecera de una fila, barras de bajas y oro lado a lado, los objetos de tu build primero (se ven sin desplazar) y runas, hechizos y objeto inicial (ya elegidos) detrás de un enlace. «Jugadores», «Claves» y «Tu duelo» salen cerrados."),
-        ("mejora", "Los bloques de la selección se ordenan según lo que toca: en los bans las ideas de baneo, eligiendo las recomendaciones y, con tu campeón bloqueado, su build."),
-        ("mejora", "Un campeón solo marcado (sin bloquear) se distingue («Sin confirmar», en naranja) y ya no cuenta en las recomendaciones; no se sugiere banear el que un aliado está marcando, y tu build se despliega al bloquear."),
-        ("mejora", "ARAM y Mayhem enseñan una sola build (las demás, con un clic): el banquillo queda a la vista."),
-        ("arreglo", "Tras un intercambio de campeones se ven los nuevos, también el tuyo. La tira de recomendados ya no baja al cambiar de filtro."),
-        ("mejora", "Por prudencia con las normas de Riot, durante la partida ya no se avisa de la subida de nivel o la compra de tu rival ni se muestran sus enfriamientos."),
+    {"v": "1.25.1", "fecha": "26 de noviembre de 2026", "titulo": "Textos más claros y completos", "items": [
+        ("arreglo", "Con la escala de Windows o el tamaño de interfaz por encima del 100 %, el texto de esta ventana (y el de la pregunta del contador) salía cortado por la derecha. Ya se ve entero."),
+        ("mejora", "Repasada la redacción de toda la aplicación: frases más claras, singulares y plurales correctos y menciones a botones que ya no existían."),
+    ]},
+    {"v": "1.25.0", "fecha": "26 de noviembre de 2026", "titulo": "Selección y partida más claras", "items": [
+        ("nuevo", "Atajos «Ir a»: en la selección de campeón y durante la partida hay una fila de botones fija arriba. Con un clic vas a tu build, las recomendaciones, tu equipo, los rivales o los consejos."),
+        ("mejora", "En partida se ve más sin desplazarte: la cabecera ocupa una línea, el marcador es más pequeño y los objetos de tu build salen primero."),
+        ("mejora", "Durante la partida, las runas, los hechizos y el objeto inicial (que ya has elegido) quedan plegados tras el enlace «Runas, hechizos e inicio»: púlsalo para verlos."),
+        ("mejora", "En la selección, los bloques cambian de orden según el momento. En los baneos van primero las ideas de baneo; al elegir, las recomendaciones; y con tu campeón bloqueado, su build."),
+        ("mejora", "Un campeón marcado pero sin bloquear aparece como «Sin confirmar», en naranja. No cuenta para las recomendaciones, y no se te sugiere banear el que está marcando un aliado."),
+        ("mejora", "En ARAM y Mayhem se muestra una sola build para que veas antes el banquillo. Las demás se abren con un clic."),
+        ("arreglo", "Después de un intercambio de campeones ahora se ven los correctos, también el tuyo."),
+        ("arreglo", "Al cambiar los filtros, la fila de campeones recomendados se queda en su sitio."),
+        ("mejora", "Durante la partida ya no se avisa cuando tu rival sube de nivel o compra un objeto, ni se muestran sus tiempos de recarga. Es por precaución con las normas de Riot."),
     ]},
     {"v": "1.24.2", "fecha": "23 de noviembre de 2026", "titulo": "Un fondo azul medianoche", "items": [
-        ("mejora", "El tema oscuro predeterminado cambia el casi negro por un azul medianoche algo más cálido y con más profundidad; las tarjetas mantienen su contraste. Si prefieres otro tono, sigue estando en Ajustes › Aspecto."),
+        ("mejora", "El tema oscuro predeterminado cambia el casi negro por un azul medianoche algo más cálido y con más profundidad; las tarjetas mantienen su contraste. Si prefieres otro tono, puedes elegirlo en Ajustes › Apariencia."),
     ]},
     {"v": "1.24.1", "fecha": "22 de noviembre de 2026", "titulo": "La pregunta de «contar tu instalación», más clara", "items": [
         ("mejora", "La ventana que pregunta si quieres contar tu instalación ahora explica para qué sirve (saber cuánta gente usa LOL-E y dónde seguir mejorándola) y deja aceptar con un botón, sin ir a Ajustes. Sigue siendo anónimo y opcional: solo se envía un número aleatorio y la versión, y la IP no se guarda."),
@@ -30,25 +36,24 @@ NOTES = [
         ("arreglo", "Las fotos de rango de op.gg se guardan con tu fecha local (antes con la de Corea), para que cuadren con tus partidas."),
     ]},
     {"v": "1.24.0", "fecha": "22 de noviembre de 2026", "titulo": "Ayúdame a contar cuánta gente usa LOL-E (opcional y anónimo)", "items": [
-        ("nuevo", "Una pregunta, una sola vez: si quieres «contar tu instalación». Es opcional y está apagado hasta que digas que sí; «No, gracias» es la opción destacada y cerrar la ventana equivale a no. Si aceptas, una vez al día se envía solo un número aleatorio de tu instalación y la versión de LOL-E. Nunca tu nombre, tu cuenta de LoL, tus partidas ni tus ajustes, y la dirección IP no se guarda: el servidor solo deduce una zona aproximada (comunidad autónoma) y la descarta."),
-        ("nuevo", "Ajustes › Privacidad: el interruptor para cambiar de opinión cuando quieras (al apagarlo se borra el registro de tu instalación en el servidor) y «Ver exactamente qué se envía». El texto completo está en docs/PRIVACIDAD.md."),
-        ("mejora", "Para quien mantiene LOL-E: sección «Administrador» en Ajustes (solo con su clave) con el resumen y un panel privado con mapa."),
+        ("nuevo", "Una pregunta, una sola vez: si quieres «contar tu instalación». Es opcional y está apagado hasta que digas que sí; «No, gracias» es la opción destacada y cerrar la ventana equivale a no. Si aceptas, una vez al día se envía solo un número aleatorio de tu instalación y la versión de LOL-E. Nunca tu nombre, tu cuenta de LoL, tus partidas ni tus ajustes, y la dirección IP no se guarda: el servidor solo deduce una zona aproximada (comunidad autónoma) y después descarta la dirección."),
+        ("nuevo", "Ajustes › Privacidad: el interruptor para cambiar de opinión cuando quieras (al apagarlo se borra el registro de tu instalación en el servidor) y «Ver exactamente qué se envía»."),
     ]},
     {"v": "1.23.0", "fecha": "22 de noviembre de 2026", "titulo": "Nueva pantalla «Parche»: las notas oficiales y cómo cambia el juego", "items": [
         ("nuevo", "Pantalla «Parche» en la barra lateral: las notas oficiales de Riot en español, tal como las publica (sin traducir ni resumir), con fichas «antes → después», la nota de los diseñadores y una marca de mejora, ajuste o debilitación calculada de los números. Filtra por sección, por tipo de cambio, por «solo mis campeones» o con el buscador. Solo modos que se juegan (sin TFT, aspectos ni pase)."),
         ("nuevo", "En «Estadísticas» del parche: cómo se mueven victorias, uso y baneos frente al parche anterior (Lolalytics, tu elo y superiores), quién cambia de línea y qué pasó con los campeones tocados en las notas. Solo cuenta cambios que superan el margen de error y avisa de «datos provisionales» los primeros días."),
         ("nuevo", "«Tus campeones en este parche»: cuáles de los que juegas tocan las notas y cómo te iba antes y desde el parche. Bajo el campeón que eliges en la selección y en Partida sale una línea «Parche 26.23: ▲ Mejora» si lo tocaron. Cuando sale un parche nuevo, la barra lo avisa con un punto y el pie dice cuáles de tus campeones toca."),
         ("mejora", "La Ayuda y la demostración guiada tienen una lección y preguntas nuevas sobre el parche."),
-        ("mejora", "Si el cliente da 9 de los 10 jugadores de la partida, LOL-E vuelve a leerlos unos segundos y completa el tablero. El bloque en vivo suma los temporizadores del Heraldo de la Grieta (15:00) y de los inhibidores (5 minutos caídos)."),
-        ("mejora", "Menos CPU en la selección de campeón: una ráfaga de imágenes descargadas se pinta una sola vez, y la tarjeta de contrarrestos solo se repinta si cambia lo que enseña."),
+        ("mejora", "Si el cliente da 9 de los 10 jugadores de la partida, LOL-E vuelve a leerlos unos segundos y completa el tablero. El bloque en vivo añade los temporizadores del Heraldo de la Grieta (15:00) y de los inhibidores (5 minutos caídos)."),
+        ("mejora", "Menos CPU en la selección de campeón: la selección consume menos al cargar imágenes, y la tarjeta de contrarrestos solo se actualiza si cambia lo que enseña."),
         ("mejora", "Si una actualización no llega a completarse, LOL-E te lo dice al abrirse y te deja reintentarla con «Actualizar»."),
     ]},
     {"v": "1.22.27", "fecha": "22 de noviembre de 2026", "titulo": "Más fiable en la cola, en la partida y con tus datos", "items": [
         ("arreglo", "Si alguien no acepta la partida encontrada y el cliente enseña otra enseguida, el aviso sonoro vuelve a sonar (antes podía no sonar la segunda vez)."),
         ("arreglo", "En los contrarrestos faltaban los campeones con apóstrofo o «&» (Cho'Gath, Kai'Sa, K'Sante, Vel'Koz, Kog'Maw, Nunu…). Ya salen, y si el rival es uno de ellos, «Tu enfrentamiento» ya no dice que no hay datos."),
         ("arreglo", "El selector de «Rival de línea» dejaba de salir tras un fallo de datos (red caída o línea sin datos) hasta reiniciar la app."),
-        ("mejora", "Tus datos están más protegidos: el historial, los PL, los ajustes y las partidas con rival se guardan de forma atómica, y un archivo dañado se aparta en vez de sobrescribirse con uno vacío."),
-        ("mejora", "Las recomendaciones fían menos de las muestras pequeñas: tu historial en un rol se suaviza con el resto de tus partidas con ese campeón, el meta con pocas partidas pesa menos, y los bans y las sinergias de dúo usan tu línea y la del aliado. Las partidas anuladas por remake ya no cuentan como derrota."),
+        ("mejora", "Tus datos están más protegidos: el historial, los PL, los ajustes y las partidas con rival se guardan de forma segura ante cortes de luz, y un archivo dañado se aparta en vez de sobrescribirse con uno vacío."),
+        ("mejora", "Las recomendaciones se fían menos de las muestras pequeñas: tu historial en un rol se suaviza con el resto de tus partidas con ese campeón, el meta con pocas partidas pesa menos, y los bans y las sinergias de dúo usan tu línea y la del aliado. Las partidas anuladas por remake ya no cuentan como derrota."),
         ("mejora", "«Tu enfrentamiento» en partida dice «favorable» o «desfavorable» solo si el dato supera el margen de error, y se reintenta solo si Lolalytics falla. Las listas de contrarrestos ya no proponen campeones baneados o ya elegidos."),
         ("arreglo", "La partida en vivo ya no se repinta sin parar con los iconos de mejoras de Mayhem, no aplica el plan de otro campeón si abres LOL-E con la partida empezada, marca bien quién eres si dos jugadores se llaman igual y no apaga el aviso del dragón con un reparto 2-2."),
         ("arreglo", "Más robusto el seguimiento de la cola: la selección se ve como «En selección», un fallo puntual del cliente no la da por terminada, una partida ya empezada al abrir LOL-E también se analiza al terminar y un análisis pendiente no se pierde por un corte de red."),
@@ -117,7 +122,7 @@ NOTES = [
         ("nuevo", "«Tu rango en el tiempo»: una gráfica en el inicio con tus PL por fecha y el rango real (divisiones marcadas), con filtros por tramo (20 partidas, 7, 30, 90 días, este año, todo) y por cola. Al pasar el ratón por un punto ves el campeón, el resultado y los PL de esa partida. Marca tu pico de la temporada y cómo acabaste la anterior. Usa tus partidas vistas por LOL-E y las fotos diarias de rango de op.gg, que se guardan y van sumando."),
         ("nuevo", "Runas con opciones: «Más usada» y «Mayor % de victorias», cada una con su % de victorias, su uso y sus partidas."),
         ("mejora", "La partida en vivo ya no se recarga entera cada pocos segundos: se actualiza en sitio, sin parpadeos. Arriba, una tira compacta (reloj, barras de bajas y de oro en objetos, objetivos, tu siguiente compra y tu rival directo) y los diez jugadores en un pliegue, emparejados por línea, debajo de tu build y tus runas, que ahora se ven en la primera pantalla."),
-        ("arreglo", "Las torres y los inhibidores salían siempre a 0 en el marcador en vivo (el formato real de la API era otro). Ahora cuentan bien, y se añaden las larvas del vacío."),
+        ("arreglo", "Las torres y los inhibidores salían siempre a 0 en el marcador en vivo. Ahora cuentan bien, y se añaden las larvas del vacío."),
         ("arreglo", "Al acabar la partida la pestaña «Partida» podía quedarse en blanco si estabas desplazado hacia abajo. Ahora vuelve arriba al cambiar a «Análisis»."),
         ("arreglo", "La variación de PL de una partida no se guardaba si el rango no se había leído al arrancar. Ahora se lee al encontrar partida y se reintenta hasta que empieza."),
     ]},
@@ -366,14 +371,14 @@ class NotesWindow:
             ctk.CTkLabel(head, text=f"Versión {n['v']}", font=k.font(14, True), text_color=k.acc if i == 0 else PAL["fg"]).pack(side="left")
             ctk.CTkLabel(head, text=n["fecha"], font=k.font(10), text_color=PAL["dim"]).pack(side="right")
             ctk.CTkLabel(card, text=n["titulo"], font=k.font(12, True), text_color=PAL["fg"], anchor="w", justify="left",
-                         wraplength=int(380 * sc)).pack(fill="x", padx=14, pady=(0, 6))
+                         wraplength=380).pack(fill="x", padx=14, pady=(0, 6))
             for tipo, texto in n["items"]:
                 label, color = TIPOS[tipo]
                 row = ctk.CTkFrame(card, fg_color="transparent")
                 row.pack(fill="x", padx=14, pady=3)
                 ctk.CTkLabel(row, text=label, width=70, font=k.font(9, True), text_color=PAL[color], anchor="w").pack(side="left", anchor="n", pady=(2, 0))
                 ctk.CTkLabel(row, text=texto, font=k.font(11), text_color=PAL["fg"], anchor="w", justify="left",
-                             wraplength=int(300 * sc)).pack(side="left", fill="x", expand=True)
+                             wraplength=300).pack(side="left", fill="x", expand=True)
             ctk.CTkFrame(card, height=8, fg_color="transparent").pack()
         b = ctk.CTkButton(w, text="Entendido", font=k.font(12, True), fg_color=k.acc, text_color=PAL["bg"], hover_color=k.acc, command=self.close)
         b.pack(fill="x", padx=20, pady=14)

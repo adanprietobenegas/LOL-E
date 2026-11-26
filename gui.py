@@ -731,7 +731,7 @@ class GUI:
                                     names = self.patch_view.touched_mine(fresh)
                                     if names:   # lo que más le importa a quien juega: si el parche toca a sus campeones
                                         self._patch_told_mine = vs[0]
-                                        self.status(f"Parche {vs[0]}: tocan a {len(names)} de tus campeones ({', '.join(names[:4])}{'…' if len(names) > 4 else ''}). Míralo en «Parche».")
+                                        self.status(f"Parche {vs[0]}: las notas afectan a {len(names)} de tus campeones ({', '.join(names[:4])}{'…' if len(names) > 4 else ''}). Míralo en «Parche».")
                         except Exception:
                             pass
                 except Exception:
@@ -1631,7 +1631,7 @@ class GUI:
         if temas.is_look(cur_theme):
             note(f"«{cur_theme}»: " + temas.FORMA_LOOKS[cur_theme]["nota"] + " Es un look completo: trae su propia tipografía y estilo de tarjetas.")
         else:
-            note("Paletas revisadas por contraste y daltonismo. Los looks (Terminal, Papel, Blueprint, Hextech y Arcade) cambian además la tipografía y la forma.")
+            note("Paletas revisadas por contraste y daltonismo. Los looks (Terminal, Papel, Blueprint, Hextech, Arcade, Neón Tokio y Océano) cambian además la tipografía y la forma.")
             label("Estilo de las tarjetas")
             seg(temas.ESTILOS_NOMBRES, conf.get("style", temas.DEFAULT_STYLE), lambda v: self.set("style", v))
             note(temas.ESTILOS[conf.get("style", temas.DEFAULT_STYLE)]["nota"] + " Se combina con cualquier tema de color.")
@@ -1694,7 +1694,7 @@ class GUI:
             self.data_view.sig = None  # la pestaña «Datos» recoge los pesos nuevos la próxima vez
         seg(list(names), PRESET_INFO[conf["preset"]][0], pick)
         desc.pack(anchor="w", padx=16, pady=(2, 4))
-        note("Los pesos, los umbrales y de dónde sale cada dato están en «Datos» (botón junto a Ajustes).")
+        note("Los pesos, los umbrales y de dónde sale cada dato están en «Datos» (Ajustes › «Datos y fuentes de información»).")
         button("Abrir «Datos»", lambda: self.set_page("Datos"))
 
         section("Sonido")
@@ -1710,7 +1710,7 @@ class GUI:
         for ph, ph_name, ph_desc in core.PHASES:
             self._phase_sound_row(sc, k, ph, ph_name, ph_desc)
         section("Datos")
-        note("Qué fuentes se usan, y su activación, se gestiona en «Datos» (botón junto a Ajustes).")
+        note("Las fuentes se activan o desactivan en «Datos» (Ajustes › «Datos y fuentes de información»).")
         button("Actualizar estadísticas de op.gg", lambda: (self.cmds.put("opgg"), self.status("Actualizando op.gg…")))
         button("Actualizar el meta del parche", lambda: (self.cmds.put("meta"), self.status("Actualizando el meta…")))
         button("Abrir la carpeta de datos", lambda: os.startfile(DATA_DIR) if os.path.isdir(DATA_DIR) else None)
@@ -1735,8 +1735,8 @@ class GUI:
             var_s = ctk.BooleanVar(value=conf.get("stats_optin") is True)
             ctk.CTkSwitch(sc, text="Contar mi instalación (anónimo)", variable=var_s, font=k.font(12), progress_color=k.acc,
                           command=lambda: self.stats_set(var_s.get())).pack(anchor="w", padx=12, pady=8)
-            note("Voluntario y apagado de fábrica. Si lo activas, LOL-E avisa una vez al día de un número aleatorio y de su versión, para que quien la mantiene sepa cuánta gente la usa "
-                 "y desde qué zona aproximada. No se envía tu nombre, tu cuenta de LoL, tus partidas ni tus ajustes, y la dirección IP no se guarda. Al apagarlo se borra el registro.")
+            note("Voluntario y apagado de fábrica. Si lo activas, LOL-E envía una vez al día un número aleatorio y su versión, para que quien la mantiene sepa cuánta gente la usa "
+                 "y desde qué zona aproximada. No se envían tu nombre, tu cuenta de LoL, tus partidas ni tus ajustes, y la dirección IP no se guarda. Al apagarlo se borra el registro.")
             button("Ver exactamente qué se envía", lambda: messagebox.showinfo(APP_NAME, "Esto es todo lo que se envía (una vez al día):\n\n"
                                                                                   + stats.describe({"stats_id": conf.get("stats_id") or "(un número aleatorio)"}, APP_VERSION)
                                                                                   + "\n\nEl servidor añade el país y la región de la conexión y descarta la dirección IP."))
@@ -1769,8 +1769,8 @@ class GUI:
 
         section("Acerca de")
         k.clbl(sc, f"{APP_NAME} {APP_VERSION}\nNo está respaldado por Riot Games ni refleja las opiniones de Riot Games "
-                   "ni de nadie que participe oficialmente en League of Legends. Solo lee la selección de campeón "
-                   "de tu cliente; nunca interviene en la partida.", 10, "dim", wraplength=self.note_w(), justify="left").pack(
+                   "ni de nadie que participe oficialmente en League of Legends. Solo lee datos "
+                   "de tu cliente y de la API local de la partida; nunca interviene en el juego.", 10, "dim", wraplength=self.note_w(), justify="left").pack(
             anchor="w", padx=16, pady=(0, 12))
 
     _opp_choice = 0  # rival de línea elegido a mano (0 = el que se deduce solo)

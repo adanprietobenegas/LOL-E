@@ -413,7 +413,7 @@ class MatchupView:
             self.res_title.configure(text=f"Qué campeón le gana a {ui.champs[enemy]['name']}" if enemy else "Qué campeón le gana")
         wl = min(self.width - 90, 700)
         if not ui.conf["matchups_enabled"]:
-            ui.lbl(self.host, "Esta fuente está desactivada. Actívala en «Datos» (botón de arriba).", 11, "dim").pack(anchor="w")
+            ui.lbl(self.host, "Esta fuente está desactivada. Actívala en «Datos» (se abre desde Ajustes).", 11, "dim").pack(anchor="w")
             return
         if not enemy:
             ui.lbl(self.host, "Todavía no has elegido rival. Escribe su nombre arriba, o elige uno de los recientes.", 11, "dim", anchor="w",
@@ -563,7 +563,7 @@ class MatchupView:
         lo, hi = wilson(r["wr"], r["games"])
         chip = self.ui.chip(parent, "Pocas partidas", "warn")
         chip.pack(**pack)
-        self.ui.tip(chip, f"Con {r['games']} partidas, el porcentaje real podría estar entre el {round(lo * 100)} % y el {round(hi * 100)} %.\n"
+        self.ui.tip(chip, f"Con {r['games']} {'partida' if r['games'] == 1 else 'partidas'}, el porcentaje real podría estar entre el {round(lo * 100)} % y el {round(hi * 100)} %.\n"
                           "Se muestra porque hay datos, pero no te fíes tanto como de uno con muchas partidas.")
 
     def tag_of(self, r, g, owned):
@@ -584,13 +584,13 @@ class MatchupView:
         rows, owned = self.filtered(rows, ctx)
         wl = min(self.width - 90, 800)
         if not rows:
-            ui.lbl(self.host, "Ningún campeón cumple los filtros. Prueba a bajar las «partidas mínimas» o a quitar filtros.", 11, "dim", anchor="w",
+            ui.lbl(self.host, "Ningún campeón cumple los filtros. Prueba a bajar «Mín. partidas» o a quitar filtros.", 11, "dim", anchor="w",
                    justify="left", wraplength=wl).pack(anchor="w", pady=8)
             return
         allr = bool(self.data.get((enemy, lane))) and self.data[(enemy, lane)][0].get("tier") == "all"
-        ui.lbl(self.host, f"{len(rows)} campeones con datos contra {ui.champs[enemy]['name']} en {matchups.LANE_NAMES[lane].lower()}. "
+        ui.lbl(self.host, f"{len(rows)} {'campeón' if len(rows) == 1 else 'campeones'} con datos contra {ui.champs[enemy]['name']} en {matchups.LANE_NAMES[lane].lower()}. "
                           "El porcentaje son las victorias del campeón frente al rival. Pulsa «Build» para ver runas, objetos y habilidades. "
-                          "«Partidas ≥» sirve para ver también los que tienen pocas partidas (el orden «Más fiable» los pone en su sitio)."
+                          "Baja «Mín. partidas» para ver también los que tienen pocas partidas (el orden «Más fiable» los pone en su sitio)."
                           + (" Hay pocos datos en tu rango: se usan los de todos los rangos." if allr else ""), 10, "dim", anchor="w",
                justify="left", wraplength=wl).pack(anchor="w", pady=(0, 8))
         if self.level == 0:
@@ -605,7 +605,7 @@ class MatchupView:
                 self.table(rest, 4, owned, enemy, lane)
         left = len(rows) - self.shown
         if left > 0:
-            b = ctk.CTkButton(self.host, text=f"Mostrar {min(PAGE, left)} más  ({left} restantes)", height=34, corner_radius=10,
+            b = ctk.CTkButton(self.host, text=f"Mostrar {min(PAGE, left)} más  ({'queda' if left == 1 else 'quedan'} {left})", height=34, corner_radius=10,
                               font=ui.font(12), fg_color=PAL["card2"], hover_color=PAL["card2"], text_color=PAL["fg"], command=self.more)
             b.pack(pady=(12, 0))
             ui.smooth_btn(b, PAL["card2"], PAL["border"])
@@ -633,7 +633,7 @@ class MatchupView:
             ui.lbl(inner, ui.champs[r["cid"]]["name"], 14, "fg", True, True).pack(pady=(8, 0))
             ok = r["wr"] >= 50
             ui.lbl(inner, f"{pct_es(r['wr'])} %", 22, "good" if ok else "bad", True, True).pack()
-            ui.lbl(inner, f"{'+' if r['delta'] >= 0 else '−'}{pct_es(abs(r['delta']))} sobre su media · {r['games']} partidas", 9, "dim").pack()
+            ui.lbl(inner, f"{'+' if r['delta'] >= 0 else '−'}{pct_es(abs(r['delta']))} sobre su media · {r['games']} {'partida' if r['games'] == 1 else 'partidas'}", 9, "dim").pack()
             tag, color = self.tag_of(r, g, owned)
             ui.chip(inner, tag, col(color) if color != "dim" else "dim").pack(pady=(8, 0))
             self.small_chip(inner, r, dict(pady=(4, 0)))
@@ -727,7 +727,7 @@ class MatchupView:
         mid = ui.frame(top)
         mid.pack(side="left", padx=12)
         ui.lbl(mid, ui.champs[r["cid"]]["name"], 13, "fg", True, anchor="w").pack(anchor="w")
-        ui.lbl(mid, f"{'+' if r['delta'] >= 0 else '−'}{pct_es(abs(r['delta']))} sobre su media · {r['games']} partidas", 9, "dim",
+        ui.lbl(mid, f"{'+' if r['delta'] >= 0 else '−'}{pct_es(abs(r['delta']))} sobre su media · {r['games']} {'partida' if r['games'] == 1 else 'partidas'}", 9, "dim",
                anchor="w").pack(anchor="w")
         ui.lbl(top, f"{pct_es(r['wr'])} %", 15, "good" if ok else "bad", True, True).pack(side="right")
         ui.bar(inner, [(min(max(r["wr"], 0), 100) / 100, "good" if ok else "bad")], 5).pack(fill="x", pady=(8, 8))
@@ -805,7 +805,7 @@ class DataView:
                     (core.META["error"] or "sin cargar todavía"))
         if sid == "matchups":
             n = len(os.listdir(os.path.join(core.CACHE, "matchups"))) if os.path.isdir(os.path.join(core.CACHE, "matchups")) else 0
-            return (cf["matchups_enabled"], f"{n} rivales guardados")
+            return (cf["matchups_enabled"], f"{n} {'rival guardado' if n == 1 else 'rivales guardados'}")
         if sid == "ddragon":
             return (True, f"parche {core.metamod.public_patch(core.DD_VERSION)}" if core.DD_VERSION else "")
         return (True, "")

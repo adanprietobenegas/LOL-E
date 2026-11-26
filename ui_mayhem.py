@@ -174,7 +174,7 @@ def build_block(ui, host, cid, mode_id, width):
             if (cid, mode_id) in OPEN_MORE:
                 open_more()
             else:
-                link = ui.lbl(more, f"▸ Otras {len(builds_) - 1} builds", 10, "info", True, anchor="w")
+                link = ui.lbl(more, "▸ Otra build" if len(builds_) == 2 else f"▸ Otras {len(builds_) - 1} builds", 10, "info", True, anchor="w")
                 link.pack(anchor="w", pady=(2, 2))
                 link.configure(cursor="hand2")
                 link.bind("<Button-1>", open_more)

@@ -9,9 +9,13 @@ TEXTO = ("Si activas esto, LOL-E avisa una vez al día, de forma anónima, de qu
          "aproximada (por ejemplo, la comunidad autónoma). Es lo que me ayuda a decidir en qué seguir mejorándola. Es gratis y opcional: LOL-E funciona exactamente igual si dices que no.")
 SE_ENVIA = "Se envía: un número aleatorio de esta instalación y la versión de LOL-E. Nada más."
 NO_SE_ENVIA = ("No se envía: tu nombre, tu cuenta de LoL, tus partidas, tus ajustes ni nada de tu ordenador. Tu dirección IP no se guarda: el servidor solo deduce la "
-               "zona aproximada de la conexión y la descarta.")
+               "zona aproximada de la conexión y después descarta la dirección.")
 CAMBIAR = "Puedes cambiarlo cuando quieras en Ajustes › Privacidad; al apagarlo se borra el registro de esta instalación."
-OTRA_VEZ = "Si ahora no, te lo volveré a preguntar como mucho {n} vez(es) más, con una semana de por medio. Con «No volver a preguntar» no te molesto más."
+OTRA_VEZ = "Si eliges «Ahora no», te lo volveré a preguntar como mucho {n} más, con una semana de por medio. Con «No volver a preguntar» no te molesto más."
+
+
+def veces(n):
+    return "1 vez" if n == 1 else f"{n} veces"
 
 
 class ConsentWindow:
@@ -37,10 +41,10 @@ class ConsentWindow:
         w.transient(ui.root)
         w.protocol("WM_DELETE_WINDOW", lambda: self.decide("later"))
         ctk.CTkLabel(w, text="¿Me ayudas a mejorar LOL-E?", font=k.font(18, True, True), text_color=PAL["fg"], anchor="w",
-                     wraplength=int(476 * sc), justify="left").pack(fill="x", padx=24, pady=(20, 8))
-        pie = CAMBIAR if last else CAMBIAR + " " + OTRA_VEZ.format(n=max(0, stats.MAX_ASKS - int(ui.conf.get("stats_asked") or 1)))
+                     wraplength=476, justify="left").pack(fill="x", padx=24, pady=(20, 8))
+        pie = CAMBIAR if last else CAMBIAR + " " + OTRA_VEZ.format(n=veces(max(0, stats.MAX_ASKS - int(ui.conf.get("stats_asked") or 1))))
         for txt, col in ((TEXTO, "fg"), (SE_ENVIA, "fg"), (NO_SE_ENVIA, "fg"), (pie, "dim")):
-            ctk.CTkLabel(w, text=txt, font=k.font(12), text_color=PAL[col], anchor="w", wraplength=int(476 * sc), justify="left").pack(fill="x", padx=24, pady=(0, 8))
+            ctk.CTkLabel(w, text=txt, font=k.font(12), text_color=PAL[col], anchor="w", wraplength=476, justify="left").pack(fill="x", padx=24, pady=(0, 8))
         link = ctk.CTkButton(w, text="Ver exactamente qué se envía", font=k.font(11), fg_color="transparent", text_color=k.acc, hover_color=PAL["card2"],
                              width=0, anchor="w", command=self.show_payload)
         link.pack(anchor="w", padx=18, pady=(0, 6))

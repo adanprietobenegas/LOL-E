@@ -7,6 +7,12 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.25.1   (26 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · CTkLabel ya escala `wraplength`: novedades.py y ui_stats.py lo multiplicaban otra vez y el texto salía cortado con escala > 100 %.
+  · Unas 40 correcciones de redacción, plurales y textos obsoletos (revisión de un corrector); notas anteriores sin jerga.
+
 VERSIÓN 1.25.0   (26 de noviembre de 2026)
 ---------------------------------------------------------------------
 

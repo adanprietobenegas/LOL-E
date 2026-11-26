@@ -252,7 +252,7 @@ def advice_aram(a, champs=None):
     if kteam:
         kp = (m["k"] + m["a"]) / kteam
         add("good" if kp >= .65 else "info", "Participación en las peleas",
-            "Estuviste en casi todas las muertes de tu equipo." if kp >= .75 else "", f"{kp * 100:.0f} % de las muertes de tu equipo ({m['k'] + m['a']} de {kteam}).", 50 if kp >= .65 else 28)
+            "Estuviste en casi todas las muertes de tu equipo." if kp >= .75 else "", f"Participaste en el {kp * 100:.0f} % de los asesinatos de tu equipo ({m['k'] + m['a']} de {kteam}).", 50 if kp >= .65 else 28)
     # --- curación y control
     rh, _x = _rank(a, "heal", m["pid"])
     if m["heal"] >= 6000 or rh == 1 and m["heal"] >= 3000:
@@ -272,7 +272,7 @@ def advice_aram(a, champs=None):
         if best >= 2500 and end < best - 2000:
             add("info", "Se escapó una ventaja", "", f"Ibais +{best:,} de oro a minuto {a['minutes'][ib]:.0f} y acabasteis en {_sg(end)}.".replace(",", "."), 64)
         elif worst <= -2500 and end > worst + 2000:
-            add("good", "Remontada", "Aguantasteis y la partida se dio la vuelta.", f"Ibais {_sg(worst)} de oro a minuto {a['minutes'][iw]:.0f} y acabasteis en {_sg(end)}.", 74)
+            add("good", "Remontada", "Aguantasteis y le disteis la vuelta a la partida.", f"Ibais {_sg(worst)} de oro a minuto {a['minutes'][iw]:.0f} y acabasteis en {_sg(end)}.", 74)
     # --- primera sangre
     if m["fb"]:
         add("good", "Primera sangre", "Fuiste el primero en abatir a un rival.", "", 44)
@@ -314,7 +314,7 @@ def advice(a, opp, champs=None):
             elif g10 >= 600:
                 add("good", f"Ganaste el inicio {zone}", "Aprovecha esa ventaja para presionar objetivos y no dejar que se iguale.", data, 60)
             else:
-                add("info", f"Inicio igualado {zone}", f"Nadie despegó a minuto 10 frente a {name(opp)}: la partida se decidió después.", data, 30)
+                add("info", f"Inicio igualado {zone}", f"Nadie despegó en el minuto 10 frente a {name(opp)}: la partida se decidió después.", data, 30)
     # --- farmeo
     if o and role in ("TOP", "MIDDLE", "BOTTOM"):
         c10, oc10 = at(a, m["cs_s"], 10), at(a, o["cs_s"], 10)
@@ -329,7 +329,7 @@ def advice(a, opp, champs=None):
     if o and role == "JUNGLE":
         data = f"Monstruos de jungla: {m['jcs']} frente a {o['jcs']} de {name(opp)} (súbditos: {m['cs'] - m['jcs']} y {o['cs'] - o['jcs']})."
         if o["jcs"] and m["jcs"] < o["jcs"] * 0.8:
-            add("bad", "Farmeaste menos jungla que tu rival", "Menos campamentos son menos oro y nivel. Una ruta más eficiente o menos viajes a líneas ayudan; el recorrido está en la pestaña «Recorrido».", data, 65)
+            add("bad", "Farmeaste menos jungla que tu rival", "Menos campamentos son menos oro y nivel. Una ruta más eficiente o menos viajes a líneas ayudan; puedes verlo en «Evolución de la partida › Ruta en el mapa».", data, 65)
         elif o["jcs"] and m["jcs"] > o["jcs"] * 1.2:
             add("good", "Farmeaste más jungla que tu rival", "Buen aprovechamiento de los campamentos.", data, 40)
     # --- muertes
@@ -363,12 +363,12 @@ def advice(a, opp, champs=None):
         ib, iw = tg.index(best), tg.index(worst)
         if best >= 2500 and end < best - 2000:
             add("bad", "Perdisteis una ventaja", "Con ventaja, cerrad objetivos (torres, dragón, Barón) antes de que los objetos se igualen.",
-                f"Llegasteis a {_sg(best)} de oro a minuto {mins[ib]:.0f} y acabasteis en {_sg(end)}.", 88)
+                f"Llegasteis a {_sg(best)} de oro en el minuto {mins[ib]:.0f} y acabasteis en {_sg(end)}.", 88)
         elif worst <= -2500 and end > worst + 2000:
-            add("good", "Remontada", "Aguantasteis y la partida se dio la vuelta.", f"Ibais {_sg(worst)} de oro a minuto {mins[iw]:.0f} y acabasteis en {_sg(end)}.", 55)
+            add("good", "Remontada", "Aguantasteis y le disteis la vuelta a la partida.", f"Ibais {_sg(worst)} de oro en el minuto {mins[iw]:.0f} y acabasteis en {_sg(end)}.", 55)
         elif abs(tg[i15]) >= 2000:
             add("good" if tg[i15] > 0 else "bad", "Estado de la partida a minuto 15", "Quien llega por delante al medio de la partida suele marcar el ritmo.",
-                f"Diferencia de oro de equipo a minuto 15: {_sg(tg[i15])}.", 45)
+                f"Diferencia de oro de equipo en el minuto 15: {_sg(tg[i15])}.", 45)
     ours = [x for x in a["objectives"] if x["team"] == a["team"]]
     theirs = [x for x in a["objectives"] if x["team"] != a["team"]]
     if a["objectives"]:
@@ -385,9 +385,9 @@ def advice(a, opp, champs=None):
     if kteam:
         kp = (m["k"] + m["a"]) / kteam
         exp = 0.65 if role in ("JUNGLE", "SUPPORT") else 0.5
-        add("good" if kp >= exp else "bad" if kp < exp - 0.2 else "info", "Participación en muertes",
+        add("good" if kp >= exp else "bad" if kp < exp - 0.2 else "info", "Participación en asesinatos",
             "Estar en las peleas es la base de ganarlas." if kp < exp else "Estuviste en el centro de las peleas de tu equipo.",
-            f"{kp * 100:.0f} % de las muertes de tu equipo ({m['k'] + m['a']} de {kteam}).", 60 if kp < exp - 0.2 else 30)
+            f"Participaste en el {kp * 100:.0f} % de los asesinatos de tu equipo ({m['k'] + m['a']} de {kteam}).", 60 if kp < exp - 0.2 else 30)
     # --- visión y daño
     if o and role == "SUPPORT":
         add("good" if m["vision"] >= o["vision"] else "bad" if m["vision"] < o["vision"] * 0.8 else "info", "Visión",

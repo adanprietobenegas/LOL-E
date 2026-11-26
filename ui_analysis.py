@@ -137,13 +137,13 @@ class AnalysisView:
             ui.fold(host, "Mejoras elegidas", lambda p: ui_mayhem.analysis_block(ui, p, a, gv.width), "las de los 10 jugadores", "an_aug", True)
         mine = sum(1 for e in ev if e["cat"] == "kd")
         self.cur = (a, opp, ev)
-        self.folds["moments"] = ui.fold(host, "Momentos clave", lambda p: self.mount("moments", p, a, opp, ev), f"{len(ev)} eventos · {mine} tuyos", "an_moments", True)
+        self.folds["moments"] = ui.fold(host, "Momentos clave", lambda p: self.mount("moments", p, a, opp, ev), f"{len(ev)} {'evento' if len(ev) == 1 else 'eventos'} · {mine} {'tuyo' if mine == 1 else 'tuyos'}", "an_moments", True)
         self.folds["charts"] = ui.fold(host, "Evolución de la partida", lambda p: self.mount("charts", p, a, opp, ev), gv.chart, "an_charts", True)
         if opp is not None:
             o = analysis.player(a, opp)
             g10 = analysis.at(a, analysis.diff(a, "gold_s", a["me"], opp), 10)
             ui.fold(host, f"Tú frente a {self.cname(o['champ'])}", lambda p: self.table(p, a, opp),
-                    f"oro a minuto 10: {sg(g10)}" if g10 is not None else "", "an_table", False)
+                    f"oro en el minuto 10: {sg(g10)}" if g10 is not None else "", "an_table", False)
         self.folds["teams"] = ui.fold(host, "Los dos equipos", lambda p: self.mount("teams", p, a, opp, ev), f"orden: {self.sort.lower()}", "an_teams", False)
 
     def mount(self, name, host, a, opp, ev):
@@ -279,7 +279,7 @@ class AnalysisView:
         ui.lbl(sel, "Comparar con", 10, "dim").pack(side="left", padx=(0, 8))
         ui.menu(sel, list(labels), cur, lambda v: self.set_opp(labels[v]), 240).pack(side="left")
         ui.lbl(sel, ("  En ARAM no hay líneas: por defecto, el rival que más daño hizo." if a.get("queue") in analysis.ARAM_QUEUES else
-                     "  La línea de cada jugador se deduce de su Smite y de dónde estuvo en los minutos 3 a 9."), 9, "dim").pack(side="left")
+                     "  La línea de cada jugador se deduce de si lleva Aplastar y de dónde estuvo en los minutos 3 a 9."), 9, "dim").pack(side="left")
 
     def set_together(self, v):
         self.together = v == "Los 10 juntos"
@@ -308,7 +308,7 @@ class AnalysisView:
         kp = (m["k"] + m["a"]) / tk_ if tk_ else None
         tdmg = sum(p["dmg"] for p in team)
         vis_avg = sum(p["vision"] for p in team) / max(1, len(team))
-        cards = [("K / D / A", f"{m['k']} / {m['d']} / {m['a']}", f"KDA {(m['k'] + m['a']) / max(1, m['d']):.2f}".replace(".", ",") + (f" · {kp * 100:.0f} % de las muertes" if kp is not None else ""), "fg"),
+        cards = [("K / D / A", f"{m['k']} / {m['d']} / {m['a']}", f"KDA {(m['k'] + m['a']) / max(1, m['d']):.2f}".replace(".", ",") + (f" · participación en asesinatos: {kp * 100:.0f} %" if kp is not None else ""), "fg"),
                  ("Oro", n(m["gold"]), (f"{sg(m['gold'] - o['gold'])} vs {self.cname(o['champ'])}" if o else ""), "good" if o and m["gold"] >= o["gold"] else "bad" if o else "fg"),
                  ("Súbditos", n(m["cs"]), (f"{sg(m['cs'] - o['cs'])} vs rival · {m['cs'] / max(1, a['dur'] / 60):.1f}/min".replace(".", ",") if o else ""), "fg"),
                  ("Daño", n(m["dmg"]), f"{m['dmg'] / tdmg * 100:.0f} % de tu equipo" if tdmg else "", "fg"),
@@ -636,7 +636,7 @@ class AnalysisView:
         ev = []
         for idx, k in enumerate(a["kills"]):
             if k["victim"] == m["pid"]:
-                ev.append(dict(t=k["t"], kind="death", mine=False, cat="kd", champs=champ_of(k["killer"]), text=f"Te mató {who(k['killer'])}", part=True))
+                ev.append(dict(t=k["t"], kind="death", mine=False, cat="kd", champs=champ_of(k["killer"]), text="Moriste a manos de una torre o de los súbditos" if str(who(k['killer'])).startswith("una torre") else f"Te mató {who(k['killer'])}", part=True))
             elif k["killer"] == m["pid"]:
                 ev.append(dict(t=k["t"], kind="kill", mine=True, cat="kd", champs=champ_of(k["victim"]), text=f"Mataste a {who(k['victim'])}", part=True))
             elif m["pid"] in k["assists"]:
@@ -648,7 +648,7 @@ class AnalysisView:
             kind = {"DRAGON": "dragon", "BARON_NASHOR": "baron", "RIFTHERALD": "herald", "HORDE": "grubs", "ATAKHAN": "baron"}.get(ob.get("type"), "dragon")
             part = mine and (ob["killer"] == m["pid"] or m["pid"] in ob["assists"])
             ev.append(dict(t=ob["t"], kind=kind, mine=mine, cat="obj", champs=champ_of(ob["killer"]),
-                           text=f"{ob['what'].capitalize()} {'de tu equipo' if mine else 'del rival'}" + (" (participaste)" if part else ""), part=part))
+                           text=f"{ob['what'][:1].upper() + ob['what'][1:]} {'de tu equipo' if mine else 'del rival'}" + (" (participaste)" if part else ""), part=part))
         lanes = {"TOP_LANE": "superior", "MID_LANE": "central", "BOT_LANE": "inferior"}
         for t in a["towers"]:
             mine = t["owner"] != T  # lo derriba tu equipo si el edificio era del rival
@@ -656,7 +656,7 @@ class AnalysisView:
             lane = lanes.get(t.get("lane"), "")
             what = "Inhibidor" if inhib else "Torre"
             ev.append(dict(t=t["t"], kind="inhib" if inhib else "tower", mine=mine, cat="tower", champs=champ_of(t["killer"]),
-                           text=(f"{what} {lane} derribada por tu equipo" if mine else f"{what} {lane} de tu equipo caída").replace("  ", " "), part=False))
+                           text=(f"{what} {lane} {'derribado' if inhib else 'derribada'} por tu equipo" if mine else f"{what} {lane} de tu equipo {'caído' if inhib else 'caída'}").replace("  ", " "), part=False))
         ev.sort(key=lambda e: e["t"])
         return ev
 
@@ -718,7 +718,7 @@ class AnalysisView:
             if not part:
                 continue
             span = f"{lo}–{hi}'" if hi < 999 else f"{lo}' en adelante"
-            ui.fold(host, f"{name_} · {span}", lambda p, part=part: self.rows(p, a, part, W), f"{len(part)} eventos", f"an_ph{i}", i == 0)
+            ui.fold(host, f"{name_} · {span}", lambda p, part=part: self.rows(p, a, part, W), f"{len(part)} {'evento' if len(part) == 1 else 'eventos'}", f"an_ph{i}", i == 0)
 
     def timeline(self, host, a, ev, W, cat):
         """Línea de tiempo horizontal: arriba objetivos y torres, abajo tus muertes, asesinatos y asistencias."""

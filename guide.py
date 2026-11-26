@@ -155,7 +155,7 @@ def duel(mine, opp, nm, no, attr_m=None, attr_o=None, dmg_o=""):
         win = ad1 + 20 * (r1 - 1)
         out.append(("Nivel 1", f"{nm}: {a1['hp']:.0f} de vida, {a1['ar']:.0f} de armadura y {a1['ad']:.0f} de ataque. {no}: {b1['hp']:.0f}, {b1['ar']:.0f} y "
                                f"{b1['ad']:.0f}. " + ("Llegas con ventaja física al primer cruce de súbditos." if win > 0 else
-                                                       "Empieza ligeramente por delante: cede los primeros intercambios."), "good" if win > 0 else "bad"))
+                                                       f"{no} empieza ligeramente por delante: cede los primeros intercambios."), "good" if win > 0 else "bad"))
     gain = (r16 / r1) - 1
     if abs(gain) >= 0.08:
         out.append(("Escalado", f"Tu aguante base (vida y armadura) frente al suyo pasa de {r1:.2f}× en el nivel 1 a {r16:.2f}× en el 16 (sin objetos): " +
@@ -182,7 +182,7 @@ def duel(mine, opp, nm, no, attr_m=None, attr_o=None, dmg_o=""):
     # maná
     rm, ro = mana_rounds(mine), mana_rounds(opp)
     if rm is not None and ro is not None and abs(rm - ro) >= 1:
-        out.append(("Maná", f"Con el maná de nivel 1 aguantas {rm} rondas de Q+W+E y {no} {ro}. " +
+        out.append(("Maná", f"Con el maná de nivel 1 aguantas {rm} {'ronda' if rm == 1 else 'rondas'} de Q+W+E y {no} {ro}. " +
                     ("Él se quedará sin recursos antes: presiona sin miedo." if rm < ro else "Tú tienes más margen: puedes insistir más."), "good" if rm > ro else "bad"))
     # valoraciones Meraki
     am, ao = attr_m or {}, attr_o or {}

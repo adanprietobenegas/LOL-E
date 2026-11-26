@@ -553,8 +553,8 @@ class SummaryCard(Section):
             a, b = self.rank_val(cur), self.rank_val(rk)
             if a is not None and b is not None:
                 d = a - b
-                msg = (f"{verb_same}" if d == 0 else f"{verb_up}: {d} división{'es' if d > 1 else ''} por encima" if d > 0
-                       else f"{verb_down}: te faltan {-d} división{'es' if -d > 1 else ''} para igualarlo")
+                msg = (f"{verb_same}" if d == 0 else f"{verb_up}: {d} {'divisiones' if d > 1 else 'división'} por encima" if d > 0
+                       else f"{verb_down}: {'te faltan' if -d > 1 else 'te falta'} {-d} {'divisiones' if -d > 1 else 'división'} para igualarlo")
                 ui.lbl(parent, msg, 11, "good" if d >= 0 else "warn", True, anchor="w").pack(anchor="w", pady=(8, 0))
 
     def d_peak(self, parent):
@@ -655,7 +655,7 @@ class SummaryCard(Section):
         ui.lbl(parent, "ÚLTIMAS 20 PARTIDAS", 9, "dim", True, anchor="w").pack(anchor="w")
         ui.dots(parent, [e["w"] for e in games[::-1]], 12).pack(anchor="w", pady=(4, 8))
         w = sum(1 for e in games if e["w"])
-        ui.lbl(parent, f"{w} victorias y {len(games) - w} derrotas ({round(w / max(1, len(games)) * 100)} %). Mejor racha de victorias guardada: "
+        ui.lbl(parent, f"{w} {'victoria' if w == 1 else 'victorias'} y {len(games) - w} {'derrota' if len(games) - w == 1 else 'derrotas'} ({round(w / max(1, len(games)) * 100)} %). Mejor racha de victorias guardada: "
                        f"{st.get('best', 0)}. Partidas guardadas: {st.get('n', 0)}.", 10, "dim", anchor="w", justify="left",
                wraplength=min(self.ctx["width"] - 130, 640)).pack(anchor="w")
 
@@ -707,7 +707,7 @@ class SummaryCard(Section):
             if not games:
                 ui.lbl(p, "No hay partidas guardadas con detalle en este modo.", 10, "dim").pack(anchor="w")
                 return
-            line = f"{s['n']} partidas guardadas · {s['wins']}V {s['n'] - s['wins']}D"
+            line = f"{partidas(s['n'])} {'guardada' if s['n'] == 1 else 'guardadas'} · {s['wins']}V {s['n'] - s['wins']}D"
             if s["kda"] is not None:
                 line += f" · KDA {s['kda']:.2f}".replace(".", ",")
             durs = [e["d"] for e in games if e.get("d")]
@@ -751,7 +751,7 @@ class PoolCard(Section):
             ui.champ(inner, cid, 48, True).pack()
             wr = w / g
             ui.lbl(inner, f"{wr:.0%}", 20, "good" if wr >= .5 else "bad", True, True).pack(pady=(4, 0))
-            ui.lbl(inner, f"{w} de {g} partidas", 9, "dim").pack(pady=(0, 4))
+            ui.lbl(inner, f"{w} de {partidas(g)}", 9, "dim").pack(pady=(0, 4))
             ui.bar(inner, [(wr, "good" if wr >= .5 else "bad")], 5, True).pack(fill="x", padx=8)
 
 
@@ -959,7 +959,7 @@ class BanIdeas(Section):
             cell = ui.frame(row)
             cell.pack(side="left", padx=(0, 16))
             ui.champ(cell, cid, 40, False, "#ff5a5f").pack(side="left")
-            ui.lbl(cell, f"{n}\n{g - w} derrotas de {g}", 10, "bad").pack(side="left", padx=8)
+            ui.lbl(cell, f"{n}\n{g - w} {'derrota' if g - w == 1 else 'derrotas'} de {g}", 10, "bad").pack(side="left", padx=8)
 
 
 CLASES = {"Todas": None, "Tanque": "Tank", "Luchador": "Fighter", "Asesino": "Assassin", "Mago": "Mage",
@@ -1581,7 +1581,7 @@ class Recs(Section):
         ui.lbl(col, "DESGLOSE DE LA AFINIDAD", 10, "dim", True).pack(anchor="w", pady=(12, 4))
         breakdown_rows(ui, col, c["parts"], c["score"], self.r["pct_scale"], bw)
         ui.lbl(col, "La afinidad (0 a 100) es la suma de estos puntos sobre un máximo realista. Los pesos y su explicación están "
-                    "en «Datos» (botón de arriba).", 9, "dim", anchor="w", wraplength=bw + 150, justify="left").pack(anchor="w", pady=(8, 0))
+                    "en «Datos» (se abre desde Ajustes).", 9, "dim", anchor="w", wraplength=bw + 150, justify="left").pack(anchor="w", pady=(8, 0))
 
     def vs_row(self, parent, enemy, g, w, size=30):
         ui = self.ui
@@ -1661,7 +1661,7 @@ class Recs(Section):
                          f"({'+' if d >= 0 else '−'}{pct_es(abs(d))} puntos)", 10, "dim", anchor="w", wraplength=400,
                    justify="left").pack(anchor="w", pady=(0, 8))
         elif self.kind() == "sr":
-            why = ("El meta del parche está desactivado: actívalo en «Datos» (botón de arriba)." if not ui.conf.get("meta_enabled", True)
+            why = ("El meta del parche está desactivado: actívalo en «Datos» (se abre desde Ajustes)." if not ui.conf.get("meta_enabled", True)
                    else "El meta del parche aún se está descargando; aparecerá solo en unos segundos." if not core.META.get("data")
                    else "Este campeón casi no se juega en tu línea este parche: no hay datos de meta fiables.")
             ui.lbl(body, why, 10,
@@ -1702,7 +1702,7 @@ class Lobby(Section):
         if not ui.conf["show_teams"] or not r["ally_cells"]:
             return
         st0 = r["ally_stats"]
-        summ = f"{len(r['ally_cells'])} aliados" + (f" · físico {st0['ad']} / mágico {st0['ap']} · control {ctl(st0['cc'])}" if st0 and st0["ad"] + st0["ap"] else "")
+        summ = f"{len(r['ally_cells'])} {'aliado' if len(r['ally_cells']) == 1 else 'aliados'}" + (f" · físico {st0['ad']} / mágico {st0['ap']} · control {ctl(st0['cc'])}" if st0 and st0["ad"] + st0["ap"] else "")
         ui.fold(self.box, "Tu equipo", lambda c: self.fill(c, ctx), summ, "sel_team", False)
 
     def fill(self, c, ctx):
@@ -2020,7 +2020,7 @@ class BansRow(Section):
         ui, r = self.ui, ctx["r"]
         if ui.conf["compact"] or not ui.conf["show_bans"] or not r["bans"]:
             return
-        ui.fold(self.box, "Campeones baneados", lambda c: self.fill(c, ctx), f"{len(r['bans'])} baneados", "sel_bans", False)
+        ui.fold(self.box, "Campeones baneados", lambda c: self.fill(c, ctx), f"{len(r['bans'])} {'baneado' if len(r['bans']) == 1 else 'baneados'}", "sel_bans", False)
 
     def fill(self, c, ctx):
         ui, r = self.ui, ctx["r"]

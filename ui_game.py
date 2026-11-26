@@ -375,7 +375,7 @@ class GameView:
         wr = mine["wr"]
         moe = 98 / max(1, mine["games"]) ** 0.5   # margen de error (95 %) en puntos: con 20 partidas es ±22, con 1.000 ±3
         fav, des = wr - moe > 50, wr + moe < 50
-        verdict = "favorable" if fav else "desfavorable" if des else "igualado" if mine["games"] >= 100 else "sin datos suficientes para decidir"
+        verdict = "favorable" if fav else "desfavorable" if des else "igualado" if mine["games"] >= 100 else "aún sin datos suficientes para saber si es favorable"
         col = "good" if fav else "bad" if des else "fg"
         row = ui.frame(self.host)
         row.pack(anchor="w")

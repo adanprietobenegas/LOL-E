@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.25.0). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.25.1). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -21,6 +21,8 @@ español. Repositorio público `adanprietobenegas/LOL-E`, rama `main`. Pestañas
 Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el cliente local y datos públicos (Data Dragon, Lolalytics, op.gg).
 
 ## 2. Estado (actualizar al terminar cada conversación)
+
+**Orden del usuario (26/11/2026 tarde): trabajar solo el resto de la ventana de 5 h en mejoras notables y SUBIRLAS aunque no confirme (probará en clasificatorias y un compañero también).** Primero 1.25.1 (texto cortado en Novedades con escala > 100 % y ~40 correcciones de redacción).
 
 **Publicado en GitHub: 1.25.0** (26/11/2026; verificada con `--verificar`). **El usuario la probará con el cliente real más tarde**: Normal de reclutamiento (marcado vs «Sin confirmar», intercambios, orden por fase, barra «Ir a», «Tu partida» compacta, sin avisos del rival) y ARAM (una build, banquillo). Al retomar, preguntar cómo le fue y mirar `diag.log` / `error.log` de `%LOCALAPPDATA%\LOL-E`. Las tandas de más abajo que dicen «SIN commit» ya están publicadas en esta versión.
 

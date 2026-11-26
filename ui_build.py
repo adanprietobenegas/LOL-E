@@ -175,8 +175,8 @@ def item_tip(ui, iid):
 ROLE_QUEST = {
     "bottom": "Misión de rol: las botas pasan a la ranura de la misión y no ocupan uno de los objetos (7.ª ranura).",
     "middle": "Misión de rol: al completarla, tus botas de nivel 2 se mejoran gratis a nivel 3 (y si no las tienes, al comprarlas).",
-    "top": "Misión de rol: la recompensa de la línea superior se describe como nivel máximo 20 y, según algunas fuentes, un Teletransporte "
-           "si no lo llevas. Sin confirmar oficialmente.",
+    "top": "Misión de rol (sin confirmar oficialmente): al completarla, el nivel máximo sube a 20 y, según algunas fuentes, obtienes "
+           "Teletransporte si no lo llevas.",
     "jungle": "Misión de rol: al completarla, más oro y experiencia y más velocidad de movimiento en la jungla.",
     "support": "Misión de rol: tras completarla, las Balizas de control cuestan menos y se guardan en la ranura de la misión (hasta 2).",
 }

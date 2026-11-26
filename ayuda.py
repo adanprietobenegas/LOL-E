@@ -42,7 +42,7 @@ TOPICS = [
      "En Inicio: tu perfil, tu rango, la gráfica de tu rango en el tiempo, tus últimas partidas y, si llevas derrotas seguidas, un aviso de sesión.", "Asesor",
      "inicio perfil rango grafica sesion antes"),
     ("cola", "¿Qué pasa cuando busco partida?",
-     "La barra «Partida» pasa a llamarse «En vivo» y se tiñe de ámbar, y arriba aparece una banda con la fase (cola, selección, partida) y un botón para ir y volver "
+     "En la barra lateral, «Partida» pasa a llamarse «En vivo» y se tiñe de ámbar, y arriba aparece una banda con la fase (cola, selección, partida) y un botón para ir y volver "
      "entre la partida y la consulta.", "Partida", "cola buscar partida banda ambar en vivo fase"),
     ("elegir", "¿Cómo elijo campeón?",
      "En la selección, Inicio te recomienda campeones para tu línea con una afinidad de 0 a 100. Puedes filtrar (Mi rol, Mis campeones, Meta fuerte) y mirar "
@@ -51,8 +51,8 @@ TOPICS = [
      "En la selección, en «Meta y build» del campeón. Con tu campeón marcado, también en «En vivo»: hechizos, runas (más usada o mayor % de victorias), habilidades, "
      "objetos y botas, con pestañas Más usada, Variantes y Situaciones.", "Partida", "runas build objetos botas hechizos habilidades recomendadas"),
     ("en_partida", "¿Cómo uso la app durante la partida?",
-     "Mira «En vivo»: arriba el marcador, los objetivos (con avisos estimados de dragón, larvas y Barón), tu siguiente objeto y tu objetivo; los 10 jugadores van "
-     "plegados y tu build y runas, debajo. Si no quieres los datos en vivo, se apagan en Ajustes.", "Partida", "partida jugando en vivo marcador objetivos dragon barón siguiente objeto"),
+     "Mira «En vivo»: arriba el marcador, los objetivos (con avisos estimados de dragón, larvas y Barón), tu siguiente objeto y tu objetivo; debajo va tu build (las runas, "
+     "tras un enlace) y después los 10 jugadores, plegados. Si no quieres los datos en vivo, se apagan en Ajustes.", "Partida", "partida jugando en vivo marcador objetivos dragon barón siguiente objeto"),
     ("terminar", "¿Qué veo al terminar la partida?",
      "En «En vivo › Análisis»: el resultado, los PL, la comparación con tu rival de línea y con tu media, si cumpliste tu objetivo y un botón para guardar la tarjeta "
      "de la partida.", "Partida", "terminar fin analisis pl resultado tarjeta objetivo"),
@@ -89,7 +89,7 @@ TOPICS = [
     ("atajos", "¿Hay atajos de teclado?",
      "Ctrl+1 a Ctrl+7 cambian de pantalla, las flechas también, F1 abre la ayuda y Esc cierra Ajustes o la guía.", "Asesor", "atajos teclado ctrl f1 flechas"),
     ("contra_rivales", "¿Cuáles son los mejores campeones contra mis rivales?",
-     "En la selección, la tarjeta «Mejores campeones contra tus rivales» enseña, para tu rival de línea (5) y para los demás rivales ya elegidos (3), los que más le ganan, "
+     "En la selección, la tarjeta «Mejores campeones contra tus rivales» enseña los 5 campeones que más ganan a tu rival de línea y los 3 que más ganan a cada uno de los demás rivales elegidos, "
      "con el porcentaje y las partidas de cada cruce. Aparte de la afinidad: aquí solo cuenta el enfrentamiento. Marca los que tienes.", "Asesor",
      "mejores contra rivales counter enemigos enfrentamiento seleccion picks"),
     ("actualizar", "¿Cómo busco actualizaciones sin cerrar la app?",

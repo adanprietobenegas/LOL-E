@@ -197,14 +197,14 @@ def timers(snap):
     if 0 < gl <= BARON_WARN:
         out.append(f"Las larvas del Vacío aparecen en {clock(gl)} (estimado).")
     elif gl <= 0 < GRUBS_END - t and not grubs:
-        out.append(f"Las larvas del Vacío siguen en la fosa hasta el {clock(GRUBS_END)} (estimado).")
+        out.append(f"Las larvas del Vacío siguen en la fosa hasta el minuto {clock(GRUBS_END)} (estimado).")
     heralds = sum((tm or {}).get("heralds", 0) for tm in (snap.get("teams") or {}).values())
     hl = HERALD_SPAWN - t
     if not heralds:
         if 0 < hl <= BARON_WARN:
             out.append(f"El Heraldo de la Grieta aparece en {clock(hl)} (estimado).")
         elif hl <= 0 < HERALD_END - t:
-            out.append(f"El Heraldo de la Grieta sigue en la Grieta hasta el {clock(HERALD_END)} (estimado).")
+            out.append(f"El Heraldo de la Grieta sigue en la Grieta hasta el minuto {clock(HERALD_END)} (estimado).")
     down = sorted((tk + INHIB_RESPAWN - t, lost) for tk, lost in (snap.get("inhib_kills") or []) if 0 < tk + INHIB_RESPAWN - t <= INHIB_RESPAWN)
     mine = snap.get("me_team")
     for left, lost in down[:2]:   # los dos que antes reaparecen

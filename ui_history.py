@@ -117,11 +117,11 @@ class HistoryView:
     def filter_summary(self):
         act = [x for x in (self.mode if self.mode != "Todos" else "", self.res if self.res != "Todas" else "", self.line if self.line != "Todas" else "",
                            f"«{self.q}»" if self.q else "") if x]
-        return (" · ".join(act) if act else "sin filtros") + f" · {len(self.all)} partidas"
+        return (" · ".join(act) if act else "sin filtros") + f" · {len(self.all)} {'partida' if len(self.all) == 1 else 'partidas'}"
 
     def filters(self, c, n, wl, desde):
         ui = self.ui
-        ui.lbl(c, (f"{n} partidas guardadas desde el {desde}. " if n else "Todavía no hay partidas guardadas. ") +
+        ui.lbl(c, (f"{n} {'partida guardada' if n == 1 else 'partidas guardadas'} desde el {desde}. " if n else "Todavía no hay partidas guardadas. ") +
                "El cliente de LoL solo entrega las últimas ~20, así que LOL-E guarda cada partida que ve: el historial crece mientras lo usas.",
                10, "dim", anchor="w", justify="left", wraplength=wl).pack(anchor="w", pady=(0, 8))
         narrow = self.level == 0
@@ -171,7 +171,7 @@ class HistoryView:
                                 champs.get(e["c"], {}).get("name", e["c"]), ROLES_ES.get(e["r"], ""),
                                 "Remake" if e.get("rm") else "Victoria" if e["w"] else "Derrota",
                                 e.get("de"), e.get("k"), e.get("a"), e.get("cs"), e.get("dm"), e.get("d"), e.get("lv"), e.get("pl")])
-            self.gui.status(f"Exportadas {len(games)} partidas a {path}")
+            self.gui.status(f"{'Exportada' if len(games) == 1 else 'Exportadas'} {len(games)} {'partida' if len(games) == 1 else 'partidas'} a {path}")
             subprocess.Popen(["explorer", "/select,", path])
         except Exception as ex:
             self.gui.status(f"No se pudo exportar: {ex}")
@@ -271,7 +271,7 @@ class HistoryView:
             if e["w"] != cur_win:
                 break
             n += 1
-        tiles = [("Partidas", str(s["n"]), f"{s['wins']} victorias · {s['n'] - s['wins']} derrotas", "fg"),
+        tiles = [("Partidas", str(s["n"]), f"{s['wins']} {'victoria' if s['wins'] == 1 else 'victorias'} · {s['n'] - s['wins']} {'derrota' if s['n'] - s['wins'] == 1 else 'derrotas'}", "fg"),
                  ("Victorias", f"{round(s['wr'] * 100)} %", "de las partidas mostradas", "good" if s["wr"] >= .5 else "bad")]
         if s["kda"] is not None:
             a = s["avg"]
@@ -529,7 +529,7 @@ class HistoryView:
             self.more_b = None
         left = len(games) - self.shown
         if left > 0:
-            b = ctk.CTkButton(self.list_host, text=f"Mostrar {min(STEP, left)} más  ({left} restantes)", height=34, corner_radius=10,
+            b = ctk.CTkButton(self.list_host, text=f"Mostrar {min(STEP, left)} más  ({'queda' if left == 1 else 'quedan'} {left})", height=34, corner_radius=10,
                               font=ui.font(12), fg_color=PAL["card2"], hover_color=PAL["card2"], text_color=PAL["fg"], command=self.more)
             b.pack(pady=(12, 0))
             ui.smooth_btn(b, PAL["card2"], PAL["border"])

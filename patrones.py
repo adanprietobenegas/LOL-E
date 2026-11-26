@@ -149,10 +149,11 @@ def death_sentence(dm):
     total = sum(dm.values())
     z, n = max(((k, v) for k, v in dm.items() if k != "línea"), key=lambda kv: kv[1], default=(None, 0))
     if z and n / total >= 0.4:
-        return f"Dónde mueres (aprox.): el {round(n / total * 100)} % de tus {total} muertes localizadas ocurren en {z}."
+        return f"Dónde mueres (aprox.): el {round(n / total * 100)} % de tus {total} muertes localizadas ocurren en {ZONAS.get(z, z)}."
     return None
 
 
+ZONAS = {"río": "el río", "jungla rival": "la jungla rival", "tu jungla": "tu jungla", "jungla": "la jungla"}
 _CACHE = {}
 _NOW = {}      # cache_dir -> (instante, patrón): lo calculado se reutiliza unos segundos, porque el Plan se repinta a menudo
 

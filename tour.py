@@ -63,7 +63,7 @@ LESSONS = {
         step("Al buscar partida", "Al entrar en cola, «Partida» pasa a «En vivo» y aparece esta banda con la fase. Desde aquí vas y vuelves a consultar.", scene="queue", target="banda.vivo"),
     ]},
     "seleccion": {"title": "Selección, runas y builds", "steps": [
-        step("Te toca elegir", "En la selección, Inicio te recomienda campeones para tu línea con una afinidad de 0 a 100 y filtros.", scene="select", page="Asesor", target="recs.hero",
+        step("Te toca elegir", "En la selección, Inicio te recomienda campeones para tu línea, con una afinidad de 0 a 100, y puedes filtrarlos.", scene="select", page="Asesor", target="recs.hero",
              when="Solo durante la selección de campeón.", source="Lolalytics, op.gg y tu historial."),
         step("Mira cada campeón", "Resumen, Contra rival, Sinergias y Meta y build: cada pestaña te cuenta algo distinto del campeón elegido.", target="recs.pestanas",
              try_it="pulsa «Contra rival» y luego «Sinergias»."),
