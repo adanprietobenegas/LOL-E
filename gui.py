@@ -103,6 +103,7 @@ class GUI:
             self.ctx["plan"] = plan
         gc.disable()                      # (ver gc_tick)
         self.root.after(5000, self.gc_tick)
+        self.late_events = {}
         self.root.after(200, self.poll)
         self.root.after(500, self.tick)
         self.root.after(1500, self.ensure_normal)
@@ -330,7 +331,12 @@ class GUI:
                 self.pending_show = ev  # de varios cambios seguidos solo cuenta el último
                 continue
             if kind == "assets":
+                if not self.assets_pending:
+                    self.assets_since = time.time()
                 self.assets_pending = True   # cada imagen descargada avisaba y repintaba TODO (1-2 s): ahora una ráfaga de imágenes cuenta como un solo repintado
+                continue
+            if kind in ("players", "recs_data", "splash"):   # llegan de uno en uno (un aviso por jugador o por consulta): solo cuenta el último y se aplica de vez en cuando
+                self.late_events[kind] = ev
                 continue
             if kind == "idle":
                 self.pending_show = None
@@ -338,7 +344,16 @@ class GUI:
                 self.handle_event(ev, kind)
             except Exception as e:  # un dato raro no debe dejar la ventana sin actualizarse
                 self.event_failed(kind, e)
-        if self.assets_pending and time.time() - self.last_assets_t >= 0.8:   # como mucho un repintado por imágenes cada 0,8 s (y tras dejar pasar la ráfaga)
+        if self.late_events and time.time() - self.last_late_t >= 0.6:
+            pending, self.late_events = self.late_events, {}
+            self.last_late_t = time.time()
+            for k_, ev_ in pending.items():
+                try:
+                    self.handle_event(ev_, k_)
+                except Exception as e:
+                    self.event_failed(k_, e)
+        busy_fetch = getattr(getattr(self, "kit", None), "inflight", 0) > 0 and time.time() - self.assets_since < 4   # mientras bajan imágenes se espera (hasta 4 s)
+        if self.assets_pending and not busy_fetch and time.time() - self.last_assets_t >= 0.8:   # como mucho un repintado por imágenes cada 0,8 s (y tras dejar pasar la ráfaga)
             self.assets_pending = False
             self.last_assets_t = time.time()
             try:
@@ -361,7 +376,8 @@ class GUI:
                     "el detalle está en Ajustes › «Abrir el registro de errores».")
 
     pending_show, last_show_t, last_turn = None, 0.0, None
-    assets_pending, last_assets_t = False, 0.0
+    assets_pending, last_assets_t, assets_since = False, 0.0, 0.0
+    last_late_t = 0.0
     auto_game = False
 
     def analysis(self, gid, data):
@@ -863,7 +879,7 @@ class GUI:
                 self.status(f"No se ha podido actualizar solo ({e}). Pulsa «Actualizar» cuando quieras.")
                 self.update_fails = getattr(self, "update_fails", 0) + 1
                 if self.update_fails <= 5:   # un fallo de red pasajero no deja la versión antigua hasta la próxima comprobación
-                    self.root.after(120000, lambda: self.auto_install(info))
+                    self.q.put(("call", lambda: self.root.after(120000, lambda: self.auto_install(info))))   # Tk solo desde su hilo
         threading.Thread(target=go, daemon=True).start()
 
     def ver_note(self, text, color="dim", ms=8000):

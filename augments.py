@@ -26,19 +26,21 @@ def catalog(lcu=None):
         saved = core.read_json(path("augments.json"), {})
         if saved:
             _cat.update({int(k): v for k, v in saved.items()})
-        if lcu is not None and not getattr(catalog, "fresh", False):
-            try:
-                data = lcu.get("/lol-game-data/assets/v1/cherry-augments.json") or []
-                new = {int(x["id"]): {"n": x.get("nameTRA") or x.get("augmentNameId", ""), "r": TIERS.get(x.get("rarity"), ""),
-                                      "i": x.get("augmentSmallIconPath", ""), "a": str(x.get("augmentNameId", "")).startswith("ARAM"), "k": str(x.get("augmentNameId", ""))} for x in data}
-                if new:
-                    _cat.clear()
-                    _cat.update(new)
-                    core.write_json(path("augments.json"), {str(k): v for k, v in new.items()})
-                    catalog.fresh = True
-            except Exception:
-                pass
-        return _cat
+        if lcu is None or getattr(catalog, "fresh", False):
+            return _cat
+    try:   # la consulta al cliente va FUERA del cerrojo: la ventana usa el catálogo y no puede esperar a la red
+        data = lcu.get("/lol-game-data/assets/v1/cherry-augments.json") or []
+        new = {int(x["id"]): {"n": x.get("nameTRA") or x.get("augmentNameId", ""), "r": TIERS.get(x.get("rarity"), ""),
+                              "i": x.get("augmentSmallIconPath", ""), "a": str(x.get("augmentNameId", "")).startswith("ARAM"), "k": str(x.get("augmentNameId", ""))} for x in data}
+        if new:
+            with _lock:
+                _cat.clear()
+                _cat.update(new)
+                catalog.fresh = True
+            core.write_json(path("augments.json"), {str(k): v for k, v in new.items()})
+    except Exception:
+        pass
+    return _cat
 
 
 def info(aid):

@@ -52,6 +52,11 @@ class GameView:
     # ---- ciclo de vida ----
     def refresh(self, ctx, force=False):
         ui = self.ui
+        hidden = getattr(self.gui, "hidden", None)
+        if hidden is not None and hidden():   # minimizada: no se reconstruye nada (el PC es del juego); al restaurar se repinta
+            self.sig = None
+            self.gui._live_pending = True
+            return
         self.width = ctx["width"]
         plan = ctx.get("plan") or {}
         sig = (ui.epoch, self.width // 80, self.tab, self.gid, plan.get("cid"), plan.get("opp"), plan.get("state"),

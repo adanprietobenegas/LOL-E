@@ -1231,7 +1231,9 @@ class Recs(Section):
     def resized(self, width):
         """Cambio de ancho de la ventana: solo se rehace la imagen de la tarjeta principal."""
         self.width = width
-        self.pages = {}  # el ancho cambió: las páginas de información se rehacen con la columna nueva
+        for pg_ in self.pages.values():
+            pg_.destroy()
+        self.pages, self.cur_page = {}, None  # el ancho cambió: las páginas de información se rehacen con la columna nueva
         if self.carousel_alive():
             self.hero_w = max(260, min(2400, width - 52 - 2 * (38 + 6)))
             self.hero = None
@@ -1937,7 +1939,9 @@ class CounterPicks(Section):
                     rows = matchups.best_against(ui.champs, cid, lane, core.CACHE, min_games=50)
                 except Exception as e:
                     rows = ("error", str(e), time.time())
-                    ui.root.after(95000, lambda: (Recs.COUNTERS.pop(key, None), ui.notify("recs_data")))   # reintento solo, sin esperar a otro repintado
+                    t_ = threading.Timer(95, lambda: (Recs.COUNTERS.pop(key, None), ui.notify("recs_data")))   # reintento solo (sin tocar Tk desde otro hilo)
+                    t_.daemon = True
+                    t_.start()
                 Recs.COUNTERS[key] = rows
                 ui.notify("recs_data")
             threading.Thread(target=go, daemon=True).start()

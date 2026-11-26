@@ -215,6 +215,9 @@ def role_glyph(role, size, on, off, bg, border):
     return im.resize((size, size), Image.LANCZOS)
 
 
+_FETCH_LOCK = threading.Lock()
+
+
 class Kit:
     """Estado y utilidades compartidas por todas las secciones."""
 
@@ -598,6 +601,8 @@ class Kit:
         if path in self.fetching:
             return
         self.fetching.add(path)
+        with _FETCH_LOCK:
+            self.inflight = getattr(self, "inflight", 0) + 1   # descargas en marcha: la ventana espera a que acaben para repintar una sola vez
 
         def go():
             try:
@@ -609,6 +614,9 @@ class Kit:
                 self.notify(event)
             except Exception:
                 pass
+            finally:
+                with _FETCH_LOCK:
+                    self.inflight -= 1
         threading.Thread(target=go, daemon=True).start()
 
     def icon(self, cid, size, border=None):

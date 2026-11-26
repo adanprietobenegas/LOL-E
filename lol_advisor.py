@@ -240,6 +240,7 @@ def quiet():
 
 
 _PS_NEXT = 0.0  # el plan B (PowerShell) es lento: no se repite más de una vez cada 20 s
+_PS_WAIT = 20
 
 
 def find_client(conf, skip=()):
@@ -257,7 +258,9 @@ def find_client(conf, skip=()):
                 diag("Leer el archivo de conexión del cliente: " + type(sys.exc_info()[1]).__name__)
     if time.time() < _PS_NEXT:
         return None
-    _PS_NEXT = time.time() + 20
+    global _PS_WAIT
+    _PS_NEXT = time.time() + _PS_WAIT
+    _PS_WAIT = min(120, _PS_WAIT * 2)   # con LoL cerrado todo el día no se lanza PowerShell cada 20 s: la espera crece hasta 2 min
     try:  # plan B: leer los argumentos del proceso (por si LoL está instalado en otra carpeta)
         cmd = subprocess.check_output(
             ["powershell", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command",
@@ -266,6 +269,7 @@ def find_client(conf, skip=()):
         port = re.search(r"--app-port=(\d+)", cmd)
         pw = re.search(r"--remoting-auth-token=([\w-]+)", cmd)
         if port and pw:
+            _PS_WAIT = 20
             return int(port.group(1)), pw.group(1)
     except Exception:
         diag("Buscar el cliente por su proceso: " + type(sys.exc_info()[1]).__name__)
