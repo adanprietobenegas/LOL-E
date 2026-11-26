@@ -22,8 +22,8 @@ def _fail(where):
 
 
 def rank_info(q):
-    if not q or not q.get("tier"):
-        return None
+    if not q or not q.get("tier") or str(q["tier"]).upper() in ("NONE", "NA", "UNRANKED"):
+        return None   # sin clasificar (el cliente manda «NONE» en vez de dejarlo vacío)
     t = q["tier"].upper()
     w, l = q.get("wins", 0), q.get("losses", 0)
     return {"key": t, "tier": TIERS_ES.get(t, t.title()), "div": "" if t in APEX else q.get("division", ""),

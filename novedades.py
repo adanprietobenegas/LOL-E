@@ -354,7 +354,7 @@ class NotesWindow:
         try:  # sobre la ventana principal, en su mismo monitor
             x = ui.root.winfo_rootx() + max(0, (ui.root.winfo_width() - int(W * sc)) // 2)
             y = ui.root.winfo_rooty() + 60
-            w.geometry(f"{int(W * sc)}x{int(H * sc)}+{x}+{y}")
+            w.geometry(f"{W}x{H}+{x}+{y}")   # CustomTkinter ya aplica la escala al tamaño (multiplicarlo otra vez sacaba los botones de la pantalla)
         except Exception:
             w.geometry(f"{W}x{H}")
         w.transient(ui.root)

@@ -217,7 +217,7 @@ class GUI:
             return
         try:
             if self.root.state() == "normal":
-                self.conf["win_geo"] = self.root.geometry()
+                self.conf["win_geo"] = tk.Wm.geometry(self.root)   # píxeles reales: `root.geometry()` de CustomTkinter los divide por la escala
                 save_conf(self.conf)
         except Exception:
             pass
@@ -567,6 +567,8 @@ class GUI:
                 elif kind == "link":
                     self.ctx["linked"] = ev[1]
                     self.update_link()
+                    if not ev[1] and self.advisor == "select":
+                        self.leave_select()
                     if self.view == "idle":
                         self.refresh_current()
                 elif kind == "assets":
@@ -947,6 +949,16 @@ class GUI:
                 self.status(f"No se ha podido actualizar: {e}")
                 self.q.put(("update_fail",))
         threading.Thread(target=go, daemon=True).start()
+
+    def leave_select(self):
+        """El cliente se cerró a mitad de selección: se deja de mostrar como si siguiera."""
+        self.advisor = "idle"
+        plan = self.ctx.get("plan")
+        if plan and plan.get("state") == "select":
+            plan["state"] = "done"
+        self.apply_window()
+        self.apply_page()
+        self.update_band()
 
     def apply_window(self):
         """«Siempre visible» solo cuando lo pides: nunca, durante la selección de campeón (por defecto) o siempre."""
@@ -1448,12 +1460,13 @@ class GUI:
             self.build_dock()
         self.root.update_idletasks()
         W, H, X, Y = self.root.winfo_width(), self.root.winfo_height(), self.root.winfo_x(), self.root.winfo_y()
-        screen_w = self.root.winfo_screenwidth() - 16
+        vx, _vy, vw, _vh = self.virtual_screen()
+        screen_w = vx + vw - 16   # el borde derecho de TODOS los monitores (el principal solo medía el primero)
         dw = self.dock_px()
         if self.root.state() == "zoomed" or W + dw > screen_w:
             self.slide_inside(W, dw, True)  # maximizada o sin sitio: la ventana no cambia, el contenido se estrecha
             return
-        X1 = min(X, max(0, screen_w - (W + dw)))
+        X1 = min(X, max(vx, screen_w - (W + dw)))
         self.dock_inside = False
         tk.Place.place_configure(self.main, x=0, y=0, relwidth=0, width=W, relheight=1.0)  # el contenido no se recoloca
         tk.Place.place_configure(self.dock, x=W, y=0, width=dw, relheight=1.0)

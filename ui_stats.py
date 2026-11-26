@@ -35,7 +35,7 @@ class ConsentWindow:
         try:
             x = ui.root.winfo_rootx() + max(0, (ui.root.winfo_width() - int(W * sc)) // 2)
             y = ui.root.winfo_rooty() + 50
-            w.geometry(f"{int(W * sc)}x{int(H * sc)}+{x}+{y}")
+            w.geometry(f"{W}x{H}+{x}+{y}")   # CustomTkinter ya aplica la escala al tamaño
         except Exception:
             w.geometry(f"{W}x{H}")
         w.transient(ui.root)

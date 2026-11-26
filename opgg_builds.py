@@ -59,7 +59,7 @@ def _fetch(champ, lane):
     tmp = os.path.join(core.CACHE, f"opgg_build_{os.getpid()}_{threading.get_ident()}.tmp")   # uno por petición: dos descargas a la vez no se pisan
     os.makedirs(core.CACHE, exist_ok=True)
     ps = ("Invoke-WebRequest -UseBasicParsing -TimeoutSec 40 -Headers @{'User-Agent'='Mozilla/5.0';'Accept-Language'='en'} "
-          f"-Uri '{url(champ, lane)}' -OutFile '{tmp}'")
+          f"-Uri '{url(champ, lane)}' -OutFile '{core.ps_quote(tmp)}'")
     subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", ps], check=True, timeout=90,
                    capture_output=True, **{k: v for k, v in core.quiet().items() if k != "stdin"})
     try:
@@ -97,11 +97,15 @@ def load(cache_dir, champ, lane, force=False):
     return data
 
 
+RETRY_ERR = 300   # segundos antes de volver a intentar una descarga fallida
+_failed = {}
+
+
 def request(cache_dir, champ, lane):
     key = ("opgg", matchups.slug(champ), lane)
     with _lock:
         st = _state.get(key)
-        if st:
+        if st and not (st[0] == "error" and time.time() - _failed.get(key, 0) > RETRY_ERR):
             return key
         _state[key] = ("loading",)
 
@@ -110,6 +114,7 @@ def request(cache_dir, champ, lane):
             _state[key] = ("ok", load(cache_dir, champ, lane))
         except Exception as e:
             _state[key] = ("error", str(e) if isinstance(e, RuntimeError) else f"No se pudo leer op.gg ({type(e).__name__}).")
+            _failed[key] = time.time()
     threading.Thread(target=go, daemon=True).start()
     return key
 

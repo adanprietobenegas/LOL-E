@@ -179,6 +179,13 @@ def load_meraki():
     saved = read_json(path, None)
     if saved and time.time() - saved["ts"] < 7 * 86400:
         return saved["data"]
+    if saved and saved.get("data"):   # caducado pero válido: la ventana no espera a 13 MB; se refresca en segundo plano para el próximo arranque
+        threading.Thread(target=_fetch_meraki, args=(path,), daemon=True).start()
+        return saved["data"]
+    return _fetch_meraki(path)
+
+
+def _fetch_meraki(path):
     try:
         raw = http_json("https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions.json", 120)
         data = {str(c["id"]): {"pos": c.get("positions", []), "dmg": c.get("adaptiveType", ""),
@@ -186,6 +193,7 @@ def load_meraki():
         write_json(path, {"ts": time.time(), "data": data})
         return data
     except Exception:
+        saved = read_json(path, None)
         return saved["data"] if saved else {}
 
 
@@ -199,7 +207,7 @@ def load_champions():
     saved = read_json(path, None)
     champs = None
     try:
-        ver = http_json("https://ddragon.leagueoflegends.com/api/versions.json")[0]
+        ver = http_json("https://ddragon.leagueoflegends.com/api/versions.json", 4 if saved else 15)[0]   # con datos guardados no se hace esperar
         DD_VERSION = ver
         if saved and saved["version"] == ver and "icon" in next(iter(saved["champs"].values())):
             champs = {int(k): v for k, v in saved["champs"].items()}
@@ -234,7 +242,8 @@ def quiet():
 _PS_NEXT = 0.0  # el plan B (PowerShell) es lento: no se repite más de una vez cada 20 s
 
 
-def find_client(conf):
+def find_client(conf, skip=()):
+    """(puerto, clave) del cliente o None. `skip`: conexiones que ya no respondieron (archivo viejo): se salta a las demás y al plan B."""
     global _PS_NEXT
     paths = [os.path.join(conf["lol_path"], "lockfile")] if conf["lol_path"] else []
     paths += [rf"{d}:\Riot Games\League of Legends\lockfile" for d in "CDEFG"]
@@ -242,7 +251,8 @@ def find_client(conf):
         if os.path.exists(p):
             try:
                 _, _, port, pw, _ = open(p).read().split(":")
-                return int(port), pw
+                if (int(port), pw) not in skip:
+                    return int(port), pw
             except Exception:
                 diag("Leer el archivo de conexión del cliente: " + type(sys.exc_info()[1]).__name__)
     if time.time() < _PS_NEXT:
@@ -340,6 +350,25 @@ def load_season(champs, conf=None):
     return {"champs": load_season_seed(champs), "matchups": {}}
 
 
+def ps_quote(s):
+    """Texto dentro de comillas simples de PowerShell (una ruta con apóstrofo rompía la descarga)."""
+    return str(s).replace("'", "''")
+
+
+def refresh_owned(lcu, P):
+    """Pone al día maestrías y campeones en propiedad (dos lecturas rápidas) sin releer el historial."""
+    try:
+        for m in lcu.get("/lol-champion-mastery/v1/local-player/champion-mastery") or []:
+            P["mastery"][m["championId"]] = m["championPoints"]
+        owned = {c["id"] for c in lcu.get("/lol-champions/v1/owned-champions-minimal") or []}
+        if owned:
+            P["owned"] = owned
+    except (urllib.error.URLError, ConnectionError, OSError):
+        raise
+    except Exception:
+        soft_fail("Actualizar maestrías y campeones")
+
+
 def fetch_opgg(conf, suffix="/champions"):
     """Descarga la pagina de campeones (`suffix` vacío: el perfil principal, que trae las fotos diarias de tu rango). Va por PowerShell porque Python rechaza la cadena de certificados de op.gg
     y no quiero desactivar la verificacion SSL."""
@@ -348,7 +377,7 @@ def fetch_opgg(conf, suffix="/champions"):
     out = os.path.join(CACHE, "opgg.html")
     os.makedirs(CACHE, exist_ok=True)
     ps = ("Invoke-WebRequest -UseBasicParsing -TimeoutSec 40 -Headers @{'User-Agent'='Mozilla/5.0';"
-          f"'Accept-Language'='en'}} -Uri '{url}' -OutFile '{out}'").replace("}}", "}")
+          f"'Accept-Language'='en'}} -Uri '{url}' -OutFile '{ps_quote(out)}'").replace("}}", "}")
     subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", ps], check=True, timeout=90,
                    capture_output=True, **{k: v for k, v in quiet().items() if k != "stdin"})
     with open(out, encoding="utf-8", errors="replace") as f:
@@ -714,6 +743,8 @@ def load_player_data(lcu, season=None):
                     detail = lcu.get(f"/lol-match-history/v1/games/{gid}")
                     opp = find_opponent(me, detail)
                     allies, mates = ally_champs(me, detail)
+                except (urllib.error.URLError, ConnectionError, OSError):
+                    raise   # el cliente se cerró: se guarda lo ya leído y se termina
                 except Exception:
                     continue
             if stale and role != e.get("r"):
@@ -1258,6 +1289,7 @@ def start_meta(conf, P, ui, force=False):
 def run(conf, champs, ui):
     season = load_season(champs)
     lcu = P = None
+    stale, stale_until, net_fails = set(), 0.0, 0   # conexiones que no responden (archivo viejo o cliente arrancando) y fallos de red seguidos
     last = None
     next_check, next_lobby = 0.0, 0.0
     prev_turn = None
@@ -1305,10 +1337,22 @@ def run(conf, champs, ui):
             if META.pop("dirty", False) and last is not None:
                 last = "_force"  # llego el meta: recalcular
             if lcu is None:
-                found = find_client(conf)
+                if time.time() >= stale_until:
+                    stale.clear()
+                found = find_client(conf, stale) if stale else find_client(conf)
                 if not found:
                     time.sleep(3); continue
-                lcu = LCU(*found)
+                probe = LCU(*found)
+                try:
+                    probe.get("/riotclient/region-locale")   # un 404 vale; lo que no vale es que nadie escuche
+                except (urllib.error.URLError, ConnectionError, OSError):
+                    if not stale:
+                        diag("El archivo de conexión del cliente no responde (arrancando o antiguo): se buscan otras vías")
+                    stale.add(found)
+                    stale_until = time.time() + 60
+                    time.sleep(3); continue
+                lcu = probe
+                net_fails = 0
                 diag("Cliente de LoL encontrado")
                 ui.status("Conectado. Cargando tus datos…")
                 detect_account(lcu, conf)
@@ -1328,6 +1372,7 @@ def run(conf, champs, ui):
                 if pp is not None:
                     party = pp
             session = lcu.get("/lol-champ-select/v1/session")
+            net_fails = 0
             session = sanitize_session(session) if session else session
             if session:
                 nosession = 0
@@ -1380,7 +1425,7 @@ def run(conf, champs, ui):
                 if reload_pending and not in_game and flow != "ChampSelect" and not played:
                     # la selección acabó y NO empezó ninguna partida (esquivada o cancelada). Antes se daba por terminada la partida ANTERIOR:
                     # «Partida terminada», se reanalizaba y, si el rango no se había movido, se esperaba hasta 8 veces y se guardaba «0 PL» para ella
-                    reload_pending = False
+                    reload_pending = sel_seen = False
                     diag("La selección acabó sin empezar partida (esquivada o cancelada): no se analiza nada")
                 if reload_pending and not in_game and flow != "ChampSelect" and played:
                     reload_pending = False
@@ -1493,6 +1538,9 @@ def run(conf, champs, ui):
                 if (not P.get("hist_ok") or not my_puuid or not P.get("owned")) and hist_tries < 12 and time.time() >= next_hist:
                     # el historial, tu cuenta o tus campeones no llegaron (cliente aún iniciando sesión): reintentar
                     next_hist, hist_tries = time.time() + 30, hist_tries + 1
+                    if not conf.get("opgg_name"):
+                        detect_account(lcu, conf)
+                        season = load_season(champs, conf)
                     P = load_player_data(lcu, season)
                     if P.get("hist_ok") and P.get("owned"):
                         hist_tries = 0
@@ -1520,7 +1568,10 @@ def run(conf, champs, ui):
                     sel_seen = True
                     if not reload_pending:
                         played = False   # selección nueva (si aún se espera cerrar la partida anterior, esa sigue contando)
-                    P = load_player_data(lcu, season)
+                    if P and P.get("hist_ok") and P.get("owned"):
+                        refresh_owned(lcu, P)   # rápido; el historial ya está (releerlo tardaba 12-24 s y se perdía la fase de bans)
+                    else:
+                        P = load_player_data(lcu, season)
                     mode = detect_mode(lcu)  # la Grieta, ARAM u otro modo: cambia lo que tiene sentido mostrar
                     diag(f"Selección de campeón: cola {mode['id']}, tipo {mode['kind']}")
                     note_queue(mode["id"])
@@ -1540,12 +1591,17 @@ def run(conf, champs, ui):
         except KeyboardInterrupt:
             break
         except (urllib.error.URLError, ConnectionError, OSError):
+            net_fails += 1
+            if lcu is not None and last_flow in ("GameStart", "InProgress", "Reconnect") and net_fails < 3:   # en plena partida el cliente puede ir muy justo: un tropiezo no es «cliente cerrado»
+                time.sleep(2)
+                continue
             if lcu is not None:
                 diag("Cliente de LoL perdido (cerrado o reiniciando)")
             lcu = None  # el cliente se cerro o reinicio
             if last is not None:   # a mitad de selección: al volver se trata como selección nueva (puede ser otra), con el sonido de turno una vez más como mucho
                 last = prev_turn = mode = None
                 prev_locked = False
+                sel_seen = False   # si al volver la partida ya empezó, se cierra y analiza igual
             ui.link(False)
             ui.status("No encuentro el cliente de LoL. Reintentando…")
             time.sleep(3)

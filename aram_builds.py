@@ -55,7 +55,7 @@ def _fetch(champ, mode):
     tmp = os.path.join(core.CACHE, f"aram_build_{os.getpid()}_{threading.get_ident()}.tmp")   # uno por petición: dos descargas a la vez no se pisan
     os.makedirs(core.CACHE, exist_ok=True)
     ps = ("Invoke-WebRequest -UseBasicParsing -TimeoutSec 40 -Headers @{'User-Agent'='Mozilla/5.0';'Accept-Language'='en'} "
-          f"-Uri '{url(champ, mode)}' -OutFile '{tmp}'")
+          f"-Uri '{url(champ, mode)}' -OutFile '{core.ps_quote(tmp)}'")
     subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", ps], check=True, timeout=90,
                    capture_output=True, **{k: v for k, v in core.quiet().items() if k != "stdin"})
     try:
@@ -93,10 +93,14 @@ def load(cache_dir, champ, mode, force=False):
     return data
 
 
+RETRY_ERR = 300   # segundos antes de volver a intentar una descarga fallida
+_failed = {}
+
+
 def request(cache_dir, champ, mode):
     key = ("mode", mode, matchups.slug(champ))
     with _lock:
-        if key in _state:
+        if key in _state and not (_state[key][0] == "error" and time.time() - _failed.get(key, 0) > RETRY_ERR):
             return key
         _state[key] = ("loading",)
 
@@ -105,6 +109,7 @@ def request(cache_dir, champ, mode):
             _state[key] = ("ok", load(cache_dir, champ, mode))
         except Exception as e:
             _state[key] = ("error", str(e) if isinstance(e, RuntimeError) else f"No se pudo leer op.gg ({type(e).__name__}).")
+            _failed[key] = time.time()
     threading.Thread(target=go, daemon=True).start()
     return key
 

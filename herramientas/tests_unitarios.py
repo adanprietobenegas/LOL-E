@@ -1630,6 +1630,40 @@ class DescargaDeActualizaciones(unittest.TestCase):
         self.assertEqual(os.listdir(os.path.join(d, "LOL-E-update")), [])
 
 
+class FiabilidadClienteReal(unittest.TestCase):
+    def test_sin_clasificar_no_es_un_rango(self):
+        import players
+        for t in ("NONE", "none", "NA", ""):
+            self.assertIsNone(players.rank_info({"tier": t, "division": "NA", "wins": 0, "losses": 0}))
+        self.assertEqual(players.rank_info({"tier": "GOLD", "division": "II", "wins": 1, "losses": 1})["div"], "II")
+
+    def test_un_archivo_de_conexion_que_no_responde_se_salta(self):
+        import tempfile, lol_advisor as l
+        d = tempfile.mkdtemp()
+        open(os.path.join(d, "lockfile"), "w").write("LeagueClient:1:5555:clave:https")
+        self.assertEqual(l.find_client({"lol_path": d}), (5555, "clave"))
+        with mock.patch.object(l, "_PS_NEXT", 10 ** 12):   # sin plan B por PowerShell en la prueba
+            found = l.find_client({"lol_path": d}, skip={(5555, "clave")})
+        self.assertNotEqual(found, (5555, "clave"))
+
+    def test_los_datos_de_meraki_caducados_no_hacen_esperar(self):
+        import tempfile, lol_advisor as l
+        d = tempfile.mkdtemp()
+        old = l.CACHE
+        l.CACHE = d
+        try:
+            l.write_json(os.path.join(d, "meraki.json"), {"ts": 0, "data": {"1": {"pos": ["TOP"]}}})
+            with mock.patch.object(l.threading, "Thread") as T:
+                self.assertEqual(l.load_meraki(), {"1": {"pos": ["TOP"]}})
+            self.assertTrue(T.called)   # se refresca aparte
+        finally:
+            l.CACHE = old
+
+    def test_rutas_con_apostrofo(self):
+        import lol_advisor as l
+        self.assertEqual(l.ps_quote("C:\Users\O'Neil\x"), "C:\Users\O''Neil\x")
+
+
 class PickSinConfirmar(unittest.TestCase):
     """Un campeón solo marcado (sin bloquear) no cuenta como elegido: se distingue en pantalla y no mueve las recomendaciones."""
 
