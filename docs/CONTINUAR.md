@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.25.0, en preparación). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.25.0). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -22,11 +22,11 @@ Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el clie
 
 ## 2. Estado (actualizar al terminar cada conversación)
 
+**Publicado en GitHub: 1.25.0** (26/11/2026; verificada con `--verificar`). **El usuario la probará con el cliente real más tarde**: Normal de reclutamiento (marcado vs «Sin confirmar», intercambios, orden por fase, barra «Ir a», «Tu partida» compacta, sin avisos del rival) y ARAM (una build, banquillo). Al retomar, preguntar cómo le fue y mirar `diag.log` / `error.log` de `%LOCALAPPDATA%\LOL-E`. Las tandas de más abajo que dicen «SIN commit» ya están publicadas en esta versión.
+
 **26/11/2026, orden del usuario: revisar, probar todo y subir una versión nueva (la 1.25.0), aun sin probarla él con un cliente real (lo hará más tarde).** La norma de agrupar sin subir sigue para tandas futuras.
 
 **NORMA (26/11/2026): las mejoras se AGRUPAN en local. No subir a GitHub, no preparar versión ni publicar hasta que el usuario lo pida expresamente.** Se pueden usar subagentes especialistas (pocos a la vez).
-
-**PRÓXIMA SESIÓN (anotado 26/11/2026):** la tanda de abajo está hecha pero SIN commit, SIN versión y SIN publicar; el usuario quiere verla con un cliente real antes. Al retomar: `git status`, `estado.py --pruebas`, mirar en una selección real que (a) un aliado solo marcado sale con aro naranja y «Sin confirmar» y pasa a normal al bloquear, (b) el orden cambia bans → elegir → bloqueado, (c) la barra «Ir a» fija; si va bien, commit, 1.25.0 (notas, novedades, CONTINUAR) y publicar solo con su sí. Pendiente además: «Tu partida» en vivo más compacta (decidir con una partida real) y, de los informes, idiomas (`INFORME_IDIOMAS.md`) y comercialización (`INFORME_COMERCIALIZACION.md`).
 
 **Tercera tanda (26/11/2026, SIN commit):** ARAM/Mayhem enseñan una sola build y «▸ Otras N builds» (la nota larga solo en Mayhem; `ui_mayhem.build_block`); en partida hay barra «Ir a» fija (Build · Los 10 · Jugadores · Claves · Enfrentamiento · Consejos; `GameView.mark/anchors`, `GUI.paint_game_jump/go_to`, `jump_host` compartido con la selección). `comprobar_todo.py` completo en verde ANTES de la barra de partida (pruebas, pantallas a 560 y 1340, cliente falso y ARAM, lecciones); después: 251 pruebas y capturas `gjump`/`gjump_estrecha`.
 
