@@ -1667,6 +1667,15 @@ class FiabilidadClienteReal(unittest.TestCase):
         self.assertEqual(l.ps_quote("C:" + b + "O'Neil" + b + "x"), "C:" + b + "O''Neil" + b + "x")
 
 
+class UltimaPartida(unittest.TestCase):
+    def test_hace_cuanto(self):
+        from ui_sections import ago_text
+        now = 1_000_000
+        f = lambda s: ago_text((now - s) * 1000, now)
+        self.assertEqual((f(20), f(600), f(7200), f(90000), f(5 * 86400)), ("hace 1 min", "hace 10 min", "hace 2 h", "ayer", "hace 5 días"))
+        self.assertEqual(ago_text(0, now), "")
+
+
 class PickSinConfirmar(unittest.TestCase):
     """Un campeón solo marcado (sin bloquear) no cuenta como elegido: se distingue en pantalla y no mueve las recomendaciones."""
 

@@ -88,6 +88,7 @@ class GUI:
         self.kit = Kit(self.root, conf, champs, lambda ev: self.q.put((ev,)))
         self.kit.goto_history, self.kit.goto_matchup = self.goto_history, self.goto_matchup
         self.kit.launch_demo = self.launch_demo
+        self.kit.open_analysis = self.open_analysis
         self.kit.set_opp, self.kit.opp_now = self.set_opp, lambda: self.opp_choice
         self.apply_window()
         self.build_shell()
@@ -231,6 +232,12 @@ class GUI:
         if not hasattr(self, "help_win"):
             self.help_win = HelpWindow(self)
         self.help_win.open(self.tab_names.get(self.page))
+
+    def open_analysis(self, gid):
+        """Desde Inicio: abre el análisis de esa partida."""
+        self.game_view.tab = "Análisis"
+        self.set_page("Partida")
+        self.game_view.pick_game(gid)
 
     def launch_demo(self, lessons=None):
         """Abre la demostración en otra ventana (otro proceso, con datos inventados). `lessons`: ids de lecciones para empezar directamente por ellas."""

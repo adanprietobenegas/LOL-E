@@ -152,6 +152,19 @@ class TourOffer(Section):
                       command=lambda: done(False)).pack(side="left", padx=(8, 0))
 
 
+def ago_text(t_ms, now=None):
+    """«hace 5 min», «hace 3 h», «ayer», «hace 4 días» a partir de la hora de inicio de una partida (milisegundos)."""
+    if not t_ms:
+        return ""
+    s = max(0, (now if now is not None else time.time()) - t_ms / 1000)
+    if s < 3600:
+        return f"hace {max(1, int(s // 60))} min"
+    if s < 86400:
+        return f"hace {int(s // 3600)} h"
+    d = int(s // 86400)
+    return "ayer" if d == 1 else f"hace {d} días"
+
+
 class WaitCard(Section):
     def tilt(self):
         """Aviso de sesión (2+ derrotas seguidas) con tu propio dato, para antes de entrar en otra cola; None si no toca."""
@@ -162,8 +175,56 @@ class WaitCard(Section):
         except Exception:
             return None
 
+    def last_game(self):
+        """(partida, PL ganados o perdidos | None, objetivo | None) de lo último que jugaste, o None. Solo lee lo que ya está guardado."""
+        try:
+            games = history.load_all(history.hpath(core.CACHE), history.gpath(core.CACHE))
+            e = next((g for g in games if not g.get("rm") and g.get("t")), None)
+            if e is None:
+                return None
+            import analysis
+            lp = analysis.lp_for(core.CACHE, e.get("id"))
+            goal = None
+            try:
+                import patrones
+                goal = patrones.goal(patrones.current(core.CACHE))
+            except Exception:
+                pass
+            return e, (lp or {}).get("d"), goal
+        except Exception:
+            core.log_exc("Tu última partida")
+            return None
+
     def key(self, ctx):
-        return (ctx["msg"], ctx["linked"], self.tilt())
+        last = self.last_game()
+        return (ctx["msg"], ctx["linked"], self.tilt(), last and (last[0].get("id"), last[1], last[2], ago_text(last[0].get("t", 0))))
+
+    def draw_last(self, ctx):
+        last = self.last_game()
+        if last is None:
+            return
+        ui, (e, lp, goal) = self.ui, last
+        c = ui.card(self.box, "Tu última partida")
+        row = ui.frame(c)
+        row.pack(fill="x")
+        if e.get("c") in ui.champs:
+            ui.champ(row, e["c"], 44, False, "#3ddc84" if e.get("w") else "#ff5a5f").pack(side="left", padx=(0, 12))
+        if e.get("id") is not None:
+            ctk.CTkButton(row, text="Ver análisis", width=110, height=30, corner_radius=10, font=ui.font(11, True), fg_color=PAL["card2"], text_color=PAL["fg"],
+                          hover_color=PAL["border"], command=lambda g=str(e["id"]): ui.open_analysis(g)).pack(side="right")
+        mid = ui.frame(row)
+        mid.pack(side="left", fill="x", expand=True)
+        title = "Victoria" if e.get("w") else "Derrota"
+        if lp is not None:
+            title += f"  ·  {'+' if lp > 0 else '−' if lp < 0 else '±'}{abs(lp)} PL"
+        ui.lbl(mid, title, 15, "good" if e.get("w") else "bad", True, True).pack(anchor="w")
+        bits = [name(e["c"], ui.champs) if e.get("c") in ui.champs else "", mode_of(e)]
+        if e.get("k") is not None:
+            bits.append(f"{e['k']} / {e['de']} / {e['a']}")
+        bits.append(ago_text(e.get("t", 0)))
+        ui.lbl(mid, "  ·  ".join(x for x in bits if x), 10, "dim", anchor="w").pack(anchor="w")
+        if goal:
+            ui.autowrap(ui.lbl(c, goal, 11, "warn", True, anchor="w", justify="left"), c).pack(anchor="w", pady=(8, 0))
 
     def build(self, ctx):
         ui = self.ui
@@ -184,6 +245,7 @@ class WaitCard(Section):
         msg = ctx["msg"] or ""
         if msg and not any(s in msg for s in ("Conectado al cliente", "Abre el cliente", "Esperando al cliente")):
             ui.autowrap(ui.lbl(c, msg, 10, "dim", anchor="w", justify="left"), c).pack(anchor="w", pady=(2, 0))
+        self.draw_last(ctx)
 
 
 class ModesCard(Section):
