@@ -96,6 +96,8 @@ def send(conf, uid, title, cid, blocks, key=None):
     """Envía el conjunto. Devuelve (ok, mensaje). Bloquea: llamar desde un hilo."""
     if not any(ids for _, ids in blocks):
         return False, "No hay objetos que enviar."
+    if getattr(core, "DEMO_MODE", False):   # la demostración usa datos inventados: nunca escribe en tu cliente
+        return False, "En la demostración no se envía nada a tu cliente."
     try:
         found = core.find_client(conf)
         if not found:

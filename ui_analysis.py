@@ -44,6 +44,12 @@ def mix(c1, c2, t):
 SORTS = ["Línea", "KDA", "Daño", "Oro", "Súbditos", "Visión"]
 
 
+def menu_games(games, gid, n=15):
+    """Las partidas del desplegable: las `n` últimas y, si la que se está mirando es más antigua, también ella (antes el menú decía otra partida)."""
+    shown = list(games[:n])
+    return shown + [g for g in games[n:] if g["id"] == gid]
+
+
 class AnalysisView:
     def __init__(self, ui, gui, gv):
         self.ui, self.gui, self.gv = ui, gui, gv
@@ -79,7 +85,7 @@ class AnalysisView:
         ids = [g["id"] for g in gv.games]
         if gv.gid not in ids:
             gv.gid = ids[0]
-        labels = {f"{fecha(g['t'])} · {ui.champs.get(g['c'], {}).get('name', g['c'])} · {'Victoria' if g['w'] else 'Derrota'}": g["id"] for g in gv.games[:15]}
+        labels = {f"{fecha(g['t'])} · {ui.champs.get(g['c'], {}).get('name', g['c'])} · {'Victoria' if g['w'] else 'Derrota'}": g["id"] for g in menu_games(gv.games, gv.gid)}
         cur = next((k for k, v in labels.items() if v == gv.gid), list(labels)[0])
         bar = ui.frame(host)
         bar.pack(fill="x", pady=(0, 12))

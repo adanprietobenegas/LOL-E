@@ -17,7 +17,7 @@ import synergy
 import trends
 from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.30.0"
+APP_NAME, APP_VERSION = "LOL-E", "1.31.0"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -1918,7 +1918,7 @@ def seed_cache():
 
 
 # módulos de la app que el ejecutable empaquetado debe poder importar (la prueba `ComprobacionDelEmpaquetado` los compara con los archivos de la carpeta)
-AUTOTEST_MODULES = ("stats", "ui_stats", "analysis", "aram_builds", "augments", "ayuda", "builds", "claves", "demo_cliente", "demo_data", "demo_mode", "gui", "guide", "history", "items", "itemset", "learn", "live", "lol_advisor", "lpseries", "matchups", "meta", "novedades", "opgg_builds", "params", "parche", "parche_stats", "patrones", "players", "readycheck", "runes", "safeio", "sesion", "shopping", "sounds", "synergy", "temas", "tour", "trends", "ui_analysis", "ui_aram", "ui_build", "ui_claves", "ui_draft", "ui_game", "ui_guide", "ui_help", "ui_history", "ui_kit", "ui_live", "ui_lp", "ui_mayhem", "ui_opp", "ui_patch", "ui_player", "ui_pool", "ui_rail", "ui_sections", "ui_views", "ui_vs", "updater", "wrapped")
+AUTOTEST_MODULES = ("stats", "ui_stats", "analysis", "aram_builds", "augments", "ayuda", "builds", "claves", "demo_cliente", "demo_data", "demo_mode", "gui", "guide", "history", "items", "itemset", "learn", "live", "lol_advisor", "lpseries", "matchups", "meta", "novedades", "opgg_builds", "params", "parche", "parche_stats", "patrones", "players", "readycheck", "runes", "runesend", "safeio", "sesion", "shopping", "sounds", "synergy", "temas", "tour", "trends", "ui_analysis", "ui_aram", "ui_build", "ui_claves", "ui_draft", "ui_game", "ui_guide", "ui_help", "ui_history", "ui_kit", "ui_live", "ui_lp", "ui_mayhem", "ui_opp", "ui_patch", "ui_player", "ui_pool", "ui_rail", "ui_sections", "ui_views", "ui_vs", "updater", "wrapped")
 
 
 def autotest():

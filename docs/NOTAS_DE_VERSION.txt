@@ -7,6 +7,13 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.31.0   (26 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · runesend.py: botón en la selección; PUT sobre la página «LOL-E…», POST si hay hueco, aviso si no; nunca borra. Probado contra el cliente real fuera de partida (actualizar y crear).
+    No probado: pulsarlo durante una selección real; el caso sin hueco solo con cliente simulado. Textos de ayuda, recorrido y «Acerca de» actualizados (ya no dicen «solo lee»).
+  · ui_analysis.menu_games; demostración sin escrituras (itemset y runesend). 268 pruebas.
+
 VERSIÓN 1.30.0   (26 de noviembre de 2026)
 ---------------------------------------------------------------------
 

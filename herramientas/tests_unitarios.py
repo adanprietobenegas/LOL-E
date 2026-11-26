@@ -1680,6 +1680,83 @@ class BaneosSinHistorial(unittest.TestCase):
         self.assertEqual(l.meta_threats(champs, data, "", set()), [])
 
 
+from unittest import mock
+
+
+class EnvioDeRunas(unittest.TestCase):
+    RD = {"runes": {**{i: {"t": 8000} for i in (1, 2, 3, 4)}, 5: {"t": 8400}, 6: {"t": 8400}}}
+    RN = {"keystone": 1, "primary": [2, 3, 4], "secondary": [5, 6], "shards": [5008, 5008, 5011]}
+
+    class Cliente:
+        """Cliente de mentira: guarda las páginas y apunta cada escritura."""
+        def __init__(self, pages, libre=True):
+            self.pages, self.libre, self.writes = {p["id"]: p for p in pages}, libre, []
+
+        def get(self, path, *a, **k):
+            if path.endswith("/inventory"):
+                return {"canAddCustomPage": self.libre}
+            if path.endswith("/pages"):
+                return list(self.pages.values())
+            return self.pages.get(int(path.rsplit("/", 1)[1]))
+
+        def call(self, _lcu, method, path, body=None):
+            self.writes.append((method, path))
+            if method == "POST":
+                self.pages[99] = {"id": 99, **body, "isEditable": True}
+                return {"id": 99}
+            if method == "PUT" and "currentpage" not in path:
+                pid = int(path.rsplit("/", 1)[1])
+                self.pages[pid] = {**self.pages[pid], **body}
+
+    def pagina(self, i, name, **kw):
+        return {"id": i, "name": name, "isEditable": True, "isTemporary": False, "selectedPerkIds": [], **kw}
+
+    def enviar(self, cliente):
+        import runesend
+        with mock.patch("itemset._call", cliente.call):
+            return runesend.apply(cliente, runesend.page_body("Urgot", self.RN, self.RD))
+
+    def test_formato_y_datos_incompletos(self):
+        import runesend
+        b = runesend.page_body("Urgot", self.RN, self.RD)
+        self.assertEqual((b["name"], b["primaryStyleId"], b["subStyleId"], b["selectedPerkIds"]),
+                         ("LOL-E · Urgot", 8000, 8400, [1, 2, 3, 4, 5, 6, 5008, 5008, 5011]))
+        self.assertIsNone(runesend.page_body("Urgot", {**self.RN, "shards": [5008]}, self.RD))
+        self.assertIsNone(runesend.page_body("Urgot", self.RN, {"runes": {}}))
+        self.assertIsNone(runesend.page_body("Urgot", {**self.RN, "secondary": [2, 3]}, self.RD))   # secundaria del mismo árbol
+
+    def test_modifica_solo_la_suya_y_no_borra(self):
+        c = self.Cliente([self.pagina(1, "Mi página"), self.pagina(2, "lol-e · Garen")], libre=False)
+        self.assertTrue(self.enviar(c)[0])
+        self.assertEqual(c.writes, [("PUT", "/lol-perks/v1/pages/2"), ("PUT", "/lol-perks/v1/currentpage")])
+        self.assertEqual(c.pages[1]["selectedPerkIds"], [])
+
+    def test_crea_si_hay_hueco(self):
+        c = self.Cliente([self.pagina(1, "Mi página"), self.pagina(2, "LOL-E temporal", isTemporary=True)])
+        self.assertTrue(self.enviar(c)[0])
+        self.assertEqual([w[0] for w in c.writes], ["POST", "PUT"])
+
+    def test_sin_hueco_no_toca_nada(self):
+        c = self.Cliente([self.pagina(1, "Mi página")], libre=False)
+        ok, msg = self.enviar(c)
+        self.assertFalse(ok)
+        self.assertIn("no borra", msg)
+        self.assertEqual(c.writes, [])
+
+    def test_la_demostracion_no_escribe(self):
+        import runesend
+        with mock.patch.object(runesend.core, "DEMO_MODE", True, create=True):
+            self.assertFalse(runesend.send({}, "Urgot", self.RN, self.RD)[0])
+
+
+class MenuDePartidas(unittest.TestCase):
+    def test_incluye_la_que_miras(self):
+        from ui_analysis import menu_games
+        games = [{"id": i} for i in range(30)]
+        self.assertEqual([g["id"] for g in menu_games(games, 3)], list(range(15)))
+        self.assertEqual([g["id"] for g in menu_games(games, 22)], list(range(15)) + [22])
+
+
 class RunasPorSuNombre(unittest.TestCase):
     def test_grupos_completos(self):
         from ui_build import rune_names

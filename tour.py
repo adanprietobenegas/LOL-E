@@ -53,7 +53,7 @@ LESSONS = {
         step("Bienvenido a LOL-E", "Es un asesor para League of Legends: lee tu cliente y te ayuda a elegir campeón, a jugar y a revisar tus partidas.", scene="idle", page="Asesor",
              when="Lo dejas abierto mientras juegas; se activa solo.", source="Tu cliente de LoL, más Lolalytics y op.gg para las estadísticas."),
         step("Esto es una demostración", "Todo lo que ves son datos inventados. La franja de arriba te lo recuerda y no se guarda nada.", target="cuerpo"),
-        step("Solo lee, no toca nada", "LOL-E solo lee el cliente local y la API local de la partida. No inyecta nada ni automatiza el juego."),
+        step("No juega por ti", "LOL-E lee el cliente y la API local de la partida. Solo escribe en tu cliente objetos o runas cuando tú lo pides. No inyecta nada ni automatiza el juego."),
     ]},
     "antes": {"title": "Antes de jugar", "steps": [
         step("Inicio: tu perfil y rango", "Aquí ves tu rango en cada cola y tus últimas cinco partidas.", scene="idle", page="Asesor", target="inicio.perfil",

@@ -158,9 +158,11 @@ def fin_partida():
     ui.phase("EndOfGame")
 
 
-def analisis_guardado():
-    """Enseña el análisis de la partida guardada más reciente en cache/analysis (no hace falta el cliente)."""
+def analisis_guardado(grieta=False):
+    """Enseña el análisis de la partida guardada más reciente en cache/analysis (no hace falta el cliente); con `grieta`, la más reciente de la Grieta."""
     fs = sorted(glob.glob(os.path.join(l.CACHE, "analysis", "*.json")))
+    if grieta:
+        fs = [f for f in fs if (l.read_json(f, None) or {}).get("queue") in (400, 420, 440, 490)]
     if not fs:
         return
     data = l.read_json(fs[-1], None)
@@ -210,6 +212,7 @@ PASOS = [
     ("01_espera_sin_cliente", lambda: (ui.link(False), ui.idle(l.player_info(P), "Abre el cliente de League of Legends para empezar.")), 3500),
     ("02_inicio_conectado", lambda: (ui.link(True), ui.idle(l.player_info(P), "Conectado al cliente. Entra en una cola cuando quieras.")), 3500),
     ("03_seleccion_turno", lambda: (push(ses), ui.players(team)), 6000),
+    ("03b_seleccion_baneos", lambda: push({**ses, "timer": {**ses["timer"], "phase": "PLANNING"}, "actions": [[{"actorCellId": 0, "type": "ban", "isInProgress": True, "completed": False}]]}), 4000),
     ("04_seleccion_sinergias", lambda: ui.recs.set_tab("Sinergias"), 2000),
     ("05_seleccion_meta", lambda: ui.recs.set_tab("Meta y build"), 2500),
     ("06_seleccion_lista", lambda: vista("lista"), 3000),
@@ -226,6 +229,8 @@ PASOS = [
     ("10e_fin_con_scroll", lambda: (ui.body._parent_canvas.yview_moveto(1.0), ui.root.after(300, lambda: (ui.idle(l.player_info(P), "Partida terminada. Historial actualizado. Esperando la siguiente…"), ui.phase("None"), analisis_guardado()))), 3500),   # el usuario miraba la parte baja del bloque en vivo cuando acabó la partida: no debe quedar la pantalla en blanco
     ("11_partida_analisis", lambda: (fin_partida(), tab_partida("Análisis")), 5000),
     ("11b_analisis_guardado", analisis_guardado, 5000),
+    ("11c_analisis_grieta", lambda: analisis_guardado(True), 5000),
+    ("11d_plan_terminado", lambda: tab_partida("Plan"), 4000),
     ("12_enfrentamiento", lambda: ui.set_page("Enfrentamiento"), 4000),
     ("13_enfrentamiento_rival", lambda: ui.matchup_view.select(157), 4000),
     ("14_historial", lambda: ui.set_page("Historial"), 4000),

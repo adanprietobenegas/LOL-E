@@ -10,6 +10,12 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.31.0", "fecha": "26 de noviembre de 2026", "titulo": "Envía tus runas al cliente", "items": [
+        ("nuevo", "En la selección, bajo las runas, el botón «Enviar runas al cliente» las escribe en una página llamada «LOL-E · (tu campeón)» y la deja seleccionada. Si ya tienes una página que empiece por «LOL-E», la actualiza; si no y te queda hueco, la crea."),
+        ("nuevo", "LOL-E nunca borra páginas de runas. Si no te queda ningún hueco, te lo dice: borra una en el cliente o ponle de nombre «LOL-E» a la que quieras ceder. Los hechizos no se envían."),
+        ("arreglo", "En «Análisis», al mirar una partida antigua, el menú ya no muestra el nombre de otra."),
+        ("arreglo", "En la demostración guiada, los botones de envío ya no pueden escribir en tu cliente."),
+    ]},
     {"v": "1.30.0", "fecha": "26 de noviembre de 2026", "titulo": "Mejoras tras la primera partida clasificatoria", "items": [
         ("mejora", "Bajo las runas aparecen sus nombres (principal, secundaria y fragmentos), para ponerlas en el cliente sin pasar el ratón por cada icono. El botón se llama ahora «Enviar objetos al cliente»: las runas y los hechizos no se envían."),
         ("mejora", "En los baneos, si en tus partidas destacan menos de tres rivales, la lista se completa con lo que más está ganando en tu línea este parche, marcado aparte."),

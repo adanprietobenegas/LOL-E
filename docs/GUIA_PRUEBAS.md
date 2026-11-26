@@ -1,6 +1,6 @@
 # Qué probar de LOL-E (para ti y para tu compañero)
 
-Versión: la 1.30.0 o posterior (se ve arriba, junto al nombre). Se actualiza sola cuando está en reposo.
+Versión: la 1.31.0 o posterior (se ve arriba, junto al nombre). Se actualiza sola cuando está en reposo.
 
 ## Antes de jugar
 1. Abre LOL-E y el cliente de League. Arriba debe salir «Conectado a LoL».
@@ -13,7 +13,7 @@ Versión: la 1.30.0 o posterior (se ve arriba, junto al nombre). Se actualiza so
 | Bans | Primero las ideas de baneo; si no tienes datos contra nadie, las del meta de tu línea |
 | Bajo «Te toca…» | Una línea con el daño, tanques y control de los rivales y de tu equipo |
 | Un aliado solo marca un campeón | Aro naranja y «Sin confirmar»; al bloquear pasa a normal |
-| Bloqueas | Tu build sube arriba, con «Enviar objetos al cliente» encima y los nombres de las runas debajo (se ponen a mano) |
+| Bloqueas | Tu build sube arriba, con «Enviar objetos al cliente» encima y los nombres de las runas debajo y «Enviar runas al cliente» (comprueba en el cliente que quedan puestas) |
 | Intercambio | Se ven los campeones nuevos, también el tuyo |
 | Barra «Ir a» | Fija arriba; cada botón lleva a su bloque |
 

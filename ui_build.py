@@ -99,7 +99,7 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None, in_game=
                     s_.grid(row=0, column=k, sticky="nw", padx=(0 if k == 0 else 16, 0))
                     grid.columnconfigure(k, weight=1, uniform="bp")
                     slots.append(s_)
-                render(ui, slots[0], d, champs, cid, enemy, cw, lane, again, in_game)
+                render(ui, slots[0], d, champs, cid, enemy, cw, lane, again, in_game, send=export and not in_game)
                 if d.get("stats"):
                     variants(ui, slots[1], d, champs, cid, cw, lane, again)
                 situations(ui, slots[2] if cols == 3 else slots[0], d, champs, ens, cw)
@@ -112,7 +112,7 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None, in_game=
             elif state["view"] == "Situaciones":
                 situations(ui, content, d, champs, ens, width1)
             else:
-                render(ui, content, d, champs, cid, enemy, width1, lane, again, in_game)
+                render(ui, content, d, champs, cid, enemy, width1, lane, again, in_game, send=export and not in_game)
     paint()
     return box
 
@@ -459,7 +459,7 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
     sw.pack(anchor="w", pady=(0, 8))
     explica = ("Crea un conjunto de objetos propio en tu cliente («LOL-E · campeón · línea»). El juego lo lee al EMPEZAR la partida: envíalo durante la "
                "selección; si lo envías con la partida ya cargada, aparecerá en la siguiente. Solo se tocan los conjuntos de LOL-E; los tuyos no. "
-               "Las runas y los hechizos no se envían: ponlos tú en el cliente.")
+               "Las runas tienen su propio botón, junto a ellas; los hechizos ponlos tú en el cliente.")
     ui.tip(btn, explica)
     ui.tip(sw, explica)
 
@@ -521,7 +521,43 @@ def rune_icons(ui, parent, rn, rd, width):
 OPEN_RUNES = set()   # (campeón, línea, rival) cuyo pliegue «Runas, hechizos e inicio» está abierto: cualquier repintado lo volvía a cerrar
 
 
-def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None, in_game=False):
+_RUNE_SENT = {}   # (campeón, línea, rival, página) -> resultado del último envío: un repintado no borra el aviso
+
+
+def rune_send_row(ui, parent, champs, cid, rn, rd, key, width):
+    """«Enviar runas al cliente»: solo al pulsarlo se escribe la página «LOL-E» (ver runesend.py)."""
+    import runesend
+    if runesend.page_body(champs[cid]["name"], rn, rd) is None:
+        return
+    row = ui.frame(parent)
+    row.pack(anchor="w", fill="x", pady=(8, 0))
+    res = _RUNE_SENT.setdefault(key, {})
+
+    def paint():
+        if not row.winfo_exists():
+            return
+        sending = res.get("state") == "sending"
+        btn.configure(state="disabled" if sending else "normal")
+        msg.configure(text="Enviando las runas…" if sending else res.get("msg", ""),
+                      fg=ui.hexm(PAL["dim"] if sending or res.get("ok") else PAL["warn"]))
+        if sending:
+            row.after(300, paint)
+
+    def go():
+        runesend.send_async(ui.conf, champs[cid]["name"], rn, rd, res)
+        paint()
+    btn = ctk.CTkButton(row, text="Enviar runas al cliente", height=28, width=180, corner_radius=8, font=ui.font(11, True), fg_color=ui.acc,
+                        text_color=ON_FILL, text_color_disabled=ON_FILL, command=go)
+    btn.pack(anchor="w")
+    msg = ui.lbl(row, "", 10, "dim", anchor="w", justify="left", wraplength=max(200, width - 140))
+    msg.pack(anchor="w", fill="x", pady=(2, 0))
+    ui.tip(btn, "Escribe estas runas en una página llamada «LOL-E» de tu cliente y la selecciona. Si no hay hueco, no borra ninguna: te lo dice. "
+                "Los hechizos no se envían.")
+    if res:
+        paint()
+
+
+def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None, in_game=False, send=False):
     rd = ui.runedata or {}
     title = f"BUILD MÁS USADA DE {champs[cid]['name'].upper()}" + (f" CONTRA {champs[enemy]['name'].upper()}" if d.get("vs") and enemy else "")
     ui.lbl(parent, title, 10, "dim", True, anchor="w").pack(anchor="w", pady=(0, 4))
@@ -570,6 +606,8 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None, in_g
                 es = lambda x: f"{x:.1f}".replace(".", ",")
                 partes = [f"{es(page['wr'])} % de victorias"] + ([f"{es(page['pr'])} % de uso"] if page.get("pr") else []) + [f"{page['n']:,} partidas".replace(",", ".")]
                 ui.lbl(holder, "  ·  ".join(partes), 10, "dim", anchor="w").pack(anchor="w", pady=(4, 0))
+            if send:
+                rune_send_row(ui, holder, champs, cid, page["runes"], rd, (cid, lane, enemy, cur), width)
         paint_runes()
 
     if not in_game:

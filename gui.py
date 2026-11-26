@@ -439,6 +439,7 @@ class GUI:
             self.recs.unfolded = None   # y las recomendaciones vuelven a plegarse al bloquear
         import ui_build, ui_mayhem
         ui_build.OPEN_RUNES.clear()
+        ui_build._RUNE_SENT.clear()   # «Runas enviadas» de la selección anterior no vale para esta
         ui_mayhem.OPEN_MORE.clear()
         pl = c.get("plan")
         if pl and pl.get("state") in ("select", "game"):
@@ -1843,8 +1844,8 @@ class GUI:
 
         section("Acerca de")
         k.clbl(sc, f"{APP_NAME} {APP_VERSION}\nNo está respaldado por Riot Games ni refleja las opiniones de Riot Games "
-                   "ni de nadie que participe oficialmente en League of Legends. Solo lee datos "
-                   "de tu cliente y de la API local de la partida; nunca interviene en el juego.", 10, "dim", wraplength=self.note_w(), justify="left").pack(
+                   "ni de nadie que participe oficialmente en League of Legends. Lee datos "
+                   "de tu cliente y de la API local de la partida; solo escribe objetos o runas en el cliente si tú lo pides, y nunca interviene en el juego.", 10, "dim", wraplength=self.note_w(), justify="left").pack(
             anchor="w", padx=16, pady=(0, 12))
 
     _opp_choice = 0  # rival de línea elegido a mano (0 = el que se deduce solo)

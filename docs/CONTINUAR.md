@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.30.0). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 13/11/2026 (versión del código: 1.31.0). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -21,6 +21,8 @@ español. Repositorio público `adanprietobenegas/LOL-E`, rama `main`. Pestañas
 Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el cliente local y datos públicos (Data Dragon, Lolalytics, op.gg).
 
 ## 2. Estado (actualizar al terminar cada conversación)
+
+**1.31.0 (26/11/2026, publicada a petición del usuario).** Arreglado: el desplegable de «Análisis» podía nombrar otra partida si mirabas una anterior a las 15 últimas (`ui_analysis.menu_games`). `capturas.py` gana los pasos 03b (planificación y bans), 11c (análisis de la Grieta) y 11d (plan terminado): lo nuevo de la 1.30.0 se ve bien. Las fichas de jugador se revisaron a 960, 1340 y al 130 %: sin apreturas, se quita de pendientes. **Enviar runas al cliente: hecho (el usuario pidió «con botón»), incluido en la 1.31.0.** `runesend.py`: botón en la selección; usa una sola página «LOL-E…» (la modifica con PUT y la selecciona), la crea si hay hueco y si no, no toca nada y lo dice; nunca borra. En la demostración no escribe (también arreglado en objetos). El cliente del usuario tiene las 16 páginas ocupadas (comprobado solo leyendo): tendrá que borrar una o renombrar la que ceda a «LOL-E». **Probado contra el cliente real fuera de partida (26/11/2026, a petición del usuario):** modificó su página «LOL-E» (renombrada por él), quedó válida y seleccionada, sin borrar, crear ni cambiar otras. El caso sin página «LOL-E» y con hueco también probado en real: crea «LOL-E · Garen», válida y seleccionada; un segundo envío reutiliza la misma. Falta pulsar el botón en una selección real. Sin texto oficial de Riot que lo apruebe o prohíba: revisar el portal de desarrolladores antes de que lo use más gente.
 
 **1.30.0 (26/11/2026).** Primera clasificatoria real observada (victoria; consejos al instante, orden por fases y conjunto de objetos en la tienda confirmados). Arreglados los fallos vistos; sin ver aún en una partida real: jugador completado con la API en vivo, bloque en vivo oculto al acabar, objetivo que caduca, recomendaciones plegadas. «Enviar objetos al cliente» no envía runas ni hechizos (enviarlos sigue pendiente de revisar la política de Riot). Observar una partida: script pasivo de captura de la ventana + `cache\diag.log`.
 
