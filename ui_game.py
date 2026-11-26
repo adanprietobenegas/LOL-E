@@ -284,7 +284,8 @@ class GameView:
             self.ui.lbl(self.host, "", 4, "dim").pack()
             self.mark("Build")
             build_panel(ui, host, cid, lane, opp or None, self.width - 110,
-                        core.comp_stats(plan.get("enemies") or [], ui.champs, True), in_game=plan.get("state") == "game").pack(fill="x")
+                        core.comp_stats(plan.get("enemies") or [], ui.champs, True), in_game=plan.get("state") == "game",
+                        export=plan.get("state") != "done").pack(fill="x")   # al acabar la partida ya no hay nada que enviar
         if lane and plan.get("kind") in (None, "sr") and plan.get("enemies"):
             import ui_opp
             if plan.get("state") == "game":   # en partida el rival ya está claro: el selector queda plegado, con el rival actual como resumen

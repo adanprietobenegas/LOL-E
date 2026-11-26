@@ -49,7 +49,7 @@ VIEWS = ["Más usada", "Variantes", "Situaciones"]
 _VIEW = {}
 
 
-def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None, in_game=False):
+def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None, in_game=False, export=True):
     """Devuelve un contenedor que se rellena solo cuando llegan los datos (sin bloquear la ventana).
     `ens`: composición del equipo rival (comp_stats) para marcar qué situaciones aplican ahora."""
     box = ui.frame(parent)
@@ -86,7 +86,7 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None, in_game=
             d = st[1]
             rich = bool(d.get("stats") or d.get("palette"))
             cols = 3 if width >= 1500 else 2 if width >= 960 else 1
-            if not in_game:   # arriba del todo: en la selección es lo primero que se pulsa (durante la partida enviarlo ya no sirve)
+            if not in_game and export:   # arriba del todo: en la selección es lo primero que se pulsa (durante la partida enviarlo ya no sirve)
                 export_row(ui, content, d, champs, cid, enemy, lane, build_blocks(ui, d, cid, lane, ens))
             if rich and cols > 1:
                 # cabe en el ancho: se ven todas las vistas a la vez, en columnas
