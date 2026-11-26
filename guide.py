@@ -158,7 +158,7 @@ def duel(mine, opp, nm, no, attr_m=None, attr_o=None, dmg_o=""):
                                                        f"{no} empieza ligeramente por delante: cede los primeros intercambios."), "good" if win > 0 else "bad"))
     gain = (r16 / r1) - 1
     if abs(gain) >= 0.08:
-        out.append(("Escalado", f"Tu aguante base (vida y armadura) frente al suyo pasa de {r1:.2f}× en el nivel 1 a {r16:.2f}× en el 16 (sin objetos): " +
+        out.append(("Escalado", f"Tu aguante base (vida y armadura) frente al suyo pasa de {f'{r1:.2f}'.replace('.', ',')}× en el nivel 1 a {f'{r16:.2f}'.replace('.', ',')}× en el 16 (sin objetos): " +
                     (f"{nm} mejora con los niveles; no fuerces antes de tiempo." if gain > 0 else f"{nm} pierde terreno con los niveles; la ventaja hay que "
                                                                                                 f"convertirla pronto."),
                     "good" if gain > 0 else "bad"))

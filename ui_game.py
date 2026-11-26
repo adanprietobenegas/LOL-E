@@ -292,7 +292,7 @@ class GameView:
                     pk_ = ui_opp.picker(ui, c, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 130)
                     if pk_ is not None:
                         pk_.pack(fill="x", pady=(4, 8))
-                ui.reg("partida.rival", ui.fold(host, "Rival de línea", fill_opp, ("contra " + core.name(opp, ui.champs)) if opp and opp in ui.champs else "automático", "game_opp", False))
+                ui.reg("partida.rival", ui.fold(host, "Rival de línea", fill_opp, ("contra " + core.name(opp, ui.champs)) if opp and opp in ui.champs else "automático", "game_opp", False, padx=0))
             else:
                 pk = ui_opp.picker(ui, host, cid, lane, plan["enemies"], plan.get("opp_auto") or 0, ui.opp_now(), ui.set_opp, self.width - 110)
                 if pk is not None:
@@ -390,8 +390,8 @@ class GameView:
         row = ui.frame(self.host)
         row.pack(anchor="w")
         ui.lbl(row, f"{wr:.1f} %".replace(".", ","), 22, col, True, True).pack(side="left")
-        ui.lbl(row, f"   de victorias de {core.name(cid, ui.champs)} contra {core.name(opp, ui.champs)} en tu línea: enfrentamiento {verdict}",
-               11, "dim").pack(side="left")
+        ui.lbl(self.host, f"de victorias de {core.name(cid, ui.champs)} contra {core.name(opp, ui.champs)} en tu línea: enfrentamiento {verdict}",
+               11, "dim", anchor="w", justify="left", wraplength=max(240, self.width - 110)).pack(anchor="w")
         better = [x for x in st if x["wr"] > wr + 1.5][:3]
         ui.lbl(self.host, f"Datos de {mine['games']:,} partidas de Lolalytics (todos los jugadores).".replace(",", ".") +
                ("" if not better else "  Mejores contra él: " + ", ".join(f"{core.name(x['cid'], ui.champs)} {x['wr']:.1f} %".replace(".", ",")

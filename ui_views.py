@@ -468,8 +468,9 @@ class MatchupView:
             wr = round(wins / g * 100)
             row = ui.frame(mid)
             row.pack(anchor="w")
-            ui.lbl(row, f"Tus partidas contra {ui.champs[enemy]['name']}: {g}  ·  ", 10, "dim", anchor="w").pack(side="left")
-            ui.lbl(row, f"{wins}V {lost}D  ({wr} %)", 10, "good" if wins * 2 >= g else "bad", True, anchor="w").pack(side="left")
+            narrow = getattr(self, "width", 900) < 640
+            ui.lbl(row, f"Tus partidas contra {ui.champs[enemy]['name']}: {g}" + ("" if narrow else "  ·  "), 10, "dim", anchor="w").pack(side="top" if narrow else "left", anchor="w")
+            ui.lbl(row, f"{wins}V {lost}D  ({wr} %)", 10, "good" if wins * 2 >= g else "bad", True, anchor="w").pack(side="top" if narrow else "left", anchor="w")
             vs = ((self.gui.ctx.get("info") or {}).get("vs_enemy") or {})
             det = vs.get(enemy) or vs.get(str(enemy)) or []
             if det:

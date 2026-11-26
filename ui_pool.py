@@ -319,7 +319,8 @@ class PoolPanel:
                 cell.pack(side="left", padx=(0, 12))
                 ui.champ(cell, cid, 30, False).pack(side="left")
                 ui.lbl(cell, f" {nm(cid)} · {es(wr)} %", 10, "good", True).pack(side="left")
-        ui.lbl(inner, "Tasas de victoria del parche en esa línea (Lolalytics) para tu rango y superiores; son orientativas.", 9, "dim", anchor="w").pack(anchor="w", pady=(8, 0))
+        ui.lbl(inner, "Tasas de victoria del parche en esa línea (Lolalytics) para tu rango y superiores; son orientativas.", 9, "dim", anchor="w", justify="left",
+               wraplength=min(self.ctx["width"] - 120, 740)).pack(anchor="w", pady=(8, 0))
 
     def d_summary(self, p, r):
         ui = self.ui

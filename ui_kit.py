@@ -394,7 +394,7 @@ class Kit:
         b.set(current)
         return b
 
-    def fold(self, parent, title, build, summary="", key=None, open_=False, action=None):
+    def fold(self, parent, title, build, summary="", key=None, open_=False, action=None, padx=8):
         """Sección plegable: cabecera con flecha, título y un resumen a la derecha. El cuerpo se construye al abrirla por primera vez
         (con una animación breve) y se recuerda si estaba abierta. Devuelve el contenedor; `box.set_summary(texto)` cambia el resumen."""
         folds = self.conf.setdefault("folds", {})
@@ -403,7 +403,7 @@ class Kit:
         card, fg, dim = self.hexm(PAL["card2"]), self.hexm(PAL["fg"]), self.hexm(PAL["dim"])
         hover = self.hexm(PAL["border"])
         box = tk.Frame(parent, bg=bgp)
-        box.pack(fill="x", pady=(0, 8), padx=8)
+        box.pack(fill="x", pady=(0, 8), padx=padx)
         import temas
         head = tk.Frame(box, bg=card, cursor="hand2", highlightthickness=1, highlightbackground=self.hexm(self.edge_color()),
                         highlightcolor=self.hexm(self.edge_color()))

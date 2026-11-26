@@ -7,6 +7,12 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.28.0   (26 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · ui_build.export_row arriba de la build en la selección (explicación en globo).
+  · Revisión visual de todas las pantallas (especialista): cortes en ventana estrecha en ui_game, ui_patch, ui_sections, ui_views, ui_pool, ui_mayhem, ui_aram, ui_analysis; ui_kit.fold(padx=...); comas decimales en la guía.
+
 VERSIÓN 1.27.0   (26 de noviembre de 2026)
 ---------------------------------------------------------------------
 

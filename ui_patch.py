@@ -375,7 +375,11 @@ class PatchView:
         if sub:
             self.label(left, sub, 10, "dim").pack(anchor="w")
         right = ui.frame(row)
-        right.pack(side="right", anchor="n")
+        if self.width < 800:
+            left.pack_configure(side="top", anchor="w")
+            right.pack(side="top", anchor="w", pady=(6, 0))
+        else:
+            right.pack(side="right", anchor="n")
         if v and self.versions:
             vals = [f"{x}" for x in self.versions[:12]]
             m = ui.menu(right, vals, v, self.pick_version, width=96)

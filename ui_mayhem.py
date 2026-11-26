@@ -200,8 +200,9 @@ def build_block(ui, host, cid, mode_id, width):
                 ui.lbl(r, tier.upper(), 9, TIER_COLOR.get(tier, "dim"), True, width=84, anchor="w").pack(side="left")
                 for a, n in mine:
                     chip(ui, r, a, 30).pack(side="left", padx=2)
-                ui.lbl(r, ", ".join(augments.info(a)["n"] for a, _ in mine), 10, "dim", anchor="w", justify="left",
-                       wraplength=max(200, wrap - 200)).pack(side="left", padx=8)
+                narrow = wrap < 520
+                ui.lbl(box if narrow else r, ", ".join(augments.info(a)["n"] for a, _ in mine), 10, "dim", anchor="w", justify="left",
+                       wraplength=max(220, wrap - 100) if narrow else max(200, wrap - 200)).pack(side="top" if narrow else "left", anchor="w", padx=(84 if narrow else 8, 0))
             rest = [n for n in d["augments"] if n not in known]
             if rest:
                 ui.lbl(box, "Mejoras de op.gg que no encuentro en tu cliente (sin icono): " + ", ".join(rest), 9, "dim", anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(2, 0))

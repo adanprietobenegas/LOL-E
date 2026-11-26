@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.28.0", "fecha": "26 de noviembre de 2026", "titulo": "Más cómoda en la selección y en ventanas estrechas", "items": [
+        ("mejora", "En la selección, el botón «Enviar al cliente» está arriba de la build. La explicación aparece al pasar el ratón por encima."),
+        ("arreglo", "Con la ventana estrecha ya no se cortan textos en «Tu partida», el equipo rival, las recomendaciones, las mejoras de Mayhem, el parche y «Qué aprender»."),
+        ("arreglo", "En el análisis de una partida y en los premios de ARAM, las cifras se colocan en dos o tres columnas cuando la ventana es estrecha."),
+    ]},
     {"v": "1.27.0", "fecha": "26 de noviembre de 2026", "titulo": "Tu última partida, a la vista", "items": [
         ("nuevo", "En Inicio aparece «Tu última partida»: si ganaste o perdiste, los puntos de liga, tu campeón, tus asesinatos, muertes y asistencias, y tu objetivo para la siguiente. El botón «Ver análisis» abre el análisis completo."),
         ("arreglo", "Si el juego se corta un momento durante la selección, la aplicación sigue con lo que ya tenía cargado y los consejos vuelven enseguida."),

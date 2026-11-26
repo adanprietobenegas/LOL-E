@@ -1070,7 +1070,7 @@ class Recs(Section):
             self.dyn = None
             c = ui.card(self.box, "Recomendado para ti")
             ui.lbl(c, f"Este modo ({self.r['mode']['group'] or 'sin identificar'}) no tiene recomendaciones.\nLOL-E está pensado para la "
-                      "Grieta del Invocador y, con menos datos, para ARAM.", 11, "dim", anchor="w", justify="left").pack(anchor="w")
+                      "Grieta del Invocador y, con menos datos, para ARAM.", 11, "dim", anchor="w", justify="left", wraplength=max(240, self.width - 110)).pack(anchor="w")
             return
         c = ui.card(self.box)
         head = ui.frame(c)
@@ -1366,7 +1366,7 @@ class Recs(Section):
                 lab.pack(pady=(0, 8))
                 self.list_hero = (lab, c, pct, w)
                 if not compact:
-                    ui.chips(self.dyn, c["why"] or ["encaja con tu rol"], 4)
+                    ui.chips(self.dyn, c["why"] or ["encaja con tu rol"], 3 if self.width < 900 else 4)
                 continue
             row = ctk.CTkFrame(self.dyn, fg_color=PAL["card2"], corner_radius=12)
             row.pack(fill="x", pady=4)
@@ -1764,7 +1764,7 @@ class Recs(Section):
             ui.lbl(row, title.upper(), 9, ui.acc, True, width=96, anchor="w").pack(side="left", anchor="n")
             ui.lbl(row, text, 11, "fg", anchor="w", wraplength=300, justify="left").pack(side="left", fill="x", expand=True)
         ui.lbl(body, "Consejos orientativos según la composición actual. No sustituyen a la build recomendada del parche.", 9,
-               "dim", anchor="w", wraplength=400, justify="left").pack(anchor="w", pady=(8, 0))
+               "dim", anchor="w", wraplength=max(220, min(400, self.width - 130)), justify="left").pack(anchor="w", pady=(8, 0))
         champ = ui.champs[c["cid"]]
         links = ui.frame(body)
         links.pack(anchor="w", pady=(8, 0))
@@ -1938,8 +1938,12 @@ class Enemies(Section):
             ui.champ(icons, r["enemies"][i] if i < len(r["enemies"]) else 0, 48, True, "#ff5a5f").pack(side="left", padx=4)
         st = r["enemy_stats"]
         if st:
-            info = ui.frame(row)
-            info.pack(side="left", padx=16, fill="x", expand=True, anchor="n")
+            narrow = ctx["width"] < 640
+            info = ui.frame(c if narrow else row)
+            if narrow:
+                info.pack(fill="x", pady=(6, 0))
+            else:
+                info.pack(side="left", padx=16, fill="x", expand=True, anchor="n")
             tot = st["ad"] + st["ap"]
             if tot:
                 ui.bar(info, [(st["ad"] / tot, "warn"), (st["ap"] / tot, "info")], 7).pack(fill="x", pady=(4, 4))

@@ -83,13 +83,14 @@ def awards(an, host, a):
     ui.lbl(host, "PREMIOS DE LA PARTIDA", 9, "dim", True, anchor="w").pack(anchor="w", pady=(4, 4))
     grid = ui.frame(host)
     grid.pack(fill="x", pady=(0, 8))
-    for i in range(3):
+    ncols = 2 if an.gv.width < 640 else 3
+    for i in range(ncols):
         grid.columnconfigure(i, weight=1, uniform="aw")
     for i, (title, metric) in enumerate(AWARDS):
         fn, fmt = METRICS[metric]
         best = max(players, key=fn)
         card = ctk.CTkFrame(grid, fg_color=PAL["card2"], corner_radius=12)
-        card.grid(row=i // 3, column=i % 3, sticky="nsew", padx=4, pady=4)
+        card.grid(row=i // ncols, column=i % ncols, sticky="nsew", padx=4, pady=4)
         inner = ui.frame(card)
         inner.pack(fill="x", padx=12, pady=8)
         mine_team = best["team"] == a["team"]

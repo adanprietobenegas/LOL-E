@@ -319,12 +319,19 @@ class AnalysisView:
             cards[4] = ("Curación", n(m["heal"]), f"mitigaste {n(m['mit'])}" if m["mit"] else "", "fg")
         row = ui.frame(host)
         row.pack(fill="x", pady=(0, 4))
+        ncols = 3 if self.gv.width < 640 else 0
+        if ncols:
+            for k in range(ncols):
+                row.grid_columnconfigure(k, weight=1, uniform="kp")
         for i, (lb, val, sub, col) in enumerate(cards):
             c = ctk.CTkFrame(row, fg_color=PAL["card2"], corner_radius=10)
-            c.pack(side="left", expand=True, fill="x", padx=(0 if i == 0 else 8, 0))
+            if ncols:
+                c.grid(row=i // ncols, column=i % ncols, sticky="nsew", padx=(0 if i % ncols == 0 else 8, 0), pady=(0, 8))
+            else:
+                c.pack(side="left", expand=True, fill="x", padx=(0 if i == 0 else 8, 0))
             ui.lbl(c, lb, 9, "dim").pack(anchor="w", padx=12, pady=(8, 0))
             ui.lbl(c, val, 15, col, True, True).pack(anchor="w", padx=12)
-            ui.lbl(c, sub, 8, "dim", anchor="w", wraplength=max(56, (self.gv.width - 120) // 5 - 24), justify="left").pack(anchor="w", padx=12, pady=(0, 8))
+            ui.lbl(c, sub, 8, "dim", anchor="w", wraplength=max(56, (self.gv.width - 120) // (ncols or 5) - 24), justify="left").pack(anchor="w", padx=12, pady=(0, 8))
 
     # ------------------------------------------------------------ gráficos
     def charts(self, host, a, opp):
