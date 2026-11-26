@@ -10,6 +10,11 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.29.0", "fecha": "26 de noviembre de 2026", "titulo": "Ideas de baneo desde el primer día", "items": [
+        ("nuevo", "Si aún no tienes partidas suficientes para sugerencias a tu medida, en la fase de bans ves los campeones que más están ganando en tu línea este parche, con su porcentaje de victorias."),
+        ("arreglo", "Al terminar una partida ya no aparece el botón «Enviar al cliente», porque entonces no sirve."),
+        ("arreglo", "En Campeones, la columna «Forma» solo aparece si cabe. En el Historial, los títulos de las columnas están justo encima de las filas."),
+    ]},
     {"v": "1.28.0", "fecha": "26 de noviembre de 2026", "titulo": "Más cómoda en la selección y en ventanas estrechas", "items": [
         ("mejora", "En la selección, el botón «Enviar al cliente» está arriba de la build. La explicación aparece al pasar el ratón por encima."),
         ("arreglo", "Con la ventana estrecha ya no se cortan textos en «Tu partida», el equipo rival, las recomendaciones, las mejoras de Mayhem, el parche y «Qué aprender»."),

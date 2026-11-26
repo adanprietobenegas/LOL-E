@@ -17,7 +17,7 @@ import synergy
 import trends
 from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.28.0"
+APP_NAME, APP_VERSION = "LOL-E", "1.29.0"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -928,6 +928,18 @@ def ban_suggestions(champs, P, taken, n, conf=None, role=""):
     return [(champs[o]["name"], g - l, g, o) for l, g, o in cand[:n]]
 
 
+def meta_threats(champs, meta_data, role, taken, n=3):
+    """Para quien aún no tiene partidas suficientes: lo que mejor está ganando en tu línea este parche (entre lo que se juega de verdad), sin lo ya
+    elegido o baneado. [(nombre, % de victorias, id)]. Vacío si no hay datos de meta o de línea."""
+    rows = ((meta_data or {}).get("lanes") or {}).get(metamod.LANES.get(role, ""), {})
+    if not rows:
+        return []
+    games = sorted((v.get("games") or 0) for v in rows.values())
+    floor = games[len(games) // 3]   # fuera el tercio menos jugado: con pocas partidas el porcentaje es ruido
+    cand = sorted(((v["wr"], cid) for cid, v in rows.items() if cid in champs and cid not in taken and (v.get("games") or 0) >= floor and v.get("wr", 0) > 50), reverse=True)
+    return [(champs[cid]["name"], wr, cid) for wr, cid in cand[:n]]
+
+
 def my_turn(session):
     me = session["localPlayerCellId"]
     for group in session.get("actions", []):
@@ -1083,10 +1095,12 @@ def _result(session, champs, P, conf, mode, role, allies, enemies, lane_opp, ban
     w = conf["weights"]
     top = [(c["score"], c["cid"], c["why"]) for c in cands if not c["off_role"]][: conf["top_n"]]
     md = META["data"] if (conf.get("meta_enabled", True) and mode["kind"] == "sr") else None
+    ideas = ban_suggestions(champs, P, taken, conf["ban_n"], conf, role) if mode["kind"] == "sr" else []
+    threats = meta_threats(champs, md, role, taken, 3) if mode["kind"] == "sr" and not ideas else []
     me_cell = session["localPlayerCellId"]
     mine, locked = my_champion(session)
     return {"mine": mine, "mine_locked": locked, "role": role, "allies": allies, "enemies": enemies, "bans": bans, "cands": cands, "top": top, "mode": mode,
-            "lane_opp": lane_opp, "ban_ideas": ban_suggestions(champs, P, taken, conf["ban_n"], conf, role) if mode["kind"] == "sr" else [],
+            "lane_opp": lane_opp, "ban_ideas": ideas, "meta_bans": threats,
             "turn": my_turn(session), "ally_stats": als, "enemy_stats": ens,
             "pct_scale": 0.8 * (w["mastery"] + w["winrate"]) if mode["kind"] == "aram" else 0.6 * sum(w.values()),
             "enemy_cells": [{"cell": p["cellId"], "champ": p["championId"] or 0, "puuid": p.get("puuid", ""), "name": p.get("gameName", "")}

@@ -1019,11 +1019,24 @@ class BanIdeas(Section):
     def key(self, ctx):
         r = ctx["r"]
         return (r["turn"] == "ban" or ctx["session"]["timer"]["phase"] == "PLANNING", tuple(x[3] for x in r["ban_ideas"]),
-                r["mode"]["kind"])
+                tuple((x[2], round(x[1], 1)) for x in r.get("meta_bans") or []), r["mode"]["kind"])
 
     def build(self, ctx):
         ui, r = self.ui, ctx["r"]
         if r["mode"]["kind"] != "sr" or not (r["turn"] == "ban" or ctx["session"]["timer"]["phase"] == "PLANNING"):
+            return
+        threats = r.get("meta_bans") or []
+        if not r["ban_ideas"] and threats:   # sin partidas suficientes (instalación nueva o línea nueva): se enseña lo que más gana en tu línea
+            c = ui.card(self.box, "Lo que más gana en tu línea este parche")
+            row = ui.frame(c)
+            row.pack(anchor="w")
+            for n, wr, cid in threats:
+                cell = ui.frame(row)
+                cell.pack(side="left", padx=(0, 16))
+                ui.champ(cell, cid, 40, False, "#ff5a5f").pack(side="left")
+                ui.lbl(cell, f"{n}\n{wr:.1f} %".replace(".", ","), 10, "bad").pack(side="left", padx=8)
+            ui.lbl(c, "Aún no tienes partidas suficientes para sugerencias a tu medida: son datos de todos los jugadores (Lolalytics).", 9, "dim",
+                   anchor="w", justify="left", wraplength=max(240, ctx["width"] - 110)).pack(anchor="w", pady=(6, 0))
             return
         c = ui.card(self.box, "Banea a quien te gana en tu línea")
         if not r["ban_ideas"]:

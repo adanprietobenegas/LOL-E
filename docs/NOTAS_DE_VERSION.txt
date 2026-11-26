@@ -7,6 +7,12 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.29.0   (26 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · lol_advisor.meta_threats: sin partidas suficientes, amenazas del meta en tu línea (BanIdeas). Sin «Enviar al cliente» en una partida terminada. ui_pool: columna «Forma» solo si cabe; ui_history: títulos de columna
+    sobre las filas. 257 pruebas; probado además como instalación nueva (sin caché) contra el cliente falso: sin errores.
+
 VERSIÓN 1.28.0   (26 de noviembre de 2026)
 ---------------------------------------------------------------------
 
