@@ -203,13 +203,14 @@ def team_puuids(lcu, session):
     return res
 
 
-def fetch_team(lcu, session, emit):
+def fetch_team(lcu, session, emit, party=()):
     """Carga en paralelo a tus aliados y va avisando con emit({puuid: datos}) cada vez que llega uno."""
     found = {}
     pus = [pu for _, pu in team_puuids(lcu, session) if pu]
     # en algunas colas (clasificatorias de 5, Clash) el cliente enseña también los nombres del equipo rival: se leen primero (deciden los bans)
     rivals = [p["puuid"] for p in session.get("theirTeam", []) if p.get("puuid")]
     pus = rivals + [pu for pu in pus if pu not in rivals]
+    pus += [pu for pu in party if pu not in pus]   # tu dúo también cuando el cliente oculta quién es cada aliado
     if not pus:
         emit({})
         return

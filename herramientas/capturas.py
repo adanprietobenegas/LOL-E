@@ -180,6 +180,8 @@ def ejemplo_duo():
     """Historial inventado con «ElDuoDeAdan» (el compañero marcado como grupo en la muestra) para ver sus líneas."""
     import duo
     duo.stats = lambda *a: {"n": 14, "wins": 9, "alone": (31, 66), "combo": (54, 64, 3, 4)}
+    duo.detail = lambda *a: {"theirs": [(64, 5, 8), (121, 2, 4)], "mine": [(54, 4, 6), (86, 2, 5), (122, 1, 2)], "mine_role": True,
+                             "pairs": [(54, 64, 3, 4), (86, 121, 2, 3)], "with_theirs": None}
 
 
 def analisis_guardado(grieta=False):
@@ -246,6 +248,7 @@ PASOS = [
     ("08_seleccion_bloqueado", lambda: (vista("carrusel"), push(ses, mine=86)), 5000),
     ("08b_historial_rival", lambda: (P.__setitem__("matchups", P.get("matchups") or {}), ejemplo_rival(), setattr(ui.kit, "epoch", ui.kit.epoch + 1), push(ses, mine=86)), 5000),
     ("08c_duo", lambda: (ejemplo_duo(), setattr(ui.kit, "epoch", ui.kit.epoch + 1), push(ses), ui.players(team)), 5000),
+    ("08d_duo_bloqueado", lambda: (push(ses, mine=86), ui.players(team), ui.root.after(2500, lambda: ui.jump.go(ui.sec["duo"]))), 5000),
     ("09_aram", lambda: push(aram, {"id": 450, "group": "ARAM", "kind": "aram"}), 5000),
     ("10_partida_plan", en_partida, 6000),
     ("10b_salto_a_jugadores", lambda: getattr(ui.game_view, "jump_roster", lambda: print("sin enlace (ventana ancha)", flush=True))(), 1500),

@@ -49,7 +49,7 @@ VIEWS = ["Más usada", "Variantes", "Situaciones"]
 _VIEW = {}
 
 
-def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None, in_game=False, export=True):
+def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None, in_game=False, export=True, auto_runes=False):
     """Devuelve un contenedor que se rellena solo cuando llegan los datos (sin bloquear la ventana).
     `ens`: composición del equipo rival (comp_stats) para marcar qué situaciones aplican ahora."""
     box = ui.frame(parent)
@@ -86,6 +86,9 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None, in_game=
             d = st[1]
             rich = bool(d.get("stats") or d.get("palette"))
             cols = 3 if width >= 1500 else 2 if width >= 960 else 1
+            auto = auto_runes and export and not in_game
+            if auto:   # antes de pintar: vale con cualquier vista abierta
+                auto_send(ui, box, champs, cid, d, (cid, lane, enemy))
             if not in_game and export:   # arriba del todo: en la selección es lo primero que se pulsa (durante la partida enviarlo ya no sirve)
                 export_row(ui, content, d, champs, cid, enemy, lane, build_blocks(ui, d, cid, lane, ens))
             if rich and cols > 1:
@@ -99,7 +102,7 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None, in_game=
                     s_.grid(row=0, column=k, sticky="nw", padx=(0 if k == 0 else 16, 0))
                     grid.columnconfigure(k, weight=1, uniform="bp")
                     slots.append(s_)
-                render(ui, slots[0], d, champs, cid, enemy, cw, lane, again, in_game, send=export and not in_game)
+                render(ui, slots[0], d, champs, cid, enemy, cw, lane, again, in_game, send=export and not in_game, auto=auto)
                 if d.get("stats"):
                     variants(ui, slots[1], d, champs, cid, cw, lane, again)
                 situations(ui, slots[2] if cols == 3 else slots[0], d, champs, ens, cw)
@@ -112,7 +115,7 @@ def build_panel(ui, parent, cid, lane, enemy=None, width=520, ens=None, in_game=
             elif state["view"] == "Situaciones":
                 situations(ui, content, d, champs, ens, width1)
             else:
-                render(ui, content, d, champs, cid, enemy, width1, lane, again, in_game, send=export and not in_game)
+                render(ui, content, d, champs, cid, enemy, width1, lane, again, in_game, send=export and not in_game, auto=auto)
     paint()
     return box
 
@@ -414,16 +417,42 @@ def build_blocks(ui, d, cid, lane, ens):
 _SENT = {}  # uid -> lo último enviado con él: no se repite en cada repintado, pero sí si el cliente tiene ahora otra cosa
 
 
+def item_content(d, champs, cid, enemy, lane, blocks):
+    """(identificador, título, contenido) del conjunto de objetos de esta build."""
+    import itemset
+    import matchups
+    vs = d.get("vs") and enemy and enemy in champs
+    uid = f"{itemset.PREFIX}{cid}-{lane or 'x'}"
+    title = (f"LOL-E · {champs[cid]['name']}" + (f" · {matchups.LANE_NAMES.get(lane, '')}" if lane else "")
+             + (f" vs {champs[enemy]['name']}" if vs else ""))
+    return uid, title, (title, tuple((n, tuple(i)) for n, i in blocks))
+
+
+def auto_items(ui, widget, champs, d, cid, enemy, lane, blocks):
+    """Envío automático de objetos sin depender de que la build esté pintada (otra pestaña o ventana minimizada)."""
+    import itemset
+    if not blocks or not ui.conf.get("auto_itemset"):
+        return
+    uid, title, content = item_content(d, champs, cid, enemy, lane, blocks)
+    if _SENT.get(uid) == content:
+        return
+    _SENT[uid], res = content, {}
+    itemset.send_async(ui.conf, uid, title, cid, blocks, res, champs[cid].get("icon"))
+
+    def check():
+        if res.get("state") == "sending":
+            widget.after(500, check)
+        elif not res.get("ok"):
+            _SENT.pop(uid, None)   # no llegó: se puede volver a intentar
+    widget.after(500, check)
+
+
 def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
     """Botón «Enviar al cliente» (y envío automático opcional): crea en League un conjunto de objetos propio con esta build."""
     import itemset
-    import matchups
     if not blocks:
         return
-    name = champs[cid]["name"]
-    vs = d.get("vs") and enemy and enemy in champs
-    uid = f"{itemset.PREFIX}{cid}-{lane or 'x'}"
-    title = f"LOL-E · {name}" + (f" · {matchups.LANE_NAMES.get(lane, '')}" if lane else "") + (f" vs {champs[enemy]['name']}" if vs else "")
+    uid, title, content = item_content(d, champs, cid, enemy, lane, blocks)
     row = ui.frame(parent)
     row.pack(fill="x", pady=(0, 4))
     res = {}
@@ -440,8 +469,6 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
             btn.configure(state="normal")
             if not res.get("ok"):
                 _SENT.pop(uid, None)   # no llegó: se puede volver a intentar solo
-
-    content = (title, tuple((n, tuple(i)) for n, i in blocks))
 
     def go():
         _SENT[uid] = content
@@ -542,7 +569,41 @@ def rune_note(ids, res, last):
     return ("Estas son las que enviaste.", False) if last else ("", False)
 
 
-def rune_send_row(ui, parent, champs, cid, rn, rd, key, width):
+_RUNE_AUTO = {}   # «sent»: (campeón, runas) del último envío automático: un repintado no lo repite ni pisa lo que cambies luego en el cliente
+
+
+def rune_ids(rn):
+    return [rn["keystone"]] + list(rn["primary"]) + list(rn["secondary"]) + list(rn["shards"])
+
+
+def auto_due(conf, cid, ids):
+    """¿Toca enviar solas estas runas? Solo con el interruptor puesto y si no son las del último envío automático."""
+    return bool(conf.get("auto_runes")) and _RUNE_AUTO.get("sent") != (cid, tuple(sorted(ids)))
+
+
+def send_runes(ui, champs, cid, rn, rd, key):
+    import runesend
+    res, ids = _RUNE_SENT.setdefault(key, {}), rune_ids(rn)
+    runesend.send_async(ui.conf, champs[cid]["name"], rn, rd, res, sent=lambda: _RUNE_LAST.update(ids=ids))
+
+
+def auto_send(ui, widget, champs, cid, d, pick_key):
+    """Envío automático de la página que se está enseñando (la elegida, o la más usada) para tu campeón bloqueado."""
+    import runesend
+    rd = ui.runedata or {}
+    pages = d.get("rune_pages") or ([{"label": "Más usada", "runes": d["runes"]}] if d.get("runes") else [])
+    if not pages:
+        return
+    label = _RUNE_PICK.get(pick_key)
+    page = next((p for p in pages if p["label"] == label), pages[0])
+    rn = page["runes"]
+    if runesend.page_body(champs[cid]["name"], rn, rd) is None or not auto_due(ui.conf, cid, rune_ids(rn)):
+        return
+    _RUNE_AUTO["sent"] = (cid, tuple(sorted(rune_ids(rn))))   # se apunta antes de enviar: si falla no se insiste solo
+    send_runes(ui, champs, cid, rn, rd, pick_key + (page["label"],))
+
+
+def rune_send_row(ui, parent, champs, cid, rn, rd, key, width, auto=False):
     """«Enviar runas al cliente»: solo al pulsarlo se escribe la página «LOL-E» (ver runesend.py)."""
     import runesend
     if runesend.page_body(champs[cid]["name"], rn, rd) is None:
@@ -550,7 +611,7 @@ def rune_send_row(ui, parent, champs, cid, rn, rd, key, width):
     row = ui.frame(parent)
     row.pack(anchor="w", fill="x", pady=(8, 0))
     res = _RUNE_SENT.setdefault(key, {})
-    ids = [rn["keystone"]] + list(rn["primary"]) + list(rn["secondary"]) + list(rn["shards"])
+    ids = rune_ids(rn)
 
     def paint():
         if not row.winfo_exists():
@@ -563,19 +624,37 @@ def rune_send_row(ui, parent, champs, cid, rn, rd, key, width):
             row.after(300, paint)
 
     def go():
-        runesend.send_async(ui.conf, champs[cid]["name"], rn, rd, res, sent=lambda: _RUNE_LAST.update(ids=ids))
+        send_runes(ui, champs, cid, rn, rd, key)
         paint()
     btn = ctk.CTkButton(row, text="Enviar runas al cliente", height=28, width=180, corner_radius=8, font=ui.font(11, True), fg_color=ui.acc,
                         text_color=ON_FILL, text_color_disabled=ON_FILL, command=go)
     btn.pack(anchor="w")
     msg = ui.lbl(row, "", 10, "dim", anchor="w", justify="left", wraplength=max(200, width - 140))
     msg.pack(anchor="w", fill="x", pady=(2, 0))
+    var = ctk.BooleanVar(value=bool(ui.conf.get("auto_runes")))
+
+    def toggle():
+        ui.conf["auto_runes"] = bool(var.get())
+        core.save_conf(ui.conf)
+        if var.get() and auto:
+            go_auto()
+
+    def go_auto():
+        if row.winfo_exists() and auto_due(ui.conf, cid, ids):
+            _RUNE_AUTO["sent"] = (cid, tuple(sorted(ids)))
+            go()
+    sw = ctk.CTkSwitch(row, text="Enviar las runas solas al bloquear campeón", variable=var, font=ui.font(10), progress_color=ui.acc, command=toggle)
+    sw.pack(anchor="w", pady=(6, 0), before=msg)
+    ui.tip(sw, "Apagado: solo se envían con el botón, para esta partida. Encendido: al bloquear campeón se envían las que se estén enseñando, "
+               "y otra vez si cambian (por el rival o porque elijas la otra página).")
+    if auto:
+        row.after(400, go_auto)   # al cambiar de página (más usada / mayor % de victorias) con el interruptor puesto
     ui.tip(btn, "Escribe estas runas en una página de tu cliente llamada «LOL-E · campeón» y la selecciona. Si no hay hueco, no borra ninguna: te lo dice. "
                 "Los hechizos no se envían.")
     paint()
 
 
-def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None, in_game=False, send=False):
+def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None, in_game=False, send=False, auto=False):
     rd = ui.runedata or {}
     title = f"BUILD MÁS USADA DE {champs[cid]['name'].upper()}" + (f" CONTRA {champs[enemy]['name'].upper()}" if d.get("vs") and enemy else "")
     ui.lbl(parent, title, 10, "dim", True, anchor="w").pack(anchor="w", pady=(0, 4))
@@ -625,7 +704,7 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None, in_g
                 partes = [f"{es(page['wr'])} % de victorias"] + ([f"{es(page['pr'])} % de uso"] if page.get("pr") else []) + [f"{page['n']:,} partidas".replace(",", ".")]
                 ui.lbl(holder, "  ·  ".join(partes), 10, "dim", anchor="w").pack(anchor="w", pady=(4, 0))
             if send:
-                rune_send_row(ui, holder, champs, cid, page["runes"], rd, (cid, lane, enemy, cur), width)
+                rune_send_row(ui, holder, champs, cid, page["runes"], rd, (cid, lane, enemy, cur), width, auto)
         paint_runes()
 
     if not in_game:

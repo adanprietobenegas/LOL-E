@@ -25,7 +25,7 @@ from ui_game import GameView
 from ui_patch import PatchView
 from ui_draft import DraftCard
 from ui_mayhem import AramBuild
-from ui_sections import (JumpBar, jump_buttons, CounterPicks, TourOffer,SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
+from ui_sections import (JumpBar, jump_buttons, CounterPicks, TourOffer,SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, DuoCard, MyPick,
                          WaitCard)
 
 DOCK_W = 360
@@ -390,7 +390,32 @@ class GUI:
                 self.handle_event(ev, "show")
             except Exception as e:
                 self.event_failed("show", e)
+            try:
+                self.watch_auto_runes(ev[2])
+            except Exception:
+                core.log_exc("Envío automático de runas")
         self.root.after(150, self.poll)
+
+    def watch_auto_runes(self, r, tries=0):
+        """Envío automático (runas y objetos) sin depender de lo que se esté mirando (otra pestaña o la ventana minimizada): espera a la build y la envía."""
+        lanes = MyPick.LANES
+        cid, lane = r.get("mine"), lanes.get(r.get("role"))
+        if tries == 0:
+            self._runes_for = r
+        if (self._runes_for is not r or not (self.conf.get("auto_runes") or self.conf.get("auto_itemset")) or not r.get("mine_locked") or r["mode"]["kind"] != "sr"
+                or cid not in self.champs or not lane or self.advisor != "select"):
+            return
+        import builds, ui_build
+        enemy = r.get("lane_opp") or None
+        key = builds.request(CACHE, self.champs[cid], lane, self.champs[enemy] if enemy else None)
+        state = builds.peek(key)
+        if state[0] == "ok" and (self.kit.runedata or {}).get("runes"):
+            ui_build.auto_send(self.kit, self.root, self.champs, cid, state[1], (cid, lane, enemy))
+            if self.conf.get("auto_itemset"):
+                blocks = ui_build.build_blocks(self.kit, state[1], cid, lane, r.get("enemy_stats"))
+                ui_build.auto_items(self.kit, self.root, self.champs, state[1], cid, enemy, lane, blocks)
+        elif state[0] != "error" and tries < 60:   # aún cargando la build o las runas
+            self.root.after(500, lambda: self.watch_auto_runes(r, tries + 1))
 
     def event_failed(self, kind, e):
         """Un fallo al pintar: se guarda en el registro (antes solo pasaba por el pie y se perdía) y se dice dónde mirarlo."""
@@ -447,6 +472,7 @@ class GUI:
         ui_build.OPEN_RUNES.clear()
         ui_build._RUNE_SENT.clear()   # «Runas enviadas» de la selección anterior no vale para esta
         ui_build._RUNE_LAST.clear()
+        ui_build._RUNE_AUTO.clear()   # y el envío automático vuelve a valer: en el cliente puede haber otra página puesta
         ui_mayhem.OPEN_MORE.clear()
         pl = c.get("plan")
         if pl and pl.get("state") in ("select", "game"):
@@ -507,6 +533,7 @@ class GUI:
     def add_missing_players(self, full):
         """El juego en vivo completa a quien el cliente no entregó: se actualizan el plan y el tablero sin perder los perfiles leídos ni cambiar de pantalla."""
         known, page = self.ctx.get("roster_pl") or {}, self.page
+        core.diag(f"Jugadores completados con la partida en vivo: {len(full)} (el cliente daba {len(self.ctx.get('roster') or [])})")
         if self.ctx.get("plan") or self.view == "game":
             self.ctx["roster_pl"] = known
             self.on_roster(full, known)
@@ -1133,6 +1160,7 @@ class GUI:
         self._order_kind = None   # secciones nuevas (al cambiar tema o tamaño): hay que volver a colocarlas
         self.jump = JumpBar(k, self.jump_host, self)
         self.game_jump = k.frame(self.jump_host)   # la barra «Ir a» de «Tu partida» durante la partida (la pinta GameView)
+        duo_card = DuoCard(k, self.select_view)   # antes de tu campeón: es lo que se mira para elegirlo
         mypick = MyPick(k, self.select_view)
         ideas = BanIdeas(k, self.select_view)
         self.aram_build = AramBuild(k, self.select_view)   # la build de tu campeón va antes que la lista del banquillo
@@ -1140,11 +1168,11 @@ class GUI:
         self.lobby = Lobby(k, self.select_view)
         self.enemies = Enemies(k, self.select_view)
         self.counter_picks = CounterPicks(k, self.select_view)   # los mejores campeones contra cada rival, aparte de la afinidad
-        self.jump.targets = [("Tu build", self.aram_build), ("Tu campeón", mypick), ("Recomendaciones", self.recs), ("Contra rivales", self.counter_picks), ("Tu equipo", self.lobby), ("Rivales", self.enemies)]
+        self.jump.targets = [("Tu build", self.aram_build), ("Tu dúo", duo_card), ("Tu campeón", mypick), ("Recomendaciones", self.recs), ("Contra rivales", self.counter_picks), ("Tu equipo", self.lobby), ("Rivales", self.enemies)]
         bans = BansRow(k, self.select_view)
-        self.sec = {"turn": self.turn, "draft": self.draft, "mypick": mypick, "ideas": ideas, "aram": self.aram_build, "recs": self.recs,
+        self.sec = {"turn": self.turn, "draft": self.draft, "duo": duo_card, "mypick": mypick, "ideas": ideas, "aram": self.aram_build, "recs": self.recs,
                     "counter": self.counter_picks, "lobby": self.lobby, "enemies": self.enemies, "bans": bans}
-        self.select_secs = [self.turn, self.draft, mypick, ideas, self.aram_build, self.recs, self.counter_picks, self.lobby, self.enemies, bans, self.jump]   # la barra «Ir a» se repinta la última
+        self.select_secs = [self.turn, self.draft, duo_card, mypick, ideas, self.aram_build, self.recs, self.counter_picks, self.lobby, self.enemies, bans, self.jump]   # la barra «Ir a» se repinta la última
         self.matchup_view = MatchupView(k, self.body, self)
         self.history_view = HistoryView(k, self.body, self)
         self.pool_view = PoolView(k, self.body, self)
@@ -1247,9 +1275,9 @@ class GUI:
         self.update_footer()
 
     ORDERS = {   # orden de los bloques de la selección según lo que hay que hacer ahora
-        "ban": ["turn", "draft", "ideas", "aram", "recs", "counter", "mypick", "lobby", "enemies", "bans"],
-        "pick": ["turn", "draft", "aram", "recs", "counter", "mypick", "ideas", "lobby", "enemies", "bans"],
-        "locked": ["turn", "draft", "mypick", "aram", "recs", "counter", "lobby", "enemies", "bans", "ideas"],
+        "ban": ["turn", "draft", "ideas", "duo", "aram", "recs", "counter", "mypick", "lobby", "enemies", "bans"],
+        "pick": ["turn", "draft", "duo", "aram", "recs", "counter", "mypick", "ideas", "lobby", "enemies", "bans"],
+        "locked": ["turn", "draft", "mypick", "duo", "aram", "recs", "counter", "lobby", "enemies", "bans", "ideas"],
     }
 
     def order_select(self, ctx):

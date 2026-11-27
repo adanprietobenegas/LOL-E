@@ -442,7 +442,8 @@ def vs_average(game, games, min_games=3):
         ok = [g for g in rows if g.get("d") and g.get(key) is not None]   # un 0 real cuenta; solo se excluyen los registros antiguos sin el dato
         mins = sum(g["d"] / 60 for g in ok)
         return sum(g[key] for g in ok) / mins if mins else None
-    cs_this = cspm([game]) if _mode_key(game.get("q")) != "aram" else None
+    # de apoyo no se farmea: comparar súbditos no dice nada
+    cs_this = cspm([game]) if _mode_key(game.get("q")) != "aram" and game.get("r") != "SUPPORT" else None
     cs_avg = cspm(pool) if cs_this is not None else None
     dp_this, dp_avg = permin([game], "dm"), permin(pool, "dm")
     vs_this, vs_avg = (permin([game], "v"), permin(pool, "v")) if _mode_key(game.get("q")) == "sr" else (None, None)   # la visión solo cuenta en la Grieta
@@ -508,6 +509,8 @@ def load(lcu, gid, my_puuid, cache_dir):
             saved = None
     except Exception:
         saved = None
+    if saved and my_puuid and saved.get("owner") not in (None, my_puuid):
+        saved = None   # lo guardó otra de tus cuentas en la misma partida: su «tú» no eres tú
     if saved and saved.get("sure"):
         return saved
     if saved:  # guardado por una versión que podía equivocarse de jugador: se comprueba una vez y se corrige
@@ -531,6 +534,7 @@ def load(lcu, gid, my_puuid, cache_dir):
         return None
     a = compute(detail, tl, my_pid)
     a["sure"] = True
+    a["owner"] = my_puuid or _my_puuid(lcu)
     _write(path, a)
     return a
 

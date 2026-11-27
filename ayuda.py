@@ -36,7 +36,7 @@ TOPICS = [
      "Es un asesor que lee tu cliente de LoL (y la API local del juego durante la partida) para recomendarte campeones y builds y analizar tus partidas. "
      "Solo escribe objetos o runas si tú lo pides; las estadísticas salen de Lolalytics y op.gg.", "Datos", "que es lee pc privacidad datos cliente"),
     ("seguro", "¿Es seguro? ¿Me pueden sancionar?",
-     "LOL-E lee tu cliente y la API local de la partida. Solo escribe si se lo pides: tu conjunto de objetos y la página de runas «LOL-E» (no borra páginas). "
+     "LOL-E lee tu cliente y la API local de la partida. Solo escribe si se lo pides (con un botón o activando el envío automático): tu conjunto de objetos y la página de runas «LOL-E» (no borra páginas). "
      "No inyecta nada ni juega por ti. "
      "Aun así, la última palabra la tiene Riot y no hay garantía formal.", "Datos", "seguro baneo ban sancion riot vanguard permitido"),
     ("antes", "¿Qué veo antes de jugar?",

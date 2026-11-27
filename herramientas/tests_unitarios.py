@@ -492,7 +492,7 @@ class FlujoCompleto(unittest.TestCase):
         core.start_meta = core.detect_account = lambda *a, **k: None
         core.play_phase = lambda conf, fase: ev.append(("sonido", fase))
         core.maybe_update_opgg, core.load_season = (lambda *a, **k: None), (lambda *a, **k: {})
-        players.fetch_team = lambda lcu, session, emit: ev.append(("fetch_team",))
+        players.fetch_team = lambda lcu, session, emit, party=(): ev.append(("fetch_team",))
         players.fetch_roster = lambda *a, **k: ev.append(("fetch_roster",))
         players.lobby_party = lambda *a, **k: None
         analysis.load = lambda lcu, gid, puuid, cache: ev.append(("analysis.load", str(gid), puuid)) or {"gid": gid}
@@ -632,6 +632,41 @@ class FlujoCompleto(unittest.TestCase):
         self.assertIn("no aparece en el historial", diag)
         self.assertNotIn("Partida terminada: ", diag)
         self.assertFalse([e for e in ev if e[0] == "analysis.load"])
+
+    def test_esperar_a_que_aparezca_la_partida_no_duerme_el_bucle(self):
+        from cliente_falso import ClienteFalso
+        g = ["None", "Matchmaking", "ReadyCheck", "ChampSelect", "ChampSelect", "InProgress", "InProgress", "EndOfGame",
+             "Matchmaking", "ReadyCheck", "Matchmaking", "Matchmaking", "None", "None", "None"]
+        fake = ClienteFalso(guion=g, historial_desde=11)
+        siestas, dormir = [], fake.dormir
+        fake.dormir = lambda s=0: siestas.append(s) or dormir(s)
+        ev = self.correr(fake)
+        self.assertLess(max(siestas), 8)                                       # antes: 8 s parado en cada intento
+        self.assertIn(("phase", "ReadyCheck"), ev[ev.index(("phase", "EndOfGame")):])   # la partida encontrada se ve mientras se espera
+        self.assertTrue(any("Esperando a que el cliente la registre" in e[2] for e in ev if e[0] == "idle"))
+        self.assertIn("Partida terminada: 900", self.leer("diag.log"))
+        self.assertEqual(len([e for e in ev if e[0] == "analysis"]), 1)
+        self.assertEqual(self.leer("error.log"), "")
+
+    def test_si_empieza_otra_partida_con_la_anterior_sin_cerrar_no_se_suman_sus_pl(self):
+        from cliente_falso import ClienteFalso
+        g = ["None", "Matchmaking", "ReadyCheck", "ChampSelect", "ChampSelect", "InProgress", "InProgress", "EndOfGame",
+             "Matchmaking", "ReadyCheck", "ChampSelect", "ChampSelect", "InProgress", "InProgress", "EndOfGame"] + ["None"] * 12
+        fake = ClienteFalso(guion=g, historial_desde=14, pl=(50, 70))
+        dormir = fake.dormir
+
+        def paso(s=0):
+            dormir(s)
+            if fake.paso >= 9:
+                fake.nueva = 901
+        fake.dormir = paso
+        ev = self.correr(fake)
+        diag = self.leer("diag.log")
+        self.assertIn("La partida 900 queda sin cerrar: ha empezado la 901", diag)
+        self.assertIn("Partida terminada: 901", diag)
+        self.assertNotIn("+20 PL", diag)                                       # eran de la primera: no se le apuntan a la segunda
+        self.assertEqual([e[1] for e in ev if e[0] == "analysis.load"], ["901"])
+        self.assertEqual(self.leer("error.log"), "")
 
     def test_si_el_cliente_da_9_de_10_jugadores_se_relee(self):
         from cliente_falso import ClienteFalso
@@ -1620,6 +1655,18 @@ class DescargaDeActualizaciones(unittest.TestCase):
         self.assertTrue(r.endswith("Instalar-LOL-E-9.9.9.exe") and os.path.exists(r))
         self.assertEqual([n for n in os.listdir(os.path.join(d, "LOL-E-update")) if n.endswith(".part")], [])
 
+    def test_se_borran_los_instaladores_anteriores_y_nada_mas(self):
+        import updater, tempfile
+        d = tempfile.mkdtemp()
+        nombres = ["Instalar-LOL-E-1.0.0.exe", "Instalar-LOL-E-9.9.9.exe", "Instalar-LOL-E-1.1.0.exe.12.34.part",
+                   "Instalar-LOL-E-9.9.9.exe.56.78.part", "otro.exe", "notas.txt"]
+        for n in nombres:
+            open(os.path.join(d, n), "w").close()
+        viejo = os.path.join(d, nombres[2])
+        os.utime(viejo, (1, 1))                                                     # resto antiguo; el otro .part es reciente
+        updater.clean_old(d, os.path.join(d, nombres[1]))
+        self.assertEqual(sorted(os.listdir(d)), sorted([nombres[1], nombres[3], "otro.exe", "notas.txt"]))
+
     def test_huella_distinta_se_descarta(self):
         r, d = self.run_download(b"x" * 1000, sha="0" * 64)
         self.assertIn("huella", r)
@@ -2057,9 +2104,9 @@ class PickSinConfirmar(unittest.TestCase):
     def test_ordenes_de_la_seleccion_completos(self):
         import gui
         base = set(gui.GUI.ORDERS["pick"])
-        self.assertEqual(len(base), 10)
-        for k, v in gui.GUI.ORDERS.items():                                                   # cada fase coloca los mismos diez bloques, sin repetir ni perder ninguno
-            self.assertEqual((k, set(v), len(v)), (k, base, 10))
+        self.assertEqual(len(base), 11)
+        for k, v in gui.GUI.ORDERS.items():                                                   # cada fase coloca los mismos once bloques, sin repetir ni perder ninguno
+            self.assertEqual((k, set(v), len(v)), (k, base, 11))
         self.assertEqual(gui.GUI.ORDERS["ban"][2], "ideas")                                   # en los bans, primero las ideas de baneo
         self.assertEqual(gui.GUI.ORDERS["locked"][2], "mypick")                                # con el campeón bloqueado, su build
 
@@ -2813,6 +2860,13 @@ class TuPartidaFrenteATuMedia(unittest.TestCase):
         self.assertEqual(lineas[0], ("KDA 2,5 frente a tu media de 2,0 con Seraphine (4 partidas).", "good"))    # +25 %
         self.assertEqual(lineas[1][1], "dim" if abs(r["cspm"][0] / r["cspm"][1] - 1) < .25 else lineas[1][1])
 
+    def test_de_apoyo_no_se_compara_el_farmeo(self):
+        import analysis
+        hoy = self.g(100, 147, 1, 6, 14, cs=30, r="SUPPORT")
+        r = analysis.vs_average(hoy, [self.g(i, 147, 2, 4, 6, cs=24, r="SUPPORT") for i in range(1, 5)])
+        self.assertIsNone(r["cspm"])
+        self.assertFalse(any("Farmeo" in text for text, _ in analysis.average_lines(r, "Seraphine")))
+
     def test_sin_partidas_con_ese_campeon_se_compara_con_el_modo(self):
         import analysis
         hoy = self.g(100, 147, 8, 2, 8)
@@ -3501,6 +3555,98 @@ class Versiones(unittest.TestCase):
         p = os.path.join(ROOT, "release", "latest.json")
         if os.path.exists(p):
             self.assertEqual(json.load(open(p, encoding="utf-8"))["version"], core.APP_VERSION)
+
+
+
+class DuoAntesDeElegirYRunasSolas(unittest.TestCase):
+    def test_detalle_del_duo(self):
+        import duo, history
+        tmp = tempfile.mkdtemp()
+        old, history.ACCOUNT = history.ACCOUNT, ""
+        try:
+            def g(c, theirs, w, role="SUPPORT"):
+                return {"c": c, "q": 420, "w": w, "r": role, "t": 1, "p": ["d", "x"], "a": [theirs, 99]}
+            rows = [g(147, 119, True), g(147, 119, True), g(147, 119, False), g(89, 119, False), g(89, 22, True), g(89, 22, True),
+                    g(86, 22, True, "TOP"), {"c": 147, "q": 420, "w": False, "r": "SUPPORT", "t": 1, "p": ["x"], "a": [1]}]
+            with open(history.gpath(tmp), "w", encoding="utf-8") as f:
+                json.dump({str(i): e for i, e in enumerate(rows)}, f)
+            r = duo.detail(tmp, "d", "SUPPORT", 119)
+            self.assertEqual(r["theirs"], [(119, 2, 4), (22, 3, 3)])
+            self.assertEqual((r["mine"], r["mine_role"]), ([(147, 2, 3), (89, 2, 3)], True))    # solo tu línea
+            self.assertEqual(r["pairs"], [(147, 119, 2, 3)])
+            self.assertEqual((r["with_theirs"]["n"], r["with_theirs"]["wins"], r["with_theirs"]["mine"]), (4, 2, [(147, 2, 3), (89, 0, 1)]))
+            self.assertFalse(duo.detail(tmp, "d", "MIDDLE")["mine_role"])                       # sin partidas en esa línea: todas
+            self.assertIsNone(duo.detail(tmp, "nadie"))
+        finally:
+            history.ACCOUNT = old
+
+    def test_el_envio_solo_no_depende_de_la_pantalla_y_solo_con_campeon_bloqueado(self):
+        import builds, gui, ui_build
+        sent, later = [], []
+        old = builds.request, builds.peek, ui_build.auto_send
+        builds.request = lambda *a, **k: ("k",)
+        estado = [("loading",)]
+        builds.peek = lambda key: estado[0]
+        ui_build.auto_send = lambda ui, w, champs, cid, d, key: sent.append((cid, key))
+
+        class Ventana:
+            conf, advisor, champs = {"auto_runes": True}, "select", {86: {"name": "Garen"}}
+            kit = type("K", (), {"runedata": {"runes": {1: {}}}})()
+            root = type("R", (), {"after": staticmethod(lambda ms, f: later.append(f))})()
+            watch_auto_runes = gui.GUI.watch_auto_runes
+        r = {"mine": 86, "mine_locked": True, "role": "TOP", "lane_opp": 0, "mode": {"kind": "sr"}}
+        try:
+            v = Ventana()
+            v.watch_auto_runes(r)
+            self.assertEqual((sent, len(later)), ([], 1))              # la build aún no ha llegado: vuelve a mirar
+            estado[0] = ("ok", {})
+            later.pop()()
+            self.assertEqual(sent, [(86, (86, "top", None))])
+            v.watch_auto_runes({**r, "mine_locked": False})
+            v.conf = {}
+            v.watch_auto_runes(r)
+            v.conf, v.advisor = {"auto_runes": True}, "idle"
+            v.watch_auto_runes(r)
+            self.assertEqual(len(sent), 1)                              # sin bloquear, apagado o fuera de la selección: nada
+        finally:
+            builds.request, builds.peek, ui_build.auto_send = old
+
+    def test_los_objetos_solos_no_se_repiten_y_se_reintentan_si_fallan(self):
+        import itemset, ui_build
+        sent, later = [], []
+        old = itemset.send_async
+
+        def fake(conf, uid, title, cid, blocks, result, key=None):
+            sent.append(title)
+            result.update(state="done", ok=len(sent) > 1, msg="")
+        itemset.send_async = fake
+        ui_build._SENT.clear()
+        ui = type("U", (), {"conf": {"auto_itemset": True}})()
+        w = type("W", (), {"after": staticmethod(lambda ms, f: later.append(f))})()
+        champs = {86: {"name": "Garen"}}
+        try:
+            for _ in range(3):
+                ui_build.auto_items(ui, w, champs, {}, 86, None, "top", [("Inicio", [1055])])
+                while later:
+                    later.pop()()
+            self.assertEqual(len(sent), 2)                      # el primero falló y se reintentó una vez; ya enviado, no se repite
+            ui.conf = {}
+            ui_build.auto_items(ui, w, champs, {}, 86, None, "jungle", [("Inicio", [1055])])
+            self.assertEqual(len(sent), 2)
+        finally:
+            itemset.send_async = old
+            ui_build._SENT.clear()
+
+    def test_las_runas_solas_solo_con_el_interruptor_y_sin_repetir(self):
+        import ui_build
+        ui_build._RUNE_AUTO.clear()
+        self.assertFalse(core.DEFAULT_CONF["auto_runes"])
+        self.assertFalse(ui_build.auto_due({}, 86, [1, 2]))
+        self.assertTrue(ui_build.auto_due({"auto_runes": True}, 86, [1, 2]))
+        ui_build._RUNE_AUTO["sent"] = (86, (1, 2))
+        self.assertFalse(ui_build.auto_due({"auto_runes": True}, 86, [2, 1]))
+        self.assertTrue(ui_build.auto_due({"auto_runes": True}, 86, [1, 3]))
+        ui_build._RUNE_AUTO.clear()
 
 
 if __name__ == "__main__":

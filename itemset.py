@@ -128,11 +128,16 @@ def send(conf, uid, title, cid, blocks, key=None):
         return False, f"No se pudo enviar ({type(e).__name__})."
 
 
+_lock = threading.Lock()   # leer y volver a escribir la lista de conjuntos: dos envíos a la vez se pisarían
+
+
 def send_async(conf, uid, title, cid, blocks, result, key=None):
     """Como send(), en un hilo; deja el resultado en el dict `result` ({"state": "sending"|"done", "ok": bool, "msg": str})."""
     result.update(state="sending", ok=False, msg="")
 
     def go():
-        ok, msg = send(conf, uid, title, cid, blocks, key)
+        with _lock:
+            ok, msg = send(conf, uid, title, cid, blocks, key)
+        core.diag(f"Objetos «{title}»: " + ("enviados" if ok else f"no enviados. {msg}"))
         result.update(state="done", ok=ok, msg=msg)
     threading.Thread(target=go, daemon=True).start()

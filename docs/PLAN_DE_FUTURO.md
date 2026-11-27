@@ -39,6 +39,14 @@ Medido hoy y **sin problema** (no tocar): pintar Inicio lee 220 partidas en 2 ms
 
 Se mantiene «Qué NO hacer». Se añade: ni aceptar partida, ni elegir, ni banear automáticamente.
 
+## Revisión del 27/11/2026 (sin publicar)
+
+- **A2** (hechizos) sigue pendiente de tu aprobación. **A3** (runas solas) está hecho, igual que el envío de objetos en segundo plano.
+- **B1 (peso por antigüedad): no compensa ahora.** Medido con el historial real: lo guardado abarca unos 50 días y las recomendaciones usan sobre
+  todo la temporada de op.gg, que no trae fechas. Con vida media de 60, 120 o 240 días no cambia el orden en ninguna línea y la mayor diferencia es
+  de 0,15 puntos. Volver a medirlo cuando haya un año de partidas.
+- **Riot:** hay que registrar el producto; el borrador está en `RIOT_REGISTRO.md`. Preguntar por el envío automático antes de darlo a más gente.
+
 ## Cómo leerlo
 
 - **P0** ahora · **P1** próximas 1–3 semanas · **P2** 1–3 meses · **P3** ideas a explorar.

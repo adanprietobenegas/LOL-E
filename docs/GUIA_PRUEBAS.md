@@ -1,6 +1,6 @@
 # Qué probar de LOL-E (para ti y para tu compañero)
 
-Versión: la 1.32.0 o posterior (se ve arriba, junto al nombre). Se actualiza sola cuando está en reposo.
+Versión: la 1.33.0 o posterior (se ve arriba, junto al nombre). Se actualiza sola cuando está en reposo.
 
 ## Antes de jugar
 1. Abre LOL-E y el cliente de League. Arriba debe salir «Conectado a LoL».
@@ -27,6 +27,14 @@ Versión: la 1.32.0 o posterior (se ve arriba, junto al nombre). Se actualiza so
 ## Después
 - El marcador en vivo desaparece.
 - Se abre solo el resumen de la partida, con «Ver el análisis completo»; en Inicio, «Tu última partida» con los PL.
+
+## Nuevo en la 1.33.0
+| Dónde | Qué mirar |
+|---|---|
+| Selección en dúo | Tarjeta «Tu dúo» antes de elegir; al bloquear se reduce al resumen |
+| Runas | Con el interruptor encendido, al bloquear se envían solas (también con la ventana minimizada); apagado, solo con el botón |
+| Al terminar | «Ver el análisis completo» y «‹ Volver al resumen» |
+| Registro | Líneas «Historial con el dúo», «Historial contra el rival» y «Runas de …» |
 
 ## Nuevo en la 1.32.0
 | Dónde | Qué mirar |

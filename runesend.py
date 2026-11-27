@@ -61,6 +61,9 @@ def apply(lcu, body):
     return True, f"Runas enviadas a la página «{body['name']}», que queda seleccionada. Compruébala antes de que acabe la selección."
 
 
+_lock = threading.Lock()   # dos envíos seguidos (cambia el rival) escriben la página de uno en uno
+
+
 def send(conf, champ_name, rn, rd):
     """Envía la página. Devuelve (ok, mensaje). Bloquea: llamar desde un hilo."""
     if getattr(core, "DEMO_MODE", False):   # la demostración usa datos inventados: nunca escribe en tu cliente
@@ -72,7 +75,8 @@ def send(conf, champ_name, rn, rd):
         found = core.find_client(conf)
         if not found:
             return False, "El cliente de League no está abierto."
-        return apply(core.LCU(*found), body)
+        with _lock:
+            return apply(core.LCU(*found), body)
     except urllib.error.HTTPError as e:
         return False, f"El cliente rechazó las runas (error {e.code}): ponlas a mano."
     except Exception as e:
@@ -87,5 +91,6 @@ def send_async(conf, champ_name, rn, rd, result, sent=None):
         ok, msg = send(conf, champ_name, rn, rd)
         if ok and sent:
             sent()   # lo que tiene ahora el cliente se apunta aquí, aunque la fila que lo envió ya no exista
+        core.diag(f"Runas de {champ_name}: " + ("enviadas" if ok else f"no enviadas. {msg}"))
         result.update(state="done", ok=ok, msg=msg)
     threading.Thread(target=go, daemon=True).start()

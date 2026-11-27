@@ -71,6 +71,27 @@ def check(url, current):
     return info if vtuple(info["version"]) > vtuple(current) else None
 
 
+def clean_old(folder, keep, now=None):
+    """Borra de la carpeta de descargas los instaladores de LOL-E anteriores (unos 21 MB cada uno) y los restos de descargas de hace más de una hora.
+    Solo toca esos nombres; lo que no se pueda borrar (en uso) se deja para otra vez."""
+    import re, time
+    now = now or time.time()
+    try:
+        names = os.listdir(folder)
+    except OSError:
+        return
+    for n in names:
+        p = os.path.join(folder, n)
+        if not re.match(r"Instalar-LOL-E-\d+(\.\d+)*\.exe(\.[\d.]+part)?$", n) or p == keep:
+            continue
+        try:
+            if n.endswith(".part") and now - os.path.getmtime(p) < 3600:   # puede ser una descarga en marcha
+                continue
+            os.remove(p)
+        except OSError:
+            pass
+
+
 def download(info, progress=None):
     """Descarga el instalador a una carpeta temporal y comprueba su SHA-256. Devuelve la ruta."""
     folder = os.path.join(tempfile.gettempdir(), "LOL-E-update")
@@ -88,6 +109,7 @@ def download(info, progress=None):
             os.remove(path)
             raise RuntimeError("la huella del archivo descargado no coincide: se descarta por seguridad")
         os.replace(path, final)
+        clean_old(folder, final)
         return final
 
     try:

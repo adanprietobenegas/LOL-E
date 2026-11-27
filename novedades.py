@@ -10,6 +10,17 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.33.0", "fecha": "27 de noviembre de 2026", "titulo": "Tu dúo, antes de elegir", "items": [
+        ("nuevo", 'En la selección, «Tu dúo»: cómo os va juntos, sus campeones contigo, los tuyos a su lado, las mejores parejas y su momento.'),
+        ("nuevo", 'Interruptor «Enviar las runas solas al bloquear campeón», apagado de serie. Sin activarlo, el botón sigue enviándolas solo para esa partida.'),
+        ("nuevo", '«‹ Volver al resumen» en el análisis de tu última partida.'),
+        ("mejora", 'Jugando de apoyo, el análisis ya no compara tu farmeo con tu media.'),
+        ("arreglo", 'El envío automático de objetos funciona también si estás en otra pestaña o con la ventana minimizada.'),
+        ("arreglo", 'Si el cliente tarda en registrar una partida, LOL-E ya no se queda parado: la siguiente cola y selección se siguen viendo.'),
+        ("arreglo", 'Si empiezas otra partida antes de que se registre la anterior, ya no se suman los puntos de liga de las dos.'),
+        ("arreglo", 'Si usas varias cuentas, el análisis de una partida en la que coincidieron se muestra desde la cuenta con la que estás.'),
+        ("arreglo", 'Las actualizaciones ya no dejan los instaladores antiguos acumulados en la carpeta temporal.'),
+    ]},
     {"v": "1.32.0", "fecha": "27 de noviembre de 2026", "titulo": "Lo que ya sabes de tus partidas, a la vista", "items": [
         ("nuevo", 'Al acabar una partida de la Grieta, «Análisis» empieza con un resumen: resultado y puntos de liga, tu objetivo y una sola cosa a mejorar. «Ver el análisis completo» abre lo demás.'),
         ("nuevo", 'Bajo el rival de línea ves tu historial contra ese campeón: partidas, victorias y cómo ibas en el minuto 10.'),

@@ -178,6 +178,9 @@ class AnalysisView:
         if self.wants_summary():
             self.summary(host, a, opp, adv)
             return
+        if str(gv.gid) in self.full and gv.games and str(gv.gid) == str(gv.games[0]["id"]):
+            from ui_views import small_btn
+            small_btn(ui, host, "‹ Volver al resumen", self.show_summary, 180).pack(anchor="w", pady=(0, 6))
         self.header(host, a, opp, adv)
         self.media(host, a)
         self.kpis(host, a, opp)
@@ -209,6 +212,11 @@ class AnalysisView:
 
     def show_full(self):
         self.full.add(str(self.gv.gid))
+        self.gv.sig = None
+        self.gv.refresh(self.gui.make_ctx(), True)
+
+    def show_summary(self):
+        self.full.discard(str(self.gv.gid))
         self.gv.sig = None
         self.gv.refresh(self.gui.make_ctx(), True)
 

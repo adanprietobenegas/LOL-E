@@ -18,7 +18,7 @@ import synergy
 import trends
 from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.32.0"
+APP_NAME, APP_VERSION = "LOL-E", "1.33.0"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -59,6 +59,7 @@ DEFAULT_CONF = {
     "folds": {},             # qué secciones plegables están abiertas
     "notes_seen": "",        # última versión cuyas novedades ya se mostraron al abrir
     "auto_itemset": False,   # enviar sola la build al cliente (conjunto de objetos) al elegir campeón
+    "auto_runes": False,     # enviar solas las runas al bloquear campeón (si no, solo con el botón)
     "win_geo": "",           # tamaño y posición de la ventana la última vez (para abrirla en el mismo monitor)
     "rec_view": "carrusel",  # carrusel | lista | listas
     "list_n": 20,            # cuántos campeones por lista en la vista «Listas»
@@ -1315,6 +1316,10 @@ def start_meta(conf, P, ui, force=False):
     threading.Thread(target=go, daemon=True).start()
 
 
+class _Later(Exception):
+    """El cierre de la partida se deja para otra vuelta del bucle."""
+
+
 def run(conf, champs, ui):
     season = load_season(champs)
     lcu = P = None
@@ -1328,6 +1333,8 @@ def run(conf, champs, ui):
     reload_pending = False
     played = False   # ¿ha empezado de verdad una partida desde la última selección? (si no, se esquivó o se canceló: no hay nada que cerrar)
     rank_before, cur_gid, end_tries = None, None, 0
+    rank_next = None   # rango leído al encontrar la SIGUIENTE partida mientras la anterior seguía sin cerrar
+    retry_at = 0.0   # cierre de partida pendiente: cuándo volver a intentarlo (sin dormir el bucle: la siguiente cola se sigue viendo)
     next_meta = time.time() + 6 * 3600   # el meta y las tendencias se vuelven a mirar cada 6 h si la app sigue abierta (parche nuevo, caché caducada), fuera de cola y de partida
     last_aug = None
     sel_seen = False   # ¿se vio la selección de la partida en curso? (si no, LOL-E o el cliente se abrieron con la partida ya empezada)
@@ -1433,7 +1440,7 @@ def run(conf, champs, ui):
                 in_game = flow in ("InProgress", "GameStart", "Reconnect")  # con la partida en marcha no se toca nada: el PC es del juego
                 backfill.set_idle(flow in ("None", "Lobby") and not reload_pending)
                 if in_game:
-                    played = True
+                    played, retry_at = True, 0.0
                 if flow == "ReadyCheck":   # otra ventana de aceptar sin pasar por la cola (alguien no aceptó y el cliente encontró otra enseguida)
                     rc = readycheck.read(lcu)
                     if flow == last_flow and readycheck.new_round(rc_prev, rc):
@@ -1457,6 +1464,8 @@ def run(conf, champs, ui):
                         if snap_rank:
                             rank_before = snap_rank
                             diag("Rango antes de la partida: " + ", ".join(f"{k} {v['tier']} {v['div']} {v['lp']} PL" for k, v in snap_rank.items() if v))
+                    if flow == "ReadyCheck" and reload_pending and end_tries:
+                        rank_next = rank_snapshot(lcu)
                     getattr(ui, "phase", lambda f: None)(flow)
                     reannounce = False
                 elif reannounce:
@@ -1473,25 +1482,27 @@ def run(conf, champs, ui):
                     # «Partida terminada», se reanalizaba y, si el rango no se había movido, se esperaba hasta 8 veces y se guardaba «0 PL» para ella
                     reload_pending = sel_seen = False
                     diag("La selección acabó sin empezar partida (esquivada o cancelada): no se analiza nada")
-                if reload_pending and not in_game and flow != "ChampSelect" and played:
+                if reload_pending and not in_game and flow != "ChampSelect" and played and time.time() >= retry_at:
                     reload_pending = False
                     if rank_before is None:
                         rank_before = {k: (P.get("profile") or {}).get(k) for k in ("solo", "flex", "prem")}
-                    P = load_player_data(lcu, season)  # actualiza con la partida que acaba de pasar
-                    ui.idle(player_info(P), "Partida terminada. Historial actualizado. Esperando la siguiente…")
-                    getattr(ui, "history_updated", lambda: None)()
                     try:  # análisis de la partida que acaba de terminar, listo en la pestaña «Partida»
                         g = (lcu.get("/lol-match-history/v1/products/lol/current-summoner/matches?begIndex=0&endIndex=1") or {})["games"]["games"][0]
-                        if cur_gid and str(g["gameId"]) != str(cur_gid) and end_tries < 8:
+                        missing = bool(cur_gid and str(g["gameId"]) != str(cur_gid))
+                        if missing and end_tries < 8:
                             # el cliente aún no lista la partida recién terminada: sin esto se analizaba la anterior
+                            if not end_tries:
+                                ui.idle(player_info(P), "Partida terminada. Esperando a que el cliente la registre…")
                             end_tries += 1
-                            reload_pending = True
-                            time.sleep(8)
-                            continue
-                        if cur_gid and str(g["gameId"]) != str(cur_gid):
+                            reload_pending, retry_at = True, time.time() + 8
+                            raise _Later
+                        P = load_player_data(lcu, season)  # actualiza con la partida que acaba de pasar
+                        ui.idle(player_info(P), "Partida terminada. Historial actualizado. Esperando la siguiente…")
+                        getattr(ui, "history_updated", lambda: None)()
+                        if missing:
                             diag(f"La partida {cur_gid} no aparece en el historial tras {end_tries} esperas (modo sin historial o cliente lento): no se analiza ninguna")
                             rank_before, cur_gid, end_tries, played, sel_seen = None, None, 0, False, False
-                            continue
+                            raise _Later
                         qkey = {420: "solo", 440: "flex", 710: "prem"}.get(g.get("queueId"))
                         if qkey and not (rank_before or {}).get(qkey):
                             diag(f"Sin el rango de antes de la partida ({qkey}): no se puede calcular la variación de PL")
@@ -1502,9 +1513,8 @@ def run(conf, champs, ui):
                             dl = analysis.lp_delta(rank_before[qkey], (P.get("profile") or {}).get(qkey))
                             if dl and dl["d"] == 0 and end_tries < 8:  # el rango tarda un poco más en actualizarse
                                 end_tries += 1
-                                reload_pending = True
-                                time.sleep(8)
-                                continue
+                                reload_pending, retry_at = True, time.time() + 8
+                                raise _Later
                             if dl:
                                 analysis.save_lp(CACHE, g["gameId"], dl)
                                 diag(f"Variación de PL ({qkey}): {dl['d']:+d} PL, ahora {dl['tier']} {dl['now']} PL" + (f" ({dl['move']})" if dl["move"] else ""))
@@ -1514,6 +1524,8 @@ def run(conf, champs, ui):
                         result = analysis.load(lcu, g["gameId"], my_puuid, CACHE)   # antes de dar la partida por cerrada: un corte aquí la retoma entera
                         rank_before, cur_gid, end_tries, played, sel_seen = None, None, 0, False, False
                         getattr(ui, "analysis", lambda *a: None)(str(g["gameId"]), result)
+                    except _Later:
+                        pass   # el bucle sigue: cola, partida encontrada y selección se atienden igual mientras tanto
                     except (urllib.error.URLError, ConnectionError, OSError):
                         reload_pending = True   # el cliente se cayó a medias: al volver se retoma el cierre de esta partida
                         raise
@@ -1572,6 +1584,11 @@ def run(conf, champs, ui):
                         if new_gid and new_gid != cur_gid and not sel_seen and not reload_pending and not gfs.get("isCustomGame")                                 and not str((gfs.get("queue") or {}).get("gameMode") or "").upper().startswith("TFT"):
                             reload_pending, end_tries = True, 5   # partida ya empezada al abrir LOL-E o al volver el cliente: se cierra y analiza igual (con pocas esperas)
                             diag(f"Partida {new_gid} en marcha sin haber visto su selección: se analizará al terminar")
+                        if new_gid and cur_gid and new_gid != cur_gid and reload_pending:
+                            # empieza otra sin haber podido cerrar la anterior: su análisis lo hará el repaso en segundo plano, y los PL de esta
+                            # se miden desde el rango leído al encontrarla (con el de antes de la anterior saldría la suma de las dos)
+                            diag(f"La partida {cur_gid} queda sin cerrar: ha empezado la {new_gid}")
+                            rank_before, rank_next, end_tries = rank_next or {}, None, 0
                         cur_gid = new_gid or cur_gid
                         mayhem_live = (gfs.get("queue") or {}).get("id") in augments.MAYHEM_QUEUES
                     except (urllib.error.URLError, ConnectionError, OSError):
@@ -1627,7 +1644,7 @@ def run(conf, champs, ui):
                     diag(f"Selección de campeón: cola {mode['id']}, tipo {mode['kind']}")
                     note_queue(mode["id"])
                     if mode["kind"] == "sr":
-                        threading.Thread(target=players.fetch_team, args=(lcu, session, ui.players), daemon=True).start()
+                        threading.Thread(target=players.fetch_team, args=(lcu, session, ui.players, tuple(party)), daemon=True).start()
                 last = key
                 write_json(os.path.join(CACHE, "last_session.json"), scrub(session))  # para depurar, sin nombres ni identificadores de nadie
                 r = advise(session, champs, P, conf, mode)
@@ -1864,6 +1881,16 @@ def health_lines(games=None):
     except Exception:
         pass
     return out
+
+
+_SAID = set()
+
+
+def diag_once(msg):
+    """Como diag(), pero cada frase una sola vez por ejecución: para lo que se llama en cada repintado."""
+    if msg not in _SAID:
+        _SAID.add(msg)
+        diag(msg)
 
 
 def diagnostics(extra=None):

@@ -1,6 +1,6 @@
 # LOL-E · Punto de partida para cualquier conversación nueva
 
-Última actualización: 13/11/2026 (versión del código: 1.32.0). Este archivo es corto a propósito: dice dónde estamos, las reglas
+Última actualización: 27/11/2026 (versión del código: 1.33.0). Este archivo es corto a propósito: dice dónde estamos, las reglas
 y cómo seguir. El detalle va en `docs/HISTORIAL_DE_SESIONES.md` y el rumbo en `docs/PLAN_DE_FUTURO.md`.
 
 ## 0. Cómo arrancar (2 minutos)
@@ -21,6 +21,8 @@ español. Repositorio público `adanprietobenegas/LOL-E`, rama `main`. Pestañas
 Historial (+ Datos y Ajustes en la cabecera). No usa claves de Riot: lee el cliente local y datos públicos (Data Dragon, Lolalytics, op.gg).
 
 ## 2. Estado (actualizar al terminar cada conversación)
+
+**1.33.0 (27/11/2026, publicada a petición del usuario).** Incluye lo siguiente; nada visto en partida real. Al retomar: preguntar cómo fue. La norma de agrupar sin subir sigue para tandas futuras. Pedido por el usuario el 27/11: tarjeta «Tu dúo» en la selección antes de elegir (`DuoCard`, `duo.detail`: campeones de cada uno juntos, mejores parejas, su momento; compacta al bloquear), envío automático de runas opcional y apagado de serie (`auto_runes`, `ui_build.auto_send`, `gui.watch_auto_runes`; el botón sigue valiendo para una sola partida) y «‹ Volver al resumen» en el análisis. Ya respondido que vio la info del dúo y le gusta. Sin ver en partida real ni probado el envío automático contra el cliente real. Añadido mientras el usuario estaba fuera: el envío automático de objetos tampoco depende ya de la pantalla (`ui_build.auto_items`) y los envíos van de uno en uno; si empieza otra partida con la anterior sin cerrar, los PL se miden desde el rango leído al encontrarla (`rank_next`); un análisis guardado por otra cuenta se rehace (`owner`); registro en Riot en `docs/RIOT_REGISTRO.md`. `updater.clean_old` borra los instaladores antiguos de la carpeta temporal al bajar uno nuevo (había 322 MB). El repositorio es público y `docs/rediseno/prototipo_v1.html` y `v2.html` llevan el nombre de invocador del usuario: pendiente de que decida. De su primera partida real con la 1.32.0 (27/11/2026): el cierre de partida ya no duerme el bucle 8 s por intento (`retry_at` y `_Later` en `lol_advisor.run`: la siguiente cola se atiende igual); jugando de apoyo no se compara el farmeo con tu media; el registro anota historial de rival y dúo (`diag_once`), envío de runas y jugadores completados con la partida en vivo. Pendiente de preguntar al usuario: si vio la línea del dúo y la del rival, y si quiere envío automático de runas (en su segunda partida usó la página del cliente, no la de LOL-E).
 
 **Sin publicar tras la 1.31.0 (agrupar hasta que el usuario pida subir).** Aviso bajo el botón de runas cuando cambias de rival o de página después de enviar (`ui_build.rune_note`); paso de captura 03c (bans propios más meta, visto bien). Análisis de mejoras futuras al principio de `docs/PLAN_DE_FUTURO.md`. **A1 hecho** (`backfill.py`, 27/11/2026): fuera de cola y partida analiza las 20 últimas de la Grieta que falten, una cada 4 s, 30 s después de conectar y luego cada 5 min; solo lee. Probado con pruebas y cliente falso (arranca en reposo tras la partida y se pausa en cola); probado después contra el cliente real en carpeta temporal: 200 partidas, 20 analizadas en 31 s con 1 s de pausa (en la app, 4 s), 420 KB, y salió patrón y objetivo. Al abrir, el cliente entrega pocas partidas un rato (2 de 200): el repaso de cada 5 min las recoge. Falta verlo dentro de la app instalada. **1.32.0 (27/11/2026, publicada a petición del usuario):** incluye todo lo que abajo figura como «sin publicar». Al retomar: preguntar cómo fue en partida real. **Estimación de PL retirada (27/11/2026, a petición del usuario):** solo datos reales; con menos de 20 partidas con PL se añaden los resultados reales del historial (`lpseries.ranked_results`). El cliente entrega como máximo 200 partidas e ignora la paginación (comprobado), y no da PL antiguos: la única historia real anterior son las fotos diarias de op.gg (unos 10 días). No volver a añadir estimaciones.
 
@@ -295,6 +297,7 @@ vivo en una partida real, y las decisiones pendientes del usuario de la sección
 
 ## 9. Registro de actualizaciones de este documento
 
+- 27/11/2026: preparada y publicada la 1.33.0 (tarjeta del dúo, runas automáticas opcionales, volver al resumen y arreglos).
 - 13/11/2026 (noche, 3): «Siguiente objeto» en vivo (`shopping.py`), pie sin «Cargando…», demo ARAM en `comprobar_todo`.
 - 13/11/2026 (noche, 2): partida en vivo ampliada (rival directo), comparación con tu media, corrección del cierre tras esquivar, escenarios del bucle; plan y
   estado al día.

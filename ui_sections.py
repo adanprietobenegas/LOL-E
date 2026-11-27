@@ -873,9 +873,7 @@ class TurnCard(Section):
 
     def key(self, ctx):
         r, s = ctx["r"], ctx["session"]
-        party = tuple(sorted(r.get("party") or ()))
-        return (r["turn"], s["timer"]["phase"], r["role"], self.step(s), r["mode"]["kind"], comp_line(r.get("enemy_stats")), comp_line(r.get("ally_stats")),
-                party, tuple(((ctx.get("players") or {}).get(p) or {}).get("name", "") for p in party))
+        return (r["turn"], s["timer"]["phase"], r["role"], self.step(s), r["mode"]["kind"], comp_line(r.get("enemy_stats")), comp_line(r.get("ally_stats")))
 
     def build(self, ctx):
         ui, r, session = self.ui, ctx["r"], ctx["session"]
@@ -916,7 +914,6 @@ class TurnCard(Section):
                     ui.lbl(steps, "  ─  ", 9, "dim").pack(side="left")
         else:
             ui.lbl(left, f"{r['mode']['group'] or 'Otro modo'}  ·  sin roles ni bans", 11, "dim").pack(anchor="w", pady=(2, 0))
-        duo_texts = self.duo_texts(ctx) if sr else []
         lines = [(t, v) for t, v in (("Rivales", comp_line(r.get("enemy_stats"))), ("Tu equipo", comp_line(r.get("ally_stats")))) if v] if sr else []
         if lines:
             box = ui.frame(c)
@@ -924,26 +921,7 @@ class TurnCard(Section):
             for who, text in lines:
                 ui.lbl(box, f"{who}: {text}", 11, "fg" if who == "Rivales" else "dim", anchor="w", justify="left",
                        wraplength=max(260, ctx["width"] - 110)).pack(anchor="w")
-        if duo_texts:
-            box = ui.frame(c)
-            box.pack(fill="x", pady=(8, 0))
-            for text in duo_texts:
-                ui.lbl(box, text, 11, "fg", anchor="w", justify="left", wraplength=max(260, ctx["width"] - 110)).pack(anchor="w")
         self.tick(ctx)
-
-    def duo_texts(self, ctx):
-        """Tu historial con quien va contigo en el grupo (duo.py): como mucho dos personas, para no alargar la cabecera."""
-        out = []
-        try:
-            import duo
-            r, players_ = ctx["r"], ctx.get("players") or {}
-            rivals_ = {e.get("puuid") for e in r.get("enemy_cells") or []}   # en clasificatoria el cliente puede no dar el identificador de tus aliados
-            for pu in sorted(set(r.get("party") or ()) - rivals_)[:2]:
-                who = (players_.get(pu) or {}).get("name") or "tu dúo"
-                out += duo.lines(core.CACHE, pu, who, lambda c: name(c, self.ui.champs))
-        except Exception:
-            core.log_exc("Historial con tu dúo")
-        return out
 
     def tick(self, ctx):
         """Solo cambia la imagen del anillo: no se repinta nada más."""
@@ -963,12 +941,119 @@ def rival_lines(ui, parent, opp, role, cid, width):
     try:
         import rivals
         texts = rivals.lines(core.CACHE, opp, role, cid, name(opp, ui.champs))
+        core.diag_once(f"Historial contra el rival (campeón {opp}, línea {role or '?'}): " + ("se enseña" if texts else "sin partidas contra él en esa línea"))
     except Exception:
         core.log_exc("Tu historial contra el rival")
         return
     for n, text in enumerate(texts):
         ui.lbl(parent, text, 11 if not n else 10, "fg" if not n else "dim", not n, anchor="w", justify="left",
                wraplength=max(240, width)).pack(anchor="w", pady=(0, 8 if n == len(texts) - 1 else 0))
+
+
+class DuoCard(Section):
+    """Tu dúo antes de elegir (duo.py y su perfil): cómo os va juntos, con qué campeones y cuáles te han funcionado a su lado.
+    Con tu campeón ya bloqueado se queda en el resumen: ya no hay nada que decidir."""
+
+    def mates(self, ctx):
+        r = ctx["r"]
+        if r["mode"]["kind"] != "sr":
+            return []
+        theirs = {e.get("puuid") for e in r.get("enemy_cells") or []}   # en clasificatoria el cliente puede no dar el identificador de tus aliados
+        return sorted(set(r.get("party") or ()) - theirs)[:2]
+
+    @staticmethod
+    def champ_of(ctx, puuid):
+        """El campeón que lleva (o marca) ahora, si el cliente dice cuál es su sitio; 0 si no."""
+        cells = (ctx.get("session") or {}).get("myTeam") or []
+        return next((p.get("championId") or p.get("championPickIntent") or 0 for p in cells if p.get("puuid") == puuid), 0)
+
+    def key(self, ctx):
+        r, players_ = ctx["r"], ctx.get("players") or {}
+        who = tuple((pu, self.champ_of(ctx, pu), (players_.get(pu) or {}).get("name", ""), len((players_.get(pu) or {}).get("recent") or ()))
+                    for pu in self.mates(ctx))
+        return (who, r["role"], r.get("mine_locked"), tuple(r.get("bans") or ()), int(ctx["width"]) // 40)
+
+    def build(self, ctx):
+        for pu in self.mates(ctx):
+            try:
+                self.one(ctx, pu)
+            except Exception:
+                core.log_exc("Historial con tu dúo")
+        if not self.box.winfo_children():
+            self.box.configure(height=1)
+
+    def one(self, ctx, pu):
+        import duo
+        ui, r = self.ui, ctx["r"]
+        p = (ctx.get("players") or {}).get(pu) or {}
+        who = p.get("name") or "tu dúo"
+        cname = lambda c: name(c, ui.champs)
+        their = self.champ_of(ctx, pu)
+        head = duo.lines(core.CACHE, pu, who, cname)
+        data = duo.detail(core.CACHE, pu, r["role"], their) if head else None
+        core.diag_once(f"Historial con el dúo (cuenta {pu[:8]}): " + ("se enseña" if head else "menos de 3 partidas juntos guardadas"))
+        recent = p.get("recent") or []
+        if not head and not recent:
+            return
+        wrap = max(260, int(ctx["width"]) - 110)
+        c = ui.card(self.box)
+        ui.lbl(c, "TU DÚO · " + who.upper(), 10, "dim", True, anchor="w").pack(anchor="w")
+        ui.lbl(c, head[0] if head else "Habéis jugado menos de 3 partidas juntos: aún no hay historial que comparar.", 12, "fg", True,
+               anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(4, 0))
+        now = data and data["with_theirs"]
+        if now and their in ui.champs:
+            mine = "  ·  ".join(f"{cname(k)} {w} de {g}" for k, w, g in now["mine"])
+            ui.lbl(c, f"Ahora lleva {cname(their)}: juntos {now['wins']} de {now['n']}. Tú a su lado: {mine}.", 11, ui.acc, True,
+                   anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(4, 0))
+        if r.get("mine_locked"):
+            return
+        if recent:
+            wins = sum(1 for x in recent if x.get("w"))
+            rank = p.get("solo") or {}
+            bits = [f"{rank['tier']} {rank['div']}".strip() + " en Solo/Dúo"] if rank.get("tier") else []
+            bits.append(f"{wins} de sus {len(recent)} últimas ganadas")
+            tops = [cname(x) for x in p.get("top") or [] if x in ui.champs]
+            if tops:
+                bits.append("lo que más juega: " + ", ".join(tops))
+            ui.lbl(c, "Su momento: " + "  ·  ".join(bits) + ".", 10, "dim", anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(4, 0))
+        if not data:
+            return
+        banned = set(r.get("bans") or ())
+        role = ROLES_ES.get(r["role"], "")
+        cols = [(f"CON {who.upper()} DE", [((k,), w, g) for k, w, g in data["theirs"]]),
+                ("TÚ A SU LADO" + (f" · {role.upper()}" if data["mine_role"] and role else ""), [((k,), w, g) for k, w, g in data["mine"]]),
+                ("MEJORES PAREJAS (TÚ + SU CAMPEÓN)", [((a, b), w, g) for a, b, w, g in data["pairs"]])]
+        cols[0] = (f"CAMPEONES DE {who.upper()} CONTIGO", cols[0][1])
+        cols = [(title, rows) for title, rows in cols if rows]
+        if not cols:
+            return
+        side = ctx["width"] >= 760
+        if side:
+            self.lists(ui, c, cols, True, wrap, banned, cname)
+        else:   # en estrecho las listas son altas y empujan las recomendaciones: se pueden plegar (se recuerda)
+            ui.fold(c, "Campeones y parejas", lambda p: self.lists(ui, p, cols, False, wrap, banned, cname), "juntos", "duo_lists", True, padx=0)
+
+    @staticmethod
+    def lists(ui, parent, cols, side, wrap, banned, cname):
+        grid = ui.frame(parent)
+        grid.pack(fill="x", pady=(10, 0))
+        for n, (title, rows) in enumerate(cols):
+            col = ui.frame(grid)
+            if side:
+                col.grid(row=0, column=n, sticky="nw", padx=(0, 16))
+                grid.columnconfigure(n, weight=1, uniform="duo")
+            else:
+                col.pack(fill="x", pady=(0, 6))
+            ui.lbl(col, title, 9, "dim", True, anchor="w", justify="left", wraplength=max(180, wrap // (len(cols) if side else 1))).pack(anchor="w", pady=(0, 4))
+            for champs_, w, g in rows:
+                row = ui.frame(col)
+                row.pack(anchor="w", pady=2)
+                for cid in champs_:
+                    ui.champ(row, cid, 28, False).pack(side="left", padx=(0, 4))
+                label = " + ".join(cname(x) for x in champs_)
+                out = len(champs_) == 1 and champs_[0] in banned
+                ui.lbl(row, f" {label}" + ("  (baneado)" if out else ""), 10, "dim" if out else "fg").pack(side="left")
+                ui.lbl(row, f"   {w} de {g}", 10, "good" if w * 2 > g else "bad" if w * 2 < g else "dim", True).pack(side="left")
 
 
 class MyPick(Section):
@@ -1018,7 +1103,8 @@ class MyPick(Section):
         if pk is not None:
             pk.pack(fill="x", pady=(0, 12))
         rival_lines(ui, c, r["lane_opp"], r["role"], cid, ctx["width"] - 110)
-        build_panel(ui, c, cid, lane, r["lane_opp"] or None, ctx["width"] - 110, r.get("enemy_stats")).pack(fill="x")
+        build_panel(ui, c, cid, lane, r["lane_opp"] or None, ctx["width"] - 110, r.get("enemy_stats"),
+                    auto_runes=bool(r.get("mine_locked"))).pack(fill="x")
         import ui_claves
         ui_claves.block(ui, c, cid, ctx["width"] - 110)
         import ui_guide

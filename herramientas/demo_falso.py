@@ -52,7 +52,7 @@ type(fake).paso = property(lambda self: int((time.time() - t0) / PASO), lambda s
 core.find_client, core.LCU = (lambda conf: ("x",)), (lambda *a: fake)
 core.start_meta = core.play_phase = core.detect_account = lambda *a, **k: None
 core.maybe_update_opgg = lambda *a, **k: None
-players.fetch_team = lambda lcu, session, emit: emit({})
+players.fetch_team = lambda lcu, session, emit, party=(): emit({})
 players.fetch_roster = lambda *a, **k: None
 players.lobby_party = lambda *a, **k: None
 analysis.load = lambda *a, **k: None

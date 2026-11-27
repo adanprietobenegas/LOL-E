@@ -7,6 +7,14 @@ CÓMO SE NUMERAN LAS VERSIONES (X.Y.Z)
   · Y (1.4.1 → 1.5.0): una función nueva que se nota al usar la app.
   · X (1.5.0 → 2.0.0): un cambio grande de la app.
 
+VERSIÓN 1.33.0   (27 de noviembre de 2026)
+---------------------------------------------------------------------
+
+  · duo.detail, ui_sections.DuoCard, ui_build.auto_send / auto_items y gui.watch_auto_runes (auto_runes); itemset y runesend envían de uno en uno.
+  · Motor: retry_at y _Later (cierre de partida sin dormir el bucle), rank_next (PL con otra partida empezada), diag_once; analysis guarda «owner»; updater.clean_old.
+  · Registro en Riot: borrador en docs/RIOT_REGISTRO.md, sin enviar. 291 pruebas.
+  · Sin ver en una partida real; el envío automático no se ha probado contra el cliente real.
+
 VERSIÓN 1.32.0   (27 de noviembre de 2026)
 ---------------------------------------------------------------------
 
