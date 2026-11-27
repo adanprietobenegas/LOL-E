@@ -31,6 +31,9 @@ No hace falta tener Python ni nada más. Se actualiza solo: al abrirse y cada po
 | `ui_vs.py` | Tablero 5 contra 5 de la pantalla de carga |
 | `temas.py` | Temas de color, looks (Terminal, Papel, Blueprint, Hextech, Arcade, Neón Tokio, Océano) y estilos de tarjeta (Plano, Brutal, Cristal) |
 | `claves.py`, `ui_claves.py`, `assets/claves.json` | Claves del campeón (evoluciones, acumulaciones, formas, objetos) sobre la build, con el parche en que se verificaron |
+| `backfill.py` | Analiza en segundo plano (fuera de cola y partida) las últimas partidas que faltan |
+| `duo.py` | Tu historial con quien vas en dúo o en grupo |
+| `rivals.py` | Tu historial contra el rival de línea (resultados y minuto 10) |
 | `itemset.py`, `runesend.py`, `sounds.py` | Envío al cliente (solo si se pide) del conjunto de objetos y de la página de runas «LOL-E»; sonidos por fase |
 | `herramientas/` | Scripts de demo y pruebas de modos de juego; `tests_unitarios.py` (28 pruebas de la lógica, sin cliente ni ventana: `python herramientas/tests_unitarios.py`) |
 

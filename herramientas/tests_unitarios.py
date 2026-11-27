@@ -1183,7 +1183,7 @@ class TemporizadorDelBaron(unittest.TestCase):
         import live
         s = lambda t, h=0: {"mode": "CLASSIC", "t": t, "teams": {"ORDER": {"heralds": h, "grubs": 3}, "CHAOS": {"heralds": 0, "grubs": 0}}}
         self.assertIn("Heraldo de la Grieta aparece en 0:30", live.timers(s(870)))
-        self.assertIn("sigue en la Grieta hasta el minuto 19:45", live.timers(s(1000)))
+        self.assertIn("sigue en el mapa hasta el minuto 19:45", live.timers(s(1000)))
         self.assertIsNone(live.timers(s(1000, 1)))             # ya lo han matado
         self.assertNotIn("Heraldo", live.timers(s(1190)) or "")   # ya se fue (y ahora toca el aviso del Barón)
         self.assertIsNone(live.timers(s(600)))                 # aún falta mucho
@@ -1747,6 +1747,243 @@ class EnvioDeRunas(unittest.TestCase):
         import runesend
         with mock.patch.object(runesend.core, "DEMO_MODE", True, create=True):
             self.assertFalse(runesend.send({}, "Urgot", self.RN, self.RD)[0])
+
+
+class FilasDeLaBarraIrA(unittest.TestCase):
+    def test_reparto(self):
+        from ui_kit import flow
+        self.assertEqual(flow([50, 50, 50], 106), [[0, 1], [2]])
+        self.assertEqual(flow([50, 50, 50], 400), [[0, 1, 2]])
+        self.assertEqual(flow([500, 20], 100), [[0], [1]])   # uno que no cabe va solo
+        self.assertEqual(flow([], 100), [])
+
+
+class EstadosEntrePartidas(unittest.TestCase):
+    """Estados que quedaban mal entre una partida y otra (se prueban los métodos de la ventana sin abrirla)."""
+    def ventana(self, **ctx):
+        from types import SimpleNamespace as NS
+        pintar = NS(sig=1, tab="Plan", refresh=lambda *a: None)
+        return NS(ctx=ctx, view="idle", page="partida", opp_choice=0, game_view=pintar, refresh_current=lambda *a: None, new_cycle=lambda: None,
+                  make_ctx=lambda: ctx, auto_game=False)
+
+    def test_la_seleccion_abandonada_no_es_una_partida(self):
+        import gui
+        w = self.ventana(plan={"state": "select", "cid": 1}, phase="ChampSelect")
+        with mock.patch("os.remove"):
+            gui.GUI.on_phase(w, "Lobby")
+        self.assertIsNone(w.ctx["plan"])
+
+    def test_otra_partida_en_marcha_rehace_el_plan(self):
+        import gui
+        old = {"state": "game", "cid": 86, "role": "TOP", "kind": "sr"}
+        ros = [{"team": "ally", "cid": 222, "role": "BOTTOM", "me": True, "puuid": "yo"}, {"team": "enemy", "cid": 51, "role": "BOTTOM", "me": False, "puuid": "r"}]
+        w = self.ventana(plan=dict(old), phase="InProgress")
+        with mock.patch("lol_advisor.write_json"), mock.patch("gui.core.write_json"):
+            gui.GUI.on_roster(w, ros)
+        self.assertEqual((w.ctx["plan"]["cid"], w.ctx["plan"]["role"], w.ctx["plan"]["opp"]), (222, "BOTTOM", 51))
+        w = self.ventana(plan={**old, "cid": 222, "role": "BOTTOM"}, phase="InProgress")   # la misma partida: el plan se conserva
+        w.ctx["plan"]["locked"] = False
+        with mock.patch("gui.core.write_json"):
+            gui.GUI.on_roster(w, ros)
+        self.assertFalse(w.ctx["plan"]["locked"])
+
+
+class RevisionDeLasMejoras(unittest.TestCase):
+    """Fallos que encontró la revisión previa a publicar."""
+    def test_colas_de_la_grieta(self):
+        import duo, rivals, lol_advisor as core
+        self.assertEqual(duo.SR, core.SR_QUEUES)
+        self.assertEqual(rivals.SR, core.SR_QUEUES)
+
+    def test_sin_companeros_guardados_no_cuenta_como_sin_el(self):
+        import duo, history
+        history.ACCOUNT = ""
+        with tempfile.TemporaryDirectory() as tmp:
+            games = {str(i): {"c": 1, "w": True, "q": 420, "p": ["d"], "a": [2]} for i in range(3)}
+            games.update({str(10 + i): {"c": 1, "w": True, "q": 420} for i in range(9)})
+            with open(history.gpath(tmp), "w", encoding="utf-8") as f:
+                json.dump(games, f)
+            self.assertIsNone(duo.stats(tmp, "d")["alone"])
+
+    def test_error_de_runas_visible(self):
+        from ui_build import rune_note
+        self.assertEqual(rune_note([1], {"state": "done", "ok": False, "msg": "sin hueco"}, [2]), ("sin hueco", True))
+
+    def test_lo_enviado_se_apunta_desde_el_envio(self):
+        import runesend, threading
+        hecho, res = threading.Event(), {}
+        with mock.patch.object(runesend, "send", lambda *a: (True, "ok")):
+            runesend.send_async({}, "x", {}, {}, res, sent=hecho.set)
+            self.assertTrue(hecho.wait(2))
+
+    def test_contra_solo_con_rival_de_linea(self):
+        import ui_analysis
+        with mock.patch("analysis.default_opp", lambda a: 6):
+            self.assertEqual(ui_analysis.lane_rival({"queue": 420}, 6), 6)
+            self.assertIsNone(ui_analysis.lane_rival({"queue": 420}, 7))
+            self.assertIsNone(ui_analysis.lane_rival({"queue": 1700}, 6))
+        with mock.patch("analysis.default_opp", lambda a: None):
+            self.assertIsNone(ui_analysis.lane_rival({"queue": 420}, 6))
+
+    def test_una_partida_que_falla_dos_veces_se_aparta(self):
+        import backfill
+        backfill.reset()
+        backfill.set_idle(True)
+
+        def load(*a):
+            raise ConnectionError("x")
+        with mock.patch("backfill.pending", lambda c: [g for g in ["1"] if g not in backfill._gone]), mock.patch("analysis.load", load):
+            backfill.run(None, "p", "x", lambda t: None, lambda s: True)
+            self.assertNotIn("1", backfill._gone)
+            backfill.run(None, "p", "x", lambda t: None, lambda s: True)
+            self.assertIn("1", backfill._gone)
+        backfill.reset()
+        self.assertEqual(backfill._gone, set())
+        backfill.set_idle(False)
+
+
+class ResumenDeFinDePartida(unittest.TestCase):
+    ADV = [{"title": "Ganaste el inicio", "tone": "good"}, {"title": "Objetivos épicos", "tone": "good"}, {"title": "Muertes caras", "tone": "bad", "detail": "Espera a tu equipo."},
+           {"title": "Poca visión", "tone": "bad"}]
+
+    def test_tres_filas(self):
+        from ui_analysis import summary_rows
+        rows = summary_rows({}, self.ADV, (True, "Objetivo cumplido: x."), "Tu objetivo: x.")
+        self.assertEqual([(r[0], r[1]) for r in rows], [("LO MEJOR", "Ganaste el inicio · Objetivos épicos"), ("A MEJORAR", "Muertes caras"),
+                                                        ("PARA LA SIGUIENTE", "Objetivo cumplido: x.")])
+        self.assertEqual(summary_rows({}, [], None, "Tu objetivo: x."), [("PARA LA SIGUIENTE", "Tu objetivo: x.", "acc")])
+        self.assertEqual(summary_rows({}, None, None, None), [])
+
+    def test_columnas_de_la_ventana_ancha(self):
+        from ui_analysis import summary_columns
+        cols = summary_columns(self.ADV, (True, "Objetivo cumplido: llega al minuto 10."), "Tu objetivo: x.")
+        self.assertEqual([c[:3] for c in cols], [("TU OBJETIVO", "Cumplido", "Llega al minuto 10."), ("A MEJORAR", "Muertes caras", "Espera a tu equipo.")])
+        cols = summary_columns(self.ADV, None, "Tu objetivo: no mueras.")
+        self.assertEqual(cols[0][:3], ("PARA LA SIGUIENTE", "Tu objetivo", "No mueras."))
+        self.assertEqual([c[0] for c in summary_columns(self.ADV, None, None)], ["A MEJORAR", "LO MEJOR"])   # sin objetivo entra lo mejor
+        self.assertEqual(summary_columns([], None, None), [])
+
+    def test_solo_en_la_partida_mas_reciente(self):
+        from ui_analysis import AnalysisView
+        gv = type("G", (), {"games": [{"id": "5"}, {"id": "4"}], "gid": "5"})()
+        v = AnalysisView(None, None, gv)
+        self.assertTrue(v.wants_summary())
+        v.full.add("5")
+        self.assertFalse(v.wants_summary())
+        gv.gid = "4"
+        self.assertFalse(v.wants_summary())
+
+
+class HistorialConElDuo(unittest.TestCase):
+    def preparar(self, tmp):
+        import history
+        history.ACCOUNT = ""
+        games = {}
+        for i, (c, w, mates, champs) in enumerate([(6, True, ["d", "x"], [64, 1]), (6, True, ["x", "d"], [1, 64]), (86, False, ["d"], [32]), (6, True, ["d"], [64]),
+                                                   (6, False, ["d", "y"], [32])] + [(6, i % 2 == 0, ["z"], [1]) for i in range(8)]):
+            games[str(i)] = {"c": c, "w": w, "r": "TOP", "o": 1, "q": 420, "t": 1000 + i, "p": mates, "a": champs}
+        games["99"] = {"c": 6, "w": True, "q": 450, "t": 1, "p": ["d"], "a": [64]}   # ARAM: no cuenta
+        with open(history.gpath(tmp), "w", encoding="utf-8") as f:
+            json.dump(games, f)
+
+    def test_juntos_solo_y_mejor_pareja(self):
+        import duo
+        with tempfile.TemporaryDirectory() as tmp:
+            self.preparar(tmp)
+            s = duo.stats(tmp, "d")
+            self.assertEqual((s["n"], s["wins"], s["alone"]), (5, 3, (4, 8)))
+            self.assertEqual(s["combo"], (6, 64, 3, 3))   # la partida con listas que no casan no se usa para la pareja
+            out = duo.lines(tmp, "d", "Ana", {6: "Urgot", 64: "Lee Sin"}.get)
+            self.assertEqual(out, ["Con Ana: 3 victorias de 5 partidas juntos (60 %). Sin Ana: 4 de 8 (50 %).",
+                                   "Lo que mejor os ha salido: tú con Urgot y Ana con Lee Sin (3 de 3)."])
+            self.assertIsNone(duo.stats(tmp, "x"))     # solo 2 partidas juntos
+            self.assertIsNone(duo.stats(tmp, ""))
+
+
+class HistorialContraElRival(unittest.TestCase):
+    def g(self, c, w, o=92, r="TOP", q=420, rm=False):
+        return {"o": o, "r": r, "c": c, "w": w, "q": q, "rm": rm}
+
+    def test_resultados(self):
+        import rivals
+        games = [self.g(6, True), self.g(6, False), self.g(86, False), self.g(6, True, o=1), self.g(6, True, r="MIDDLE"), self.g(6, True, rm=True),
+                 self.g(6, True, q=450)]
+        self.assertEqual(rivals.record(games, 92, "TOP", 6), "3 partidas, 1 victoria (con este campeón: 1 de 2)")
+        self.assertEqual(rivals.record(games[:2], 92, "TOP", 6), "2 partidas, 1 victoria, todas con este campeón")
+        self.assertEqual(rivals.record(games[:1], 92, "TOP", 6), "1 partida, 1 victoria, con este campeón")
+        self.assertEqual(rivals.record(games[:1], 92, "TOP", 99), "1 partida, 1 victoria")
+        self.assertIsNone(rivals.record(games, 500, "TOP", 6))
+
+    def test_el_rival_sale_del_archivo_de_partidas(self):
+        import history, rivals
+        history.ACCOUNT = ""
+        with tempfile.TemporaryDirectory() as tmp:
+            hist = {str(i): {"id": str(i), "t": 1000 + i, "q": 420, "c": 6, "w": True, "r": "TOP", "rm": i == 2} for i in (1, 2)}   # sin rival, como en la app
+            extra = {str(i): {"c": 6, "w": True, "r": "TOP", "o": 92, "q": 420, "t": 1000 + i} for i in (1, 2)}
+            for path, data in ((history.hpath(tmp), hist), (history.gpath(tmp), extra)):
+                with open(path, "w", encoding="utf-8") as f:
+                    json.dump(data, f)
+            self.assertEqual(rivals.lines(tmp, 92, "TOP", 6, "Riven"), ["Tu historial contra Riven en esta línea: 1 partida, 1 victoria, con este campeón."])
+
+    def test_sin_partidas_no_dice_nada(self):
+        import rivals
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(rivals.lines(tmp, 92, "TOP"), [])
+            self.assertEqual(rivals.lines(tmp, 0, "TOP"), [])
+        self.assertIsNone(rivals.minute10([{"queue": 420}], 92, "TOP"))   # un análisis roto no tumba la pantalla
+
+
+class AnalisisEnSegundoPlano(unittest.TestCase):
+    def preparar(self, tmp):
+        import history
+        games = {str(i): {"id": str(i), "t": 1000 + i, "q": q, "c": 1, "w": True, "r": "TOP", "rm": rm}
+                 for i, q, rm in ((1, 420, False), (2, 450, False), (3, 420, True), (4, 440, False), (5, 400, False))}
+        with open(history.hpath(tmp), "w", encoding="utf-8") as f:
+            json.dump(games, f)
+        os.makedirs(os.path.join(tmp, "analysis"))
+        open(os.path.join(tmp, "analysis", "5.json"), "w").write("{}")
+
+    def test_pendientes_y_parada(self):
+        import backfill
+        with tempfile.TemporaryDirectory() as tmp:
+            self.preparar(tmp)
+            backfill._gone.clear()
+            self.assertEqual(backfill.pending(tmp), ["4", "1"])   # sin ARAM, sin remake y sin las ya analizadas, la más reciente primero
+            pedidas, dicho = [], []
+
+            def load(lcu, gid, puuid, cache):
+                pedidas.append(gid)
+                if gid == 4:
+                    return None            # el cliente ya no la guarda
+                open(os.path.join(cache, "analysis", f"{gid}.json"), "w").write("{}")
+                return {"ok": 1}
+            with mock.patch("analysis.load", load):
+                backfill.set_idle(False)
+                self.assertEqual(backfill.run(None, "p", tmp, dicho.append, lambda s: True), 0)   # en cola o partida no se pide nada
+                self.assertEqual(pedidas, [])
+                self.assertFalse(backfill.start(None, "p", tmp))
+                backfill.set_idle(True)
+                self.assertEqual(backfill.run(None, "p", tmp, dicho.append, lambda s: False), 0)   # entra en cola tras la primera: se para
+                self.assertEqual(pedidas, [4])
+                self.assertEqual(backfill.run(None, "p", tmp, dicho.append, lambda s: True), 1)
+                self.assertEqual(pedidas, [4, 1])   # la que el cliente no guarda no se vuelve a pedir
+                self.assertEqual(backfill.pending(tmp), [])
+                self.assertIn("1 partida nueva", dicho[-1])
+            backfill.set_idle(False)
+            backfill._gone.clear()
+
+
+class AvisoDeRunas(unittest.TestCase):
+    def test_avisa_si_cambian_despues_de_enviar(self):
+        from ui_build import rune_note
+        a, b = [1, 2, 3], [1, 2, 4]
+        self.assertEqual(rune_note(a, {}, None), ("", False))
+        self.assertEqual(rune_note(a, {"state": "sending"}, b)[1], False)
+        self.assertTrue(rune_note(b, {}, a)[1])                                                   # ves otras que las enviadas
+        self.assertTrue(rune_note(a, {"state": "done", "ok": True, "msg": "ok"}, b)[1])           # el aviso viejo de «enviadas» ya no es verdad
+        self.assertEqual(rune_note(a, {"state": "done", "ok": True, "msg": "ok"}, a), ("ok", False))
+        self.assertTrue(rune_note(a, {"state": "done", "ok": False, "msg": "sin hueco"}, None)[1])
+        self.assertEqual(rune_note(a, {}, [3, 2, 1])[0], "Estas son las que enviaste.")
 
 
 class MenuDePartidas(unittest.TestCase):
@@ -2362,55 +2599,26 @@ class SesionDeJuego(unittest.TestCase):
         self.assertIsNone(sesion.best_slot({"noche": (20, 11), "tarde": (20, 10)}))
 
 
-class EstimacionDeRango(unittest.TestCase):
+class SoloDatosRealesDeRango(unittest.TestCase):
     NOW = 1_800_000_000_000
 
-    def g(self, i, dias, w, q=420):
-        return {"id": str(i), "t": self.NOW - int(dias * 86_400_000), "q": q, "c": 86, "w": w}
+    def g(self, i, dias, w, q=420, rm=False):
+        return {"id": str(i), "t": self.NOW - int(dias * 86_400_000), "q": q, "c": 86, "w": w, "rm": rm}
 
-    def test_hacia_atras_desde_el_primer_punto_real(self):
-        import lpseries as ls
-        # partida 3 con PL real: acaba en Oro II 50 PL tras ganar 20 (venía de 30). Las 1 y 2 no tienen PL: se estiman hacia atrás.
-        lp = {"3": {"d": 20, "now": 50, "tier": "Oro II"}}
-        games = [self.g(1, 5, True), self.g(2, 4, False), self.g(3, 3, True)]
-        est = ls.estimate(lp, games, {})
-        self.assertEqual([p["id"] for p in est], ["2", "1"])
-        base = 3 * 400 + 2 * 100
-        self.assertEqual(est[0]["v"], base + 30)                    # tras la 2 estaba donde empezó la 3
-        self.assertEqual(est[1]["v"], base + 30 + ls.LOSS)          # y tras la 1 estaba una derrota típica más arriba
-        self.assertTrue(all(p["src"] == "est" for p in est))
-        self.assertEqual(est[0]["tier"], "Oro II")
-
-    def test_entre_dos_puntos_reales_cuadra(self):
-        import lpseries as ls
-        lp = {"1": {"d": 20, "now": 50, "tier": "Oro II"}, "4": {"d": 18, "now": 70, "tier": "Oro II"}}
-        games = [self.g(1, 4, True), self.g(2, 3, True), self.g(3, 2, False), self.g(4, 1, True)]
-        est = ls.estimate(lp, games, {})
-        self.assertEqual(len(est), 2)
-        self.assertAlmostEqual(est[-1]["v"], 3 * 400 + 200 + 70 - 18, delta=1)   # la última estimada acaba donde empezó la partida 4 real
-        self.assertEqual(sum(p["d"] for p in est), (70 - 18) - 50)
-
-    def test_sin_ancla_no_inventa_y_no_baja_de_cero(self):
-        import lpseries as ls
-        self.assertEqual(ls.estimate({}, [self.g(1, 2, True)], {}), [])
-        lp = {"9": {"d": 10, "now": 15, "tier": "Hierro IV"}}
-        games = [self.g(i, 30 - i, True) for i in range(1, 9)] + [self.g(9, 1, True)]
-        self.assertTrue(all(p["v"] >= 0 for p in ls.estimate(lp, games, {})))
-
-    def test_series_solo_incluye_estimadas_si_se_piden_y_el_resumen_las_cuenta(self):
+    def test_la_serie_no_inventa_puntos(self):
         import lpseries as ls
         lp = {"3": {"d": 20, "now": 50, "tier": "Oro II"}}
         games = [self.g(1, 5, True), self.g(2, 4, False), self.g(3, 3, True)]
-        self.assertEqual([p["src"] for p in ls.series(lp, games, {}, "solo")], ["game"])
-        full = ls.series(lp, games, {}, "solo", with_estimate=True)
-        self.assertEqual([p["src"] for p in full], ["est", "est", "game"])
-        self.assertEqual(ls.summary(full)[1], 3)
+        self.assertEqual([(p["id"], p["src"]) for p in ls.series(lp, games, {}, "solo")], [("3", "game")])
+        self.assertFalse(hasattr(ls, "estimate"))
 
-    def test_medianas_propias(self):
+    def test_resultados_reales_del_historial(self):
         import lpseries as ls
-        real = [{"w": True, "d": d} for d in (24, 25, 26)] + [{"w": False, "d": d} for d in (-14, -15, -16)]
-        self.assertEqual(ls.typical(real), (25, 15))
-        self.assertEqual(ls.typical([]), (ls.GAIN, ls.LOSS))
+        games = [self.g(1, 5, True), self.g(2, 4, False), self.g(3, 3, True, rm=True), self.g(4, 2, True, q=440), self.g(5, 1, True, q=400)]
+        r = ls.ranked_results(games, "solo")
+        self.assertEqual((r["n"], r["wins"], r["last"], r["since"]), (2, 1, [True, False], games[0]["t"]))
+        self.assertEqual(ls.ranked_results(games, "flex")["n"], 1)
+        self.assertIsNone(ls.ranked_results([], "solo"))
 
 
 class SerieDeRango(unittest.TestCase):

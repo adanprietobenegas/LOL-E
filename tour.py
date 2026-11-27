@@ -58,7 +58,7 @@ LESSONS = {
     "antes": {"title": "Antes de jugar", "steps": [
         step("Inicio: tu perfil y rango", "Aquí ves tu rango en cada cola y tus últimas cinco partidas.", scene="idle", page="Asesor", target="inicio.perfil",
              when="Siempre que no haya partida en marcha.", source="Tu cliente de LoL."),
-        step("Tu rango en el tiempo", "La gráfica muestra tus PL partida a partida. Puedes cambiar el tramo y ver solo datos reales o también estimados.", target="inicio.grafica",
+        step("Tu rango en el tiempo", "La gráfica muestra solo datos reales: tus PL desde que usas LOL-E y las fotos de rango de op.gg. Puedes cambiar el tramo.", target="inicio.grafica",
              try_it="pulsa «7 días» o «Todo» y mira cómo cambia el eje."),
         step("Al buscar partida", "Al entrar en cola, «Partida» pasa a «En vivo» y aparece esta banda con la fase. Desde aquí vas y vuelves a consultar.", scene="queue", target="banda.vivo"),
     ]},
@@ -72,13 +72,13 @@ LESSONS = {
         step("Hechizos, habilidades y objetos", "Debajo siguen hechizos, orden de habilidades y objetos, con pestañas Variantes y Situaciones.", target="build.hechizos"),
     ]},
     "partida": {"title": "En partida", "steps": [
-        step("La banda y su reloj", "Mientras juegas, la banda muestra la fase y el tiempo. «Consultar» te deja revisar otras pantallas y volver.", scene="game", page="Partida", target="banda.vivo"),
+        step("La banda y su reloj", "Mientras juegas, la banda muestra la fase y el tiempo. Su botón («Ir a Inicio» o «Ver mi partida») te deja revisar otras pantallas y volver.", scene="game", page="Partida", target="banda.vivo"),
         step("Marcador y objetivos", "Bajas, oro en objetos y objetivos. Dragón, larvas y Barón llevan avisos estimados antes de salir.", target="vivo.objetivos",
              when="Cada ~10 segundos durante la partida.", source="La API local del propio juego (la de la tabla de puntuación)."),
         step("Tu siguiente objeto", "Te dice cuánto oro te falta para el siguiente objeto de tu build y qué objeto conviene contra tus rivales.", target="vivo.objeto"),
     ]},
     "terminar": {"title": "Al terminar y revisar", "steps": [
-        step("El análisis", "Al acabar, «En vivo» muestra el resultado, tus PL, y cómo fuiste frente a tu rival y a tu media.", scene="end", page="Partida", target="analisis.cabecera",
+        step("El análisis", "Al acabar, «Partida» muestra un resumen; en el análisis completo ves cómo fuiste frente a tu rival y a tu media.", scene="end", page="Partida", target="analisis.cabecera",
              when="Tras cada partida, unos segundos después de acabar.", source="El detalle de la partida que da tu cliente."),
         step("Guarda la tarjeta", "Puedes guardar una tarjeta de la partida como imagen para compartirla.", target="analisis.tarjeta"),
         step("Tu historial", "Todas tus partidas guardadas, con filtros y un resumen con tu sesión, tu patrón de derrotas y dónde mueres.", scene="idle", page="Historial", target="hist.resumen"),
@@ -118,10 +118,10 @@ LESSONS.update({
 
 LESSONS.update({
     "primera_partida": {"title": "Tu primera partida", "steps": [
-        step("Tus datos aparecen solos", "El rango y tus estadísticas salen del cliente al conectar. Lo que LOL-E guarda por su cuenta empieza cuando juegas con la app abierta.", scene="idle", page="Asesor",
+        step("Tus datos aparecen solos", "El rango y tus estadísticas salen del cliente al conectar. Al conectar guarda tus partidas recientes y las analiza en segundo plano; desde ahí el historial crece.", scene="idle", page="Asesor",
              target="inicio.perfil", when="Desde el primer arranque.", source="Tu cliente de LoL."),
         step("El historial crece contigo", "El cliente solo entrega las partidas más recientes: LOL-E guarda cada una que ve y así el historial va creciendo.", page="Historial", target="nav.historial"),
-        step("El análisis llega solo", "Al terminar cada partida, unos segundos después, aparece su análisis en «En vivo».", scene="end", page="Partida", target="analisis.cabecera"),
+        step("El análisis llega solo", "Al terminar cada partida, unos segundos después, aparece su resumen en «Partida», con acceso al análisis completo.", scene="end", page="Partida", target="analisis.cabecera"),
         step("Con unas diez partidas", "Ya hay resumen, patrones y tu año en LoL. Con menos, la app lo dice en vez de inventar.", scene="idle", page="Historial", target="hist.resumen"),
     ]},
     "afinidad": {"title": "Cómo leer la afinidad", "steps": [

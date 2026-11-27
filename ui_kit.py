@@ -22,7 +22,7 @@ PAL = {
 ACCENTS = {"Dorado": ("#8a6a2f", "#c8aa6e"), "Azul": ("#2563eb", "#58a6ff"), "Verde": ("#15803d", "#3ddc84"),
            "Morado": ("#7c3aed", "#a78bfa"), "Rojo": ("#dc2626", "#ff6b6b"), "Cian": ("#0e7490", "#22d3ee")}
 THEMES = {"Oscuro": "dark", "Claro": "light", "Sistema": "system"}
-PHASES = {"PLANNING": "Planificación", "BAN_PICK": "Bans y picks", "FINALIZATION": "Últimos retoques",
+PHASES = {"PLANNING": "Planificación", "BAN_PICK": "Baneos y elecciones", "FINALIZATION": "Últimos retoques",
           "GAME_STARTING": "Empezando la partida"}
 ROLES_ES = {"TOP": "Superior", "JUNGLE": "Jungla", "MIDDLE": "Central", "BOTTOM": "Tirador", "SUPPORT": "Apoyo"}
 def _dk(h, t=.45):
@@ -81,6 +81,19 @@ def trim(im):
     w, h = im.size
     m = round(w * 0.04)
     return im.crop((m, m, w - m, h - m))
+
+
+def flow(widths, avail, gap=6):
+    """Reparte en filas elementos de anchos `widths` en un hueco de `avail`: [[índices]], con al menos uno por fila."""
+    rows, used = [], 0
+    for i, w in enumerate(widths):
+        if rows and used + gap + w <= avail:
+            rows[-1].append(i)
+            used += gap + w
+        else:
+            rows.append([i])
+            used = w
+    return rows
 
 
 def ctl(x):

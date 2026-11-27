@@ -40,7 +40,7 @@ PARAM_INFO = {
                        "Solo acepta fuera de rol lo que has jugado mucho.", "Acepta fuera de rol con pocas partidas."),
     "lane_share_min": ("Línea alternativa: % de partidas", 2, 1, 30, 1,
                        "Un campeón se considera «de tu línea» aunque no sea la habitual si, según el meta, se juega ahí al menos este "
-                       "porcentaje de sus partidas (por ejemplo, Ezreal en Central). Así no se descartan los picks que ahora se juegan "
+                       "porcentaje de sus partidas (por ejemplo, Ezreal en Central). Así no se descartan los campeones que ahora se juegan "
                        "en otras líneas.",
                        "Solo cuentan líneas alternativas muy jugadas.", "Más campeones fuera de su línea habitual entran en «Mi rol»."),
     "meta_strong": ("«Meta fuerte» desde (% victorias)", 52.0, 50.0, 56.0, 0.5,
@@ -58,7 +58,7 @@ PARAM_INFO = {
     "pair_games": ("Partidas por pareja de campeones", 2, 1, 10, 1,
                    "Partidas jugando tu campeón con un aliado concreto para tener en cuenta vuestro historial.",
                    "Exige más historial para influir.", "Basta con muy pocas partidas."),
-    "ban_games": ("Partidas para sugerir un ban", 2, 1, 10, 1,
+    "ban_games": ("Partidas para sugerir un baneo", 2, 1, 10, 1,
                   "Partidas contra un rival de línea para poder sugerir banearlo.",
                   "Solo sugiere rivales que has visto mucho.", "Sugiere con poca experiencia."),
     "ban_loss": ("Derrotas para sugerir un ban (%)", 60, 50, 90, 5,
@@ -80,6 +80,6 @@ SOURCES = [
     ("meta", "Lolalytics: meta del parche", "Victorias, uso y baneos de cada campeón por línea y rango (una petición por línea al día).",
      "Etiquetas de meta, la pestaña «Meta y build» y un punto en la afinidad.", True),
     ("matchups", "Lolalytics: enfrentamientos", "Tabla de resultados de un campeón contra todos los demás en su línea (una descarga por rival, "
-     "se guarda un día).", "La pestaña «Enfrentamiento»: mejores picks contra un rival.", True),
+     "se guarda un día).", "La pestaña «Enfrentamiento»: mejores campeones contra un rival.", True),
     ("cdragon", "CommunityDragon", "Emblemas de rango.", "Solo decorativo.", False),
 ]

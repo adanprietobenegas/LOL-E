@@ -161,7 +161,7 @@ def death_sentence(dm):
     return None
 
 
-ZONAS = {"río": "el río", "jungla rival": "la jungla rival", "tu jungla": "tu jungla", "jungla": "la jungla"}
+ZONAS = {"río": "el río", "jungla rival": "la jungla rival", "jungla propia": "tu jungla", "jungla": "la jungla"}
 _CACHE = {}
 _NOW = {}      # cache_dir -> (instante, patrón): lo calculado se reutiliza unos segundos, porque el Plan se repinta a menudo
 

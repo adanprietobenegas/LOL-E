@@ -10,6 +10,19 @@ from ui_kit import PAL
 TIPOS = {"nuevo": ("NUEVO", "good"), "mejora": ("MEJORA", "info"), "arreglo": ("ARREGLO", "warn")}
 
 NOTES = [
+    {"v": "1.32.0", "fecha": "27 de noviembre de 2026", "titulo": "Lo que ya sabes de tus partidas, a la vista", "items": [
+        ("nuevo", 'Al acabar una partida de la Grieta, «Análisis» empieza con un resumen: resultado y puntos de liga, tu objetivo y una sola cosa a mejorar. «Ver el análisis completo» abre lo demás.'),
+        ("nuevo", 'Bajo el rival de línea ves tu historial contra ese campeón: partidas, victorias y cómo ibas en el minuto 10.'),
+        ("nuevo", 'Si juegas en dúo o en grupo, en la selección aparece cómo os va juntos, cómo te va sin esa persona y la pareja de campeones que mejor os ha salido.'),
+        ("nuevo", 'LOL-E analiza en segundo plano tus últimas partidas de la Grieta, solo fuera de cola y de partida: el objetivo ya no depende de haber jugado con la app abierta.'),
+        ("mejora", 'La gráfica de rango ya no estima nada: solo enseña tus PL reales y las fotos de op.gg. Si acabas de instalar LOL-E, ves además tus victorias y derrotas reales de las clasificatorias que guarda el cliente.'),
+        ("mejora", 'Bajo «Enviar runas al cliente» se avisa si lo que ves ya no es lo que enviaste.'),
+        ("mejora", 'Repasados los textos de toda la aplicación y muchos detalles visuales, sobre todo con la ventana estrecha.'),
+        ("arreglo", 'Si abres LOL-E con otra partida ya empezada, ya no enseña la build de la anterior.'),
+        ("arreglo", 'El envío automático de objetos ya no deja en el cliente una build antigua.'),
+        ("arreglo", 'Un corte del juego al terminar ya no pierde el análisis, y al cerrarlo la franja deja de decir que estás en partida.'),
+        ("arreglo", 'Una selección abandonada ya no aparece como «Última partida», y cada selección empieza por la mejor recomendación.'),
+    ]},
     {"v": "1.31.0", "fecha": "26 de noviembre de 2026", "titulo": "Envía tus runas al cliente", "items": [
         ("nuevo", "En la selección, bajo las runas, el botón «Enviar runas al cliente» las escribe en una página llamada «LOL-E · (tu campeón)» y la deja seleccionada. Si ya tienes una página que empiece por «LOL-E», la actualiza; si no y te queda hueco, la crea."),
         ("nuevo", "LOL-E nunca borra páginas de runas. Si no te queda ningún hueco, te lo dice: borra una en el cliente o ponle de nombre «LOL-E» a la que quieras ceder. Los hechizos no se envían."),
@@ -33,7 +46,7 @@ NOTES = [
         ("arreglo", "Los puntos de liga aparecen en «Tu última partida» en cuanto llegan, y tras un corte largo del juego se vuelve a leer tu historial."),
     ]},
     {"v": "1.29.0", "fecha": "26 de noviembre de 2026", "titulo": "Ideas de baneo desde el primer día", "items": [
-        ("nuevo", "Si en tus partidas ningún rival destaca todavía, en la fase de bans ves los campeones más jugados que más están ganando en tu línea este parche, con su porcentaje de victorias."),
+        ("nuevo", "Si en tus partidas ningún rival destaca todavía, en la fase de baneos ves los campeones más jugados que más están ganando en tu línea este parche, con su porcentaje de victorias."),
         ("arreglo", "Al terminar una partida ya no aparece el botón «Enviar al cliente», porque entonces no sirve."),
         ("arreglo", "En Campeones, la columna «Forma» solo aparece si cabe. En el Historial, los títulos de las columnas están justo encima de las filas."),
     ]},

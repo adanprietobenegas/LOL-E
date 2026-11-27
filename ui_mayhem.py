@@ -182,7 +182,7 @@ def build_block(ui, host, cid, mode_id, width):
             r = ui.frame(box)
             r.pack(fill="x", pady=4)
             ui.lbl(r, "HABILIDADES", 9, "dim", True, width=84, anchor="w").pack(side="left")
-            ui.lbl(r, " > ".join(d["skills"][:9]), 11, "warn", True).pack(side="left")
+            ui.lbl(r, "  ›  ".join(d["skills"][:9]), 11, ui.acc, True).pack(side="left")
         if mayhem and d.get("augments"):
             if augments.ensure_catalog(ui.conf, lambda: ui.notify("game_data")):
                 ui.lbl(box, "Cargando las mejoras del cliente…", 10, "dim").pack(anchor="w", pady=(12, 0))

@@ -429,7 +429,7 @@ class Board:
             cn = core.name(x["cid"], ui.champs)
             pts = (p.get("mastery") or {}).get(x["cid"], 0)
             rc = next((c for c in (p.get("stats") or {}).get("champs") or [] if c["c"] == x["cid"]), None)
-            txt = f"Con {cn}: " + (f"{rc['n']} partidas recientes, {round(100 * rc['w'] / rc['n'])} % de victorias" if rc else "ninguna partida reciente")
+            txt = f"Con {cn}: " + (f"{rc['n']} {'partida reciente' if rc['n'] == 1 else 'partidas recientes'}, {round(100 * rc['w'] / rc['n'])} % de victorias" if rc else "ninguna partida reciente")
             txt += f" · maestría {pts:,}".replace(",", ".") if pts else " · sin maestría"
             label(frame, txt, 10, True, ui.hexm(PAL["info"]) if pts >= 50000 else fg).pack(anchor="w", pady=(4, 0))
         if p.get("roles"):

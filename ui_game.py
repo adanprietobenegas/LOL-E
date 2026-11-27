@@ -366,6 +366,8 @@ class GameView:
         if not opp or not lane or opp not in ui.champs:
             return
         self.section("TU ENFRENTAMIENTO")
+        from ui_sections import rival_lines
+        rival_lines(ui, self.host, opp, plan.get("role"), cid, self.width - 110)
         key = (opp, plan.get("role"))
         st = self.vs.get(key)
         if isinstance(st, tuple) and time.time() - st[2] > 90:
@@ -425,7 +427,7 @@ class GameView:
             row = ui.frame(self.host)
             row.pack(fill="x", pady=2)
             ui.lbl(row, title.upper(), 9, "dim", True, width=96, anchor="w").pack(side="left", anchor="n", pady=(4, 0))
-            ui.lbl(row, text, 11, "fg", anchor="w", justify="left", wraplength=max(240, self.width - 250)).pack(side="left", fill="x", expand=True)
+            ui.lbl(row, text, 11, "fg", anchor="w", justify="left", wraplength=max(240, self.width - 190)).pack(side="left", fill="x", expand=True)
         ui.lbl(self.host, "Orientativo: sale de tus campeones y de la composición rival; no sustituye a la build del parche.", 9, "dim",
                anchor="w").pack(anchor="w", pady=(8, 0))
 

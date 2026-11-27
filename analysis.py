@@ -242,17 +242,17 @@ def advice_aram(a, champs=None):
     if m["pk"]:
         add("good", f"{'¡PENTAKILL!' if m['pk'] == 1 else str(m['pk']) + ' pentakills'}", "Cinco rivales abatidos seguidos.", "", 100)
     elif m["qk"]:
-        add("good", "Cuádruple muerte", "Casi un pentakill.", f"{m['qk']} vez/veces.", 80)
+        add("good", "Cuádruple asesinato", "Casi un pentakill.", "1 vez." if m["qk"] == 1 else f"{m['qk']} veces.", 80)
     elif m["tk3"]:
-        add("good", "Triple muerte", "", f"{m['tk3']} vez/veces.", 60)
+        add("good", "Triple asesinato", "", "1 vez." if m["tk3"] == 1 else f"{m['tk3']} veces.", 60)
     if m["ks"] >= 4:
-        add("good", f"Racha de {m['ks']} muertes sin morir", "", "", 58)
+        add("good", f"Racha de {m['ks']} asesinatos sin morir", "", "", 58)
     # --- participación
     kteam = sum(1 for k in a["kills"] if player(a, k["killer"]) and player(a, k["killer"])["team"] == a["team"])
     if kteam:
         kp = (m["k"] + m["a"]) / kteam
         add("good" if kp >= .65 else "info", "Participación en las peleas",
-            "Estuviste en casi todas las muertes de tu equipo." if kp >= .75 else "", f"Participaste en el {kp * 100:.0f} % de los asesinatos de tu equipo ({m['k'] + m['a']} de {kteam}).", 50 if kp >= .65 else 28)
+            "Estuviste en casi todos los asesinatos de tu equipo." if kp >= .75 else "", f"Participaste en el {kp * 100:.0f} % de los asesinatos de tu equipo ({m['k'] + m['a']} de {kteam}).", 50 if kp >= .65 else 28)
     # --- curación y control
     rh, _x = _rank(a, "heal", m["pid"])
     if m["heal"] >= 6000 or rh == 1 and m["heal"] >= 3000:
@@ -270,9 +270,9 @@ def advice_aram(a, champs=None):
         ib, iw = tg.index(max(tg)), tg.index(min(tg))
         best, worst, end = max(tg), min(tg), tg[-1]
         if best >= 2500 and end < best - 2000:
-            add("info", "Se escapó una ventaja", "", f"Ibais +{best:,} de oro a minuto {a['minutes'][ib]:.0f} y acabasteis en {_sg(end)}.".replace(",", "."), 64)
+            add("info", "Se escapó una ventaja", "", f"Ibais {best:,} de oro por delante en el minuto {a['minutes'][ib]:.0f} y acabasteis en {_sg(end)}.".replace(",", "."), 64)
         elif worst <= -2500 and end > worst + 2000:
-            add("good", "Remontada", "Aguantasteis y le disteis la vuelta a la partida.", f"Ibais {_sg(worst)} de oro a minuto {a['minutes'][iw]:.0f} y acabasteis en {_sg(end)}.", 74)
+            add("good", "Remontada", "Aguantasteis y le disteis la vuelta a la partida.", f"Ibais {_sg(worst)} de oro en el minuto {a['minutes'][iw]:.0f} y acabasteis en {_sg(end)}.", 74)
     # --- primera sangre
     if m["fb"]:
         add("good", "Primera sangre", "Fuiste el primero en abatir a un rival.", "", 44)
@@ -319,9 +319,9 @@ def advice(a, opp, champs=None):
     if o and role in ("TOP", "MIDDLE", "BOTTOM"):
         c10, oc10 = at(a, m["cs_s"], 10), at(a, o["cs_s"], 10)
         if c10 is not None and oc10 is not None:
-            data = f"Minuto 10: {c10} súbditos ({c10 / 10:.1f} por minuto) frente a {oc10} de {name(opp)}. Final: {m['cs']} frente a {o['cs']}."
+            data = f"Minuto 10: {c10} súbditos ({f'{c10 / 10:.1f}'.replace('.', ',')} por minuto) frente a {oc10} de {name(opp)}. Final: {m['cs']} frente a {o['cs']}."
             if c10 - oc10 <= -10:
-                add("bad", "Farmeo por debajo de tu rival", "Cada súbdito perdido son unos 20 de oro: intenta rematar con el ataque básico y no dejar morir olas.", data, 70)
+                add("bad", "Farmeo por debajo de tu rival", "Cada súbdito perdido son unos 20 de oro: intenta rematar con el ataque básico y no perder oleadas.", data, 70)
             elif c10 - oc10 >= 10:
                 add("good", "Farmeo por encima de tu rival", "Buen control de las olas.", data, 40)
             elif c10 < 55:
@@ -348,7 +348,7 @@ def advice(a, opp, champs=None):
                     break
         if len(costly) >= 2:
             add("bad", "Muertes que costaron objetivos", "Morir justo antes de un objetivo lo regala. Si no tienes visión o tu equipo no está, espera.",
-                "Tras tus muertes en los minutos " + ", ".join(f"{t:.0f} ({w})" for t, w in costly[:5]) + " el rival cogió un objetivo en menos de 45 s.", 85)
+                "El rival consiguió un objetivo menos de 45 s después de tus muertes en estos minutos: " + ", ".join(f"{t:.0f} ({w})" for t, w in costly[:5]) + ".", 85)
     if not deaths:
         add("good", "Sin muertes", "No moriste en toda la partida.", "", 50)
     elif o and m["d"] <= o["d"] - 3:
@@ -367,13 +367,13 @@ def advice(a, opp, champs=None):
         elif worst <= -2500 and end > worst + 2000:
             add("good", "Remontada", "Aguantasteis y le disteis la vuelta a la partida.", f"Ibais {_sg(worst)} de oro en el minuto {mins[iw]:.0f} y acabasteis en {_sg(end)}.", 55)
         elif abs(tg[i15]) >= 2000:
-            add("good" if tg[i15] > 0 else "bad", "Estado de la partida a minuto 15", "Quien llega por delante al medio de la partida suele marcar el ritmo.",
+            add("good" if tg[i15] > 0 else "bad", "Estado de la partida en el minuto 15", "Quien llega por delante a mitad de partida suele marcar el ritmo.",
                 f"Diferencia de oro de equipo en el minuto 15: {_sg(tg[i15])}.", 45)
     ours = [x for x in a["objectives"] if x["team"] == a["team"]]
     theirs = [x for x in a["objectives"] if x["team"] != a["team"]]
     if a["objectives"]:
         joined = sum(1 for x in ours if m["pid"] == x["killer"] or m["pid"] in x["assists"])
-        data = f"Tu equipo {len(ours)} y el rival {len(theirs)}. Tú participaste en {joined} de los {len(ours)} de tu equipo."
+        data = f"Objetivos: tu equipo, {len(ours)}; el rival, {len(theirs)}." + (f" Participaste en {joined} de los de tu equipo." if ours else "")
         weight = 75 if role in ("JUNGLE", "SUPPORT") else 38
         if len(ours) < len(theirs):
             add("bad", "Perdisteis la lucha por los objetivos épicos", "Dragones, Heraldo, Barón y larvas dan ventajas que se acumulan.", data, weight)
@@ -466,7 +466,7 @@ def average_lines(cmp, champ_name=""):
     out = [(f"KDA {fmt(ke)} frente a tu media de {fmt(km)} {donde}.", tono(ke, km))]
     if cmp.get("cspm"):
         ce, cm = cmp["cspm"]
-        out.append((f"Farmeo {fmt(ce)} cs/min frente a {fmt(cm)}.", tono(ce, cm)))
+        out.append((f"Farmeo: {fmt(ce)} súbditos por minuto frente a {fmt(cm)}.", tono(ce, cm)))
     if cmp.get("dpm"):
         de, dm = cmp["dpm"]
         out.append((f"Daño a campeones {round(de)} por minuto frente a {round(dm)}.", tono(de, dm)))

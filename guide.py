@@ -174,7 +174,7 @@ def duel(mine, opp, nm, no, attr_m=None, attr_o=None, dmg_o=""):
                                     f"plantea el intercambio con la corta y reserva la larga para rematar o escapar.", "fg"))
         else:
             lst = ", ".join(f"{s['k']} {cd_text(s)}" for s in d["spells"][:3] if s["cd"] and s["cd"][0])
-            out.append(("Ventana de trade", f"Enfriamientos de {n} (rango 1 → máx.): {lst}. Cuenta esos segundos desde que gaste o falle una habilidad: "
+            out.append(("Ventana de intercambio", f"Enfriamientos de {n} (rango 1 → máx.): {lst}. Cuenta esos segundos desde que gaste o falle una habilidad: "
                                             f"es el hueco para entrar. Las de enfriamiento largo ({long_['k']}, {cd_text(long_)}) te dan el hueco más grande.", "good"))
     ru = opp["spells"][3] if len(opp["spells"]) > 3 else None
     if ru and ru["cd"]:

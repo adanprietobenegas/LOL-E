@@ -19,7 +19,7 @@ from ui_build import build_panel
 from ui_pool import PoolPanel
 from lol_advisor import name
 import matchups
-from ui_kit import PAL, TIER_COLORS, ROLES_ES, PHASES, ON_FILL, REC_VIEWS, ctl, col, hexc, partidas, pct_es
+from ui_kit import flow, PAL, TIER_COLORS, ROLES_ES, PHASES, ON_FILL, REC_VIEWS, ctl, col, hexc, partidas, pct_es
 from ui_history import fecha as history_fecha_full, mode_of
 from ui_views import breakdown_rows, mini_bar, open_url, small_btn
 
@@ -413,7 +413,8 @@ class SummaryCard(Section):
     def lp_key(self):
         """Datos de la gráfica de rango (lp.json y las fotos de op.gg) y su huella, para repintar solo si cambian."""
         lp, snaps = lpseries.load_all(core.CACHE, core.snaps_path(self.ui.conf))
-        self.lp = (lp, snaps) if len(lp) + len(snaps) >= 3 else None
+        ranked = any(lpseries.ranked_results(self.hist or [], q) for q in ("solo", "flex"))
+        self.lp = (lp, snaps) if len(lp) + len(snaps) >= 3 or ranked else None
         return (len(lp), len(snaps), max(snaps) if snaps else "", self.hist[0]["id"] if self.hist else "") if self.lp else None
 
     # ---- estructura ----
@@ -740,7 +741,7 @@ class SummaryCard(Section):
             inner = ui.frame(row)
             inner.pack(fill="x", padx=12, pady=8)
             wr = m["wins"] / m["games"]
-            ui.lbl(inner, m["name"], 12, "fg", True, True, width=96, anchor="w").pack(side="left")
+            ui.lbl(inner, m["name"], 12, "fg", True, True, width=150, anchor="w").pack(side="left")
             ui.lbl(inner, partidas(m["games"]), 10, "dim", width=76, anchor="w").pack(side="left")
             ui.lbl(inner, f"{wr * 100:.0f} %", 13, "good" if wr >= .5 else "bad", True, True, width=44).pack(side="left")
             ui.lbl(inner, "▸", 9, "dim").pack(side="right", padx=(8, 0))
@@ -859,7 +860,7 @@ def comp_line(st):
 
 class TurnCard(Section):
     """Tu turno: icono de línea, estado, fases de la selección y cuenta atrás en anillo."""
-    STEPS = ["Planificación", "Bans", "Picks", "Final"]
+    STEPS = ["Planificación", "Baneos", "Elección", "Final"]
 
     def __init__(self, ui, parent):
         super().__init__(ui, parent)
@@ -872,7 +873,9 @@ class TurnCard(Section):
 
     def key(self, ctx):
         r, s = ctx["r"], ctx["session"]
-        return (r["turn"], s["timer"]["phase"], r["role"], self.step(s), r["mode"]["kind"], comp_line(r.get("enemy_stats")), comp_line(r.get("ally_stats")))
+        party = tuple(sorted(r.get("party") or ()))
+        return (r["turn"], s["timer"]["phase"], r["role"], self.step(s), r["mode"]["kind"], comp_line(r.get("enemy_stats")), comp_line(r.get("ally_stats")),
+                party, tuple(((ctx.get("players") or {}).get(p) or {}).get("name", "") for p in party))
 
     def build(self, ctx):
         ui, r, session = self.ui, ctx["r"], ctx["session"]
@@ -884,11 +887,14 @@ class TurnCard(Section):
         tk.Frame(row, width=4, bg=ui.hexm(PAL[st_col]) if st_col else ui.hexm(ui.acc)).pack(side="left", fill="y", padx=(0, 12))
         if sr and r["role"] in ROLES_ES:
             ctk.CTkLabel(row, image=ui.role_icon(r["role"], 56), text="").pack(side="left", padx=(0, 16))
+        self.timer_lbl = ctk.CTkLabel(row, text="")
+        self.timer_lbl.pack(side="right")   # primero: con un título largo y la ventana estrecha se quedaba sin sitio y no salía
         left = ui.frame(row)
         left.pack(side="left")
         turn = r["turn"]
         dot = {"ban": "bad", "pick": "good"}.get(turn, "dim")
-        waiting = "Planificación: marca tu campeón" if session["timer"]["phase"] == "PLANNING" else "Selección en curso"
+        planning = "Planificación" if ctx["width"] < 660 else "Planificación: marca tu campeón"
+        waiting = planning if session["timer"]["phase"] == "PLANNING" else "Selección en curso"
         title = {"ban": "Te toca banear", "pick": "Te toca elegir"}.get(turn, waiting)
         head = ui.frame(left)
         head.pack(anchor="w")
@@ -910,8 +916,7 @@ class TurnCard(Section):
                     ui.lbl(steps, "  ─  ", 9, "dim").pack(side="left")
         else:
             ui.lbl(left, f"{r['mode']['group'] or 'Otro modo'}  ·  sin roles ni bans", 11, "dim").pack(anchor="w", pady=(2, 0))
-        self.timer_lbl = ctk.CTkLabel(row, text="")
-        self.timer_lbl.pack(side="right")
+        duo_texts = self.duo_texts(ctx) if sr else []
         lines = [(t, v) for t, v in (("Rivales", comp_line(r.get("enemy_stats"))), ("Tu equipo", comp_line(r.get("ally_stats")))) if v] if sr else []
         if lines:
             box = ui.frame(c)
@@ -919,7 +924,26 @@ class TurnCard(Section):
             for who, text in lines:
                 ui.lbl(box, f"{who}: {text}", 11, "fg" if who == "Rivales" else "dim", anchor="w", justify="left",
                        wraplength=max(260, ctx["width"] - 110)).pack(anchor="w")
+        if duo_texts:
+            box = ui.frame(c)
+            box.pack(fill="x", pady=(8, 0))
+            for text in duo_texts:
+                ui.lbl(box, text, 11, "fg", anchor="w", justify="left", wraplength=max(260, ctx["width"] - 110)).pack(anchor="w")
         self.tick(ctx)
+
+    def duo_texts(self, ctx):
+        """Tu historial con quien va contigo en el grupo (duo.py): como mucho dos personas, para no alargar la cabecera."""
+        out = []
+        try:
+            import duo
+            r, players_ = ctx["r"], ctx.get("players") or {}
+            rivals_ = {e.get("puuid") for e in r.get("enemy_cells") or []}   # en clasificatoria el cliente puede no dar el identificador de tus aliados
+            for pu in sorted(set(r.get("party") or ()) - rivals_)[:2]:
+                who = (players_.get(pu) or {}).get("name") or "tu dúo"
+                out += duo.lines(core.CACHE, pu, who, lambda c: name(c, self.ui.champs))
+        except Exception:
+            core.log_exc("Historial con tu dúo")
+        return out
 
     def tick(self, ctx):
         """Solo cambia la imagen del anillo: no se repinta nada más."""
@@ -930,6 +954,21 @@ class TurnCard(Section):
         img = self.ui.ring(0 if inf else secs / total, 58, "∞" if inf else str(secs), "bad" if secs <= 8 and not inf else self.ui.acc)
         self.timer_lbl.configure(image=img)
         self.timer_lbl.image = img
+
+
+def rival_lines(ui, parent, opp, role, cid, width):
+    """«Tu historial contra X» (rivals.py): solo si has jugado contra él en esta línea."""
+    if not opp or opp not in ui.champs:
+        return
+    try:
+        import rivals
+        texts = rivals.lines(core.CACHE, opp, role, cid, name(opp, ui.champs))
+    except Exception:
+        core.log_exc("Tu historial contra el rival")
+        return
+    for n, text in enumerate(texts):
+        ui.lbl(parent, text, 11 if not n else 10, "fg" if not n else "dim", not n, anchor="w", justify="left",
+               wraplength=max(240, width)).pack(anchor="w", pady=(0, 8 if n == len(texts) - 1 else 0))
 
 
 class MyPick(Section):
@@ -978,11 +1017,26 @@ class MyPick(Section):
                            ui.opp_now(), ui.set_opp, ctx["width"] - 110)
         if pk is not None:
             pk.pack(fill="x", pady=(0, 12))
+        rival_lines(ui, c, r["lane_opp"], r["role"], cid, ctx["width"] - 110)
         build_panel(ui, c, cid, lane, r["lane_opp"] or None, ctx["width"] - 110, r.get("enemy_stats")).pack(fill="x")
         import ui_claves
         ui_claves.block(ui, c, cid, ctx["width"] - 110)
         import ui_guide
         ui_guide.guide_block(ui, c, cid, r["lane_opp"] or None, lane, ctx["width"])
+
+
+def jump_buttons(ui, box, items, width):
+    """Los botones de «Ir a» en tantas filas como hagan falta según lo que mide cada nombre. `items`: [(nombre, acción)]."""
+    font, sx = ui.tkf(11, False, False), ui.scale_px()
+    widths = [font.measure(n) / sx + 24 for n, _cmd in items]
+    for r, idx in enumerate(flow(widths, max(160, width - 80))):
+        row = ui.frame(box)
+        row.pack(fill="x", pady=(0, 6))
+        ui.lbl(row, "IR A" if r == 0 else "", 9, "dim", True, width=34, anchor="w").pack(side="left", padx=(10, 8))
+        for i in idx:
+            name_, cmd = items[i]
+            ctk.CTkButton(row, text=name_, width=0, height=26, corner_radius=13, font=ui.font(11), fg_color=PAL["card2"], text_color=PAL["fg"],
+                          hover_color=PAL["border"], command=cmd).pack(side="left", padx=(0, 6))
 
 
 class JumpBar(Section):
@@ -997,22 +1051,14 @@ class JumpBar(Section):
         return [(n, s) for n, s in self.targets if s.box.winfo_children()]   # (la altura aún no se ha calculado justo tras repintar: se mira si hay contenido)
 
     def key(self, ctx):
-        return tuple(n for n, _s in self.present()) + (ctx["r"]["mode"]["kind"], ctx["width"] < 660)
+        return tuple(n for n, _s in self.present()) + (ctx["r"]["mode"]["kind"], int(ctx["width"]) // 40)
 
     def build(self, ctx):
         items = self.present()
         if len(items) < 2:
             self.box.configure(height=1)
             return
-        per = 3 if ctx["width"] < 660 else len(items)   # estrecha: dos filas, para que no se corten los últimos
-        row = None
-        for i, (n, s) in enumerate(items):
-            if i % per == 0:
-                row = self.ui.frame(self.box)
-                row.pack(fill="x", pady=(0, 6))
-                self.ui.lbl(row, "IR A" if i == 0 else "", 9, "dim", True, width=34, anchor="w").pack(side="left", padx=(2, 8))
-            ctk.CTkButton(row, text=n, width=0, height=26, corner_radius=13, font=self.ui.font(11), fg_color=PAL["card2"], text_color=PAL["fg"],
-                          hover_color=PAL["border"], command=lambda s=s: self.go(s)).pack(side="left", padx=(0, 6))
+        jump_buttons(self.ui, self.box, [(n, lambda s=s: self.go(s)) for n, s in items], ctx["width"])
 
     def go(self, sec):
         """Baja (o sube) hasta el bloque, dejando su cabecera en lo alto de la ventana."""
@@ -1037,8 +1083,8 @@ class BanIdeas(Section):
             for n, wr, cid in threats:
                 cell = ui.frame(row)
                 cell.pack(side="left", padx=(0, 16))
-                ui.champ(cell, cid, 40, False, "#ff5a5f").pack(side="left")
-                ui.lbl(cell, f"{n}\n{wr:.1f} %".replace(".", ","), 10, "bad").pack(side="left", padx=8)
+                ui.champ(cell, cid, 40, False, None).pack(side="left")
+                ui.lbl(cell, f"{n}\n{wr:.1f} %".replace(".", ","), 10, "dim", justify="left", anchor="w").pack(side="left", padx=8)
             ui.lbl(c, "Ningún rival de tu línea destaca todavía en tus partidas: son datos de todos los jugadores (Lolalytics).", 9, "dim",
                    anchor="w", justify="left", wraplength=max(240, ctx["width"] - 110)).pack(anchor="w", pady=(6, 0))
             return
@@ -1426,7 +1472,7 @@ class Recs(Section):
             mid.pack(side="left", fill="x", expand=True, padx=12)
             ui.lbl(mid, f"{i}.  {name(c['cid'], ui.champs)}", 14, "fg", True, True).pack(anchor="w")
             if not compact:
-                ui.chips(mid, c["why"] or ["encaja con tu rol"])
+                ui.chips(mid, c["why"] or ["encaja con tu rol"], 1 if self.width < 660 else 3)
             if not compact:
                 ui.clickable(row, lambda i=i: (self.set_view("carrusel"), self.pick(i - 1)))
 
@@ -1697,9 +1743,10 @@ class Recs(Section):
         row = ui.frame(body)
         row.pack(fill="x", pady=(0, 8))
         g, w, m = c["games"], c["wins"], c["mastery"]
-        ui.kpi(row, f"{m // 1000}k" if m else "—", "maestría")
+        if m:
+            ui.kpi(row, f"{m // 1000}k", "maestría")
         ui.kpi(row, f"{w} de {g}" if g else "—", "victorias")
-        ui.kpi(row, f"{w / g:.0%}" if g else "—", "% de victorias")
+        ui.kpi(row, f"{round(100 * w / g)} %" if g else "—", "% de victorias")
         # (la afinidad no se repite aquí: ya está en el anillo de la imagen y en la miniatura)
         bw = 170 if self.width < 560 else 300 if self.width < 900 else 400
         col = ui.frame(body)
@@ -1739,7 +1786,7 @@ class Recs(Section):
                 self.vs_row(body, opp, lane[1], lane[2], 40)
             else:
                 ui.lbl(body, f"Aún no has jugado con {name(c['cid'], ui.champs)} contra {name(opp, ui.champs)}: no hay datos tuyos de este "
-                             "enfrentamiento. Los de todos los jugadores están en la pestaña «Enfrentamiento».", 11, "dim", anchor="w", wraplength=400,
+                             "enfrentamiento. Los de todos los jugadores están en la pestaña «Enfrentamiento».", 11, "dim", anchor="w", wraplength=max(220, min(400, self.width - 130)),
                        justify="left").pack(anchor="w")
         else:
             ui.lbl(body, "Tu rival de línea todavía no ha elegido campeón.", 11, "dim").pack(anchor="w")
@@ -1756,7 +1803,7 @@ class Recs(Section):
         items = c["syn"]["items"]
         if not items:
             ui.lbl(body, "Aún no hay aliados elegidos. Las sinergias aparecerán según vayan eligiendo.", 11, "dim",
-                   anchor="w", wraplength=400, justify="left").pack(anchor="w")
+                   anchor="w", wraplength=max(220, min(400, self.width - 130)), justify="left").pack(anchor="w")
             return
         s = c["syn"]["score"]
         level, color = ("Alta", "good") if s >= .35 else ("Media", "info") if s >= 0 else ("Baja", "bad")
@@ -1791,14 +1838,14 @@ class Recs(Section):
             ui.kpi(row, f"{m['games'] / 1000:.0f} k" if m["games"] >= 1000 else str(m["games"]), "partidas")
             d = m["wr"] - mi["avg"]
             ui.lbl(body, f"Parche {mi['patch']}{' (el ' + mi['current'] + ' aún no tiene datos suficientes)' if mi['stale'] else ''} · {mi['tier_name']} · media de la línea {pct_es(mi['avg'])} % "
-                         f"({'+' if d >= 0 else '−'}{pct_es(abs(d))} puntos)", 10, "dim", anchor="w", wraplength=400,
+                         f"({'+' if d >= 0 else '−'}{pct_es(abs(d))} puntos)", 10, "dim", anchor="w", wraplength=max(220, min(400, self.width - 130)),
                    justify="left").pack(anchor="w", pady=(0, 8))
         elif self.kind() == "sr":
             why = ("El meta del parche está desactivado: actívalo en «Datos» (se abre desde Ajustes)." if not ui.conf.get("meta_enabled", True)
                    else "El meta del parche aún se está descargando; aparecerá solo en unos segundos." if not core.META.get("data")
                    else "Este campeón casi no se juega en tu línea este parche: no hay datos de meta fiables.")
             ui.lbl(body, why, 10,
-                   "dim", anchor="w", wraplength=400, justify="left").pack(anchor="w", pady=(0, 8))
+                   "dim", anchor="w", wraplength=max(220, min(400, self.width - 130)), justify="left").pack(anchor="w", pady=(0, 8))
         lane = {"TOP": "top", "JUNGLE": "jungle", "MIDDLE": "middle", "BOTTOM": "bottom", "SUPPORT": "support"}.get(self.r.get("role"))
         if self.kind() == "sr" and lane:
             build_panel(ui, body, c["cid"], lane, self.r.get("lane_opp") or None, min(self.width - 120, 720), self.r.get("enemy_stats")).pack(fill="x", pady=(2, 8))
@@ -1891,7 +1938,11 @@ class Lobby(Section):
             ui.chip(head, "Dúo contigo" if party_n == 1 else "Tu grupo", "info").pack(side="left", padx=(8, 0))
         if mates and mates[0]:
             g, w = mates
-            ui.chip(head, f"Juntos {w}V {g - w}D", "good" if w * 2 >= g else "bad").pack(side="left", padx=(8, 0))
+            host_ = head
+            if getattr(self, "width", 900) < 640 and in_party:   # estrecha: con «Dúo contigo» delante, «Juntos» se aplastaba; va en su propia fila
+                host_ = ui.frame(mid)
+                host_.pack(anchor="w", pady=(2, 0))
+            ui.chip(host_, f"Juntos {w}V {g - w}D", "good" if w * 2 >= g else "bad").pack(side="left", padx=(0 if host_ is not head else 8, 0))
         if p and not p.get("error"):
             if not rk and len(p.get("recent", [])) < 4:
                 ui.chip(head, "Sin rango ni historial", "warn").pack(side="right")

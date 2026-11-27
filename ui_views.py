@@ -476,7 +476,7 @@ class MatchupView:
             if det:
                 txt = "  ·  ".join(f"{ui.champs[c]['name']} {w}V {gg - w}D" for c, gg, w in det[:3] if c in ui.champs)
                 if txt:
-                    ui.lbl(mid, "Con " + txt, 9, "dim", anchor="w").pack(anchor="w")
+                    ui.lbl(mid, "Con " + txt, 9, "dim", anchor="w", justify="left", wraplength=180 if narrow else 600).pack(anchor="w")
             if g < 5:
                 ui.lbl(mid, "Pocas partidas: es solo una pista.", 9, "dim", anchor="w").pack(anchor="w")
         if self.enemy:
@@ -673,7 +673,7 @@ class MatchupView:
             ui.champ(inner, r["cid"], 28, False).pack(side="left", padx=(0, 8))
             ui.lbl(inner, ui.champs[r["cid"]]["name"], 12, "fg", True, width=130 - 0, anchor="w").pack(side="left")
             if lv >= 2:
-                mini_bar(ui, inner, (r["wr"] - 40) / 25, "good" if ok else "bad", 140).pack(side="left", padx=(0, 16))
+                mini_bar(ui, inner, (r["wr"] - 40) / 25, "good" if ok else "bad", 110).pack(side="left", padx=(0, 16))
             ui.lbl(inner, f"{pct_es(r['wr'])} %", 12, "good" if ok else "bad", True, True, width=64, anchor="w").pack(side="left")
             if lv >= 2:
                 ui.lbl(inner, f"{'+' if r['delta'] >= 0 else '−'}{pct_es(abs(r['delta']))}", 11, "good" if r["delta"] >= 0 else "bad",
@@ -878,7 +878,7 @@ class DataView:
         ui.lbl(txt, "Ajustes avanzados bloqueados" if self.locked else "Edición desbloqueada", 12, "warn" if self.locked else "good",
                True, anchor="w").pack(anchor="w")
         msg = ("Estos números cambian cómo se ordenan tus recomendaciones. Si no tienes experiencia o no sabes qué estás haciendo, lo "
-               "recomendable es dejarlos como están. Así evitas moverlos sin querer al hacer scroll."
+               "recomendable es dejarlos como están. Así evitas moverlos sin querer al desplazarte."
                if self.locked else
                "Cualquier cambio altera tus recomendaciones. Puedes volver a los valores por defecto cuando quieras.")
         ui.lbl(txt, msg, 10, "dim", anchor="w", justify="left", wraplength=max(200, self.wl - (110 if narrow else 230))).pack(anchor="w")

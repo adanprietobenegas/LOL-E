@@ -149,7 +149,7 @@ def describe(data, lane, cid):
                    "Señal posible: con una sola región líder, el uso en EUW subió después en cerca de 1 de cada 10 casos.")
     if not out:
         if e["pr"] < 0.3:
-            out.append(f"Pick marginal en {nm}: {pct(e['pr'])} % de uso (parche anterior: {pct(e['pp'])} %). Sin señales de que vaya a más en las "
+            out.append(f"Poco usado en {nm}: {pct(e['pr'])} % de uso (parche anterior: {pct(e['pp'])} %). Sin señales de que vaya a más en las "
                        f"regiones que suelen ir por delante; con {e['g']} partidas este parche la muestra es pequeña.")
         else:
             out.append(f"Uso estable en {nm}: {pct(e['pr'])} % (parche anterior: {pct(e['pp'])} %).")

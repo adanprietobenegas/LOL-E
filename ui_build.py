@@ -253,7 +253,8 @@ def other_source(ui, parent, d, champs, cid, width, lane, again):
             ui.lbl(cell, f"{r['pr']:.0f} % · {r['wr']:.1f} %".replace(".", ","), 9, "dim").pack(side="left")
     if o.get("skills"):
         b = _row(ui, parent, "Habilidades")
-        ui.lbl(b, " > ".join(o["skills"]) + "  (orden de subida más jugado según op.gg; la R siempre que puedas)", 10, "fg", anchor="w").pack(anchor="w")
+        ui.lbl(b, " › ".join(o["skills"]) + "  (orden de subida más jugado según op.gg; la R siempre que puedas)", 10, "fg", anchor="w", justify="left",
+               wraplength=max(200, width - 140)).pack(anchor="w")
     ui.lbl(parent, "Los porcentajes de uso y victorias de cada web salen de su propia muestra y su filtro de rango; compara el orden, no las cifras. "
                    "LeagueOfGraphs no se consulta: bloquea las lecturas automáticas.", 9, "dim", anchor="w", justify="left",
            wraplength=max(240, width - 60)).pack(anchor="w", pady=(8, 0))
@@ -410,7 +411,7 @@ def build_blocks(ui, d, cid, lane, ens):
     return blocks
 
 
-_SENT = {}  # (uid, contenido) -> True: lo que ya se envió solo, para no repetirlo en cada repintado
+_SENT = {}  # uid -> lo último enviado con él: no se repite en cada repintado, pero sí si el cliente tiene ahora otra cosa
 
 
 def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
@@ -437,8 +438,13 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
         if res.get("state") == "done":
             msg.configure(text=res["msg"])
             btn.configure(state="normal")
+            if not res.get("ok"):
+                _SENT.pop(uid, None)   # no llegó: se puede volver a intentar solo
+
+    content = (title, tuple((n, tuple(i)) for n, i in blocks))
 
     def go():
+        _SENT[uid] = content
         btn.configure(state="disabled")
         msg.configure(text="Enviando al cliente…")
         itemset.send_async(ui.conf, uid, title, cid, blocks, res, champs[cid].get("icon"))
@@ -464,9 +470,7 @@ def export_row(ui, parent, d, champs, cid, enemy, lane, blocks):
     ui.tip(sw, explica)
 
     def go_auto():
-        key = (uid, title, tuple((n, tuple(i)) for n, i in blocks))
-        if not _SENT.get(key):
-            _SENT[key] = True
+        if _SENT.get(uid) != content:
             go()
     if ui.conf.get("auto_itemset"):
         row.after(400, go_auto)
@@ -515,13 +519,27 @@ def rune_icons(ui, parent, rn, rd, width):
         txt = f"{kn}" + (f" ({tree})" if tree else "") + (f"  +  {(rd.get('trees') or {}).get(sec_tree)}" if sec_tree else "")
         ui.lbl(parent, txt, 10, "dim", anchor="w", wraplength=max(200, width - 140), justify="left").pack(anchor="w", pady=(4, 0))
     for title, text in rune_names(rn, rd):   # por su nombre: las pones tú en el cliente y pasar el ratón icono a icono es lento
-        ui.lbl(parent, f"{title}: {text}", 10, "fg", anchor="w", wraplength=max(200, width - 140), justify="left").pack(anchor="w")
+        ui.lbl(parent, f"{title}: {text}", 10, "fg", anchor="w", wraplength=max(240, width - 40), justify="left").pack(anchor="w")
 
 
 OPEN_RUNES = set()   # (campeón, línea, rival) cuyo pliegue «Runas, hechizos e inicio» está abierto: cualquier repintado lo volvía a cerrar
 
 
 _RUNE_SENT = {}   # (campeón, línea, rival, página) -> resultado del último envío: un repintado no borra el aviso
+_RUNE_LAST = {}   # {"ids": [...]}: las runas que se enviaron bien por última vez en esta selección (las que tiene ahora el cliente)
+
+
+def rune_note(ids, res, last):
+    """(frase, ¿es un aviso?) bajo el botón de runas: si cambias de rival o de página después de enviar, lo que hay en el cliente ya no es lo que ves."""
+    if res.get("state") == "sending":
+        return "Enviando las runas…", False
+    if res.get("state") == "done" and not res.get("ok"):   # el motivo del fallo manda: antes lo tapaba el aviso de «tienes las anteriores»
+        return res.get("msg", ""), True
+    if last and sorted(last) != sorted(ids):
+        return "En el cliente están las que enviaste antes: pulsa para cambiarlas por estas.", True
+    if res.get("state") == "done":
+        return res.get("msg", ""), False
+    return ("Estas son las que enviaste.", False) if last else ("", False)
 
 
 def rune_send_row(ui, parent, champs, cid, rn, rd, key, width):
@@ -532,29 +550,29 @@ def rune_send_row(ui, parent, champs, cid, rn, rd, key, width):
     row = ui.frame(parent)
     row.pack(anchor="w", fill="x", pady=(8, 0))
     res = _RUNE_SENT.setdefault(key, {})
+    ids = [rn["keystone"]] + list(rn["primary"]) + list(rn["secondary"]) + list(rn["shards"])
 
     def paint():
         if not row.winfo_exists():
             return
         sending = res.get("state") == "sending"
         btn.configure(state="disabled" if sending else "normal")
-        msg.configure(text="Enviando las runas…" if sending else res.get("msg", ""),
-                      fg=ui.hexm(PAL["dim"] if sending or res.get("ok") else PAL["warn"]))
+        text, warn = rune_note(ids, res, _RUNE_LAST.get("ids"))
+        msg.configure(text=text, fg=ui.hexm(PAL["warn" if warn else "dim"]))
         if sending:
             row.after(300, paint)
 
     def go():
-        runesend.send_async(ui.conf, champs[cid]["name"], rn, rd, res)
+        runesend.send_async(ui.conf, champs[cid]["name"], rn, rd, res, sent=lambda: _RUNE_LAST.update(ids=ids))
         paint()
     btn = ctk.CTkButton(row, text="Enviar runas al cliente", height=28, width=180, corner_radius=8, font=ui.font(11, True), fg_color=ui.acc,
                         text_color=ON_FILL, text_color_disabled=ON_FILL, command=go)
     btn.pack(anchor="w")
     msg = ui.lbl(row, "", 10, "dim", anchor="w", justify="left", wraplength=max(200, width - 140))
     msg.pack(anchor="w", fill="x", pady=(2, 0))
-    ui.tip(btn, "Escribe estas runas en una página llamada «LOL-E» de tu cliente y la selecciona. Si no hay hueco, no borra ninguna: te lo dice. "
+    ui.tip(btn, "Escribe estas runas en una página de tu cliente llamada «LOL-E · campeón» y la selecciona. Si no hay hueco, no borra ninguna: te lo dice. "
                 "Los hechizos no se envían.")
-    if res:
-        paint()
+    paint()
 
 
 def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None, in_game=False, send=False):
@@ -599,7 +617,7 @@ def render(ui, parent, d, champs, cid, enemy, width, lane=None, again=None, in_g
             cur = cur if cur in names else names[0]
             _RUNE_PICK[pick_key] = cur
             if len(pages) > 1:
-                ui.seg(holder, names, cur, lambda v: paint_runes(v), height=26).pack(fill="x", pady=(0, 8))
+                ui.seg(holder, names, cur, lambda v: paint_runes(v), height=26).pack(anchor="w", pady=(0, 8))   # compacto: no se confunde con el de la build
             page = next(p for p in pages if p["label"] == cur)
             rune_icons(ui, holder, page["runes"], rd, width)
             if page.get("wr"):

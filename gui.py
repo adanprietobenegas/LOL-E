@@ -25,7 +25,7 @@ from ui_game import GameView
 from ui_patch import PatchView
 from ui_draft import DraftCard
 from ui_mayhem import AramBuild
-from ui_sections import (JumpBar, CounterPicks, TourOffer,SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
+from ui_sections import (JumpBar, jump_buttons, CounterPicks, TourOffer,SummaryCard, AchievementsCard, BanIdeas, BansRow, Enemies, Lobby, ModesCard, PoolCard, ProfileCard, ProfileStrip, Recs, TurnCard, MyPick,
                          WaitCard)
 
 DOCK_W = 360
@@ -265,8 +265,10 @@ class GUI:
         if hasattr(self, "help_win") and self.help_win.alive():
             self.help_win.refresh_page(self.tab_names.get(self.page))
 
+    band_back = False   # el botón de la franja lleva a la selección (aún sin campeón: no hay plan que ver)
+
     def band_click(self):
-        self.set_page("Asesor" if self.page == "partida" else "Partida")
+        self.set_page("Asesor" if self.page == "partida" or self.band_back else "Partida")
 
     def update_band(self):
         """Estado del modo en vivo: tiñe la barra lateral y muestra (o esconde) la banda de arriba con la fase, el campeón y el botón de ir y volver."""
@@ -290,8 +292,9 @@ class GUI:
         except Exception:
             clock = ""
         # el botón solo si lleva a algo: en cola aún no hay partida que ver, y en la selección sin campeón marcado no hay plan
-        nowhere = self.page != "partida" and (phase in ("Matchmaking", "ReadyCheck") or (selecting and not champ))
-        sig = (live, label, champ, self.page == "partida", clock, nowhere)
+        self.band_back = selecting and not champ and self.page not in ("partida", "asesor")
+        nowhere = self.page != "partida" and (phase in ("Matchmaking", "ReadyCheck") or (selecting and not champ)) and not self.band_back
+        sig = (live, label, champ, self.page == "partida", clock, nowhere, self.band_back)
         if sig == self.band_sig:
             return
         self.band_sig = sig
@@ -303,7 +306,9 @@ class GUI:
             self.band_btn.pack_forget()
         elif not self.band_btn.winfo_manager():
             self.band_btn.pack(**self.band_btn_pack)
-        if self.page == "partida":
+        if self.band_back:
+            self.band_btn.configure(text="Ir a la selección")
+        elif self.page == "partida":
             self.band_btn.configure(text="Volver a la selección" if selecting else "Ir a Inicio")
         else:
             self.band_btn.configure(text="Ver mi plan" if selecting else "Ver mi partida")
@@ -437,9 +442,11 @@ class GUI:
         MyPick.opened.clear()   # las builds abiertas a mano son de la selección anterior
         if getattr(self, "recs", None) is not None:
             self.recs.unfolded = None   # y las recomendaciones vuelven a plegarse al bloquear
+            self.recs.sel, self.recs.keep_cid = 0, None   # empiezan por la mejor opción, no por la tarjeta que mirabas antes (la lista no se vacía: aún puede repintarse)
         import ui_build, ui_mayhem
         ui_build.OPEN_RUNES.clear()
         ui_build._RUNE_SENT.clear()   # «Runas enviadas» de la selección anterior no vale para esta
+        ui_build._RUNE_LAST.clear()
         ui_mayhem.OPEN_MORE.clear()
         pl = c.get("plan")
         if pl and pl.get("state") in ("select", "game"):
@@ -462,7 +469,14 @@ class GUI:
     def on_phase(self, flow):
         plan = self.ctx.get("plan")
         if plan and plan.get("state") == "select" and flow in ("Lobby", "Matchmaking", "ReadyCheck", "None", None):
-            plan["state"] = "done"   # la selección se abandonó (esquive, cola cancelada): ese plan ya no es de una selección en curso
+            plan = self.ctx["plan"] = None   # la selección se abandonó (esquive, cola cancelada): no hubo partida, así que tampoco «Última partida»
+            try:
+                os.remove(os.path.join(CACHE, "last_plan.json"))
+            except OSError:
+                pass
+            self.game_view.sig = None
+            if self.view == "game":
+                self.game_view.refresh(self.make_ctx(), True)
         elif plan and plan.get("state") == "game" and flow in ("Matchmaking", "ReadyCheck"):
             plan["state"] = "done"   # ya se está en otra cola: la partida anterior acabó aunque no se vieran las fases de fin (cliente cerrado o reiniciado)
         if flow in ("Matchmaking", "ReadyCheck", "ChampSelect") and self.ctx.get("phase") not in ("Matchmaking", "ReadyCheck", "ChampSelect"):
@@ -505,6 +519,12 @@ class GUI:
         los rivales reales, su línea y tu rival directo (sin adivinar)."""
         self.ctx["roster"], self.ctx["roster_pl"] = ros, dict(known or {})
         plan = self.ctx.get("plan")
+        had_plan = bool(plan)
+        mine = next((x for x in ros if x["me"]), None)
+        if mine and mine["cid"] and self.ctx.get("phase") in ("InProgress", "GameStart", "Reconnect") and (not plan or plan.get("cid") != mine["cid"]):
+            # LOL-E se abrió (o el cliente volvió) con otra partida en marcha: el plan guardado es de una anterior, se rehace con lo que juegas ahora
+            plan = self.ctx["plan"] = {"cid": mine["cid"], "role": mine["role"], "opp": 0, "opp_auto": 0, "enemies": [], "allies": [], "locked": True,
+                                       "state": "game", "kind": "sr", "group": "", "mayhem": False, "qid": 0}
         if plan and plan.get("kind") in (None, "sr"):
             enemies = [x["cid"] for x in ros if x["team"] == "enemy" and x["cid"]]
             me = next((x for x in ros if x["me"]), None)
@@ -522,7 +542,7 @@ class GUI:
                 core.write_json(os.path.join(CACHE, "last_plan.json"), plan)
             except Exception:
                 pass
-        if not plan and self.page == "asesor" and self.view in ("idle", None):   # sin campeón marcado: igualmente se enseña la partida
+        if not had_plan and self.page == "asesor" and self.view in ("idle", None):   # sin campeón marcado: igualmente se enseña la partida
             self.auto_game = True
             self.page = "partida"
             self.tab_seg.set("Partida")
@@ -579,7 +599,7 @@ class GUI:
                     if self.view == "select":
                         self.infer_lane_opp()
                         cx = self.make_ctx()
-                        for sec in (self.lobby, self.enemies, self.draft):
+                        for sec in (self.turn, self.lobby, self.enemies, self.draft):
                             sec.refresh(cx)
                 elif kind == "call":   # una función que otro hilo pide ejecutar en el de la ventana
                     ev[1]()
@@ -621,11 +641,13 @@ class GUI:
                     self.update_link()
                     if ev[1]:   # análisis pedidos sin cliente (p. ej. desde «Tu última partida»): se vuelven a pedir ahora
                         gv = self.game_view
-                        waiting = [k_ for k_, v_ in gv.data.items() if v_ == "cargando"]
+                        waiting = [k_ for k_, v_ in gv.data.items() if v_ in ("cargando", "no")]
                         for k_ in waiting:
                             del gv.data[k_]
                         if waiting:
                             gv.sig = None
+                    if not ev[1]:
+                        self.ctx["phase"], self.band_sig = None, None   # sin cliente no hay cola ni partida que anunciar
                     if not ev[1] and self.advisor == "select":
                         self.leave_select()
                     if self.view == "idle":
@@ -1118,7 +1140,7 @@ class GUI:
         self.lobby = Lobby(k, self.select_view)
         self.enemies = Enemies(k, self.select_view)
         self.counter_picks = CounterPicks(k, self.select_view)   # los mejores campeones contra cada rival, aparte de la afinidad
-        self.jump.targets = [("Tu build", self.aram_build), ("Tu campeón", mypick), ("Recomendaciones", self.recs), ("Contrarrestos", self.counter_picks), ("Tu equipo", self.lobby), ("Rivales", self.enemies)]
+        self.jump.targets = [("Tu build", self.aram_build), ("Tu campeón", mypick), ("Recomendaciones", self.recs), ("Contra rivales", self.counter_picks), ("Tu equipo", self.lobby), ("Rivales", self.enemies)]
         bans = BansRow(k, self.select_view)
         self.sec = {"turn": self.turn, "draft": self.draft, "mypick": mypick, "ideas": ideas, "aram": self.aram_build, "recs": self.recs,
                     "counter": self.counter_picks, "lobby": self.lobby, "enemies": self.enemies, "bans": bans}
@@ -1293,15 +1315,7 @@ class GUI:
         if len(anchors) < 2:
             box.configure(height=1)   # un contenedor vacío conserva su tamaño: se colapsa a mano
             return
-        per = 3 if width < 660 else len(anchors)
-        row = None
-        for i, (n, mark) in enumerate(anchors):
-            if i % per == 0:
-                row = self.kit.frame(box)
-                row.pack(fill="x", pady=(0, 6))
-                self.kit.lbl(row, "IR A" if i == 0 else "", 9, "dim", True, width=34, anchor="w").pack(side="left", padx=(2, 8))
-            ctk.CTkButton(row, text=n, width=0, height=26, corner_radius=13, font=self.kit.font(11), fg_color=PAL["card2"], text_color=PAL["fg"],
-                          hover_color=PAL["border"], command=lambda m=mark: self.go_to(m)).pack(side="left", padx=(0, 6))
+        jump_buttons(self.kit, box, [(n, lambda m=mark: self.go_to(m)) for n, mark in anchors], width)
 
     def go_to(self, widget):
         """Desplaza el cuerpo hasta dejar `widget` en lo alto de la ventana."""
@@ -1726,7 +1740,7 @@ class GUI:
             lambda v: (self.set("rail_mode", rails[v], redraw=False), self.layout_main()))
         note("«Automática»: muestra los nombres si la ventana es ancha y solo iconos si es estrecha.")
         switch("Animaciones y transiciones", "animations")
-        note("Desactívalas si prefieres cambios instantáneos o tu equipo va justo.")
+        note("Desactívalas si prefieres cambios instantáneos o tu ordenador va justo.")
         label("Ventana siempre por encima de las demás")
         tops = {"Nunca": "nunca", "En la selección": "seleccion", "Siempre": "siempre"}
         seg(list(tops), {v: k_ for k_, v in tops.items()}.get(conf.get("topmost_mode", "seleccion"), "En la selección"),

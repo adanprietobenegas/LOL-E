@@ -58,7 +58,7 @@ def apply(lcu, body):
     back = lcu.get(f"{PAGES}/{pid}") or {}
     if sorted(back.get("selectedPerkIds") or []) != sorted(body["selectedPerkIds"]) or back.get("isValid") is False:   # el cliente puede reordenarlas
         return False, "El cliente no ha guardado las runas: compruébalas antes de empezar."
-    return True, f"Runas enviadas a la página «{body['name']}» y seleccionada. Compruébala antes de que acabe la selección."
+    return True, f"Runas enviadas a la página «{body['name']}», que queda seleccionada. Compruébala antes de que acabe la selección."
 
 
 def send(conf, champ_name, rn, rd):
@@ -79,11 +79,13 @@ def send(conf, champ_name, rn, rd):
         return False, f"No se pudieron enviar ({type(e).__name__})."
 
 
-def send_async(conf, champ_name, rn, rd, result):
+def send_async(conf, champ_name, rn, rd, result, sent=None):
     """Como send(), en un hilo; deja el resultado en `result` ({"state": "sending"|"done", "ok": bool, "msg": str})."""
     result.update(state="sending", ok=False, msg="")
 
     def go():
         ok, msg = send(conf, champ_name, rn, rd)
+        if ok and sent:
+            sent()   # lo que tiene ahora el cliente se apunta aquí, aunque la fila que lo envió ya no exista
         result.update(state="done", ok=ok, msg=msg)
     threading.Thread(target=go, daemon=True).start()

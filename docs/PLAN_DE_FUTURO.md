@@ -4,6 +4,41 @@ Actualizado el 13/11/2026 (versión del código 1.22.25). Sustituye a `HOJA_DE_R
 está en `docs/HISTORIAL_DE_SESIONES.md`; el estado de hoy, en `docs/CONTINUAR.md`. **Este plan se revisa al terminar cada fase: tacha lo
 hecho (con la versión) y reordena lo demás.** No es un compromiso de fechas.
 
+## Análisis del 26/11/2026 (versión 1.31.0) — lo vigente
+
+Sale de la primera clasificatoria observada, de las pruebas de runas contra el cliente real y de revisar el código. **Sustituye a las tablas
+P0–P1 de más abajo**, que quedan como registro (casi todo está hecho). Se usan las mismas claves de impacto, esfuerzo y riesgo.
+
+### Primero: cerrar lo publicado sin ver en una partida
+| Qué | Cómo se comprueba |
+|---|---|
+| Botón «Enviar runas al cliente» pulsado en una selección | El cliente queda con la página «LOL-E · campeón» seleccionada |
+| Jugador que el cliente no entrega (completado con la API en vivo) | Salen los 10; línea «9 leídos» en `diag.log` |
+| Sin marcador en vivo al acabar; objetivo que caduca; recomendaciones plegadas | A ojo, en una partida |
+| Política de Riot sobre escribir runas y registro de la app en el portal de desarrolladores | Antes de que la use más gente (ver `INFORME_COMERCIALIZACION.md`) |
+
+### Siguiente: lo que se nota en cada partida
+| # | Qué | Por qué | Impacto | Esfuerzo | Riesgo | Decide el usuario |
+|---|---|---|---|---|---|---|
+| A1 | ~~**Analizar en segundo plano las últimas clasificatorias**~~ HECHO el 27/11/2026 sin publicar (`backfill.py`), probado con el cliente real; falta verlo en la app instalada | El objetivo y los patrones piden 8+ partidas analizadas y hoy solo se analizan las que acaban con LOL-E abierto: un recién instalado (el compañero) tarda días en tener nada | A | S–M | b (solo lee) | No hace falta |
+| A2 | **Hechizos junto a las runas** (`my-selection`), con un botón | Hoy se ponen a mano. Hay que respetar en qué tecla llevas Destello | M | S | m (escribe en la selección) | Sí |
+| A3 | **Enviar runas solas al bloquear** (interruptor, apagado de serie) | Como el de objetos; el botón ya está probado | M | S | m | Sí |
+| A4 | ~~**Tu historial contra el rival de línea**~~ HECHO el 27/11/2026 sin publicar (`rivals.py`) | Es el dato que ninguna web tiene; ya está guardado | A | M | b | No |
+| A5 | ~~**Cierre de partida en 10 segundos**~~ HECHO el 27/11/2026 sin publicar (combinada B/C) | El análisis es largo para leerlo entre dos colas | M | M | b | Maqueta primero |
+| A6 | ~~**Ficha del dúo habitual**~~ HECHO el 27/11/2026 sin publicar (`duo.py`); queda por líneas | Se juega en dúo; «Juntos 3V 2D» se queda corto | M | M | b | No |
+
+### Calidad de fondo
+| # | Qué | Impacto | Esfuerzo | Riesgo |
+|---|---|---|---|---|
+| B1 | **Peso por antigüedad en las recomendaciones** (hoy una partida de hace un año cuenta como la de ayer) | M | S | m (cambia puntuaciones: enseñar antes y después) |
+| B2 | **Avisar en el registro de lo que se pinta mal sin dar error** (huecos, bloques que quedan de la partida anterior): pasos de captura para cada fase real | M | M | b |
+| B3 | **Partir `lol_advisor.py` y `ui_sections.py`** y convertir el bucle principal en una máquina de estados (los fallos de la ranked eran de estados) | B | L | a |
+| B4 | Instalador firmado, idiomas (`INFORME_IDIOMAS.md`) y comercialización: solo si se quiere abrir a más gente | M | L | m |
+
+Medido hoy y **sin problema** (no tocar): pintar Inicio lee 220 partidas en 2 ms y calcula el patrón en 6 ms.
+
+Se mantiene «Qué NO hacer». Se añade: ni aceptar partida, ni elegir, ni banear automáticamente.
+
 ## Cómo leerlo
 
 - **P0** ahora · **P1** próximas 1–3 semanas · **P2** 1–3 meses · **P3** ideas a explorar.

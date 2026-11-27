@@ -139,7 +139,7 @@ class PoolPanel:
         inner.pack(fill="x", padx=4, pady=12)
         figs = [("Campeones", str(len(rows)), "con partidas"), ("Partidas", str(tot), f"{wins}V {tot - wins}D"),
                 ("Victorias", f"{round(wins / tot * 100)} %", "de todas ellas"),
-                ("Más jugado", nm(max(rows, key=lambda r: r["g"])), f"{max(r['g'] for r in rows)} partidas")]
+                ("Más jugado", nm(max(rows, key=lambda r: r["g"])), "1 partida" if max(r["g"] for r in rows) == 1 else f"{max(r['g'] for r in rows)} partidas")]
         if self.narrow:
             figs = figs[:3]
         for i, (lb, v, sub) in enumerate(figs):
@@ -180,8 +180,9 @@ class PoolPanel:
         wrap.pack(fill="x")
         head = ui.frame(wrap)
         head.pack(fill="x", padx=12, pady=(0, 2))
-        cols = [("", 34), ("Campeón", 130 if nar else 150), ("Partidas", 56), ("Victorias", 64 if nar else 120)]
         avail = (self.ctx["width"] - 120) * 0.6 if self.wide else self.ctx["width"] - 110   # hueco de la tabla (en ancho comparte con el detalle)
+        self.name_w = 130 + int(max(0, min(160, avail - 336))) if nar else 150   # en estrecho las columnas son fijas: lo que sobra va al nombre
+        cols = [("", 34), ("Campeón", self.name_w), ("Partidas", 56), ("Victorias", 64 if nar else 120)]
         self.show_form = not nar and avail >= 610   # la columna «Forma» solo si cabe: antes se cortaba y la fila perdía su borde derecho
         if not nar:
             cols += [("KDA", 50), ("Maestría", 64)]
@@ -207,7 +208,7 @@ class PoolPanel:
         ui = self.ui
         sx = ui.scale_px()
         on = r["cid"] == self.sel
-        wcol = 130 if nar else 150
+        wcol = getattr(self, "name_w", 130 if nar else 150)
         wwin = 64 if nar else 120
         form = getattr(self, "show_form", True)
         W = 10 + 34 + 8 + wcol + 8 + 56 + 8 + wwin + 8 + (0 if nar else 50 + 8 + 64 + 8 + (60 if form else 0)) + 10
@@ -228,7 +229,8 @@ class PoolPanel:
         cv.create_text(S(x), S(15), text=ui.fit(core.name(r["cid"], ui.champs), f12b, S(wcol)), font=f12b, fill=fg, anchor="w")
         roles = Counter(ROLES_ES.get(e["r"], "") for e in r["games"] if e["r"] and mode_of(e) not in NO_LANE_MODES)
         sub = roles.most_common(1)[0][0] if roles and roles.most_common(1)[0][0] else ""
-        cv.create_text(S(x), S(32), text=sub or "—", font=f9, fill=dim, anchor="w")
+        if sub:
+            cv.create_text(S(x), S(32), text=sub, font=f9, fill=dim, anchor="w")
         x += wcol + 8 + 56
         cv.create_text(S(x), S(23), text=str(r["g"]), font=f12, fill=fg, anchor="e")
         x += 8 + wwin
@@ -281,7 +283,7 @@ class PoolPanel:
             lab.pack()
         except Exception:
             ui.lbl(inner, core.name(cid, ui.champs), 18, "fg", True, True, anchor="w").pack(anchor="w")
-        ui.lbl(inner, f"{r['w']} victorias y {r['g'] - r['w']} derrotas · {round(r['wr'] * 100)} %" + (f" · maestría {r['mast'] // 1000} k" if r["mast"] >= 1000 else ""),
+        ui.lbl(inner, f"{r['w']} {'victoria' if r['w'] == 1 else 'victorias'} y {r['g'] - r['w']} {'derrota' if r['g'] - r['w'] == 1 else 'derrotas'} · {round(r['wr'] * 100)} %" + (f" · maestría {r['mast'] // 1000} k" if r["mast"] >= 1000 else ""),
                10, "dim", anchor="w").pack(anchor="w", pady=(8, 8))
         ui.seg(inner, ["Resumen", "Partidas", "Build"], self.dtab, self.set_dtab, height=26).pack(fill="x", pady=(0, 12))
         body = ui.frame(inner)
@@ -433,7 +435,7 @@ class PoolPanel:
             ui.lbl(row, f"{e['d'] // 60}:{e['d'] % 60:02d}" if e.get("d") else "—", 10, "dim", width=52, anchor="w").pack(side="left")
             ui.lbl(row, "Victoria" if e["w"] else "Derrota", 10, "good" if e["w"] else "bad", True).pack(side="left")
         nm = core.name(r["cid"], ui.champs)
-        small_btn(ui, p, f"Ver las {len(games)} en el Historial", lambda: ui.goto_history(nm), 190).pack(anchor="w", pady=(12, 0))
+        small_btn(ui, p, "Verla en el Historial" if len(games) == 1 else f"Ver las {len(games)} en el Historial", lambda: ui.goto_history(nm), 190).pack(anchor="w", pady=(12, 0))
 
     def best_lane(self, r):
         """Línea más jugada con él (solo modos con líneas); si no hay, la que más se juega según el meta o su posición habitual."""

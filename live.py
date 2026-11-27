@@ -204,7 +204,7 @@ def timers(snap):
         if 0 < hl <= BARON_WARN:
             out.append(f"El Heraldo de la Grieta aparece en {clock(hl)} (estimado).")
         elif hl <= 0 < HERALD_END - t:
-            out.append(f"El Heraldo de la Grieta sigue en la Grieta hasta el minuto {clock(HERALD_END)} (estimado).")
+            out.append(f"El Heraldo de la Grieta sigue en el mapa hasta el minuto {clock(HERALD_END)} (estimado).")
     down = sorted((tk + INHIB_RESPAWN - t, lost) for tk, lost in (snap.get("inhib_kills") or []) if 0 < tk + INHIB_RESPAWN - t <= INHIB_RESPAWN)
     mine = snap.get("me_team")
     for left, lost in down[:2]:   # los dos que antes reaparecen

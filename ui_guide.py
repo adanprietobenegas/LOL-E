@@ -63,7 +63,7 @@ def _vs(ui, parent, dm, do, cid, opp, width, in_game=False):
     ao = ui.champs[opp].get("attr") or {}
     rows = guide.duel(dm, do, nm, no, am, ao, ui.champs[opp].get("dmg", ""))
     if in_game:   # prudencia con las normas de Riot: durante la partida no se enseñan los tiempos de recarga del rival
-        rows = [x for x in rows if x[0] not in ("Ventana de trade", "Su definitiva")]
+        rows = [x for x in rows if x[0] not in ("Ventana de intercambio", "Su definitiva")]
     if rows:
         _rows(ui, parent, rows, width)
     if do["enemy"]:
@@ -112,9 +112,9 @@ def guide_block(ui, host, cid, opp, lane, width, in_game=False):
                 st["n"] += 1
                 box.after(600, paint)
         nm = ui.champs[cid]["name"]
-        ui.fold(box, f"Cómo jugar con {nm}", lambda p: _own(ui, p, a[1], nm, width, b), "habilidades · picos de poder", "gd_own", False)
+        ui.fold(box, f"Cómo jugar con {nm}", lambda p: _own(ui, p, a[1], nm, width, b), "habilidades · picos de poder", "gd_own", False, padx=0)
         if o and o[0] == "ok":
             no = ui.champs[opp]["name"]
             ui.fold(box, f"Tu duelo contra {no}", lambda p: _vs(ui, p, a[1], o[1], cid, opp, width, in_game),
-                    "ventajas" if in_game else "ventajas · ventanas de trade", "gd_vs_live" if in_game else "gd_vs", not in_game)
+                    "ventajas" if in_game else "ventajas · ventanas de intercambio", "gd_vs_live" if in_game else "gd_vs", not in_game, padx=0)
     paint()

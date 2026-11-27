@@ -555,7 +555,7 @@ class HistoryView:
                  ([W_TIME] if lv >= 1 else []) + ([W_ITEMS] if lv >= 3 else [])
         chip_w = 28 if lv == 0 else W_RES
         total = 8 + 38 + 10 + sum(w + 10 for w in widths) + chip_w + 8 - (10 if lv == 0 else 0)
-        return max(300, self.width - 100) if lv == 0 else total
+        return max(300, self.width - 64) if lv == 0 else total
 
     def new_day(self, d):
         """Cabecera del día (resumen y burbujas) y contenedor de sus filas; por defecto solo están desplegados los dos días más recientes."""
@@ -670,7 +670,7 @@ class HistoryView:
         left = 12 + 38 + 10
         total = left + sum(w + 10 for w in widths) + chip_w + 8 - (10 if lv == 0 else 0)
         H = 52
-        cw = int((max(300, self.width - 100) if lv == 0 else total) * sx)
+        cw = int((max(300, self.width - 64) if lv == 0 else total) * sx)
         cv = tk.Canvas(box, width=cw, height=int(H * sx), bg=ui.bg(parent), highlightthickness=0, bd=0, cursor="hand2")
         cv.pack(fill="x" if lv == 0 else None)
         color = "dim" if e.get("rm") else "good" if e["w"] else "bad"
@@ -734,7 +734,7 @@ class HistoryView:
             x += widths[n] + 10
         txt = "Remake" if e.get("rm") else ("Victoria" if e["w"] else "Derrota")
         if arena and e.get("pl"):
-            txt = f"Puesto {e['pl']}º"  # Arena se puntúa por puesto: del 1º al 3º cuenta como victoria
+            txt = f"Puesto {e['pl']}.º"  # Arena se puntúa por puesto: del 1º al 3º cuenta como victoria
         if lv == 0:
             txt = (f"{e['pl']}º" if arena and e.get("pl") else "V" if e["w"] and not e.get("rm") else "D" if not e.get("rm") else "R")
             cx1 = cw - int((8 + chip_w) * sx)
@@ -786,7 +786,7 @@ class HistoryView:
         arena = mode_of(e) == "Arena"
         parts = []
         if e.get("pl") and arena:
-            parts.append(f"Puesto {e['pl']}º de 6")
+            parts.append(f"Puesto {e['pl']}.º de 6")
         if e.get("lv"):
             parts.append(f"Nivel {e['lv']}")
         if e.get("g"):
@@ -794,7 +794,7 @@ class HistoryView:
         if e.get("dm") and mins:
             parts.append(f"{int(e['dm'] / mins)} de daño por minuto")
         if e.get("cs") and mins and not arena:
-            parts.append(f"{es(e['cs'] / mins)} CS por minuto")
+            parts.append(f"{es(e['cs'] / mins)} súbditos por minuto")
         if e.get("v") is not None and not arena:
             parts.append(f"visión {e['v']}")
         ui.lbl(inner, "  ·  ".join(parts) if parts else "Esta partida se guardó sin detalle (de una versión anterior).", 11, "fg", anchor="w",

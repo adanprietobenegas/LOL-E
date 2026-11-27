@@ -33,13 +33,13 @@ class DraftCard(Section):
         banned, picked = set(r["bans"]), set(r["enemies"]) | {a["champ"] for a in r["ally_cells"] if a["champ"]}   # lo marcado por un aliado tampoco se sugiere banear
         loaded = [x for x in cells if x["puuid"] in pl]
         if not any(x["puuid"] for x in cells):
-            ui.lbl(c, "En esta cola Riot no muestra los nombres rivales: no hay bans dirigidos.", 10, "dim", anchor="w").pack(anchor="w", pady=(8, 0))
+            ui.lbl(c, "En esta cola Riot no muestra los nombres rivales: no hay baneos dirigidos.", 10, "dim", anchor="w").pack(anchor="w", pady=(8, 0))
         elif len(loaded) < len([x for x in cells if x["puuid"]]):
             ui.lbl(c, f"Leyendo perfiles rivales… {len(loaded)} de {len([x for x in cells if x['puuid']])}", 10, "dim", anchor="w").pack(anchor="w", pady=(8, 0))
         self.scout(c, r, pl, champs, banned, picked, pg)
         self.lines(c, r, pl, champs)
         self.teams(c, r, pl)
-        ui.lbl(c, "Cola de grupos de 5: solo fines de semana y, según Riot, hasta el 7 de enero de 2027. Los puntajes de ban son orientativos.", 9, "dim",
+        ui.lbl(c, "Cola de grupos de 5: solo fines de semana y, según Riot, hasta el 7 de enero de 2027. Las puntuaciones de baneo son orientativas.", 9, "dim",
                anchor="w", justify="left", wraplength=max(260, ctx["width"] - 120)).pack(anchor="w", pady=(12, 0))
 
     # ---- turnos ----
@@ -66,9 +66,9 @@ class DraftCard(Section):
             if pg["wait"] == 0:
                 txt = "Te toca " + ("banear." if pg.get("mine_type") == "ban" else "elegir.")
             elif pg["wait"]:
-                txt += f" Tu {'ban' if pg.get('mine_type') == 'ban' else 'pick'} llega en {pg['wait']} acciones."
+                txt += (" Tu baneo" if pg.get("mine_type") == "ban" else " Tu elección") + f" llega en {pg['wait']} {'acción' if pg['wait'] == 1 else 'acciones'}."
             ui.lbl(c, txt, 11, "fg", True, anchor="w").pack(anchor="w")
-        ui.lbl(c, f"Bans {pg['bans_done']} de {pg['bans_total']}  ·  Picks {pg['picks_done']} de {pg['picks_total']}   (verde: tu equipo, rojo: rival)", 9, "dim",
+        ui.lbl(c, f"Baneos {pg['bans_done']} de {pg['bans_total']}  ·  Elecciones {pg['picks_done']} de {pg['picks_total']}   (verde: tu equipo, rojo: rival)", 9, "dim",
                anchor="w").pack(anchor="w", pady=(2, 0))
 
     # ---- bans dirigidos ----
@@ -78,7 +78,7 @@ class DraftCard(Section):
         lst = d.scout_bans(r["enemy_cells"], pl, champs, banned, picked)
         if not lst:
             return
-        title = "BANS DIRIGIDOS · lo que más puede jugar cada rival que aún no ha elegido" + (" (2.ª tanda: ya se han visto 6 picks)" if pg["second_bans"] else "")
+        title = "BANEOS DIRIGIDOS · lo que más puede jugar cada rival que aún no ha elegido" + (" (2.ª tanda: ya se han visto 6 elecciones)" if pg["second_bans"] else "")
         ui.lbl(c, title, 9, "dim", True, anchor="w", justify="left", wraplength=420).pack(anchor="w", pady=(12, 4))
         for x in lst:
             row = ui.frame(c)
@@ -89,12 +89,12 @@ class DraftCard(Section):
             ui.lbl(mid, f"{champs[x['cid']]['name']}  ·  de {x['who']}", 11, "fg", True, anchor="w").pack(anchor="w")
             bits = []
             if x["n"]:
-                bits.append(f"{x['n']} partida{'s' if x['n'] > 1 else ''} recientes, {x['w'] / x['n'] * 100:.0f} % victorias")
+                bits.append(f"{x['n']} {'partidas recientes' if x['n'] > 1 else 'partida reciente'}, {x['w'] / x['n'] * 100:.0f} % victorias")
             if x["pts"] >= 1000:
                 bits.append(f"maestría {x['pts'] // 1000}k")
             ui.lbl(mid, "  ·  ".join(bits) or "sin datos recientes", 10, "dim", anchor="w").pack(anchor="w")
             ui.lbl(row, f"{x['score'] * 100:.0f}", 13, "warn", True, True).pack(side="right")
-        ui.lbl(c, "Puntaje (0-100) = 50 % maestría (tope 150k) + 30 % veces jugado (tope 5) + 20 % victorias con él.", 9, "dim", anchor="w").pack(anchor="w", pady=(4, 0))
+        ui.lbl(c, "Puntuación (0-100) = 50 % maestría (tope 150k) + 30 % veces jugado (tope 5) + 20 % victorias con él.", 9, "dim", anchor="w").pack(anchor="w", pady=(4, 0))
 
     # ---- línea probable de cada rival ----
     def lines(self, c, r, pl, champs):
@@ -143,5 +143,5 @@ class DraftCard(Section):
         if mine["n"] and them["n"]:
             d = them["avg"] - mine["avg"]
             if abs(d) >= 100:
-                ui.lbl(c, f"El equipo rival tiene de media {int(abs(d) // 100)} división{'es' if abs(d) >= 200 else ''} {'más' if d > 0 else 'menos'} que el tuyo.", 10, "dim",
+                ui.lbl(c, f"De media, el equipo rival está {int(abs(d) // 100)} división{'es' if abs(d) >= 200 else ''} por {'encima' if d > 0 else 'debajo'} del tuyo.", 10, "dim",
                        anchor="w").pack(anchor="w", pady=(2, 0))

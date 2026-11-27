@@ -44,17 +44,17 @@ def body(an, host, a):
     an.media(host, a)
     awards(an, host, a)
     an.kpis(host, a, None)
-    ui.fold(host, "Lo más interesante de la partida", lambda p: an.advice(p, a, None, adv), f"{len(adv)} datos", "an_advice", True)
+    ui.fold(host, "Lo más interesante de la partida", lambda p: an.advice(p, a, None, adv), f"{len(adv)} datos", "an_advice", True, padx=0)
     an.aram_sort = getattr(an, "aram_sort", "Daño")
     an.aram_team = getattr(an, "aram_team", "Los 10")
-    an.folds["aram"] = ui.fold(host, "Clasificación de los 10 jugadores", lambda p: ranking(an, p, a), f"por {an.aram_sort.lower()}", "an_aram", True)
+    an.folds["aram"] = ui.fold(host, "Clasificación de los 10 jugadores", lambda p: ranking(an, p, a), f"por {an.aram_sort.lower()}", "an_aram", True, padx=0)
     if a.get("queue") in (2400,) and any(p.get("aug") for p in a["players"].values()):
         import ui_mayhem
-        ui.fold(host, "Mejoras elegidas", lambda p: ui_mayhem.analysis_block(ui, p, a, gv.width), "las de los 10 jugadores", "an_aug", True)
+        ui.fold(host, "Mejoras elegidas", lambda p: ui_mayhem.analysis_block(ui, p, a, gv.width), "las de los 10 jugadores", "an_aug", True, padx=0)
     mine = sum(1 for e in ev if e["cat"] == "kd")
-    an.folds["moments"] = ui.fold(host, "Momentos clave", lambda p: an.mount("moments", p, a, None, ev), f"{len(ev)} eventos · {mine} tuyos", "an_moments", False)
+    an.folds["moments"] = ui.fold(host, "Momentos clave", lambda p: an.mount("moments", p, a, None, ev), f"{len(ev)} {'evento' if len(ev) == 1 else 'eventos'} · {mine} {'tuyo' if mine == 1 else 'tuyos'}", "an_moments", False, padx=0)
     gv.chart = "Oro del equipo"
-    an.folds["charts"] = ui.fold(host, "Evolución de la partida", lambda p: an.mount("charts", p, a, None, ev), gv.chart, "an_charts", False)
+    an.folds["charts"] = ui.fold(host, "Evolución de la partida", lambda p: an.mount("charts", p, a, None, ev), gv.chart, "an_charts", False, padx=0)
 
 
 def header(an, host, a):

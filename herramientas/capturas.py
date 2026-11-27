@@ -55,12 +55,7 @@ for _i, _d in enumerate([18, -17, 19, 20, -16, -19, 17, 21, -18, 16, 19, -15, 20
     _pts.append({"t": _now - (26 - _i) * 86400000 * 2 // 1 + _i * 1000, "v": _v, "d": _d, "w": _d > 0, "cid": [86, 122, 875, 54][_i % 4],
                  "tier": lpseries.label_of(_v // 100 * 100).replace("Maestro+", "Maestro"), "lp": _v % 100, "src": "game"})
 _pts.insert(5, {"t": _pts[4]["t"] + 86400000, "v": _pts[4]["v"] + 5, "d": None, "cid": None, "w": None, "tier": "Oro II", "lp": 70, "src": "day"})
-_est, _ev = [], _pts[0]["v"] - _pts[0]["d"]
-for _i, _d in enumerate([-17, 19, 18, -16, 20, -18, 19, 17]):   # estimadas, antes de lo guardado
-    _est.insert(0, {"t": _pts[0]["t"] - (_i + 1) * 86400000, "v": _ev, "d": _d, "w": _d > 0, "cid": [54, 86][_i % 2], "tier": lpseries.label_of(_ev // 100 * 100),
-                    "lp": _ev % 100, "src": "est"})
-    _ev -= _d
-lpseries.series = lambda lp, hist, snaps, queue="solo", with_estimate=False: (_est + _pts if with_estimate else _pts) if queue == "solo" else []
+lpseries.series = lambda lp, hist, snaps, queue="solo": _pts if queue == "solo" else []
 lpseries.load_all = lambda cache_dir, snaps_file=None: ({"a": 1, "b": 2, "c": 3}, {})
 import learn   # «Qué aprender» de ejemplo (el cache del proyecto no tiene partidas con línea)
 learn.advice = lambda *a, **k: [{"role": "TOP", "n": 14, "main": 86, "main_g": 12, "main_wr": .58, "cands": [(122, 53.4), (875, 52.9), (54, 52.1)]}]
@@ -158,6 +153,35 @@ def fin_partida():
     ui.phase("EndOfGame")
 
 
+def ejemplo_rival():
+    """Tres partidas inventadas contra Yasuo (la muestra de la selección) para ver «Tu historial contra X» (no toca la caché: sustituye la lectura)."""
+    import rivals
+    rivals.record, original = lambda games, opp, role, cid=0: "3 partidas, 1 victoria (con este campeón: 1 de 2)", rivals.record
+    rivals.minute10 = lambda *a: (2, -350.0, -8.0)
+
+
+def resumen_final():
+    """El resumen corto de la partida más reciente: se carga un análisis de la Grieta como si fuera de esa partida."""
+    import patrones, analysis   # objetivo y puntos de liga de ejemplo (el cache del proyecto no los tiene)
+    patrones.result = lambda a_, p_: (True, "Objetivo cumplido: llega al minuto 10 a menos de 10 súbditos de tu rival.")
+    analysis.lp_for = lambda *a_: {"d": 22, "tier": "Platino I", "now": 73, "move": ""}
+    ui.set_page("Partida")
+    ui.game_view.tab = "Análisis"
+    fs = [f for f in sorted(glob.glob(os.path.join(l.CACHE, "analysis", "*.json"))) if (l.read_json(f, None) or {}).get("queue") in (400, 420, 440)]
+    if not fs:
+        return
+    ui.game_view.load_games()
+    gid = ui.game_view.games[0]["id"]
+    ui.game_view.gid, ui.game_view.auto_try = gid, 99
+    ui.analysis(gid, l.read_json(fs[-1], None))
+
+
+def ejemplo_duo():
+    """Historial inventado con «ElDuoDeAdan» (el compañero marcado como grupo en la muestra) para ver sus líneas."""
+    import duo
+    duo.stats = lambda *a: {"n": 14, "wins": 9, "alone": (31, 66), "combo": (54, 64, 3, 4)}
+
+
 def analisis_guardado(grieta=False):
     """Enseña el análisis de la partida guardada más reciente en cache/analysis (no hace falta el cliente); con `grieta`, la más reciente de la Grieta."""
     fs = sorted(glob.glob(os.path.join(l.CACHE, "analysis", "*.json")))
@@ -213,11 +237,15 @@ PASOS = [
     ("02_inicio_conectado", lambda: (ui.link(True), ui.idle(l.player_info(P), "Conectado al cliente. Entra en una cola cuando quieras.")), 3500),
     ("03_seleccion_turno", lambda: (push(ses), ui.players(team)), 6000),
     ("03b_seleccion_baneos", lambda: push({**ses, "timer": {**ses["timer"], "phase": "PLANNING"}, "actions": [[{"actorCellId": 0, "type": "ban", "isInProgress": True, "completed": False}]]}), 4000),
+    ("03c_baneos_con_historial", lambda: (P.__setitem__("opp", {**(P.get("opp") or {}), 122: (4, 3)}), P.__setitem__("oppr", {("TOP", 122): (4, 3)}),
+                                          push({**ses, "timer": {**ses["timer"], "phase": "PLANNING"}, "actions": []})), 4000),
     ("04_seleccion_sinergias", lambda: ui.recs.set_tab("Sinergias"), 2000),
     ("05_seleccion_meta", lambda: ui.recs.set_tab("Meta y build"), 2500),
     ("06_seleccion_lista", lambda: vista("lista"), 3000),
     ("07_seleccion_listas", lambda: vista("listas"), 3000),
     ("08_seleccion_bloqueado", lambda: (vista("carrusel"), push(ses, mine=86)), 5000),
+    ("08b_historial_rival", lambda: (P.__setitem__("matchups", P.get("matchups") or {}), ejemplo_rival(), setattr(ui.kit, "epoch", ui.kit.epoch + 1), push(ses, mine=86)), 5000),
+    ("08c_duo", lambda: (ejemplo_duo(), setattr(ui.kit, "epoch", ui.kit.epoch + 1), push(ses), ui.players(team)), 5000),
     ("09_aram", lambda: push(aram, {"id": 450, "group": "ARAM", "kind": "aram"}), 5000),
     ("10_partida_plan", en_partida, 6000),
     ("10b_salto_a_jugadores", lambda: getattr(ui.game_view, "jump_roster", lambda: print("sin enlace (ventana ancha)", flush=True))(), 1500),
@@ -230,6 +258,8 @@ PASOS = [
     ("11_partida_analisis", lambda: (fin_partida(), tab_partida("Análisis")), 5000),
     ("11b_analisis_guardado", analisis_guardado, 5000),
     ("11c_analisis_grieta", lambda: analisis_guardado(True), 5000),
+    ("11e_resumen", lambda: resumen_final(), 5000),
+    ("11f_resumen_completo", lambda: ui.game_view.an.show_full(), 5000),
     ("11d_plan_terminado", lambda: tab_partida("Plan"), 4000),
     ("12_enfrentamiento", lambda: ui.set_page("Enfrentamiento"), 4000),
     ("13_enfrentamiento_rival", lambda: ui.matchup_view.select(157), 4000),
@@ -262,6 +292,9 @@ PASOS = [
     ("26_mayhem", lambda: push(aram, {"id": 2400, "group": "ARAM: Mayhem", "kind": "aram"}, mine=103), 6000),
     ("27_filtros_abiertos", lambda: (ui.set_page("Asesor"), push(ses), ui.players(team),
                                      ui.root.after(2500, lambda: (ui.recs.toggle_filters(), ui.recs.set_filter("clase", "Tanque")))), 6000),
+    ("17f_pl_recien_instalado", lambda: (setattr(lpseries, "series", lambda *a, **k: []), setattr(ui.kit, "epoch", ui.kit.epoch + 1), ui.set_page("Asesor"),
+                                         ui.idle(l.player_info(P), "Conectado al cliente. Entra en una cola cuando quieras."),
+                                         ui.root.after(900, lambda: (ui.idle_secs[3].switch("Rango y logros"), ui.root.after(400, lambda: ui.idle_secs[3].toggle("lp"))))), 4000),
     ("16_ajustes", lambda: (ui.set_page("Asesor"), ui.open_dock()), 4500),
 ]
 SOLO = [x for x in os.environ.get("LOLE_SOLO", "").split(",") if x]

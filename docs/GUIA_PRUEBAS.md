@@ -1,6 +1,6 @@
 # Qué probar de LOL-E (para ti y para tu compañero)
 
-Versión: la 1.31.0 o posterior (se ve arriba, junto al nombre). Se actualiza sola cuando está en reposo.
+Versión: la 1.32.0 o posterior (se ve arriba, junto al nombre). Se actualiza sola cuando está en reposo.
 
 ## Antes de jugar
 1. Abre LOL-E y el cliente de League. Arriba debe salir «Conectado a LoL».
@@ -26,7 +26,15 @@ Versión: la 1.31.0 o posterior (se ve arriba, junto al nombre). Se actualiza so
 
 ## Después
 - El marcador en vivo desaparece.
-- El análisis se abre solo; en Inicio, «Tu última partida» con los PL.
+- Se abre solo el resumen de la partida, con «Ver el análisis completo»; en Inicio, «Tu última partida» con los PL.
+
+## Nuevo en la 1.32.0
+| Dónde | Qué mirar |
+|---|---|
+| Selección | Bajo el rival, «Tu historial contra…» (si ya jugaste contra él) y, en dúo, cómo os va juntos |
+| Al terminar | Resumen en tres columnas (o franja y frases en ventana estrecha) con «Ver el análisis completo» |
+| Inicio › Rango y logros | Solo puntos reales; sin PL guardados, tus resultados del historial |
+| Registro | «Análisis en segundo plano: N partidas nuevas» unos minutos después de conectar |
 
 ## ARAM
 - Una sola build y «Otras builds» con un clic; el banquillo a la vista.

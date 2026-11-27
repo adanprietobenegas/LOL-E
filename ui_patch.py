@@ -185,7 +185,7 @@ class PatchView:
         lab.bind("<Button-1>", lambda e: cb())
         return lab
 
-    def pill_row(self, parent, items, current, cb, name):
+    def pill_row(self, parent, items, current, cb, name, reserve=150):
         """Fila de pastillas; al elegir una se repintan en sitio (sin reconstruir la pantalla)."""
         row = self.ui.frame(parent)
         labs = {}
@@ -199,7 +199,7 @@ class PatchView:
         def pick(k):
             paint(k)
             cb(k)
-        per = max(2, int((self.width - 150) // 112)) if self.width < 760 else 99   # en ventanas estrechas las pastillas pasan a la fila de debajo
+        per = max(2, int((self.width - reserve) // 112)) if self.width < 760 else 99   # en ventanas estrechas las pastillas pasan a la fila de debajo
         for i, (k, text) in enumerate(items):
             lab = self.pill(row, text, k == current, lambda k=k: pick(k))
             if per == 99:
@@ -594,7 +594,8 @@ class PatchView:
                 ic.pack(side="left", padx=(0, 10))
             tk.Label(row, text=e["name"], font=ui.tkf(11, True, False), fg=self.hexm("fg"), bg=bg, width=13, anchor="w").pack(side="left")
             tk.Label(row, text=vk, font=ui.tkf(10, True, False), fg=self.hexm(vcol), bg=bg, width=15, anchor="w").pack(side="left")
-            tk.Label(row, text=txt, font=ui.tkf(10, False, False), fg=self.hexm("dim"), bg=bg, anchor="w").pack(side="left", fill="x", expand=True)
+            tk.Label(row, text=txt, font=ui.tkf(10, False, False), fg=self.hexm("dim"), bg=bg, anchor="w", justify="left",
+                     wraplength=int(max(120, self.width - 430) * ui.scale_px()) if self.width < 760 else 0).pack(side="left", fill="x", expand=True)
             ui.clickable(row, lambda n=e["name"]: self.jump_to(n))
         if len(rows) > 6:
             tk.Label(inner, text=f"… y {len(rows) - 6} más (filtra con «Solo mis campeones»)", font=ui.tkf(9, False, False), fg=self.hexm("dim"), bg=bg).pack(anchor="w", pady=(2, 0))
@@ -1054,11 +1055,12 @@ class PatchView:
         # filtros
         card = ui.card(self.content)
         lanes = [("all", "Todas las líneas")] + [(k, parche_stats.LANE_ES[k]) for k in parche_stats.LANES]
-        r1 = self.pill_row(card, lanes, self.lane, self.set_lane, "lane")
-        r1.pack(side="left", anchor="w")
+        narrow = self.width < 760
+        r1 = self.pill_row(card, lanes, self.lane, self.set_lane, "lane", reserve=90 if narrow else 150)
+        r1.pack(side="top" if narrow else "left", anchor="w")
         ui.reg("parche.lineas", r1)
         tail = ui.frame(card)
-        tail.pack(side="right")
+        tail.pack(side="top" if narrow else "right", anchor="w" if narrow else "e", pady=(6, 0) if narrow else 0)
         if self.mine():
             tg = self.pill(tail, "Solo mis campeones", self.only_mine, lambda: None)
             tg.pack(side="left", padx=(0, 8))

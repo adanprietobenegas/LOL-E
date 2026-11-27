@@ -4,6 +4,7 @@ import urllib.parse, urllib.request, urllib.error
 from concurrent.futures import ThreadPoolExecutor
 
 import analysis
+import backfill
 import history
 import live
 import matchups
@@ -17,7 +18,7 @@ import synergy
 import trends
 from sounds import SOUNDS, PHASES, NONE, FILE, phase_cfg, play_file, synth_wav, play_alert, play_phase, beep  # noqa: F401  (los usa la ventana)
 
-APP_NAME, APP_VERSION = "LOL-E", "1.31.0"
+APP_NAME, APP_VERSION = "LOL-E", "1.32.0"
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 # instalado: los datos de cada usuario van a su perfil; en desarrollo, junto al script
@@ -35,7 +36,7 @@ PRESETS = {
 PRESET_INFO = {
     "equilibrado": ("Equilibrado", "Mezcla lo que dominas con lo que necesita tu equipo."),
     "comodo": ("Cómodo", "Prioriza tus campeones con más maestría y victorias."),
-    "adaptativo": ("Adaptativo", "Prioriza lo que necesita la composición y los counters."),
+    "adaptativo": ("Adaptativo", "Prioriza lo que necesita la composición y los enfrentamientos."),
     "personalizado": ("Personalizado", "Tus propios pesos, ajustados en «Datos»."),
 }
 DEFAULT_CONF = {
@@ -904,7 +905,7 @@ def score(cid, champs, role, allies, enemies, lane_opp, pend, P, conf, mmax):
         comp += 0.5; why.append("aporta control")
     parts["comp"] = w["comp"] * comp
     if pend >= 2 and len(c.get("pos", [])) >= 2:  # quedan picks rivales: un campeon flexible no revela tu linea
-        parts["comp"] += w["comp"] * 0.3; why.append("pick flexible")
+        parts["comp"] += w["comp"] * 0.3; why.append("elección flexible")
     ebal = sum(lean(champs[e]) for e in enemies if e in champs)
     if ebal > 1.0 and c["info"]["defense"] >= 7:
         parts["comp"] += w["comp"] * 0.5; why.append("resiste su daño físico")
@@ -1338,6 +1339,8 @@ def run(conf, champs, ui):
     next_roster, roster_gid = 0.0, None
     roster_found, roster_n, roster_tries = {}, 0, 0   # perfiles ya leídos de la partida; cuántos jugadores dio la primera lectura; relecturas si faltaba alguno
     next_hist, hist_tries = 0.0, 0
+    next_fill = 0.0   # próximo repaso de partidas sin analizar
+    reannounce = False   # tras perder el cliente la ventana olvida la fase: hay que volver a decirla aunque sea la misma
     party, my_puuid = set(), ""
     mode = None
     ui.status("Abre el cliente de League of Legends…")
@@ -1383,6 +1386,8 @@ def run(conf, champs, ui):
                 lcu = probe
                 net_fails = 0
                 diag("Cliente de LoL encontrado")
+                backfill.reset()
+                next_fill = time.time() + 30   # primero lo urgente (cuenta, historial, meta); el repaso de partidas viejas, después
                 ui.status("Conectado. Cargando tus datos…")
                 detect_account(lcu, conf)
                 season = load_season(champs, conf)
@@ -1411,6 +1416,7 @@ def run(conf, champs, ui):
             session = sanitize_session(session) if session else session
             if session:
                 nosession = 0
+                backfill.set_idle(False)
             if not session:
                 nosession += 1
                 if last is not None and nosession < 2:   # un fallo puntual del cliente (5xx) no es «selección terminada»: se confirma con una segunda lectura
@@ -1425,6 +1431,7 @@ def run(conf, champs, ui):
                 if flow is None:   # sin respuesta válida (el cliente real siempre contesta un texto, «None» incluido): la fase no se conoce, se conserva la anterior
                     flow = last_flow if last_flow not in ("_", "ChampSelect") else "None"
                 in_game = flow in ("InProgress", "GameStart", "Reconnect")  # con la partida en marcha no se toca nada: el PC es del juego
+                backfill.set_idle(flow in ("None", "Lobby") and not reload_pending)
                 if in_game:
                     played = True
                 if flow == "ReadyCheck":   # otra ventana de aceptar sin pasar por la cola (alguien no aceptó y el cliente encontró otra enseguida)
@@ -1450,6 +1457,10 @@ def run(conf, champs, ui):
                         if snap_rank:
                             rank_before = snap_rank
                             diag("Rango antes de la partida: " + ", ".join(f"{k} {v['tier']} {v['div']} {v['lp']} PL" for k, v in snap_rank.items() if v))
+                    getattr(ui, "phase", lambda f: None)(flow)
+                    reannounce = False
+                elif reannounce:
+                    reannounce = False
                     getattr(ui, "phase", lambda f: None)(flow)
                 if last is not None:
                     last = prev_turn = mode = None
@@ -1500,8 +1511,9 @@ def run(conf, champs, ui):
                             else:
                                 diag(f"Variación de PL ({qkey}): no se pudo calcular (antes {rank_before.get(qkey)}, después {(P.get('profile') or {}).get(qkey)})")
                         diag(f"Partida terminada: {g['gameId']} (cola {g.get('queueId')}), esperas {end_tries}")
+                        result = analysis.load(lcu, g["gameId"], my_puuid, CACHE)   # antes de dar la partida por cerrada: un corte aquí la retoma entera
                         rank_before, cur_gid, end_tries, played, sel_seen = None, None, 0, False, False
-                        getattr(ui, "analysis", lambda *a: None)(str(g["gameId"]), analysis.load(lcu, g["gameId"], my_puuid, CACHE))
+                        getattr(ui, "analysis", lambda *a: None)(str(g["gameId"]), result)
                     except (urllib.error.URLError, ConnectionError, OSError):
                         reload_pending = True   # el cliente se cayó a medias: al volver se retoma el cierre de esta partida
                         raise
@@ -1567,6 +1579,9 @@ def run(conf, champs, ui):
                     except Exception:
                         soft_fail("Leer la partida en curso")
                     time.sleep(5); continue
+                if P.get("hist_ok") and my_puuid and flow in ("None", "Lobby") and not reload_pending and time.time() >= next_fill:
+                    next_fill = time.time() + 300
+                    backfill.start(lcu, my_puuid, CACHE, diag, lambda _n: getattr(ui, "history_updated", lambda: None)())
                 if not in_game and flow in ("None", "Lobby") and time.time() >= next_meta:
                     next_meta = time.time() + 6 * 3600
                     start_meta(conf, P, ui)
@@ -1592,9 +1607,10 @@ def run(conf, champs, ui):
                         P = load_player_data(lcu, season)
                         ui.idle(player_info(P), "Estadísticas de op.gg actualizadas.")
                 time.sleep(1 if flow in ("Matchmaking", "ReadyCheck") else 2); continue   # en cola y al aceptar, más rápido: una cola relámpago no se escapa
-            if last_flow != "ChampSelect":   # con selección en curso no se lee la fase del cliente: se anota aquí (antes la ventana se quedaba en «Partida encontrada» toda la selección)
+            if last_flow != "ChampSelect" or reannounce:   # con selección en curso no se lee la fase del cliente: se anota aquí (antes la ventana se quedaba en «Partida encontrada» toda la selección)
                 diag(f"Fase: {last_flow} -> ChampSelect")
                 last_flow, rc_prev = "ChampSelect", None
+                reannounce = False
                 getattr(ui, "phase", lambda f: None)("ChampSelect")
             key = json.dumps([session["myTeam"], session["theirTeam"], session["bans"],
                               session["timer"]["phase"], session.get("actions")], sort_keys=True)
@@ -1630,9 +1646,11 @@ def run(conf, champs, ui):
             if lcu is not None and last_flow in ("GameStart", "InProgress", "Reconnect") and net_fails < 3:   # en plena partida el cliente puede ir muy justo: un tropiezo no es «cliente cerrado»
                 time.sleep(2)
                 continue
+            backfill.set_idle(False)
             if lcu is not None:
                 diag("Cliente de LoL perdido (cerrado o reiniciando)")
                 lost_at = time.time()
+                reannounce = True
             lcu = None  # el cliente se cerro o reinicio
             if last is not None:   # a mitad de selección: al volver se trata como selección nueva (puede ser otra), con el sonido de turno una vez más como mucho
                 last = prev_turn = mode = None
@@ -1918,7 +1936,7 @@ def seed_cache():
 
 
 # módulos de la app que el ejecutable empaquetado debe poder importar (la prueba `ComprobacionDelEmpaquetado` los compara con los archivos de la carpeta)
-AUTOTEST_MODULES = ("stats", "ui_stats", "analysis", "aram_builds", "augments", "ayuda", "builds", "claves", "demo_cliente", "demo_data", "demo_mode", "gui", "guide", "history", "items", "itemset", "learn", "live", "lol_advisor", "lpseries", "matchups", "meta", "novedades", "opgg_builds", "params", "parche", "parche_stats", "patrones", "players", "readycheck", "runes", "runesend", "safeio", "sesion", "shopping", "sounds", "synergy", "temas", "tour", "trends", "ui_analysis", "ui_aram", "ui_build", "ui_claves", "ui_draft", "ui_game", "ui_guide", "ui_help", "ui_history", "ui_kit", "ui_live", "ui_lp", "ui_mayhem", "ui_opp", "ui_patch", "ui_player", "ui_pool", "ui_rail", "ui_sections", "ui_views", "ui_vs", "updater", "wrapped")
+AUTOTEST_MODULES = ("stats", "ui_stats", "analysis", "aram_builds", "augments", "ayuda", "backfill", "builds", "claves", "demo_cliente", "demo_data", "demo_mode", "duo", "gui", "guide", "history", "items", "itemset", "learn", "live", "lol_advisor", "lpseries", "matchups", "meta", "novedades", "opgg_builds", "params", "parche", "parche_stats", "patrones", "players", "readycheck", "rivals", "runes", "runesend", "safeio", "sesion", "shopping", "sounds", "synergy", "temas", "tour", "trends", "ui_analysis", "ui_aram", "ui_build", "ui_claves", "ui_draft", "ui_game", "ui_guide", "ui_help", "ui_history", "ui_kit", "ui_live", "ui_lp", "ui_mayhem", "ui_opp", "ui_patch", "ui_player", "ui_pool", "ui_rail", "ui_sections", "ui_views", "ui_vs", "updater", "wrapped")
 
 
 def autotest():

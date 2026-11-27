@@ -42,12 +42,59 @@ def mix(c1, c2, t):
 
 
 SORTS = ["Línea", "KDA", "Daño", "Oro", "Súbditos", "Visión"]
+SUMMARY_WIDE = 760   # desde este ancho el resumen va en tres columnas; por debajo, en franja y frases
 
 
 def menu_games(games, gid, n=15):
     """Las partidas del desplegable: las `n` últimas y, si la que se está mirando es más antigua, también ella (antes el menú decía otra partida)."""
     shown = list(games[:n])
     return shown + [g for g in games[n:] if g["id"] == gid]
+
+
+def lane_rival(a, opp):
+    """El rival que se puede nombrar como «contra X»: tu rival de línea en una partida con líneas; None si se eligió otro para comparar."""
+    try:
+        return opp if a.get("queue") in analysis.SR_QUEUES and opp is not None and opp == analysis.default_opp(a) else None
+    except Exception:
+        return None
+
+
+def summary_rows(a, adv, goal_result, goal_text):
+    """Las frases del resumen de fin de partida: [(rótulo, frase, color)] con lo mejor, lo que mejorar y qué llevarte a la siguiente. Sale de los
+    mismos consejos que el análisis; la fila sin contenido no aparece."""
+    def junta(tone):
+        titles = [x["title"] for x in adv or [] if x.get("tone") == tone][:2]
+        return " · ".join(titles)
+    rows = []
+    if junta("good"):
+        rows.append(("LO MEJOR", junta("good"), "good"))
+    bad = [x["title"] for x in adv or [] if x.get("tone") == "bad"]
+    if bad:
+        rows.append(("A MEJORAR", bad[0], "warn"))   # una sola cosa: la que más pesó
+    next_ = goal_result[1] if goal_result else goal_text
+    if next_:
+        rows.append(("PARA LA SIGUIENTE", next_, "acc"))
+    return rows
+
+
+def summary_columns(adv, goal_result, goal_text):
+    """Las columnas que acompañan al resultado en la ventana ancha: [(rótulo, titular, detalle, color)]. El objetivo (cumplido o no, o el de la
+    siguiente) y UNA cosa a mejorar; si falta alguna de las dos, entra «Lo mejor»."""
+    def sentence(t):
+        t = (t or "").split(": ", 1)[-1]
+        return t[:1].upper() + t[1:]
+    cols = []
+    if goal_result:
+        cols.append(("TU OBJETIVO", "Cumplido" if goal_result[0] else "No cumplido", sentence(goal_result[1]), "good" if goal_result[0] else "warn"))
+    elif goal_text:
+        cols.append(("PARA LA SIGUIENTE", "Tu objetivo", sentence(goal_text), "acc"))
+    bad = next((x for x in adv or [] if x.get("tone") == "bad"), None)
+    if bad:
+        cols.append(("A MEJORAR", bad["title"], bad.get("detail", ""), "warn"))
+    good = [x for x in adv or [] if x.get("tone") == "good"]
+    if good and len(cols) < 2:
+        cols.append(("LO MEJOR", good[0]["title"], good[0].get("detail", ""), "good"))
+    return cols
 
 
 class AnalysisView:
@@ -59,6 +106,7 @@ class AnalysisView:
         self.mfilter = "Todo"  # filtro de los momentos clave
         self.nosec = False
         self.hosts, self.folds, self.cur = {}, {}, None   # cuerpo y cabecera de cada sección plegable, y los datos con que se pintó
+        self.full = set()   # partidas de las que ya pediste el análisis completo
 
     # ------------------------------------------------------------ utilidades
     def rl(self, a, role):
@@ -127,29 +175,146 @@ class AnalysisView:
         self.nosec = True
         self.hosts, self.folds, self.cur = {}, {}, (a, opp)
         adv = analysis.advice(a, opp, ui.champs)
+        if self.wants_summary():
+            self.summary(host, a, opp, adv)
+            return
         self.header(host, a, opp, adv)
         self.media(host, a)
         self.kpis(host, a, opp)
         ev = self.events(a)
         nb, ng = sum(1 for x in adv if x["tone"] == "bad"), sum(1 for x in adv if x["tone"] == "good")
         if a.get("queue") in analysis.ARAM_QUEUES:
-            ui.fold(host, "Lo más interesante de la partida", lambda p: self.advice(p, a, opp, adv), f"{len(adv)} datos", "an_advice", True)
+            ui.fold(host, "Lo más interesante de la partida", lambda p: self.advice(p, a, opp, adv), f"{len(adv)} datos", "an_advice", True, padx=0)
         else:
             ui.fold(host, "Consejos de esta partida", lambda p: self.advice(p, a, opp, adv),
-                    f"{nb} a mejorar · {ng} bien" if adv else "sin nada destacable", "an_advice", True)
+                    f"{nb} a mejorar · {ng} bien" if adv else "sin nada destacable", "an_advice", True, padx=0)
         if a.get("queue") in (2400,) and any(p.get("aug") for p in a["players"].values()):
             import ui_mayhem
-            ui.fold(host, "Mejoras elegidas", lambda p: ui_mayhem.analysis_block(ui, p, a, gv.width), "las de los 10 jugadores", "an_aug", True)
+            ui.fold(host, "Mejoras elegidas", lambda p: ui_mayhem.analysis_block(ui, p, a, gv.width), "las de los 10 jugadores", "an_aug", True, padx=0)
         mine = sum(1 for e in ev if e["cat"] == "kd")
         self.cur = (a, opp, ev)
-        self.folds["moments"] = ui.fold(host, "Momentos clave", lambda p: self.mount("moments", p, a, opp, ev), f"{len(ev)} {'evento' if len(ev) == 1 else 'eventos'} · {mine} {'tuyo' if mine == 1 else 'tuyos'}", "an_moments", True)
-        self.folds["charts"] = ui.fold(host, "Evolución de la partida", lambda p: self.mount("charts", p, a, opp, ev), gv.chart, "an_charts", True)
+        self.folds["moments"] = ui.fold(host, "Momentos clave", lambda p: self.mount("moments", p, a, opp, ev), f"{len(ev)} {'evento' if len(ev) == 1 else 'eventos'} · {mine} {'tuyo' if mine == 1 else 'tuyos'}", "an_moments", True, padx=0)
+        self.folds["charts"] = ui.fold(host, "Evolución de la partida", lambda p: self.mount("charts", p, a, opp, ev), gv.chart, "an_charts", True, padx=0)
         if opp is not None:
             o = analysis.player(a, opp)
             g10 = analysis.at(a, analysis.diff(a, "gold_s", a["me"], opp), 10)
             ui.fold(host, f"Tú frente a {self.cname(o['champ'])}", lambda p: self.table(p, a, opp),
-                    f"oro en el minuto 10: {sg(g10)}" if g10 is not None else "", "an_table", False)
-        self.folds["teams"] = ui.fold(host, "Los dos equipos", lambda p: self.mount("teams", p, a, opp, ev), f"orden: {self.sort.lower()}", "an_teams", False)
+                    f"oro en el minuto 10: {sg(g10)}" if g10 is not None else "", "an_table", False, padx=0)
+        self.folds["teams"] = ui.fold(host, "Los dos equipos", lambda p: self.mount("teams", p, a, opp, ev), f"orden: {self.sort.lower()}", "an_teams", False, padx=0)
+
+    def wants_summary(self):
+        """El resumen corto sale en tu partida más reciente hasta que pides el análisis completo (las antiguas se abren enteras; en la demostración, también)."""
+        gv = self.gv
+        return bool(gv.games) and str(gv.gid) == str(gv.games[0]["id"]) and str(gv.gid) not in self.full and not getattr(core, "DEMO_MODE", False)
+
+    def show_full(self):
+        self.full.add(str(self.gv.gid))
+        self.gv.sig = None
+        self.gv.refresh(self.gui.make_ctx(), True)
+
+    def summary(self, host, a, opp, adv):
+        """Lo que se lee entre dos colas. Ancha: tres columnas (summary_wide); estrecha: franja con el resultado y los PL, y tres frases (summary_rows)."""
+        ui, gv = self.ui, self.gv
+        if gv.width >= SUMMARY_WIDE:
+            self.summary_wide(host, a, opp, adv)
+            return
+        m = analysis.me(a)
+        tone = "good" if a["win"] else "bad"
+        card = ctk.CTkFrame(host, fg_color=PAL["card2"], corner_radius=12)
+        card.pack(fill="x", pady=(0, 8))
+        ui.reg("analisis.resumen", card)
+        tk.Frame(card, width=int(5 * ui.scale_px()), bg=self.hx(tone)).pack(side="left", fill="y", padx=(8, 0), pady=10)
+        row = ui.frame(card)
+        row.pack(side="left", fill="x", expand=True, padx=12, pady=12)
+        ui.champ(row, m["champ"], 48, False, self.hx(ui.acc)).pack(side="left", padx=(0, 12))
+        lp = analysis.lp_for(core.CACHE, gv.gid)
+        if lp:   # primero lo de la derecha: si falta sitio se recorta el texto central, no los puntos
+            right = ui.frame(row)
+            right.pack(side="right")
+            d = lp["d"]
+            ui.lbl(right, f"{'+' if d > 0 else '−' if d < 0 else ''}{abs(d)} PL", 18, "good" if d > 0 else "bad" if d < 0 else "dim", True, True).pack(anchor="e")
+            ui.lbl(right, (lp["move"] + " · " if lp.get("move") else "") + f"{lp['tier']} · {lp['now']} PL", 10, "dim").pack(anchor="e")
+        mid = ui.frame(row)
+        mid.pack(side="left")
+        ui.lbl(mid, "Victoria" if a["win"] else "Derrota", 18, tone, True, True).pack(anchor="w")
+        rival = lane_rival(a, opp)
+        vs = f" contra {self.cname(analysis.player(a, rival)['champ'])}" if rival is not None else ""
+        ui.lbl(mid, f"{self.cname(m['champ'])}{vs}  ·  {m['k']} / {m['d']} / {m['a']}", 10, "dim", anchor="w").pack(anchor="w")
+        result = goal = None
+        try:
+            import patrones
+            pattern = patrones.current(core.CACHE)
+            result, goal = patrones.result(a, pattern), patrones.goal(pattern)
+        except Exception:
+            core.log_exc("Objetivo en el resumen")
+        narrow = gv.width < 640
+        for title, text, color in summary_rows(a, adv, result, goal):
+            line = ctk.CTkFrame(host, fg_color=PAL["card2"], corner_radius=10)
+            line.pack(fill="x", pady=3)
+            inner = ui.frame(line)
+            inner.pack(fill="x", padx=14, pady=8)
+            head = ui.lbl(inner, title, 9, ui.acc if color == "acc" else color, True, width=136 if not narrow else 0, anchor="w")
+            head.pack(side="top" if narrow else "left", anchor="w")
+            ui.lbl(inner, text, 12, "fg", anchor="w", justify="left", wraplength=max(220, gv.width - (140 if narrow else 290))).pack(side="top" if narrow else "left", anchor="w")
+        from ui_views import small_btn
+        small_btn(ui, host, "Ver el análisis completo", self.show_full, 220).pack(anchor="w", pady=(10, 4))
+
+    def goal_now(self, a):
+        """(¿se cumplió? y frase | None, objetivo para la siguiente | None) según tu patrón de derrotas."""
+        try:
+            import patrones
+            pattern = patrones.current(core.CACHE)
+            return patrones.result(a, pattern), patrones.goal(pattern)
+        except Exception:
+            core.log_exc("Objetivo en el resumen")
+            return None, None
+
+    def summary_wide(self, host, a, opp, adv):
+        ui, gv = self.ui, self.gv
+        m = analysis.me(a)
+        cols = summary_columns(adv, *self.goal_now(a))
+        grid = ui.frame(host)
+        grid.pack(fill="x")
+        ui.reg("analisis.resumen", grid)
+        total = len(cols) + 1
+        wrap = max(150, (gv.width - 110) // total - 44)
+
+        def column(i, title, color):
+            c = ctk.CTkFrame(grid, fg_color=PAL["card2"], corner_radius=12)
+            c.grid(row=0, column=i, sticky="nsew", padx=(0 if not i else 6, 0 if i == total - 1 else 6))
+            grid.columnconfigure(i, weight=1, uniform="resumen")
+            inner = ui.frame(c)
+            inner.pack(fill="both", expand=True, padx=16, pady=14)
+            head = ui.frame(inner)
+            head.pack(anchor="w", pady=(0, 10))
+            tk.Frame(head, width=int(4 * ui.scale_px()), height=int(14 * ui.scale_px()), bg=self.hx(color)).pack(side="left", padx=(0, 8))
+            ui.lbl(head, title, 10, "dim", True).pack(side="left")
+            return inner
+
+        def line(parent, text, size, color, bold=False, pady=0):
+            ui.lbl(parent, text, size, color, bold, bold and size >= 16, anchor="w", justify="left", wraplength=wrap).pack(anchor="w", pady=(pady, 0))
+        tone = "good" if a["win"] else "bad"
+        first = column(0, "RESULTADO", tone)
+        line(first, "Victoria" if a["win"] else "Derrota", 26, tone, True)
+        lp = analysis.lp_for(core.CACHE, gv.gid)
+        if lp:
+            d = lp["d"]
+            line(first, f"{'+' if d > 0 else '−' if d < 0 else ''}{abs(d)} PL", 20, "fg", True, 4)
+            line(first, (lp["move"] + " · " if lp.get("move") else "") + f"{lp['tier']} · {lp['now']} PL", 11, "dim", pady=2)
+        who = ui.frame(first)
+        who.pack(anchor="w", pady=(10, 0))
+        ui.champ(who, m["champ"], 36, False, self.hx(ui.acc)).pack(side="left", padx=(0, 10))
+        rival = lane_rival(a, opp)
+        vs = f" contra {self.cname(analysis.player(a, rival)['champ'])}" if rival is not None else ""
+        ui.lbl(who, f"{self.cname(m['champ'])}{vs}\n{m['k']} / {m['d']} / {m['a']}", 10, "dim", anchor="w", justify="left").pack(side="left")
+        for i, (title, big, detail, color) in enumerate(cols, 1):
+            color = ui.acc if color == "acc" else color
+            box = column(i, title, color)
+            line(box, big, 18, color, True)
+            if detail:
+                line(box, detail, 12, "fg", pady=8)
+        ctk.CTkButton(host, text="Ver el análisis completo", width=240, height=34, corner_radius=9, font=ui.font(12, True), fg_color=ui.acc,
+                      text_color=PAL["bg"], hover_color=ui.acc, command=self.show_full).pack(pady=(14, 4))
 
     def mount(self, name, host, a, opp, ev):
         """Pinta una sección y guarda su contenedor para poder repintar solo esa."""
@@ -285,8 +450,9 @@ class AnalysisView:
         sel.pack(fill="x", pady=(0, 8))
         ui.lbl(sel, "Comparar con", 10, "dim").pack(side="left", padx=(0, 8))
         ui.menu(sel, list(labels), cur, lambda v: self.set_opp(labels[v]), 240).pack(side="left")
-        ui.lbl(sel, ("  En ARAM no hay líneas: por defecto, el rival que más daño hizo." if a.get("queue") in analysis.ARAM_QUEUES else
-                     "  La línea de cada jugador se deduce de si lleva Aplastar y de dónde estuvo en los minutos 3 a 9."), 9, "dim").pack(side="left")
+        ui.lbl(host, ("En ARAM no hay líneas: por defecto, el rival que más daño hizo." if a.get("queue") in analysis.ARAM_QUEUES else
+                      "La línea de cada jugador se deduce de si lleva Aplastar y de dónde estuvo en los minutos 3 a 9."), 9, "dim", anchor="w",
+               justify="left", wraplength=max(260, gv.width - 110)).pack(anchor="w", pady=(0, 8))
 
     def set_together(self, v):
         self.together = v == "Los 10 juntos"
@@ -315,7 +481,7 @@ class AnalysisView:
         kp = (m["k"] + m["a"]) / tk_ if tk_ else None
         tdmg = sum(p["dmg"] for p in team)
         vis_avg = sum(p["vision"] for p in team) / max(1, len(team))
-        cards = [("K / D / A", f"{m['k']} / {m['d']} / {m['a']}", f"KDA {(m['k'] + m['a']) / max(1, m['d']):.2f}".replace(".", ",") + (f" · participación en asesinatos: {kp * 100:.0f} %" if kp is not None else ""), "fg"),
+        cards = [("K / D / A", f"{m['k']} / {m['d']} / {m['a']}", f"KDA {(m['k'] + m['a']) / max(1, m['d']):.2f}".replace(".", ",") + (f" · {kp * 100:.0f} % de las bajas" if kp is not None else ""), "fg"),
                  ("Oro", n(m["gold"]), (f"{sg(m['gold'] - o['gold'])} vs {self.cname(o['champ'])}" if o else ""), "good" if o and m["gold"] >= o["gold"] else "bad" if o else "fg"),
                  ("Súbditos", n(m["cs"]), (f"{sg(m['cs'] - o['cs'])} vs rival · {m['cs'] / max(1, a['dur'] / 60):.1f}/min".replace(".", ",") if o else ""), "fg"),
                  ("Daño", n(m["dmg"]), f"{m['dmg'] / tdmg * 100:.0f} % de tu equipo" if tdmg else "", "fg"),
@@ -326,7 +492,7 @@ class AnalysisView:
             cards[4] = ("Curación", n(m["heal"]), f"mitigaste {n(m['mit'])}" if m["mit"] else "", "fg")
         row = ui.frame(host)
         row.pack(fill="x", pady=(0, 4))
-        ncols = 3 if self.gv.width < 640 else 0
+        ncols = 3 if self.gv.width < 640 else 5   # siempre en rejilla pareja: las fichas salían de distinto alto y ancho
         if ncols:
             for k in range(ncols):
                 row.grid_columnconfigure(k, weight=1, uniform="kp")
@@ -612,15 +778,6 @@ class AnalysisView:
         if not items:
             ui.lbl(host, "No hay nada destacable que decir de esta partida.", 11, "dim").pack(anchor="w")
             return
-        bad = [x["title"] for x in items if x["tone"] == "bad"][:2]
-        good = [x["title"] for x in items if x["tone"] == "good"][:2]
-        key = bad if (bad and not a["win"]) or (bad and not good) else good or bad
-        if key:
-            line = ui.frame(host)
-            line.pack(anchor="w", pady=(0, 8))
-            ui.lbl(line, "Lo que más pesó:  " if key is bad else "Lo mejor:  ", 11, "dim", True).pack(side="left")
-            ui.lbl(line, " · ".join(key), 11, "bad" if key is bad else "good", True, anchor="w", justify="left",
-                   wraplength=max(240, self.gv.width - 260)).pack(side="left")
         for it in items[:9]:
             color = {"good": "good", "bad": "bad"}.get(it["tone"], "info")
             card = tk.Frame(host, bg=self.hx("card2"))
@@ -732,7 +889,7 @@ class AnalysisView:
             if not part:
                 continue
             span = f"{lo}–{hi}'" if hi < 999 else f"{lo}' en adelante"
-            ui.fold(host, f"{name_} · {span}", lambda p, part=part: self.rows(p, a, part, W), f"{len(part)} {'evento' if len(part) == 1 else 'eventos'}", f"an_ph{i}", i == 0)
+            ui.fold(host, f"{name_} · {span}", lambda p, part=part: self.rows(p, a, part, W), f"{len(part)} {'evento' if len(part) == 1 else 'eventos'}", f"an_ph{i}", i == 0, padx=0)
 
     def timeline(self, host, a, ev, W, cat):
         """Línea de tiempo horizontal: arriba objetivos y torres, abajo tus muertes, asesinatos y asistencias."""

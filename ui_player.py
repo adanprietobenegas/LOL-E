@@ -25,8 +25,8 @@ def ago(ms):
     if days < 60:
         return f"hace {int(days)} días"
     if days < 700:
-        return f"hace {int(days // 30)} meses"
-    return f"hace {int(days // 365)} años"
+        return f"hace {int(days // 30)} {'mes' if int(days // 30) == 1 else 'meses'}"
+    return f"hace {int(days // 365)} {'año' if int(days // 365) == 1 else 'años'}"
 
 
 def signals(p):
